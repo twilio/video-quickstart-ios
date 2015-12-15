@@ -1,6 +1,8 @@
 # video-quickstart-objc
 Twilio Video starter iOS application in ObjC
 
+## Configuring the App
+
 This application should give you a ready-made starting point for writing your
 own video apps with Twilio Video. Before we begin, we need to get the access token. 
 
@@ -11,7 +13,7 @@ Just select iOS as your platform and you'll be able to generate an access token.
 
 with the access token you copied. 
 
-## Setting Up The Application
+## Installing Dependencies
 
 After downloading or cloning the app, in a terminal window enter the following
 
@@ -19,6 +21,9 @@ After downloading or cloning the app, in a terminal window enter the following
 
 This will install the necessary dependencies, TwilioCommon and TwilioConversationsClient. Once they are installed you
 can go ahead and open QuickStart.xcworkspace. 
+
+
+##Running the app
 
 You should now be ready to rock! Type in a username to invite in the first view and hit
 the invite button. If you typed in a valid name, you'll see their screen pop up in the view. Begin your video chatting
