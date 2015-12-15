@@ -1,0 +1,413 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
+		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
+		288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765A40DF7441C002DB57D /* CoreGraphics.framework */; };
+		4B830A6C1B8D3E29008337AB /* TwilioConversationsClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B830A6B1B8D3E29008337AB /* TwilioConversationsClient.framework */; };
+		4BDF83CB1C0FFD0C00A1785D /* TwilioCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BDF83CA1C0FFD0C00A1785D /* TwilioCommon.framework */; };
+		582432311AD729F900B261D7 /* CreateConversationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5824322C1AD729F900B261D7 /* CreateConversationViewController.m */; };
+		80250E4313B178C4009B4E18 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 80250E4213B178C4009B4E18 /* AudioToolbox.framework */; };
+		80250E4713B178C9009B4E18 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 80250E4613B178C9009B4E18 /* CFNetwork.framework */; };
+		80250F3B13B2A88A009B4E18 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 80250F3A13B2A88A009B4E18 /* SystemConfiguration.framework */; };
+		804E507E14D23CEA0040A80E /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 804E507D14D23CEA0040A80E /* AVFoundation.framework */; };
+		8F956FF71AF8248E0045C16C /* ConversationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F956FF61AF8248E0045C16C /* ConversationViewController.m */; };
+		CEF910E51A8BA79A00908DE7 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEF910E41A8BA79A00908DE7 /* VideoToolbox.framework */; };
+		E106729D1A2DA0FC00241589 /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E106729C1A2DA0FC00241589 /* QuickLook.framework */; };
+		E106729F1A2DA10B00241589 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E106729E1A2DA10B00241589 /* OpenGLES.framework */; };
+		E10672A11A2DA12400241589 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E10672A01A2DA12400241589 /* GLKit.framework */; };
+		E10672A31A2DA13100241589 /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E10672A21A2DA13100241589 /* CoreImage.framework */; };
+		E10672A51A2DA16200241589 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E10672A41A2DA16200241589 /* MobileCoreServices.framework */; };
+		E10672A71A2DA16D00241589 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E10672A61A2DA16D00241589 /* AssetsLibrary.framework */; };
+		E10672A91A2DA18400241589 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E10672A81A2DA18400241589 /* CoreText.framework */; };
+		E10672AD1A2DA1E800241589 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E10672AC1A2DA1E800241589 /* QuartzCore.framework */; };
+		E10672AF1A2DA21600241589 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E10672AE1A2DA21600241589 /* CoreVideo.framework */; };
+		E16F56411A3B5D2F0043BE48 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E16F56401A3B5D2F0043BE48 /* CoreMedia.framework */; };
+		E1DAEB631AC159CC00E2DE62 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = E1DAEB5F1AC159CC00E2DE62 /* LaunchScreen.xib */; };
+		E1DAEB641AC159CC00E2DE62 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E1DAEB611AC159CC00E2DE62 /* Main.storyboard */; };
+		E1DAEB661AC159D400E2DE62 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E1DAEB651AC159D400E2DE62 /* Images.xcassets */; };
+		E1DAEB721AC15B4400E2DE62 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DAEB6E1AC15B4400E2DE62 /* AppDelegate.m */; };
+		E1DAEB731AC15B4400E2DE62 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DAEB6F1AC15B4400E2DE62 /* main.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		1D6058910D05DD3D006BFB54 /* QuickStart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickStart.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		288765A40DF7441C002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		4B830A6B1B8D3E29008337AB /* TwilioConversationsClient.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TwilioConversationsClient.framework; path = ../../TwilioConversationsClient.framework; sourceTree = SOURCE_ROOT; };
+		4BDF83CA1C0FFD0C00A1785D /* TwilioCommon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TwilioCommon.framework; path = ../../TwilioCommon.framework; sourceTree = "<group>"; };
+		5824322B1AD729F900B261D7 /* CreateConversationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = CreateConversationViewController.h; path = Modules/CreateConversationViewController.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		5824322C1AD729F900B261D7 /* CreateConversationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = CreateConversationViewController.m; path = Modules/CreateConversationViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		80250E4213B178C4009B4E18 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		80250E4613B178C9009B4E18 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		80250F3A13B2A88A009B4E18 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		804E507D14D23CEA0040A80E /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		8F956FF51AF8248E0045C16C /* ConversationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = ConversationViewController.h; path = Modules/ConversationViewController.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		8F956FF61AF8248E0045C16C /* ConversationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = ConversationViewController.m; path = Modules/ConversationViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		CEF910E41A8BA79A00908DE7 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
+		E106729C1A2DA0FC00241589 /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
+		E106729E1A2DA10B00241589 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		E10672A01A2DA12400241589 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
+		E10672A21A2DA13100241589 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
+		E10672A41A2DA16200241589 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		E10672A61A2DA16D00241589 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		E10672A81A2DA18400241589 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		E10672AA1A2DA1C400241589 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		E10672AC1A2DA1E800241589 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		E10672AE1A2DA21600241589 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		E16F56341A3B391F0043BE48 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
+		E16F56401A3B5D2F0043BE48 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		E1DAEB601AC159CC00E2DE62 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		E1DAEB621AC159CC00E2DE62 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		E1DAEB651AC159D400E2DE62 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		E1DAEB6D1AC15B4400E2DE62 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = AppDelegate.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		E1DAEB6E1AC15B4400E2DE62 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		E1DAEB6F1AC15B4400E2DE62 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		E1DAEB761AC15B5200E2DE62 /* QuickStart_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QuickStart_Prefix.pch; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1D60588F0D05DD3D006BFB54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4BDF83CB1C0FFD0C00A1785D /* TwilioCommon.framework in Frameworks */,
+				4B830A6C1B8D3E29008337AB /* TwilioConversationsClient.framework in Frameworks */,
+				CEF910E51A8BA79A00908DE7 /* VideoToolbox.framework in Frameworks */,
+				E16F56411A3B5D2F0043BE48 /* CoreMedia.framework in Frameworks */,
+				E10672AF1A2DA21600241589 /* CoreVideo.framework in Frameworks */,
+				E10672AD1A2DA1E800241589 /* QuartzCore.framework in Frameworks */,
+				E10672A91A2DA18400241589 /* CoreText.framework in Frameworks */,
+				E10672A71A2DA16D00241589 /* AssetsLibrary.framework in Frameworks */,
+				E10672A51A2DA16200241589 /* MobileCoreServices.framework in Frameworks */,
+				E10672A31A2DA13100241589 /* CoreImage.framework in Frameworks */,
+				E10672A11A2DA12400241589 /* GLKit.framework in Frameworks */,
+				E106729F1A2DA10B00241589 /* OpenGLES.framework in Frameworks */,
+				E106729D1A2DA0FC00241589 /* QuickLook.framework in Frameworks */,
+				804E507E14D23CEA0040A80E /* AVFoundation.framework in Frameworks */,
+				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
+				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
+				288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */,
+				80250E4313B178C4009B4E18 /* AudioToolbox.framework in Frameworks */,
+				80250E4713B178C9009B4E18 /* CFNetwork.framework in Frameworks */,
+				80250F3B13B2A88A009B4E18 /* SystemConfiguration.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1D6058910D05DD3D006BFB54 /* QuickStart.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
+			isa = PBXGroup;
+			children = (
+				E106724A1A2D9DA800241589 /* Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = CustomTemplate;
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E1DAEB5F1AC159CC00E2DE62 /* LaunchScreen.xib */,
+				E1DAEB611AC159CC00E2DE62 /* Main.storyboard */,
+				E1DAEB651AC159D400E2DE62 /* Images.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4BDF83CA1C0FFD0C00A1785D /* TwilioCommon.framework */,
+				4B830A6B1B8D3E29008337AB /* TwilioConversationsClient.framework */,
+				CEF910E41A8BA79A00908DE7 /* VideoToolbox.framework */,
+				E16F56401A3B5D2F0043BE48 /* CoreMedia.framework */,
+				E16F56341A3B391F0043BE48 /* libc++.dylib */,
+				E10672AE1A2DA21600241589 /* CoreVideo.framework */,
+				E10672AC1A2DA1E800241589 /* QuartzCore.framework */,
+				E10672AA1A2DA1C400241589 /* ImageIO.framework */,
+				E10672A81A2DA18400241589 /* CoreText.framework */,
+				E10672A61A2DA16D00241589 /* AssetsLibrary.framework */,
+				E10672A41A2DA16200241589 /* MobileCoreServices.framework */,
+				E10672A21A2DA13100241589 /* CoreImage.framework */,
+				E10672A01A2DA12400241589 /* GLKit.framework */,
+				E106729E1A2DA10B00241589 /* OpenGLES.framework */,
+				E106729C1A2DA0FC00241589 /* QuickLook.framework */,
+				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
+				1D30AB110D05D00D00671497 /* Foundation.framework */,
+				288765A40DF7441C002DB57D /* CoreGraphics.framework */,
+				80250E4213B178C4009B4E18 /* AudioToolbox.framework */,
+				80250E4613B178C9009B4E18 /* CFNetwork.framework */,
+				80250F3A13B2A88A009B4E18 /* SystemConfiguration.framework */,
+				804E507D14D23CEA0040A80E /* AVFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E106724A1A2D9DA800241589 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				5824322B1AD729F900B261D7 /* CreateConversationViewController.h */,
+				5824322C1AD729F900B261D7 /* CreateConversationViewController.m */,
+				8F956FF51AF8248E0045C16C /* ConversationViewController.h */,
+				8F956FF61AF8248E0045C16C /* ConversationViewController.m */,
+				E1DAEB6D1AC15B4400E2DE62 /* AppDelegate.h */,
+				E1DAEB6E1AC15B4400E2DE62 /* AppDelegate.m */,
+				E1DAEB6F1AC15B4400E2DE62 /* main.m */,
+				E1DAEB751AC15B4700E2DE62 /* Prefix */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		E1DAEB751AC15B4700E2DE62 /* Prefix */ = {
+			isa = PBXGroup;
+			children = (
+				E1DAEB761AC15B5200E2DE62 /* QuickStart_Prefix.pch */,
+			);
+			name = Prefix;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1D6058900D05DD3D006BFB54 /* QuickStart */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "QuickStart" */;
+			buildPhases = (
+				1D60588D0D05DD3D006BFB54 /* Resources */,
+				1D60588E0D05DD3D006BFB54 /* Sources */,
+				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = QuickStart;
+			productName = DemoApp;
+			productReference = 1D6058910D05DD3D006BFB54 /* QuickStart.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0700;
+				TargetAttributes = {
+					1D6058900D05DD3D006BFB54 = {
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "QuickStart" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+				Base,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D6058900D05DD3D006BFB54 /* QuickStart */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1D60588D0D05DD3D006BFB54 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E1DAEB661AC159D400E2DE62 /* Images.xcassets in Resources */,
+				E1DAEB631AC159CC00E2DE62 /* LaunchScreen.xib in Resources */,
+				E1DAEB641AC159CC00E2DE62 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D60588E0D05DD3D006BFB54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E1DAEB731AC15B4400E2DE62 /* main.m in Sources */,
+				582432311AD729F900B261D7 /* CreateConversationViewController.m in Sources */,
+				E1DAEB721AC15B4400E2DE62 /* AppDelegate.m in Sources */,
+				8F956FF71AF8248E0045C16C /* ConversationViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		E1DAEB5F1AC159CC00E2DE62 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E1DAEB601AC159CC00E2DE62 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+		E1DAEB611AC159CC00E2DE62 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E1DAEB621AC159CC00E2DE62 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1D6058940D05DD3E006BFB54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Sources/QuickStart_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(SRCROOT)/../TwilioSDK/TwilioSDK/Sources/Objective-C/Interfaces",
+				);
+				INFOPLIST_FILE = "QuickStart-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.TwilioRTCQuickstart;
+				PRODUCT_NAME = QuickStart;
+				PROVISIONING_PROFILE = "";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Debug;
+		};
+		1D6058950D05DD3E006BFB54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Sources/QuickStart_Prefix.pch;
+				GCC_UNROLL_LOOPS = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(SRCROOT)/../TwilioSDK/TwilioSDK/Sources/Objective-C/Interfaces",
+				);
+				INFOPLIST_FILE = "QuickStart-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.TwilioRTCQuickstart;
+				PRODUCT_NAME = QuickStart;
+				PROVISIONING_PROFILE = "";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				PREBINDING = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "QuickStart" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D6058940D05DD3E006BFB54 /* Debug */,
+				1D6058950D05DD3E006BFB54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "QuickStart" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}
