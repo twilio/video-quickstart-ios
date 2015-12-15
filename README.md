@@ -5,7 +5,7 @@ This application should give you a ready-made starting point for writing your
 own video apps with Twilio Video. Before we begin, we need to get the access token. 
 
 You can retrieve the access token from [here](https://www.twilio.com/user/account/video/getting-started).
-Just select iOS as your platform and you'll be able to generate an access token. Under the listenForInvites method in CreateConversationViewController.m replace this line
+Just select iOS as your platform and you'll be able to generate an access token. Under the **listenForInvites** method in **CreateConversationViewController.m** replace this line
 
         NSString *accessToken = @"access_token";
 
