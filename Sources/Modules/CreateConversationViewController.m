@@ -48,19 +48,36 @@
     if (!self.conversationsClient) {
         
 #error You must provide a Twilio AccessToken to connect to the Conversations service
+        // OPTION 1- Generate an access token from the quickstart portal https://www.twilio.com/user/account/video/getting-started
         NSString *accessToken = @"TWILIO_ACCESS_TOKEN";
-        
         self.accessManager = [TwilioAccessManager accessManagerWithToken:accessToken delegate:self];
-        
         self.conversationsClient = [TwilioConversationsClient conversationsClientWithAccessManager:self.accessManager
                                                                                           delegate:self];
-        
-        /*
-         The listen method results in a call to one of two delegate methods:
-            - conversationsClientDidStartListeningForInvites: in the case of a successful connection
-            - conversationsClient:didFailToStartListeningWithError: in the case of a failure to connect
-         */
         [self.conversationsClient listen];
+        
+        // OPTION 2- Retrieve an access token from your own web app
+        [self retrieveAccessTokenfromServer];
+    }
+}
+
+-(void) retrieveAccessTokenfromServer {
+    NSString *identifierForVendor = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    NSString *tokenEndpoint = @"http://www.your-web-app.com/token.php?device=%@";
+    NSString *urlString = [NSString stringWithFormat:tokenEndpoint, identifierForVendor];
+    // Make JSON request to server
+    NSData *jsonResponse = [NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]];
+    if (jsonResponse) {
+        NSError *jsonError;
+        NSDictionary *tokenResponse = [NSJSONSerialization JSONObjectWithData:jsonResponse
+                                                                      options:kNilOptions
+                                                                        error:&jsonError];
+        // Handle response from server
+        if (!jsonError) {
+            self.accessManager = [TwilioAccessManager accessManagerWithToken:tokenResponse[@"token"] delegate:self];
+            self.conversationsClient = [TwilioConversationsClient conversationsClientWithAccessManager:self.accessManager
+                                                                                              delegate:self];
+            [self.conversationsClient listen];
+        }
     }
 }
 
