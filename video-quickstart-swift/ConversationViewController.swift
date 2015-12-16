@@ -20,19 +20,29 @@ class ConversationViewController: UIViewController, TWCLocalMediaDelegate, TWCVi
     @IBOutlet weak var remoteVideo: UIView!
     @IBOutlet weak var localVideo: UIView!
     
+    struct Platform {
+        static let isSimulator: Bool = {
+            var isSim = false
+            #if arch(i386) || arch(x86_64)
+                isSim = true
+            #endif
+            return isSim
+        }()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         NSLog("Conversation started!");
         self.localMedia = TWCLocalMedia(delegate: self);
         self.camera = self.localMedia?.addCameraTrack();
-        if((self.camera) != nil) {
+        if((self.camera) != nil && Platform.isSimulator != true) {
             self.camera?.videoTrack?.attach(localVideo)
             self.camera?.videoTrack?.delegate = self;
         }
     }
     
     override func viewDidAppear(animated: Bool) {
-        if(self.incomingInvite != nil) {
+        if(self.incomingInvite != nil && Platform.isSimulator != true) {
             self.incomingInvite?.acceptWithLocalMedia((self.localMedia)!, completion: self.acceptHandler());
         } else {
             NSLog("you invited %@", self.inviteeIdentity!);
