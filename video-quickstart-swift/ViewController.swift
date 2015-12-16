@@ -42,7 +42,7 @@ class ViewController: UIViewController, TwilioAccessManagerDelegate, TwilioConve
     }
     
     func initializeClient() {
-        let accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzNlNDc3N2M3MTAxM2UxYWEyYWE2MDI1MjJkMjdhOTFiLTE0NTAyNDcwODciLCJpc3MiOiJTSzNlNDc3N2M3MTAxM2UxYWEyYWE2MDI1MjJkMjdhOTFiIiwic3ViIjoiQUNlM2MxZDU0ODgwMTMxODEwOWRlNTA5MzY1NDRiZWU4NiIsImV4cCI6MTQ1MDI0NzY4NywiZ3JhbnRzIjp7ImlkZW50aXR5IjoicXVpY2tzdGFydCIsInJ0YyI6eyJjb25maWd1cmF0aW9uX3Byb2ZpbGVfc2lkIjoiVlMzMGRkMGZiZWNmNjcyNWY1NTgzNzNjNDUyZGFkNTJhOCJ9fX0.LZWRxRlsGRGhb46b5KLVGebaAiy7KE7PCw7e4vqNi-A";
+        let accessToken = "access_token";
         self.accessManager = TwilioAccessManager(token:accessToken, delegate:self);
         self.client = TwilioConversationsClient(accessManager: self.accessManager!, delegate: self);
         self.client?.listen();
