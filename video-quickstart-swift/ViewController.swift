@@ -58,7 +58,7 @@ class ViewController: UIViewController, TwilioAccessManagerDelegate, TwilioConve
         // Fetch Access Token form the server and initialize IPM Client - this assumes you are running
         // the PHP starter app on your local machine, as instructed in the quick start guide
         let deviceId = UIDevice.currentDevice().identifierForVendor!.UUIDString
-        let urlString = "http://your-web-app.com/token.php?device=\(deviceId)"
+        let urlString = "http://localhost:8000/token.php?device=\(deviceId)"
         
         // Get JSON from server
         let config = NSURLSessionConfiguration.defaultSessionConfiguration()
