@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AC86DA891C20C78D00AAD3E8 /* ConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC86DA881C20C78D00AAD3E8 /* ConversationViewController.swift */; settings = {ASSET_TAGS = (); }; };
+		AC86DA8F1C22206D00AAD3E8 /* SwiftyJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC86DA8E1C22206D00AAD3E8 /* SwiftyJSON.swift */; settings = {ASSET_TAGS = (); }; };
 		ACE4D84A1C1F96A100C65E79 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE4D8491C1F96A100C65E79 /* AppDelegate.swift */; };
 		ACE4D84C1C1F96A100C65E79 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE4D84B1C1F96A100C65E79 /* ViewController.swift */; };
 		ACE4D84F1C1F96A100C65E79 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ACE4D84D1C1F96A100C65E79 /* Main.storyboard */; };
@@ -19,6 +20,7 @@
 /* Begin PBXFileReference section */
 		AC86DA871C20978500AAD3E8 /* video-quickstart-swift-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "video-quickstart-swift-Bridging-Header.h"; sourceTree = "<group>"; };
 		AC86DA881C20C78D00AAD3E8 /* ConversationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversationViewController.swift; sourceTree = "<group>"; };
+		AC86DA8E1C22206D00AAD3E8 /* SwiftyJSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftyJSON.swift; sourceTree = "<group>"; };
 		ACE4D8461C1F96A100C65E79 /* QuickStart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickStart.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACE4D8491C1F96A100C65E79 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ACE4D84B1C1F96A100C65E79 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -62,6 +64,7 @@
 			isa = PBXGroup;
 			children = (
 				AC86DA871C20978500AAD3E8 /* video-quickstart-swift-Bridging-Header.h */,
+				AC86DA8E1C22206D00AAD3E8 /* SwiftyJSON.swift */,
 				ACE4D8491C1F96A100C65E79 /* AppDelegate.swift */,
 				ACE4D84B1C1F96A100C65E79 /* ViewController.swift */,
 				AC86DA881C20C78D00AAD3E8 /* ConversationViewController.swift */,
@@ -155,6 +158,7 @@
 				ACE4D84C1C1F96A100C65E79 /* ViewController.swift in Sources */,
 				ACE4D84A1C1F96A100C65E79 /* AppDelegate.swift in Sources */,
 				AC86DA891C20C78D00AAD3E8 /* ConversationViewController.swift in Sources */,
+				AC86DA8F1C22206D00AAD3E8 /* SwiftyJSON.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
