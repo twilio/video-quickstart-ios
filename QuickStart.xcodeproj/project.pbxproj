@@ -19,7 +19,7 @@
 /* Begin PBXFileReference section */
 		AC86DA871C20978500AAD3E8 /* video-quickstart-swift-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "video-quickstart-swift-Bridging-Header.h"; sourceTree = "<group>"; };
 		AC86DA881C20C78D00AAD3E8 /* ConversationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversationViewController.swift; sourceTree = "<group>"; };
-		ACE4D8461C1F96A100C65E79 /* video-quickstart-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "video-quickstart-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACE4D8461C1F96A100C65E79 /* QuickStart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickStart.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACE4D8491C1F96A100C65E79 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ACE4D84B1C1F96A100C65E79 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		ACE4D84E1C1F96A100C65E79 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -45,7 +45,7 @@
 			isa = PBXGroup;
 			children = (
 				ACE4D8891C1F978600C65E79 /* Frameworks */,
-				ACE4D8481C1F96A100C65E79 /* video-quickstart-swift */,
+				ACE4D8481C1F96A100C65E79 /* QuickStart */,
 				ACE4D8471C1F96A100C65E79 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -53,12 +53,12 @@
 		ACE4D8471C1F96A100C65E79 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				ACE4D8461C1F96A100C65E79 /* video-quickstart-swift.app */,
+				ACE4D8461C1F96A100C65E79 /* QuickStart.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		ACE4D8481C1F96A100C65E79 /* video-quickstart-swift */ = {
+		ACE4D8481C1F96A100C65E79 /* QuickStart */ = {
 			isa = PBXGroup;
 			children = (
 				AC86DA871C20978500AAD3E8 /* video-quickstart-swift-Bridging-Header.h */,
@@ -70,6 +70,7 @@
 				ACE4D8521C1F96A100C65E79 /* LaunchScreen.storyboard */,
 				ACE4D8551C1F96A100C65E79 /* Info.plist */,
 			);
+			name = QuickStart;
 			path = "video-quickstart-swift";
 			sourceTree = "<group>";
 		};
@@ -84,9 +85,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		ACE4D8451C1F96A100C65E79 /* video-quickstart-swift */ = {
+		ACE4D8451C1F96A100C65E79 /* QuickStart */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = ACE4D8581C1F96A100C65E79 /* Build configuration list for PBXNativeTarget "video-quickstart-swift" */;
+			buildConfigurationList = ACE4D8581C1F96A100C65E79 /* Build configuration list for PBXNativeTarget "QuickStart" */;
 			buildPhases = (
 				ACE4D8421C1F96A100C65E79 /* Sources */,
 				ACE4D8431C1F96A100C65E79 /* Frameworks */,
@@ -96,9 +97,9 @@
 			);
 			dependencies = (
 			);
-			name = "video-quickstart-swift";
+			name = QuickStart;
 			productName = "video-quickstart-swift";
-			productReference = ACE4D8461C1F96A100C65E79 /* video-quickstart-swift.app */;
+			productReference = ACE4D8461C1F96A100C65E79 /* QuickStart.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -115,7 +116,7 @@
 					};
 				};
 			};
-			buildConfigurationList = ACE4D8411C1F96A100C65E79 /* Build configuration list for PBXProject "video-quickstart-swift" */;
+			buildConfigurationList = ACE4D8411C1F96A100C65E79 /* Build configuration list for PBXProject "QuickStart" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -128,7 +129,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				ACE4D8451C1F96A100C65E79 /* video-quickstart-swift */,
+				ACE4D8451C1F96A100C65E79 /* QuickStart */,
 			);
 		};
 /* End PBXProject section */
@@ -272,8 +273,8 @@
 				);
 				INFOPLIST_FILE = "video-quickstart-swift/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "Twilio.video-quickstart-swift";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = Twilio.QuickStart;
+				PRODUCT_NAME = QuickStart;
 				SWIFT_OBJC_BRIDGING_HEADER = "video-quickstart-swift/video-quickstart-swift-Bridging-Header.h";
 			};
 			name = Debug;
@@ -290,8 +291,8 @@
 				);
 				INFOPLIST_FILE = "video-quickstart-swift/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "Twilio.video-quickstart-swift";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = Twilio.QuickStart;
+				PRODUCT_NAME = QuickStart;
 				SWIFT_OBJC_BRIDGING_HEADER = "video-quickstart-swift/video-quickstart-swift-Bridging-Header.h";
 			};
 			name = Release;
@@ -299,7 +300,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		ACE4D8411C1F96A100C65E79 /* Build configuration list for PBXProject "video-quickstart-swift" */ = {
+		ACE4D8411C1F96A100C65E79 /* Build configuration list for PBXProject "QuickStart" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				ACE4D8561C1F96A100C65E79 /* Debug */,
@@ -308,7 +309,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		ACE4D8581C1F96A100C65E79 /* Build configuration list for PBXNativeTarget "video-quickstart-swift" */ = {
+		ACE4D8581C1F96A100C65E79 /* Build configuration list for PBXNativeTarget "QuickStart" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				ACE4D8591C1F96A100C65E79 /* Debug */,

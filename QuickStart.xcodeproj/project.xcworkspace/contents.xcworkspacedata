@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:video-quickstart-swift.xcodeproj">
+      location = "self:/Users/sraval/Desktop/namechange/video-quickstart-swift/QuickStart.xcodeproj">
    </FileRef>
 </Workspace>

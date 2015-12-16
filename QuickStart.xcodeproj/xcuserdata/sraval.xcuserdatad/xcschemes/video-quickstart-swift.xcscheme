@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "ACE4D8451C1F96A100C65E79"
-               BuildableName = "video-quickstart-swift.app"
-               BlueprintName = "video-quickstart-swift"
-               ReferencedContainer = "container:video-quickstart-swift.xcodeproj">
+               BuildableName = "QuickStart.app"
+               BlueprintName = "QuickStart"
+               ReferencedContainer = "container:QuickStart.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "ACE4D8451C1F96A100C65E79"
-            BuildableName = "video-quickstart-swift.app"
-            BlueprintName = "video-quickstart-swift"
-            ReferencedContainer = "container:video-quickstart-swift.xcodeproj">
+            BuildableName = "QuickStart.app"
+            BlueprintName = "QuickStart"
+            ReferencedContainer = "container:QuickStart.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -56,9 +56,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "ACE4D8451C1F96A100C65E79"
-            BuildableName = "video-quickstart-swift.app"
-            BlueprintName = "video-quickstart-swift"
-            ReferencedContainer = "container:video-quickstart-swift.xcodeproj">
+            BuildableName = "QuickStart.app"
+            BlueprintName = "QuickStart"
+            ReferencedContainer = "container:QuickStart.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -75,9 +75,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "ACE4D8451C1F96A100C65E79"
-            BuildableName = "video-quickstart-swift.app"
-            BlueprintName = "video-quickstart-swift"
-            ReferencedContainer = "container:video-quickstart-swift.xcodeproj">
+            BuildableName = "QuickStart.app"
+            BlueprintName = "QuickStart"
+            ReferencedContainer = "container:QuickStart.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
