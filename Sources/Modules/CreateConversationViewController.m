@@ -48,7 +48,7 @@
     if (!self.conversationsClient) {
         
 #error You must provide a Twilio AccessToken to connect to the Conversations service
-        NSString *accessToken = @"access_token";
+        NSString *accessToken = @"TWILIO_ACCESS_TOKEN";
         
         self.accessManager = [TwilioAccessManager accessManagerWithToken:accessToken delegate:self];
         
