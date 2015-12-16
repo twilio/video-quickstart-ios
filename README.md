@@ -17,9 +17,9 @@ with the access token you copied.
 
 After downloading or cloning the app, in a terminal window enter the following
 
-'pod install'
+        pod install --verbose;
 
-This will install the necessary dependencies, TwilioCommon and TwilioConversationsClient. Once they are installed you
+This will install the necessary dependencies, TwilioCommon and TwilioConversationsClient. The download may take a few minutes, so grab some coffee while you wait. Once they are installed you
 can go ahead and open video-quickstart-swift.xcworkspace. 
 
 ##Running the app
