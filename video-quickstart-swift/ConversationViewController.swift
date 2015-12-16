@@ -45,8 +45,10 @@ class ConversationViewController: UIViewController, TWCLocalMediaDelegate, TWCVi
         if(self.incomingInvite != nil && Platform.isSimulator != true) {
             self.incomingInvite?.acceptWithLocalMedia((self.localMedia)!, completion: self.acceptHandler());
         } else {
-            NSLog("you invited %@", self.inviteeIdentity!);
-            self.sendConversationInvite();
+            if(self.inviteeIdentity != nil) {
+                NSLog("you invited %@", self.inviteeIdentity!);
+                self.sendConversationInvite();
+            }
         }
     }
 
