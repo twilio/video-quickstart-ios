@@ -62,7 +62,7 @@
 
 -(void) retrieveAccessTokenfromServer {
     NSString *identifierForVendor = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-    NSString *tokenEndpoint = @"http://www.your-web-app.com/token.php?device=%@";
+    NSString *tokenEndpoint = @"http://localhost:8000/token.php?device=%@";
     NSString *urlString = [NSString stringWithFormat:tokenEndpoint, identifierForVendor];
     // Make JSON request to server
     NSData *jsonResponse = [NSData dataWithContentsOfURL:[NSURL URLWithString:urlString]];
