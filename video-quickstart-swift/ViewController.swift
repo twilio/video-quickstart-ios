@@ -42,11 +42,49 @@ class ViewController: UIViewController, TwilioAccessManagerDelegate, TwilioConve
     }
     
     func initializeClient() {
+        //OPTION 1- Paste access token from the quickstart https://www.twilio.com/user/account/video/getting-started
         let accessToken = "TWILIO_ACCESS_TOKEN";
         self.accessManager = TwilioAccessManager(token:accessToken, delegate:self);
         self.client = TwilioConversationsClient(accessManager: self.accessManager!, delegate: self);
         self.client?.listen();
         NSLog("The client identity is %@", (self.client?.identity)!);
+        
+        //OPTION 2- Retrieve access token from your own web app
+        //self.retrieveAccessTokenfromServer();
+        
+    }
+    
+    func retrieveAccessTokenfromServer() {
+        // Fetch Access Token form the server and initialize IPM Client - this assumes you are running
+        // the PHP starter app on your local machine, as instructed in the quick start guide
+        let deviceId = UIDevice.currentDevice().identifierForVendor!.UUIDString
+        let urlString = "http://your-web-app.com/token.php?device=\(deviceId)"
+        
+        // Get JSON from server
+        let config = NSURLSessionConfiguration.defaultSessionConfiguration()
+        let session = NSURLSession(configuration: config, delegate: nil, delegateQueue: nil)
+        let url = NSURL(string: urlString)
+        let request  = NSMutableURLRequest(URL: url!)
+        request.HTTPMethod = "GET"
+        
+        // Make HTTP request
+        session.dataTaskWithRequest(request, completionHandler: { data, response, error in
+            if (data != nil) {
+                // Parse result JSON
+                let json = JSON(data: data!)
+                let token = json["token"].stringValue
+                // Set up Twilio Conversations client
+                self.accessManager = TwilioAccessManager(token:token, delegate:self);
+                self.client = TwilioConversationsClient(accessManager: self.accessManager!, delegate: self);
+                self.client?.listen();
+                // Update UI on main thread
+                dispatch_async(dispatch_get_main_queue()) {
+                    print("Successfully fetched token :\(error)")
+                }
+            } else {
+                print("Error fetching token :\(error)")
+            }
+        }).resume()
     }
     
     //Access manager delegate
