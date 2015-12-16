@@ -25,8 +25,7 @@ can go ahead and open QuickStart.xcworkspace.
 
 ##Running the app
 
-You should now be ready to rock! Type in a username to invite in the first view and hit
-the invite button. If you typed in a valid name, you'll see their screen pop up in the view. Begin your video chatting
+You should now be ready to rock! Run the app on your device (the simulator can't access a camera), and type in a username to invite in the first view. Tap the invite button. If you typed in a valid name, you'll see their screen pop up in the view. Begin your video chatting
 adventure!
 
 ![screenshot of chat app](http://i.imgur.com/sqPwNTw.jpg)
