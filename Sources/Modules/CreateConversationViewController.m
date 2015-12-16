@@ -56,7 +56,7 @@
         [self.conversationsClient listen];
         
         // OPTION 2- Retrieve an access token from your own web app
-        [self retrieveAccessTokenfromServer];
+        //[self retrieveAccessTokenfromServer];
     }
 }
 
