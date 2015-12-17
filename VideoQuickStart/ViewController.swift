@@ -13,7 +13,7 @@ class ViewController: UIViewController {
   
   // Configure access token manually for testing, if desired! Create one manually in the console 
   // at https://www.twilio.com/user/account/video/dev-tools/testing-tools
-  var accessToken = ""
+  var accessToken = "TWILIO_ACCESS_TOKEN"
   
   // Configure remote URL to fetch token from
   var tokenUrl = "http://localhost:8000/token.php"
