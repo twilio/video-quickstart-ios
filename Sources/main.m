@@ -1,6 +1,6 @@
 //
 //  main.m
-//  Twilio RTC iOS Quickstart
+//  Twilio Video - Conversations Quickstart
 //
 
 #import "AppDelegate.h"
