@@ -301,13 +301,13 @@
 					"$(SRCROOT)/../TwilioSDK/TwilioSDK/Sources/Objective-C/Interfaces",
 				);
 				INFOPLIST_FILE = "QuickStart-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.TwilioRTCQuickstart;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.TwilioConversationsQuickstart;
 				PRODUCT_NAME = QuickStart;
 				PROVISIONING_PROFILE = "";
 				VALIDATE_PRODUCT = YES;
@@ -334,13 +334,13 @@
 					"$(SRCROOT)/../TwilioSDK/TwilioSDK/Sources/Objective-C/Interfaces",
 				);
 				INFOPLIST_FILE = "QuickStart-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.TwilioRTCQuickstart;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.TwilioConversationsQuickstart;
 				PRODUCT_NAME = QuickStart;
 				PROVISIONING_PROFILE = "";
 				VALIDATE_PRODUCT = YES;
