@@ -49,7 +49,8 @@ class ViewController: UIViewController {
     super.viewDidLoad()
     
     // Configure access token either from server or manually
-    if self.accessToken.isEmpty {
+    // If the default wasn't changed, try fetching from server
+    if self.accessToken == "TWILIO_ACCESS_TOKEN" {
       // If the token wasn't configured manually, try to fetch it from server
       let config = NSURLSessionConfiguration.defaultSessionConfiguration()
       let session = NSURLSession(configuration: config, delegate: nil, delegateQueue: nil)
