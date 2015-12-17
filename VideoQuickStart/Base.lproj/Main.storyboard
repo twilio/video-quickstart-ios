@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9531" systemVersion="14F1505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="mzC-mj-NL1">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <scenes>
+        <!--Navigation Controller-->
+        <scene sceneID="fu2-U0-9G4">
+            <objects>
+                <navigationController id="mzC-mj-NL1" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="X1C-9h-qXZ">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="xYv-ch-gty" kind="relationship" relationship="rootViewController" id="7k5-J8-UoO"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="wre-PY-V3a" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="264" y="452"/>
+        </scene>
+        <!--Video UI-->
+        <scene sceneID="upW-oW-g9W">
+            <objects>
+                <viewController title="Video UI" id="xYv-ch-gty" customClass="ViewController" customModule="VideoQuickStart" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="o13-Ok-Waj"/>
+                        <viewControllerLayoutGuide type="bottom" id="Wix-pe-Zli"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="Xsf-JP-SIm">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vOh-lc-Vfa" userLabel="Remote Media">
+                                <rect key="frame" x="0.0" y="64" width="600" height="536"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="logging in..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1nY-vJ-sQd">
+                                        <rect key="frame" x="8" y="507" width="100" height="21"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <view contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zl1-A1-2oU" userLabel="Local Media">
+                                        <rect key="frame" x="8" y="419" width="80" height="80"/>
+                                        <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstItem="zl1-A1-2oU" firstAttribute="leading" secondItem="vOh-lc-Vfa" secondAttribute="leading" constant="8" id="Kjf-Mz-EiR"/>
+                                    <constraint firstItem="1nY-vJ-sQd" firstAttribute="leading" secondItem="vOh-lc-Vfa" secondAttribute="leading" constant="8" id="hGJ-Hb-td7"/>
+                                    <constraint firstItem="1nY-vJ-sQd" firstAttribute="top" secondItem="zl1-A1-2oU" secondAttribute="bottom" constant="8" id="lM2-iU-An1"/>
+                                    <constraint firstAttribute="bottom" secondItem="1nY-vJ-sQd" secondAttribute="bottom" constant="8" id="wa0-GV-8Gy"/>
+                                </constraints>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="P2D-Xo-yZb">
+                                <rect key="frame" x="269" y="285" width="61" height="30"/>
+                                <state key="normal" title="Hang Up">
+                                    <color key="titleColor" red="0.90196079015731812" green="0.90196079015731812" blue="0.90196079015731812" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="hangup:" destination="xYv-ch-gty" eventType="touchUpInside" id="WLm-gp-YN5"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="trailingMargin" secondItem="P2D-Xo-yZb" secondAttribute="trailing" constant="8" id="K3d-pg-hkM"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="vOh-lc-Vfa" secondAttribute="trailing" constant="-20" id="W7e-yS-wxR"/>
+                            <constraint firstItem="Wix-pe-Zli" firstAttribute="top" secondItem="vOh-lc-Vfa" secondAttribute="bottom" id="ZG4-YT-KZT"/>
+                            <constraint firstItem="Wix-pe-Zli" firstAttribute="top" secondItem="P2D-Xo-yZb" secondAttribute="bottom" constant="8" id="iwG-Aj-OYX"/>
+                            <constraint firstItem="vOh-lc-Vfa" firstAttribute="top" secondItem="o13-Ok-Waj" secondAttribute="bottom" id="kDE-wy-1sa"/>
+                            <constraint firstItem="vOh-lc-Vfa" firstAttribute="leading" secondItem="Xsf-JP-SIm" secondAttribute="leadingMargin" constant="-20" id="lmV-UR-igV"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="no call connected" id="aX4-35-7eE">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="wMJ-Zg-Ig0">
+                            <connections>
+                                <action selector="invite:" destination="xYv-ch-gty" id="XDI-c7-soF"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="hangupButton" destination="P2D-Xo-yZb" id="SQB-5s-pRX"/>
+                        <outlet property="identityLabel" destination="1nY-vJ-sQd" id="hLo-0e-iKS"/>
+                        <outlet property="localMediaView" destination="zl1-A1-2oU" id="k7Y-Ta-HJq"/>
+                        <outlet property="remoteMediaView" destination="vOh-lc-Vfa" id="Dkg-9b-FIu"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="H2O-qT-xo1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="992" y="452"/>
+        </scene>
+    </scenes>
+</document>
