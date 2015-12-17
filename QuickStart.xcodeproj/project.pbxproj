@@ -7,8 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AC86DA891C20C78D00AAD3E8 /* ConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC86DA881C20C78D00AAD3E8 /* ConversationViewController.swift */; settings = {ASSET_TAGS = (); }; };
-		AC86DA8F1C22206D00AAD3E8 /* SwiftyJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC86DA8E1C22206D00AAD3E8 /* SwiftyJSON.swift */; settings = {ASSET_TAGS = (); }; };
+		30827CF71C228A13007E4BB4 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30827CF61C228A13007E4BB4 /* AudioToolbox.framework */; };
+		30827CF91C228A18007E4BB4 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30827CF81C228A18007E4BB4 /* VideoToolbox.framework */; };
+		30827CFB1C228A1E007E4BB4 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30827CFA1C228A1E007E4BB4 /* AVFoundation.framework */; };
+		30827CFD1C228A25007E4BB4 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30827CFC1C228A25007E4BB4 /* CoreTelephony.framework */; };
+		30827CFF1C228A2A007E4BB4 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30827CFE1C228A2A007E4BB4 /* GLKit.framework */; };
+		30827D011C228A30007E4BB4 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30827D001C228A30007E4BB4 /* CoreMedia.framework */; };
+		30827D031C228A35007E4BB4 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30827D021C228A35007E4BB4 /* SystemConfiguration.framework */; };
+		AC86DA891C20C78D00AAD3E8 /* ConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC86DA881C20C78D00AAD3E8 /* ConversationViewController.swift */; };
+		AC86DA8F1C22206D00AAD3E8 /* SwiftyJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC86DA8E1C22206D00AAD3E8 /* SwiftyJSON.swift */; };
 		ACE4D84A1C1F96A100C65E79 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE4D8491C1F96A100C65E79 /* AppDelegate.swift */; };
 		ACE4D84C1C1F96A100C65E79 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE4D84B1C1F96A100C65E79 /* ViewController.swift */; };
 		ACE4D84F1C1F96A100C65E79 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ACE4D84D1C1F96A100C65E79 /* Main.storyboard */; };
@@ -18,6 +25,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		30827CF61C228A13007E4BB4 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		30827CF81C228A18007E4BB4 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
+		30827CFA1C228A1E007E4BB4 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		30827CFC1C228A25007E4BB4 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		30827CFE1C228A2A007E4BB4 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
+		30827D001C228A30007E4BB4 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		30827D021C228A35007E4BB4 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		AC86DA871C20978500AAD3E8 /* video-quickstart-swift-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "video-quickstart-swift-Bridging-Header.h"; sourceTree = "<group>"; };
 		AC86DA881C20C78D00AAD3E8 /* ConversationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversationViewController.swift; sourceTree = "<group>"; };
 		AC86DA8E1C22206D00AAD3E8 /* SwiftyJSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftyJSON.swift; sourceTree = "<group>"; };
@@ -36,6 +50,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30827D031C228A35007E4BB4 /* SystemConfiguration.framework in Frameworks */,
+				30827D011C228A30007E4BB4 /* CoreMedia.framework in Frameworks */,
+				30827CFF1C228A2A007E4BB4 /* GLKit.framework in Frameworks */,
+				30827CFD1C228A25007E4BB4 /* CoreTelephony.framework in Frameworks */,
+				30827CFB1C228A1E007E4BB4 /* AVFoundation.framework in Frameworks */,
+				30827CF91C228A18007E4BB4 /* VideoToolbox.framework in Frameworks */,
+				30827CF71C228A13007E4BB4 /* AudioToolbox.framework in Frameworks */,
 				ACE4D8881C1F976100C65E79 /* libc++.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -80,6 +101,13 @@
 		ACE4D8891C1F978600C65E79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				30827D021C228A35007E4BB4 /* SystemConfiguration.framework */,
+				30827D001C228A30007E4BB4 /* CoreMedia.framework */,
+				30827CFE1C228A2A007E4BB4 /* GLKit.framework */,
+				30827CFC1C228A25007E4BB4 /* CoreTelephony.framework */,
+				30827CFA1C228A1E007E4BB4 /* AVFoundation.framework */,
+				30827CF81C228A18007E4BB4 /* VideoToolbox.framework */,
+				30827CF61C228A13007E4BB4 /* AudioToolbox.framework */,
 				ACE4D8871C1F976100C65E79 /* libc++.tbd */,
 			);
 			name = Frameworks;
@@ -93,8 +121,8 @@
 			buildConfigurationList = ACE4D8581C1F96A100C65E79 /* Build configuration list for PBXNativeTarget "QuickStart" */;
 			buildPhases = (
 				ACE4D8421C1F96A100C65E79 /* Sources */,
-				ACE4D8431C1F96A100C65E79 /* Frameworks */,
 				ACE4D8441C1F96A100C65E79 /* Resources */,
+				ACE4D8431C1F96A100C65E79 /* Frameworks */,
 			);
 			buildRules = (
 			);
