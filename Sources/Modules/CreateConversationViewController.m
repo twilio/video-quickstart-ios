@@ -1,6 +1,6 @@
 //
 //  CreateConversationViewController.m
-//  Twilio RTC iOS Quickstart
+//  Twilio Video - Conversations Quickstart
 //
 
 #import "CreateConversationViewController.h"

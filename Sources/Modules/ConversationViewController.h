@@ -1,6 +1,6 @@
 //
 //  ConversationViewController.h
-//  Twilio RTC iOS Quickstart
+//  Twilio Video - Conversations Quickstart
 //
 
 #import <UIKit/UIKit.h>
