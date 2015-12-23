@@ -120,6 +120,7 @@ class ViewController: UIViewController {
       self.outgoingInvite = self.client?.inviteToConversation(invitee!, localMedia:self.localMedia!)
           { conversation, err in
         if err == nil {
+          conversation!.delegate = self
           self.conversation = conversation
         } else {
           print("error creating conversation")
