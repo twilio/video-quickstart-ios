@@ -1,4 +1,4 @@
-source 'https://github.com/CocoaPods/Specs.git'
+source 'https://github.com/twilio/cocoapod-specs'
 
-pod 'TwilioConversationsClient', :podspec => 'https://media.twiliocdn.com/sdk/ios/conversations/v0.21/TwilioConversationsClient.podspec'
-pod 'TwilioCommon', :podspec => 'https://media.twiliocdn.com/sdk/ios/common/v0.2/TwilioCommon.podspec'
+pod 'TwilioConversationsClient', '~> 0.21.5'
+pod 'TwilioCommon', '~> 0.2.0'
