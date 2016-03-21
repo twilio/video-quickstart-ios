@@ -92,16 +92,27 @@ class ViewController: UIViewController {
     self.client = TwilioConversationsClient(accessManager: self.accessManager!, delegate: self);
     self.client?.listen();
     
+    self.startPreview()
+
+    self.identityLabel.text = self.client?.identity
+  }
+
+  func startPreview() {
     // Setup local media preview
     self.localMedia = TWCLocalMedia(delegate: self)
     self.camera = self.localMedia?.addCameraTrack()
-    
+
     if((self.camera) != nil && Platform.isSimulator != true) {
-      self.camera?.videoTrack?.attach(self.localMediaView)
-      self.camera?.videoTrack?.delegate = self;
+      self.camera!.videoTrack?.attach(self.localMediaView)
+      self.camera!.videoTrack?.delegate = self;
+
+      // Start the preview.
+      self.camera!.startPreview();
+      self.localMediaView!.addSubview((self.camera!.previewView)!)
+      self.camera!.previewView?.frame = self.localMediaView!.bounds
+      self.camera!.previewView?.contentMode = .ScaleAspectFit
+      self.camera!.previewView?.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
     }
-    
-    self.identityLabel.text = self.client?.identity
   }
 
   // MARK: UI Controls
@@ -199,6 +210,9 @@ extension ViewController: TWCConversationDelegate {
   
   func conversationEnded(conversation: TWCConversation) {
     self.navigationItem.title = "no call connected"
+
+    // Restart the preview.
+    self.startPreview()
   }
 }
 
