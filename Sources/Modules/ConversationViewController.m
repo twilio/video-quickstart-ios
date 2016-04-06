@@ -54,8 +54,8 @@
         self.camera.videoTrack.delegate = self;
     }
 
-    /* For this demonstration, we always use Speaker audio output (vs. TWCAudioOutputReceiver) */
-    [TwilioConversationsClient setAudioOutput:TWCAudioOutputSpeaker];
+    /* For this demonstration, we just use the default audio output. */
+    [TwilioConversationsClient setAudioOutput:TWCAudioOutputDefault];
 }
 
 - (void)didReceiveMemoryWarning {
