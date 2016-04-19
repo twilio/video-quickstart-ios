@@ -41,8 +41,8 @@
 }
 
 - (void)listenForInvites {
-    /* TWCLogLevelDisabled, TWCLogLevelError, TWCLogLevelWarning, TWCLogLevelInfo, TWCLogLevelDebug, TWCLogLevelVerbose  */
-    [TwilioConversationsClient setLogLevel:TWCLogLevelError];
+    /* TWCLogLevelOff, TWCLogLevelFatal, TWCLogLevelError, TWCLogLevelWarning, TWCLogLevelInfo, TWCLogLevelDebug, TWCLogLevelTrace, TWCLogLevelAll  */
+    [TwilioConversationsClient setLogLevel:TWCLogLevelWarning];
     
     self.listeningStatusLabel.text = @"Attempting to listen for Invites...";
     if (!self.conversationsClient) {
