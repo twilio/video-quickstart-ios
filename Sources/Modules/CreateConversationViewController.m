@@ -8,6 +8,7 @@
 #import "AppDelegate.h"
 #import "ConversationViewController.h"
 #import <TwilioConversationsClient/TwilioConversationsClient.h>
+#import <TwilioCommon/TwilioCommon.h>
 
 @interface CreateConversationViewController () <TwilioConversationsClientDelegate, TWCConversationDelegate, TwilioAccessManagerDelegate, UIAlertViewDelegate>
 
