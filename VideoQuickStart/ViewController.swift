@@ -8,6 +8,9 @@
 
 import UIKit
 
+import TwilioConversationsClient
+import TwilioCommon.TwilioAccessManager
+
 class ViewController: UIViewController {
   // MARK: View Controller Members
   
