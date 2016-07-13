@@ -300,7 +300,6 @@
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = ObjCVideoQuickstart/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ObjCVideoQuickstart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -313,7 +312,6 @@
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = ObjCVideoQuickstart/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ObjCVideoQuickstart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
