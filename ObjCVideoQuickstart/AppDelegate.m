@@ -1,9 +1,13 @@
 //
 //  AppDelegate.m
-//  Twilio Video - Conversations Quickstart
-//
+//  Twilio Video Conversations Quickstart - Objective C
+
 
 #import "AppDelegate.h"
+
+@interface AppDelegate ()
+
+@end
 
 @implementation AppDelegate
 
