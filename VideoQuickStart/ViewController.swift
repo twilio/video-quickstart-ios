@@ -102,7 +102,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN") {
-            accessToken = TokenUtils.fetchToken(url: tokenUrl)
+            do {
+                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
+            } catch {
+                let message = "Failed to fetch access token"
+                logMessage(messageText: message)
+                return
+            }
         }
         
         // Creating a video client with the use of the access token.
@@ -146,14 +152,15 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBAction func toggleMic(sender: AnyObject) {
         if ((self.localMedia?.audioTracks.count)! > 0) {
             self.localMedia?.audioTracks[0].isEnabled = !(self.localMedia?.audioTracks[0].isEnabled)!
+            
+            // toggle the button title
             if (self.localMedia?.audioTracks[0].isEnabled == true) {
-                self.micButton.setImage(UIImage.init(named: "Muted"), for: .normal)
+                self.micButton.setTitle("Mute", for: .normal)
             } else {
-                self.micButton.setImage(UIImage.init(named: "Unmuted"), for: .normal)
+                self.micButton.setTitle("Unmute", for: .normal)
             }
         }
     }
-    
     
     // Reset the client ui status
     func toggleView() {
@@ -195,7 +202,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
 extension ViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
         
-        // At present app only supports rendering one Participant at a time.
+        // // At the moment, this example only supports rendering one Participant at a time.
         
         logMessage(messageText: "Connected to room \(room.name)")
         

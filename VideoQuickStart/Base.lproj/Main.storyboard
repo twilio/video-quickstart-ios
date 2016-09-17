@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -16,7 +17,7 @@
                         <viewControllerLayoutGuide type="bottom" id="tZu-uw-hgi"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="3Bh-pO-6uY">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3if-kg-Wlo" userLabel="RemoteView">
@@ -27,23 +28,12 @@
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rwp-9E-VzS" userLabel="Mic Button">
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="60" id="QMt-3K-tlE"/>
-                                    <constraint firstAttribute="height" constant="60" id="Zj7-mh-UC4"/>
-                                </constraints>
-                                <state key="normal" image="Muted">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="toggleMicWithSender:" destination="jSN-F6-Q4K" eventType="touchUpInside" id="WeT-d9-6OE"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jgR-Qy-dC6">
                                 <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="UVt-YW-O4F"/>
                                 </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <state key="normal" title="Connect">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -123,12 +113,28 @@
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="krA-sT-Z3g">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rwp-9E-VzS" userLabel="Mic Button">
+                                <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="60" id="DiQ-eB-MAY"/>
-                                    <constraint firstAttribute="height" constant="60" id="hh5-kb-2iW"/>
+                                    <constraint firstAttribute="width" constant="80" id="QMt-3K-tlE"/>
+                                    <constraint firstAttribute="height" constant="44" id="Zj7-mh-UC4"/>
                                 </constraints>
-                                <state key="normal" backgroundImage="Hangup">
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <state key="normal" title="Mute">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="toggleMicWithSender:" destination="jSN-F6-Q4K" eventType="touchUpInside" id="WeT-d9-6OE"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="krA-sT-Z3g">
+                                <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="80" id="DiQ-eB-MAY"/>
+                                    <constraint firstAttribute="height" constant="44" id="hh5-kb-2iW"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <state key="normal" title="Disconnect">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
@@ -141,19 +147,19 @@
                             <constraint firstItem="jgR-Qy-dC6" firstAttribute="top" secondItem="Zud-AS-DEE" secondAttribute="bottom" constant="21" id="0Am-2H-kE1"/>
                             <constraint firstItem="3if-kg-Wlo" firstAttribute="top" secondItem="8oD-ke-cGW" secondAttribute="bottom" id="0r4-Df-8Yo"/>
                             <constraint firstItem="krA-sT-Z3g" firstAttribute="bottom" secondItem="EzF-II-Eia" secondAttribute="bottom" id="1E1-8d-LeR"/>
-                            <constraint firstItem="krA-sT-Z3g" firstAttribute="leading" secondItem="3Bh-pO-6uY" secondAttribute="leadingMargin" id="4jO-qh-yH2"/>
+                            <constraint firstItem="krA-sT-Z3g" firstAttribute="leading" secondItem="3Bh-pO-6uY" secondAttribute="leadingMargin" constant="-5" id="4jO-qh-yH2"/>
                             <constraint firstItem="7dZ-Ur-uSj" firstAttribute="top" secondItem="Zud-AS-DEE" secondAttribute="bottom" id="AaN-mH-AYD"/>
+                            <constraint firstItem="rwp-9E-VzS" firstAttribute="bottom" secondItem="EzF-II-Eia" secondAttribute="baseline" id="CP6-bn-3PP"/>
                             <constraint firstItem="jgR-Qy-dC6" firstAttribute="top" secondItem="EkL-i8-cDP" secondAttribute="bottom" constant="16" id="FAy-WH-Wvc"/>
                             <constraint firstAttribute="leadingMargin" secondItem="7dZ-Ur-uSj" secondAttribute="leading" id="OQz-Cn-mbU"/>
                             <constraint firstItem="ebq-ja-6iU" firstAttribute="leading" secondItem="3Bh-pO-6uY" secondAttribute="leading" id="OWm-Gg-PVO"/>
+                            <constraint firstItem="rwp-9E-VzS" firstAttribute="leading" secondItem="krA-sT-Z3g" secondAttribute="trailing" constant="10" id="Sxy-CE-DSM"/>
                             <constraint firstItem="Zud-AS-DEE" firstAttribute="centerY" secondItem="3Bh-pO-6uY" secondAttribute="centerY" constant="-40" id="W6X-SU-S4S"/>
                             <constraint firstItem="EkL-i8-cDP" firstAttribute="leading" secondItem="Zud-AS-DEE" secondAttribute="trailing" constant="21" id="Xef-61-OpD"/>
                             <constraint firstAttribute="leadingMargin" secondItem="jgR-Qy-dC6" secondAttribute="leading" id="bOl-NA-2zy"/>
-                            <constraint firstItem="rwp-9E-VzS" firstAttribute="baseline" secondItem="EzF-II-Eia" secondAttribute="baseline" id="coQ-Lc-06w"/>
                             <constraint firstAttribute="trailingMargin" secondItem="jgR-Qy-dC6" secondAttribute="trailing" id="dqW-B2-5zF"/>
                             <constraint firstAttribute="trailing" secondItem="ebq-ja-6iU" secondAttribute="trailing" id="eiL-ob-cD1"/>
                             <constraint firstItem="tZu-uw-hgi" firstAttribute="top" secondItem="3if-kg-Wlo" secondAttribute="bottom" id="elL-tm-a5C"/>
-                            <constraint firstItem="rwp-9E-VzS" firstAttribute="leading" secondItem="krA-sT-Z3g" secondAttribute="trailing" constant="30" id="emO-uA-NDd"/>
                             <constraint firstItem="tZu-uw-hgi" firstAttribute="top" secondItem="EzF-II-Eia" secondAttribute="bottom" constant="10" id="ig1-ch-peS"/>
                             <constraint firstAttribute="trailingMargin" secondItem="EkL-i8-cDP" secondAttribute="trailing" id="lhs-bL-0xl"/>
                             <constraint firstAttribute="trailingMargin" secondItem="7dZ-Ur-uSj" secondAttribute="trailing" id="nNa-6o-3I1"/>
@@ -182,8 +188,4 @@
             <point key="canvasLocation" x="322.5" y="367.5"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="Hangup" width="56" height="56"/>
-        <image name="Muted" width="208" height="208"/>
-    </resources>
 </document>
