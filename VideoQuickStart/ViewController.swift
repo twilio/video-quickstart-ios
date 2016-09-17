@@ -2,7 +2,6 @@
 //  ViewController.swift
 //  VideoQuickStart
 //
-//  Created by Piyush Tank on 9/15/16.
 //  Copyright © 2016 Twilio. All rights reserved.
 //
 
@@ -39,6 +38,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var roomTextField: UITextField!
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
+    @IBOutlet weak var micButton: UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,8 +49,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Preview our local camera track in the local video preview view.
         self.startPreview()
         
-        // Disconnect button will be displayed when client is connected to a room.
+        // Disconnect and mic button will be displayed when client is connected to a room.
         self.disconnectButton.isHidden = true
+        self.micButton.isHidden = true
         
         self.roomTextField.delegate = self;
         
@@ -67,12 +68,12 @@ class ViewController: UIViewController, UITextFieldDelegate {
         camera = TVICameraCapturer()
         localVideoTrack = localMedia?.addVideoTrack(true, capturer: camera!)
         if (localVideoTrack == nil) {
-            messageLabel.text = "Failed to add video track"
+            logMessage(messageText: "Failed to add video track")
         } else {
             // Attach view to video track for local preview
             localVideoTrack!.attach(self.previewView)
             
-            messageLabel.text = "Video track added to localMedia"
+            logMessage(messageText: "Video track added to localMedia")
             
             // We will flip camera on tap.
             let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
@@ -108,7 +109,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         if (client == nil) {
             client = TVIVideoClient(token: accessToken)
             if (client == nil) {
-                messageLabel.text = "Failed to create video client"
+                logMessage(messageText: "Failed to create video client")
                 return;
             }
         }
@@ -131,7 +132,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // Attempting to connect to room with connect options
         room = client?.connect(with: connectOptions, delegate: self)
         
-        messageLabel.text = "Attempting to connect to room \(self.roomTextField.text)"
+        logMessage(messageText: "Attempting to connect to room \(self.roomTextField.text)")
         
         self.toggleView()
         self.dismissKeyboard()
@@ -139,7 +140,18 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func disconnect(sender: AnyObject) {
         self.room!.disconnect()
-        messageLabel.text = "Attempting to disconnect from room \(room!.name)"
+        logMessage(messageText: "Attempting to disconnect from room \(room!.name)")
+    }
+    
+    @IBAction func toggleMic(sender: AnyObject) {
+        if ((self.localMedia?.audioTracks.count)! > 0) {
+            self.localMedia?.audioTracks[0].isEnabled = !(self.localMedia?.audioTracks[0].isEnabled)!
+            if (self.localMedia?.audioTracks[0].isEnabled == true) {
+                self.micButton.setImage(UIImage.init(named: "Muted"), for: .normal)
+            } else {
+                self.micButton.setImage(UIImage.init(named: "Unmuted"), for: .normal)
+            }
+        }
     }
     
     
@@ -150,6 +162,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         self.disconnectButton.isHidden = !self.disconnectButton.isHidden
         self.roomLine.isHidden = !self.roomLine.isHidden
         self.roomLabel.isHidden = !self.roomLabel.isHidden
+        self.micButton.isHidden = !self.micButton.isHidden
+        UIApplication.shared.isIdleTimerDisabled = !UIApplication.shared.isIdleTimerDisabled
     }
     
     func dismissKeyboard() {
@@ -162,12 +176,28 @@ class ViewController: UIViewController, UITextFieldDelegate {
         self.connect(sender: textField)
         return true;
     }
+    
+    func cleanupRemoteParticipant() {
+        if ((self.participant) != nil) {
+            if ((self.participant?.media.videoTracks.count)! > 0) {
+                self.participant?.media.videoTracks[0].detach(self.remoteView)
+            }
+        }
+        self.participant = nil
+    }
+    
+    func logMessage(messageText: String) {
+        messageLabel.text = messageText
+    }
 }
 
-//MARK: TVIRoomDelegate
+// MARK: TVIRoomDelegate
 extension ViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
-        messageLabel.text = "Connected to room \(room.name)"
+        
+        // At present app only supports rendering one Participant at a time.
+        
+        logMessage(messageText: "Connected to room \(room.name)")
         
         if (room.participants.count > 0) {
             self.participant = room.participants[0]
@@ -176,15 +206,16 @@ extension ViewController : TVIRoomDelegate {
     }
     
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
-        messageLabel.text = "Disconncted from room \(room.name), error = \(error)"
-        self.participant = nil
+        logMessage(messageText: "Disconncted from room \(room.name), error = \(error)")
+        
+        self.cleanupRemoteParticipant()
         self.room = nil
         
         self.toggleView()
     }
     
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
-        messageLabel.text = "Failed to connect to room with error"
+        logMessage(messageText: "Failed to connect to room with error")
         self.room = nil
         
         self.toggleView()
@@ -195,24 +226,21 @@ extension ViewController : TVIRoomDelegate {
             self.participant = participant
             self.participant?.delegate = self
         }
-        messageLabel.text = "Room \(room.name), Participant \(participant.identity) connected"
-
+       logMessage(messageText: "Room \(room.name), Participant \(participant.identity) connected")
     }
     
     func room(_ room: TVIRoom, participantDidDisconnect participant: TVIParticipant) {
         if (self.participant == participant) {
-            participant.media.videoTracks[0].detach(self.remoteView)
-            self.participant = nil
+            cleanupRemoteParticipant()
         }
-        messageLabel.text = "Room \(room.name), Participant \(participant.identity) disconnected"
-
+        logMessage(messageText: "Room \(room.name), Participant \(participant.identity) disconnected")
     }
 }
 
-//MARK: TVIParticipantDelegate
+// MARK: TVIParticipantDelegate
 extension ViewController : TVIParticipantDelegate {
     func participant(_ participant: TVIParticipant, addedVideoTrack videoTrack: TVIVideoTrack) {
-        messageLabel.text = "Participant \(participant.identity) added video track"
+        logMessage(messageText: "Participant \(participant.identity) added video track")
 
         if (self.participant == participant) {
             videoTrack.attach(self.remoteView)
@@ -220,7 +248,7 @@ extension ViewController : TVIParticipantDelegate {
     }
     
     func participant(_ participant: TVIParticipant, removedVideoTrack videoTrack: TVIVideoTrack) {
-        messageLabel.text = "Participant \(participant.identity) removed video track"
+        logMessage(messageText: "Participant \(participant.identity) removed video track")
 
         if (self.participant == participant) {
             videoTrack.detach(self.remoteView)
@@ -228,12 +256,12 @@ extension ViewController : TVIParticipantDelegate {
     }
     
     func participant(_ participant: TVIParticipant, addedAudioTrack audioTrack: TVIAudioTrack) {
-        messageLabel.text = "Participant \(participant.identity) added audio track"
+        logMessage(messageText: "Participant \(participant.identity) added audio track")
 
     }
     
     func participant(_ participant: TVIParticipant, removedAudioTrack audioTrack: TVIAudioTrack) {
-        messageLabel.text = "Participant \(participant.identity) removed audio track"
+        logMessage(messageText: "Participant \(participant.identity) removed audio track")
     }
     
     func participant(_ participant: TVIParticipant, enabledTrack track: TVITrack) {
@@ -243,7 +271,7 @@ extension ViewController : TVIParticipantDelegate {
         } else {
             type = "audio"
         }
-        messageLabel.text = "Participant \(participant.identity) enabled \(type) track"
+        logMessage(messageText: "Participant \(participant.identity) enabled \(type) track")
     }
     
     func participant(_ participant: TVIParticipant, disabledTrack track: TVITrack) {
@@ -253,6 +281,6 @@ extension ViewController : TVIParticipantDelegate {
         } else {
             type = "audio"
         }
-        messageLabel.text = "Participant \(participant.identity) disabled \(type) track"
+        logMessage(messageText: "Participant \(participant.identity) disabled \(type) track")
     }
 }

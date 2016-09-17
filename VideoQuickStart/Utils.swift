@@ -2,7 +2,6 @@
 //  Utils.swift
 //  VideoQuickStart
 //
-//  Created by Piyush Tank on 9/15/16.
 //  Copyright © 2016 Twilio. All rights reserved.
 //
 

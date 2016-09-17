@@ -2,7 +2,6 @@
 //  AppDelegate.swift
 //  VideoQuickStart
 //
-//  Created by Kevin Whinnery on 12/16/15.
 //  Copyright © 2015 Twilio. All rights reserved.
 //
 
@@ -16,6 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func application(_ application: UIApplication,
       didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
     // Override point for customization after application launch.
+    
     return true
   }
 
