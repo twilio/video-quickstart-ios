@@ -164,6 +164,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     // Reset the client ui status
     func toggleView() {
+        self.micButton.setTitle("Mute", for: .normal)
+
         self.roomTextField.isHidden = !self.roomTextField.isHidden
         self.connectButton.isHidden = !self.connectButton.isHidden
         self.disconnectButton.isHidden = !self.disconnectButton.isHidden
