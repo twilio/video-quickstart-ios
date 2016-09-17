@@ -46,8 +46,12 @@ class ViewController: UIViewController, UITextFieldDelegate {
         // LocalMedia represents the collection of tracks that we are sending to other Participants from our VideoClient.
         localMedia = TVILocalMedia()
         
-        // Preview our local camera track in the local video preview view.
-        self.startPreview()
+        if PlatformUtils.isSimulator {
+            self.previewView.removeFromSuperview()
+        } else {
+            // Preview our local camera track in the local video preview view.
+            self.startPreview()
+        }
         
         // Disconnect and mic button will be displayed when client is connected to a room.
         self.disconnectButton.isHidden = true
@@ -129,9 +133,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
             // We will set the prepared local media in connect options.
             builder.localMedia = self.localMedia;
             
-            // Room where where client will attempt to connect to. Please note that if you pass an empty room `name`, 
-            // client will create a room for you. You can get room's name/sid by quierrying name property on Room 
-            // `connect` API returns.
+            // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty 
+            // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             builder.name = self.roomTextField.text
         }
         
