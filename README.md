@@ -20,15 +20,15 @@ Looking for Objective-C instead? [Check out this application](https://github.com
 
 This quick start will help you get video chat integrated directly into your iOS applications using Twilio's Video SDK. This quick start is for Swift developers - if your app uses Objective-C, check out the [Twilio Video Quick Start for Objective-C](https://github.com/twilio/video-quickstart-objc). 
 
-The quick start sample is devevloped using Swift 3. You will need XCode verion >= 8.0 to run the applicaiton.
+The quick start sample is written in Swift 3.0. You will need at least Xcode 8.0 in order to run the application.
 
 Inside this quick start project, you will find a View Controller that contains basic functionality necessary to show two video streams on one iOS screen - one video stream for your phone's video camera, and one for a remote video stream.
 
-You'll see how to set up key classes like TVIVideoClient, TVIRoom, TVILocalMedia, TVICameraCapturer, TVIVideoTrack, TVIAudioTrack, TVILocalParticipant and TVIParticipant. Some of these Twilio classes have related delegate protocols that the ViewController implements. This will get you all set up to implement a basic video chat in your own app.
+You'll see how how to set up key classes like TVIVideoClient, TVIRoom, TVIParticipant, TVILocalMedia, and TVICameraCapturer. The ViewController implements the TVIRoomDelegate, and TVIParticipantDelegate protocols in order to display remote Participant video on screen. If you are using an iOS device then video from the local camera will be displayed as well.
 
 ## Prerequisites
 
-This project uses Apple's Swift programming language 3.0 for iOS, and the only supported way to develop iOS apps is on an Apple computer running OS X and XCode. We have tested this application with the latest versions of iOS (9.3.1) and XCode (8.0) at the time of this writing.
+This project uses Apple's Swift programming language 3.0 for iOS, and the only supported way to develop iOS apps is on an Apple computer running OS X and XCode. We have tested this application with the latest versions of iOS (10.0) and XCode (8.0) at the time of this writing.
 
 You do not need to have an Apple iPhone, iPod Touch, or iPad for testing. You can use the iOS Simulator that comes with XCode to do your testing, but the local video camera feed in the app will not work. If you have an iOS device, you can now run apps from XCode on your device without a paid developer account.
 
