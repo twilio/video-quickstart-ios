@@ -6,9 +6,9 @@ Looking for Objective-C instead? [Check out this application](https://github.com
 
 1) Create a Twilio Video [Configuration Profile](https://www.twilio.com/user/account/video/profiles). If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio).
 
-2) Download this project and run `pod install` to install the Twilio frameworks. Open VideoQuickstart.xcworkspace in XCode
+2) Download this project and run `pod install` to install TwilioVideo.framework. Open VideoQuickstart.xcworkspace in Xcode
 
-3) Get an access token [Generate an Access Token](https://www.twilio.com/user/account/video/dev-tools/testing-tools). Pick your identity (such as Bob). Leave this web page open, because you'll use it as the other side of the video chat.
+3) Generate an [Access Token](https://www.twilio.com/user/account/video/dev-tools/testing-tools). Pick your identity (such as Bob). Leave this web page open, because you'll use it as the other side of the video chat.
 
 4) Paste the access token into ViewController.swift.
 
@@ -20,37 +20,35 @@ Looking for Objective-C instead? [Check out this application](https://github.com
 
 This quick start will help you get video chat integrated directly into your iOS applications using Twilio's Video SDK. This quick start is for Swift developers - if your app uses Objective-C, check out the [Twilio Video Quick Start for Objective-C](https://github.com/twilio/video-quickstart-objc). 
 
-The quick start sample is written in Swift 3.0. You will need at least Xcode 8.0 in order to run the application.
-
-Inside this quick start project, you will find a View Controller that contains basic functionality necessary to show two video streams on one iOS screen - one video stream for your phone's video camera, and one for a remote video stream.
+This sample app is written in Swift 3.0. You will need at least Xcode 8.0 in order to run the application.
 
 You'll see how how to set up key classes like TVIVideoClient, TVIRoom, TVIParticipant, TVILocalMedia, and TVICameraCapturer. The ViewController implements the TVIRoomDelegate, and TVIParticipantDelegate protocols in order to display remote Participant video on screen. If you are using an iOS device then video from the local camera will be displayed as well.
 
 ## Prerequisites
 
-This project uses Apple's Swift programming language 3.0 for iOS, and the only supported way to develop iOS apps is on an Apple computer running OS X and XCode. We have tested this application with the latest versions of iOS (10.0) and XCode (8.0) at the time of this writing.
+This project uses Apple's Swift programming language 3.0 for iOS, and the only supported way to develop iOS apps is on an Apple computer running OS X and Xcode. We have tested this application with the latest versions of iOS (10.0) and Xcode (8.0) at the time of this writing.
 
-You do not need to have an Apple iPhone, iPod Touch, or iPad for testing. You can use the iOS Simulator that comes with XCode to do your testing, but the local video camera feed in the app will not work. If you have an iOS device, you can now run apps from XCode on your device without a paid developer account.
+You do not need to have an Apple iPhone, iPod Touch, or iPad for testing. You can use the iOS Simulator that comes with Xcode to do your testing, but local video will not be shared. If you have an iOS device, you can now run apps from Xcode on your device without a paid developer account.
 
 ## Twilio Library Setup for the Project
 
-You will need to add the Twilio Video library, and its dependency, the Twilio Commons library to your project for this quick start project to work. There are two different options for doing this:
+You will need to add the Twilio Video library to the project to compile and run. There are two different options for doing this:
 
 1) Using the [Cocoapods](https://cocoapods.org/) dependency management system. 
 
-2) Installing the Twilio frameworks yourself, using the directions on the [Twilio Video SDK Download Page](https://www.twilio.com/docs/api/video/sdks)
+2) Installing the Twilio Video framework yourself, using the directions on the [Twilio Video SDK Download Page](https://www.twilio.com/docs/api/video/sdks)
 
 You only need to do one or the other, not both!
 
 ### Using Cocoapods
 
-First, you will need to have Cocoapods installed on your Mac, so go ahead and do that if you haven't already - the directions are here: [Getting Started with Cocoapods](https://guides.cocoapods.org/using/getting-started.html). If you're not sure, type `pod --version` into a command line. 
+First, you will need to have Cocoapods 1.0.0+ installed on your Mac, so go ahead and do that if you haven't already - the directions are here: [Getting Started with Cocoapods](https://guides.cocoapods.org/using/getting-started.html). If you're not sure, type `pod --version` into a command line.
 
-Next, just run `pod install` from the command line in the top level directory of this project. Cocoapods will install the Twilio libraries and then set up a .xcworkspace file that you will use to run your project from now on. 
+Next, just run `pod install` from the command line in the top level directory of this project. Cocoapods will install the Twilio library and then set up a .xcworkspace file that you will use to run your project from now on. 
 
-### Installing Twilio Frameworks
+### Manual Installation
 
-Download the latest version of the Twilio Video [Twilio Video SDK Download Page](https://www.twilio.com/docs/api/video/sdks). After uncompressing those download files, drag and drop the framework (TwilioCommon.framework) onto your project > Target > Embedded Binaries in XCode. Make sure that the checkbox next to the VideoQuickstart target is checked. You may want to copy the files if needed into your project as well, so you aren't referencing frameworks from your Downloads folder.
+Download the latest version of Twilio Video from the [SDK Download Page](https://www.twilio.com/docs/api/video/sdks). After uncompressing the downloaded files, drag and drop the framework (TwilioVideo.framework) into your project > Target > Embedded Binaries in Xcode. Make sure that the checkbox next to the VideoQuickStart target is checked. You may want to select the "Copy items if needed" option so you aren't referencing frameworks in your Downloads folder.
 
 ## Access Tokens and Servers
 
