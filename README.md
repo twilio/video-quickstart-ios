@@ -8,7 +8,7 @@ Looking for Objective-C instead? [Check out this application](https://github.com
 
 2) Download this project and run `pod install` to install TwilioVideo.framework. Open VideoQuickStart.xcworkspace in Xcode
 
-3) Generate an [Access Token](https://www.twilio.com/user/account/video/dev-tools/testing-tools). Pick your identity (such as Bob). Leave this web page open, because you'll use it as the other side of the video chat.
+3) Generate an [Access Token](https://www.twilio.com/console/video/dev-tools/testing-tools). Pick your identity (such as Bob). Leave this web page open, because you'll use it as the other side of the video chat.
 
 4) Paste the access token into ViewController.swift.
 
