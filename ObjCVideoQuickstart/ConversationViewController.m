@@ -16,6 +16,7 @@ TVICameraCapturerDelegate, TVIVideoTrackDelegate>
 @property (nonatomic, strong) TVIRoom *room;
 @property (nonatomic, strong) TVICameraCapturer *cameraCapturer;
 @property (nonatomic, strong) TVILocalVideoTrack *localVideoTrack;
+@property (nonatomic, strong) TVIParticipant *remoteParticipant;
 
 #pragma mark UI Element Outlets and handles
 @property (weak, nonatomic) IBOutlet UIView *localMediaView;
@@ -164,22 +165,40 @@ TVICameraCapturerDelegate, TVIVideoTrackDelegate>
 #pragma mark - TVIRoomDelegate methods
 
 - (void)didConnectToRoom:(TVIRoom *)room {
+    self.hangUpButton.enabled = true;
+    self.joinRoomBarButtonItem.enabled = false;
     self.localVideoTrack = [room.localParticipant.media addVideoTrack:true capturer:self.cameraCapturer];
     self.localVideoTrack.delegate = self;
     [self.localVideoTrack attach:self.localMediaView];
+    for (TVIParticipant *participant in room.participants) {
+        NSLog(@"Found %@ participant in the room",participant.identity);
+        if (self.remoteParticipant == nil) {
+            self.remoteParticipant = participant;
+            self.remoteParticipant.delegate = self;
+        }
+    }
 }
 
 - (void)room:(TVIRoom *)room participantDidConnect:(TVIParticipant *)participant {
     NSLog(@"Participant did connect:%@",participant.identity);
-    participant.delegate = self;
+    if (self.remoteParticipant == nil) {
+        self.remoteParticipant = participant;
+        self.remoteParticipant.delegate = self;
+    }
 }
 
 - (void)room:(TVIRoom *)room participantDidDisconnect:(TVIParticipant *)participant {
     NSLog(@"Participant did disconnect:%@",participant.identity);
+    if (participant == self.remoteParticipant) {
+        participant.delegate = nil;
+        self.remoteParticipant = nil;
+    }
 }
 
 - (void)room:(TVIRoom *)room didDisconnectWithError:(NSError *)error {
     NSLog(@"%@",@"Did disconnect from room");
+    self.hangUpButton.enabled = false;
+    self.joinRoomBarButtonItem.enabled = true;
 }
 
 - (void)room:(TVIRoom *)room didFailToConnectWithError:(NSError *)error {
