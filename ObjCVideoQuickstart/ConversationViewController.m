@@ -5,24 +5,24 @@
 
 #import "ConversationViewController.h"
 
-#import <TwilioCommon/TwilioCommon.h>
-#import <TwilioConversationsClient/TwilioConversationsClient.h>
+#import <TwilioVideo/TwilioVideo.h>
 
 
-@interface ConversationViewController ()<TWCConversationDelegate, TWCParticipantDelegate, TWCLocalMediaDelegate, TWCVideoTrackDelegate, TwilioAccessManagerDelegate, TwilioConversationsClientDelegate>
+@interface ConversationViewController ()<TVIParticipantDelegate, TVIRoomDelegate,
+    TVICameraCapturerDelegate, TVIVideoTrackDelegate>
 
-@property (nonatomic, strong) TwilioAccessManager *accessManager;
-@property (nonatomic, strong) TwilioConversationsClient *conversationsClient;
-@property (nonatomic, strong) TWCLocalMedia *localMedia;
-@property (nonatomic, strong) TWCConversation *conversation;
-@property (nonatomic, strong) TWCCameraCapturer *camera;
+#pragma mark Video SDK components
+@property (nonatomic, strong) TVIVideoClient *videoClient;
+@property (nonatomic, strong) TVIRoom *room;
+@property (nonatomic, strong) TVICameraCapturer *cameraCapturer;
+@property (nonatomic, strong) TVILocalVideoTrack *localVideoTrack;
 
-
+#pragma mark UI Element Outlets and handles
 @property (weak, nonatomic) IBOutlet UIView *localMediaView;
 @property (weak, nonatomic) IBOutlet UIView *remoteMediaView;
 @property (weak, nonatomic) IBOutlet UIButton *hangUpButton;
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;
-@property (weak, nonatomic) IBOutlet UIBarButtonItem *inviteBarButtonItem;
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *joinRoomBarButtonItem;
 
 @end
 
@@ -31,16 +31,16 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   // Do any additional setup after loading the view.
-  
+    
   NSString *accessToken = @"TWILIO_ACCESS_TOKEN";
-  NSURL *tokenURL = [NSURL URLWithString:@"http://localhost:8000/token.php"];
+  NSURL *tokenURL = [NSURL URLWithString:@"TOKEN_URL"];
   
   /**
    * Providing your own access token? Replace TWILIO_ACCESS_TOKEN
    * above this with your token.
    */
   
-  [self initializeClientWithAccessToken:accessToken];
+  //[self initializeClientWithAccessToken:accessToken];
   
   /**
    * Using the PHP server to provide access tokens? Make sure the tokenURL is
@@ -49,7 +49,7 @@
    *
    * Uncomment out the following line of code:
    */
-  //[self retrieveAccessTokenFromURL:tokenURL];
+  [self retrieveAccessTokenFromURL:tokenURL];
   
 }
 
@@ -73,7 +73,7 @@
       NSString *identity = json[@"identity"];
       NSLog(@"Logged in as %@",identity);
       
-      //initialize the Twilio Conversations Client on the main thread
+      //initialize the Twilio Video Client on the main thread
       dispatch_async(dispatch_get_main_queue(), ^{
         self.navigationItem.title = identity;
         
@@ -91,54 +91,15 @@
 }
 
 - (void)initializeClientWithAccessToken:(NSString*)accessToken {
-  self.accessManager = [TwilioAccessManager accessManagerWithToken:accessToken delegate:self];
-  self.conversationsClient = [TwilioConversationsClient conversationsClientWithAccessManager:self.accessManager delegate:self];
-  [self.conversationsClient listen];
-  [self startPreview];
+  self.videoClient = [TVIVideoClient clientWithToken:accessToken];
+  #if !TARGET_IPHONE_SIMULATOR
+    [self startPreview];
+  #endif
   
 }
 
 - (void) startPreview {
-  self.localMedia = [[TWCLocalMedia alloc] initWithDelegate:self];
-  
-#if !TARGET_IPHONE_SIMULATOR
-  /* Microphone is enabled by default, to enable Camera, we first create a Camera capturer */
-  self.camera = [self.localMedia addCameraTrack];
-#else
-  //disable camera controls if on the simulator
-  
-#endif
-  
-  if (self.camera) {
-    [self.camera.videoTrack attach:self.localMediaView];
-    self.camera.videoTrack.delegate = self;
-    
-    [self.camera startPreview];
-    [self.localMediaView addSubview:self.camera.previewView];
-    self.camera.previewView.frame = self.localMediaView.bounds;
-    self.camera.previewView.contentMode = UIViewContentModeScaleAspectFit;
-    self.camera.previewView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    
-  }
-  
-  /* For this demonstration, we just use the default audio output. */
-  [TwilioConversationsClient setAudioOutput:TWCAudioOutputDefault];
-}
-
-#pragma mark - Invite a User
-
-- (void) inviteAUser:(NSString*)identity {
-  [self.conversationsClient inviteToConversation:identity localMedia:self.localMedia handler:^(TWCConversation * _Nullable conversation, NSError * _Nullable error) {
-    if (conversation != nil) {
-      self.conversation = conversation;
-      self.conversation.delegate = self;
-    } else {
-      NSString *errorMessage = [NSString stringWithFormat:@"Error inviting user(%@): %@", identity, [error localizedDescription]];
-      [self displayErrorMessage:errorMessage];
-      NSLog(@"%@",errorMessage);
-    }
-    
-  }];
+  self.cameraCapturer = [[TVICameraCapturer alloc] initWithDelegate:self source:TVIVideoCaptureSourceFrontCamera];
 }
 
 #pragma mark - Display an Error
@@ -154,101 +115,95 @@
 #pragma mark - Interface Builder Actions
 
 - (IBAction)hangUp:(id)sender {
-  [self.conversation disconnect];
+  [self.room disconnect];
 }
 
-- (IBAction)invite:(id)sender {
-  UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Invite" message:@"Invite one of your friends!" preferredStyle:UIAlertControllerStyleAlert];
+- (IBAction)joinRoom:(id)sender {
+  UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Join Room" message:@"Enter the name of the room you would like to connect to" preferredStyle:UIAlertControllerStyleAlert];
   [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-    textField.placeholder = @"Identity";
+    textField.placeholder = @"Room Name";
   }];
   UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-    UITextField *identityTextField = alertController.textFields.firstObject;
-    //invite the user to the conversation
-    if ([identityTextField.text length] > 0) {
-      [self inviteAUser:identityTextField.text];
+    UITextField *roomNameTextField = alertController.textFields.firstObject;
+    //join the room
+    if ([roomNameTextField.text length] > 0) {
+        NSString *roomName = roomNameTextField.text;
+        TVIConnectOptions *connectOptions = [TVIConnectOptions optionsWithBlock:^(TVIConnectOptionsBuilder * _Nonnull builder) {
+            builder.name = roomName;
+        }];
+        
+        self.room = [self.videoClient connectWithOptions:connectOptions delegate:self];
+        self.cameraCapturer.delegate = self;
+        
     }
   }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
   [alertController addAction:okAction];
+    [alertController addAction:cancelAction];
   [self presentViewController:alertController animated:true completion:nil];
 }
 
 
-#pragma mark - TwilioAccessManagerDelegate methods
-
-- (void) accessManagerTokenExpired:(TwilioAccessManager *)accessManager {
-  [self displayErrorMessage:@"Twilio Access Manager Token has expired."];
-  NSLog(@"Twilio Access Manager Token has expired.");
+#pragma mark - TVICameraCapturerDelegate methods
+- (void)cameraCapturer:(TVICameraCapturer *)capturer didStartWithSource:(TVIVideoCaptureSource)source {
+    NSLog(@"%@",@"Did start camera capture with source");
 }
 
-- (void) accessManager:(TwilioAccessManager *)accessManager error:(NSError *)error {
-  NSString *errorMessage = [NSString stringWithFormat:@"Twilio Access Manager Error: %@",[error localizedDescription]];
-  [self displayErrorMessage:errorMessage];
-  NSLog(@"%@",errorMessage);
+- (void)cameraCapturer:(TVICameraCapturer *)capturer didStopRunningWithError:(NSError *)error {
+    NSLog(@"%@",@"Camera capturer did stop running");
 }
 
-#pragma mark - TwilioConversationsClientDelegate methods
-
-- (void)conversationsClient:(TwilioConversationsClient *)conversationsClient didReceiveInvite:(TWCIncomingInvite *)invite {
-  
-  //automatically accept any invitations to chat - let's be sociable!
-  [invite acceptWithLocalMedia:self.localMedia completion:^(TWCConversation * _Nullable conversation, NSError * _Nullable error) {
-    self.conversation = conversation;
-    self.conversation.delegate = self;
-  }];
-  
+- (void)cameraCapturerWasInterrupted:(TVICameraCapturer *)capturer {
+    NSLog(@"%@",@"Camera Capturer was interrupted");
 }
 
-- (void)conversationsClient:(TwilioConversationsClient *)conversationsClient didFailToStartListeningWithError:(NSError *)error {
-  NSString *errorMessage = [NSString stringWithFormat:@"Twilio Conversations Client did fail to start listening - Error: %@",[error localizedDescription]];
-  [self displayErrorMessage:errorMessage];
-  NSLog(@"%@",errorMessage);
-  
+- (void)cameraCapturerPreviewDidStart:(TVICameraCapturer *)capturer {
+    NSLog(@"%@",@"Camera Capturer preview did start");
 }
 
-#pragma mark - TWCLocalMediaDelegate methods
+#pragma mark - TVIRoomDelegate methods
 
-- (void)localMedia:(TWCLocalMedia *)media didAddVideoTrack:(TWCVideoTrack *)videoTrack {
-  NSLog(@"Added local video track");
+- (void)didConnectToRoom:(TVIRoom *)room {
+    self.localVideoTrack = [room.localParticipant.media addVideoTrack:true capturer:self.cameraCapturer];
+    self.localVideoTrack.delegate = self;
+    [self.localVideoTrack attach:self.localMediaView];
 }
 
-#pragma mark - TWCConversationDelegate methods
-
-- (void)conversation:(TWCConversation *)conversation didConnectParticipant:(TWCParticipant *)participant {
-  self.statusLabel.text = [NSString stringWithFormat:@"Connected to: %@",participant.identity];
-  participant.delegate = self;
-  self.hangUpButton.enabled = YES;
+- (void)room:(TVIRoom *)room participantDidConnect:(TVIParticipant *)participant {
+    NSLog(@"Participant did connect:%@",participant.identity);
+    participant.delegate = self;
 }
 
-- (void)conversation:(TWCConversation *)conversation didDisconnectParticipant:(TWCParticipant *)participant {
-  self.statusLabel.text = [NSString stringWithFormat:@"Disconnected from: %@",participant.identity];
-  self.hangUpButton.enabled = NO;
+- (void)room:(TVIRoom *)room participantDidDisconnect:(TVIParticipant *)participant {
+    NSLog(@"Participant did disconnect:%@",participant.identity);
 }
 
-- (void)conversationEnded:(TWCConversation *)conversation {
-  self.statusLabel.text = @"Conversation Ended";
-  self.hangUpButton.enabled = NO;
+- (void)room:(TVIRoom *)room didDisconnectWithError:(NSError *)error {
+    NSLog(@"%@",@"Did disconnect from room");
 }
 
-#pragma mark - TWCParticipantDelegate methods
-
-- (void)participant:(TWCParticipant *)participant addedVideoTrack:(TWCVideoTrack *)videoTrack {
-  [videoTrack attach:self.remoteMediaView];
-  videoTrack.delegate = self;
-  
+- (void)room:(TVIRoom *)room didFailToConnectWithError:(NSError *)error {
+    NSLog(@"Did fail to connect with error: %@",error.localizedDescription);
 }
 
-- (void)participant:(TWCParticipant *)participant removedVideoTrack:(TWCVideoTrack *)videoTrack {
-  
+#pragma mark - TVIParticipantDelegate methods
+- (void)participant:(TVIParticipant *)participant addedVideoTrack:(TVIVideoTrack *)videoTrack {
+    NSLog(@"Participant %@ added a video track",participant.identity);
+    videoTrack.delegate = self;
+    [videoTrack attach:self.remoteMediaView];
 }
 
-#pragma mark - TWCVideoTrackDelegate methods
-
-- (void)videoTrack:(TWCVideoTrack *)track dimensionsDidChange:(CMVideoDimensions)dimensions
-{
-  NSLog(@"Dimensions changed to: %d x %d", dimensions.width, dimensions.height);
-  
-  [self.view setNeedsUpdateConstraints];
+- (void)participant:(TVIParticipant *)participant removedVideoTrack:(TVIVideoTrack *)videoTrack {
+    NSLog(@"Participant %@ removed a video track",participant.identity);
+    [videoTrack detach:self.remoteMediaView];
 }
+
+#pragma mark - TVIVideoTrackDelegate methods
+- (void)videoTrack:(TVIVideoTrack *)track dimensionsDidChange:(CMVideoDimensions)dimensions {
+    NSLog(@"Dimensions changed to: %d x %d", dimensions.width, dimensions.height);
+    [self.view setNeedsUpdateConstraints];
+
+}
+
 
 @end
