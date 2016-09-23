@@ -1,18 +1,18 @@
 # Twilio Video Quick Start for Swift
 
-Looking for Objective-C instead? [Check out this application](https://github.com/twilio/video-quickstart-objc).
+> NOTE: This application uses Twilio's new Programmable Video Rooms API, which is currently available under Developer Preview. If you're interested in trying out this new API, contact Programmable Video Product Management by emailing rbrazier@twilio.com and request access.
 
 ## Up and Running
 
-1) Create a Twilio Video [Configuration Profile](https://www.twilio.com/user/account/video/profiles). If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio).
+1) Download this project and run `pod install` to install TwilioVideo.framework. Open VideoQuickStart.xcworkspace in Xcode.
 
-2) Download this project and run `pod install` to install TwilioVideo.framework. Open VideoQuickStart.xcworkspace in Xcode
+2) Create a Twilio Video [Configuration Profile](https://www.twilio.com/user/account/video/profiles) in the Twilio Console. If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio).
 
-3) Generate an [Access Token](https://www.twilio.com/console/video/dev-tools/testing-tools). Pick your identity (such as Bob). Leave this web page open, because you'll use it as the other side of the video chat.
+3) Generate an [Access Token](https://www.twilio.com/console/video/dev-tools/testing-tools) in the Twilio Console. Pick a name for your user identity (such as "Alice"). Leave this web page open, because you'll use it as the other side of the video chat.
 
-4) Paste the access token into ViewController.swift.
+4) Copy and paste the access token into ViewController.swift.
 
-5) Run your app (preferably on an iOS device, but could be on the iOS simulator)
+5) Run your app (you'll need to use an iOS device if you want to capture video from a camera).
 
 6) On the same web page where you generated the token, scroll down the bottom, put in the username that you generated the access token for, and click Create Conversation. Your video conversation should start immediately! 
 
