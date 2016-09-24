@@ -30,7 +30,7 @@ This quick start will help you get video chat integrated directly into your iOS 
 
 This sample app is written in Swift 3.0. You will need at least Xcode 8.0 in order to run the application.
 
-Review the code to see how how to set up key classes like `TVIVideoClient`, `TVIRoom`, `TVIParticipant`, `TVILocalMedia`, and `TVICameraCapturer`. The ViewController implements the `TVIRoomDelegate`, and `TVIParticipantDelegate` protocols in order to display remote Participant video on screen. If you are using an iOS device then video from the local camera will be displayed as well.
+Review the code to see how how to set up key classes like `TVIVideoClient`, `TVIRoom`, `TVIParticipant`, `TVILocalMedia`, and `TVICameraCapturer`. The ViewController implements the `TVIRoomDelegate`, and `TVIParticipantDelegate` protocols in order to display remote Participant video on screen.
 
 ## Prerequisites
 
