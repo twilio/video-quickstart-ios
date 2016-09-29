@@ -117,7 +117,7 @@ class ViewController: UIViewController {
     
     @IBAction func toggleMic(sender: AnyObject) {
         if (self.localAudioTrack != nil) {
-            self.localAudioTrack?.isEnabled = !(self.localMedia?.audioTracks[0].isEnabled)!
+            self.localAudioTrack?.isEnabled = !(self.localAudioTrack?.isEnabled)!
             
             // Update the button title
             if (self.localAudioTrack?.isEnabled == true) {
