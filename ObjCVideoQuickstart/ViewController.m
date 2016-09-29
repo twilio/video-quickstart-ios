@@ -149,7 +149,9 @@
     // We will offer local audio and video when we connect to room.
     
     // Adding local audio track to localMedia
-    self.localAudioTrack = [self.localMedia addAudioTrack:YES];
+    if (!self.localAudioTrack) {
+        self.localAudioTrack = [self.localMedia addAudioTrack:YES];
+    }
     
     // Adding local video track to localMedia and starting local preview if it is not already started.
     if (self.localMedia.videoTracks.count == 0) {
