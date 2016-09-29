@@ -9,10 +9,9 @@
 /* Begin PBXBuildFile section */
 		283214941CD1307900F1AD80 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214931CD1307900F1AD80 /* main.m */; };
 		283214971CD1307900F1AD80 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214961CD1307900F1AD80 /* AppDelegate.m */; };
-		2832149D1CD1307900F1AD80 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2832149B1CD1307900F1AD80 /* Main.storyboard */; };
 		2832149F1CD1307900F1AD80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2832149E1CD1307900F1AD80 /* Assets.xcassets */; };
 		283214A21CD1307900F1AD80 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 283214A01CD1307900F1AD80 /* LaunchScreen.storyboard */; };
-		283214AB1CD1312F00F1AD80 /* ConversationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214AA1CD1312F00F1AD80 /* ConversationViewController.m */; };
+		283214AB1CD1312F00F1AD80 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214AA1CD1312F00F1AD80 /* ViewController.m */; };
 		283214C11CD3BDC400F1AD80 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 283214C01CD3BDC400F1AD80 /* libc++.tbd */; };
 		283214C31CD3BDCE00F1AD80 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283214C21CD3BDCE00F1AD80 /* SystemConfiguration.framework */; };
 		283214C51CD3BDDF00F1AD80 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283214C41CD3BDDF00F1AD80 /* CoreMedia.framework */; };
@@ -21,19 +20,33 @@
 		283214CB1CD3BDFF00F1AD80 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283214CA1CD3BDFF00F1AD80 /* AVFoundation.framework */; };
 		283214CD1CD3BE0700F1AD80 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283214CC1CD3BE0700F1AD80 /* VideoToolbox.framework */; };
 		283214CF1CD3BE0D00F1AD80 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283214CE1CD3BE0D00F1AD80 /* AudioToolbox.framework */; };
+		4BF377BC1D99C8F200AC0BA3 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BF377BB1D99C8F200AC0BA3 /* Utils.m */; };
+		4BF377C11D99F0D700AC0BA3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BF377BF1D99F0D700AC0BA3 /* Main.storyboard */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4BF377B91D95F02800AC0BA3 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		2832148F1CD1307900F1AD80 /* ObjCVideoQuickstart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjCVideoQuickstart.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		283214931CD1307900F1AD80 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		283214951CD1307900F1AD80 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		283214961CD1307900F1AD80 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		2832149C1CD1307900F1AD80 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2832149E1CD1307900F1AD80 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		283214A11CD1307900F1AD80 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		283214A31CD1307900F1AD80 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		283214A91CD1312F00F1AD80 /* ConversationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConversationViewController.h; sourceTree = "<group>"; };
-		283214AA1CD1312F00F1AD80 /* ConversationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConversationViewController.m; sourceTree = "<group>"; };
+		283214A91CD1312F00F1AD80 /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		283214AA1CD1312F00F1AD80 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		283214C01CD3BDC400F1AD80 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		283214C21CD3BDCE00F1AD80 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		283214C41CD3BDDF00F1AD80 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
@@ -42,6 +55,9 @@
 		283214CA1CD3BDFF00F1AD80 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		283214CC1CD3BE0700F1AD80 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		283214CE1CD3BE0D00F1AD80 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		4BF377BA1D99C8F200AC0BA3 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		4BF377BB1D99C8F200AC0BA3 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
+		4BF377C01D99F0D700AC0BA3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,11 +106,13 @@
 		283214911CD1307900F1AD80 /* ObjCVideoQuickstart */ = {
 			isa = PBXGroup;
 			children = (
-				283214A91CD1312F00F1AD80 /* ConversationViewController.h */,
-				283214AA1CD1312F00F1AD80 /* ConversationViewController.m */,
+				283214A91CD1312F00F1AD80 /* ViewController.h */,
+				283214AA1CD1312F00F1AD80 /* ViewController.m */,
+				4BF377BA1D99C8F200AC0BA3 /* Utils.h */,
+				4BF377BB1D99C8F200AC0BA3 /* Utils.m */,
 				283214951CD1307900F1AD80 /* AppDelegate.h */,
 				283214961CD1307900F1AD80 /* AppDelegate.m */,
-				2832149B1CD1307900F1AD80 /* Main.storyboard */,
+				4BF377BF1D99F0D700AC0BA3 /* Main.storyboard */,
 				2832149E1CD1307900F1AD80 /* Assets.xcassets */,
 				283214A01CD1307900F1AD80 /* LaunchScreen.storyboard */,
 				283214A31CD1307900F1AD80 /* Info.plist */,
@@ -121,6 +139,7 @@
 				2832148B1CD1307900F1AD80 /* Sources */,
 				2832148C1CD1307900F1AD80 /* Frameworks */,
 				2832148D1CD1307900F1AD80 /* Resources */,
+				4BF377B91D95F02800AC0BA3 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -142,6 +161,7 @@
 				TargetAttributes = {
 					2832148E1CD1307900F1AD80 = {
 						CreatedOnToolsVersion = 7.3;
+						DevelopmentTeam = SX5J6BN2KX;
 					};
 				};
 			};
@@ -170,7 +190,7 @@
 			files = (
 				283214A21CD1307900F1AD80 /* LaunchScreen.storyboard in Resources */,
 				2832149F1CD1307900F1AD80 /* Assets.xcassets in Resources */,
-				2832149D1CD1307900F1AD80 /* Main.storyboard in Resources */,
+				4BF377C11D99F0D700AC0BA3 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,29 +201,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				283214AB1CD1312F00F1AD80 /* ConversationViewController.m in Sources */,
+				283214AB1CD1312F00F1AD80 /* ViewController.m in Sources */,
 				283214971CD1307900F1AD80 /* AppDelegate.m in Sources */,
 				283214941CD1307900F1AD80 /* main.m in Sources */,
+				4BF377BC1D99C8F200AC0BA3 /* Utils.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		2832149B1CD1307900F1AD80 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2832149C1CD1307900F1AD80 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		283214A01CD1307900F1AD80 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
 				283214A11CD1307900F1AD80 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		4BF377BF1D99F0D700AC0BA3 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4BF377C01D99F0D700AC0BA3 /* Base */,
+			);
+			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -297,7 +318,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = ObjCVideoQuickstart/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ObjCVideoQuickstart;
@@ -309,7 +335,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = ObjCVideoQuickstart/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ObjCVideoQuickstart;
