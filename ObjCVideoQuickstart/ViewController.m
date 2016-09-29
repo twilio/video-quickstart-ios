@@ -14,6 +14,7 @@
 
 // Configure access token manually for testing in `ViewDidLoad`, if desired! Create one manually in the console.
 @property (nonatomic, strong) NSString *accessToken;
+@property (nonatomic, strong) NSString *tokenUrl;
 
 #pragma mark Video SDK components
 
@@ -27,41 +28,31 @@
 
 #pragma mark UI Element Outlets and handles
 
-@property (weak, nonatomic) IBOutlet UIView *remoteView;
-@property (weak, nonatomic) IBOutlet UIView *previewView;
-@property (weak, nonatomic) IBOutlet UIView *connectButton;
-@property (weak, nonatomic) IBOutlet UIButton *disconnectButton;
-@property (weak, nonatomic) IBOutlet UILabel *messageLabel;
-@property (weak, nonatomic) IBOutlet UITextField *roomTextField;
-@property (weak, nonatomic) IBOutlet UIButton *micButton;
-@property (weak, nonatomic) IBOutlet UILabel *roomLabel;
-@property (weak, nonatomic) IBOutlet UILabel *roomLine;
+@property (nonatomic, weak) IBOutlet UIView *remoteView;
+@property (nonatomic, weak) IBOutlet UIView *previewView;
+@property (nonatomic, weak) IBOutlet UIView *connectButton;
+@property (nonatomic, weak) IBOutlet UIButton *disconnectButton;
+@property (nonatomic, weak) IBOutlet UILabel *messageLabel;
+@property (nonatomic, weak) IBOutlet UITextField *roomTextField;
+@property (nonatomic, weak) IBOutlet UIButton *micButton;
+@property (nonatomic, weak) IBOutlet UILabel *roomLabel;
+@property (nonatomic, weak) IBOutlet UILabel *roomLine;
 
 @end
 
 @implementation ViewController
 
+#pragma mark - UIViewController
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    NSLog(@"version = %@",[TVIVideoClient version]);
     // Configure access token manually for testing, if desired! Create one manually in the console
-    self.accessToken = @"eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCIsICJjdHkiOiAidHdpbGlvLWZwYTt2PTEifQ.eyJpc3MiOiAiU0s2NzRiMTg4NjlmMTFmYWNjNjY1YTY1ZmQ0ZGRmMmY0ZiIsICJncmFudHMiOiB7InJ0YyI6IHsiY29uZmlndXJhdGlvbl9wcm9maWxlX3NpZCI6ICJWUzNmNzVlMGYxNGU3YzhiMjA5MzhmYzUwOTJlODJmMjNhIn0sICJpZGVudGl0eSI6ICJwdGFuayJ9LCAianRpIjogIlNLNjc0YjE4ODY5ZjExZmFjYzY2NWE2NWZkNGRkZjJmNGYtMTQ3NDkzNDQ1OSIsICJzdWIiOiAiQUM5NmNjYzkwNDc1M2IzMzY0ZjI0MjExZThkOTc0NmE5MyIsICJleHAiOiAxNDc0OTQxNjU5fQ.CuudtoC-SNNB5XjCbiC_O91I2mygN9dvpHnXBgH32xA";
+    self.accessToken = @"TWILIO_ACCESS_TOKEN";
     
     // Using the PHP server to provide access tokens? Make sure the tokenURL is pointing to the correct location -
     // the default is http://localhost:8000/token.php
-    NSString *tokenUrl = @"http://localhost:8000/token.php";
-    
-    if ([self.accessToken isEqualToString:@"TWILIO_ACCESS_TOKEN"]) {
-        [TokenUtils retrieveAccessTokenFromURL:tokenUrl completion:^(NSString *token, NSError *err) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (!err) {
-                    self.accessToken = token;
-                } else {
-                    [self logMessage:[NSString stringWithFormat:@"Error retrieving the access token"]];
-                }
-            });
-        }];
-    }
+    self.tokenUrl = @"http://localhost:8000/token.php";
     
     // LocalMedia represents the collection of tracks that we are sending to other Participants from our VideoClient.
     self.localMedia = [[TVILocalMedia alloc] init];
@@ -79,14 +70,54 @@
     
     self.roomTextField.delegate = self;
 
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyBoard)];
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
     [self.view addGestureRecognizer:tap];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+#pragma mark - Public
+
+- (IBAction)connectButtonPressed:(id)sender {
+    [self showRoomUI:YES];
+    [self dismissKeyboard];
+    
+    if ([self.accessToken isEqualToString:@"TWILIO_ACCESS_TOKEN"]) {
+        [self logMessage:[NSString stringWithFormat:@"Fetching an access token"]];
+        [TokenUtils retrieveAccessTokenFromURL:self.tokenUrl completion:^(NSString *token, NSError *err) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (!err) {
+                    self.accessToken = token;
+                    [self doConnect];
+                } else {
+                    [self logMessage:[NSString stringWithFormat:@"Error retrieving the access token"]];
+                    [self showRoomUI:NO];
+                }
+            });
+        }];
+    } else {
+        [self doConnect];
+    }
 }
+
+- (IBAction)disconnectButtonPressed:(id)sender {
+    [self.room disconnect];
+}
+
+- (IBAction)micButtonPressed:(id)sender {
+    // We will toggle the mic to mute/unmute and change the title according to the user action. 
+    
+    if (self.localAudioTrack) {
+        self.localAudioTrack.enabled = !self.localAudioTrack.isEnabled;
+        
+        // Toggle the button title
+        if (self.localAudioTrack.isEnabled) {
+            [self.micButton setTitle:@"Mute" forState:UIControlStateNormal];
+        } else {
+            [self.micButton setTitle:@"Unmute" forState:UIControlStateNormal];
+        }
+    }
+}
+
+#pragma mark - Private
 
 - (void)startPreview {
     if ([PlatformUtils isSimulator]) {
@@ -126,13 +157,13 @@
     }
 }
 
-- (IBAction)connectButtonPressed:(id)sender {
-    if([self.accessToken isEqualToString:@"TWILIO_ACCESS_TOKEN"]) {
-        [self logMessage:@"Please provide a valid token to connect to a room."];
+- (void)doConnect {
+    if ([self.accessToken isEqualToString:@"TWILIO_ACCESS_TOKEN"]) {
+        [self logMessage:@"Please provide a valid token to connect to a room"];
         return;
     }
     
-    // Creating a video client with the use of the access token.
+    // Create a Client with the access token that we fetched (or hardcoded).
     if (!self.client) {
         self.client = [TVIVideoClient clientWithToken:self.accessToken];
         if (!self.client) {
@@ -141,12 +172,12 @@
         }
     }
     
-    // Preparing local media to offer in when we connect to room.
+    // Prepare local media which we will share with Room Participants.
     [self prepareLocalMedia];
     
     TVIConnectOptions *connectOptions = [TVIConnectOptions optionsWithBlock:^(TVIConnectOptionsBuilder * _Nonnull builder) {
         
-        // We will set the prepared local media in connect options.
+        // Use the local media that we prepared earlier.
         builder.localMedia = self.localMedia;
         
         // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
@@ -154,57 +185,27 @@
         builder.name = self.roomTextField.text;
     }];
     
-    // Attempting to connect to room with connect options.
+    // Connect to the Room using the options we provided.
     self.room = [self.client connectWithOptions:connectOptions delegate:self];
     
     [self logMessage:[NSString stringWithFormat:@"Attempting to connect to room %@", self.roomTextField.text]];
-    
-    [self toggleView];
-    [self dismissKeyBoard];
-}
-
-- (IBAction)disconnectButtonPressed:(id)sender {
-    [self.room disconnect];
-}
-
-- (IBAction)micButtonPressed:(id)sender {
-    // We will toggle the mic to mute/unmute and change the title according to the user action. 
-    
-    if ([self.localMedia.audioTracks count] > 0) {
-        self.localMedia.audioTracks[0].enabled = !self.localMedia.audioTracks[0].isEnabled;
-        
-        //toggle the button title
-        if (self.localMedia.audioTracks[0].isEnabled) {
-            [self.micButton setTitle:@"Mute" forState:UIControlStateNormal];
-        } else {
-            [self.micButton setTitle:@"Unmute" forState:UIControlStateNormal];
-
-        }
-    }
 }
 
 // Reset the client ui status
-- (void)toggleView {
-    [self.micButton setTitle:@"Mute" forState:UIControlStateNormal];
-    
-    self.roomTextField.hidden = !self.roomTextField.isHidden;
-    self.connectButton.hidden = !self.connectButton.isHidden;
-    self.disconnectButton.hidden = !self.disconnectButton.isHidden;
-    self.roomLine.hidden = !self.roomLine.isHidden;
-    self.roomLabel.hidden = !self.roomLabel.isHidden;
-    self.micButton.hidden = !self.micButton.isHidden;
-    [UIApplication sharedApplication].idleTimerDisabled = ![UIApplication sharedApplication].isIdleTimerDisabled;
+- (void)showRoomUI:(BOOL)inRoom {
+    self.roomTextField.hidden = inRoom;
+    self.connectButton.hidden = inRoom;
+    self.roomLine.hidden = inRoom;
+    self.roomLabel.hidden = inRoom;
+    self.micButton.hidden = !inRoom;
+    self.disconnectButton.hidden = !inRoom;
+    [UIApplication sharedApplication].idleTimerDisabled = inRoom;
 }
 
-- (void)dismissKeyBoard {
+- (void)dismissKeyboard {
     if (self.roomTextField.isFirstResponder) {
         [self.roomTextField resignFirstResponder];
     }
-}
-
-- (BOOL)testFieldShouldReturn:(UITextField *)textField {
-    [self connectButtonPressed:textField];
-    return YES;
 }
 
 - (void)cleanupRemoteParticipant {
@@ -220,12 +221,19 @@
     self.messageLabel.text = msg;
 }
 
+#pragma mark - UITextFieldDelegate
+
+- (BOOL)testFieldShouldReturn:(UITextField *)textField {
+    [self connectButtonPressed:textField];
+    return YES;
+}
+
 #pragma mark - TVIRoomDelegate
 
 - (void)didConnectToRoom:(TVIRoom *)room {
     // At the moment, this example only supports rendering one Participant at a time.
     
-    [self logMessage:[NSString stringWithFormat:@"Connected to room %@", room.name]];
+    [self logMessage:[NSString stringWithFormat:@"Connected to room %@ as %@", room.name, room.localParticipant.identity]];
     
     if (room.participants.count > 0) {
         self.participant = room.participants[0];
@@ -239,7 +247,7 @@
     [self cleanupRemoteParticipant];
     self.room = nil;
     
-    [self toggleView];
+    [self showRoomUI:NO];
 }
 
 - (void)room:(TVIRoom *)room didFailToConnectWithError:(nonnull NSError *)error{
@@ -247,7 +255,7 @@
     
     self.room = nil;
     
-    [self toggleView];
+    [self showRoomUI:NO];
 }
 
 - (void)room:(TVIRoom *)room participantDidConnect:(TVIParticipant *)participant {
