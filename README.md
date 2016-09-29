@@ -46,7 +46,9 @@ You will need to add the Twilio Video library to the project to compile and run.
 
 First, you will need to have Cocoapods 1.0.0+ installed on your Mac, so go ahead and do that if you haven't already - the directions are here: [Getting Started with Cocoapods](https://guides.cocoapods.org/using/getting-started.html). If you're not sure, type `pod --version` into a command line.
 
-Next, just run `pod install` from the command line in the top level directory of this project. Cocoapods will install the Twilio library and then set up a .xcworkspace file that you will use to run your project from now on. 
+Next, just run `pod install` from the command line in the top level directory of this project. Cocoapods will install the Twilio library and then set up a .xcworkspace file that you will use to run your project from now on.
+
+> NOTE: If you've used [Twilio's Cocoapods Spec Repo](https://github.com/twilio/cocoapod-specs) before you may need to update it by running `pod repo update twilio` before installing dependencies.
 
 ## Access Tokens and Servers
 
