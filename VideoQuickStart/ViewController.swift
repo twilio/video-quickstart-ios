@@ -9,7 +9,7 @@ import UIKit
 
 import TwilioVideo
 
-class ViewController: UIViewController, UITextFieldDelegate {
+class ViewController: UIViewController {
 
     // MARK: View Controller Members
     
@@ -40,6 +40,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var roomLabel: UILabel!
     @IBOutlet weak var micButton: UIButton!
 
+    // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -53,55 +54,17 @@ class ViewController: UIViewController, UITextFieldDelegate {
             self.startPreview()
         }
         
-        // Disconnect and mic button will be displayed when client is connected to a room.
+        // Disconnect and mic button will be displayed when the Client is connected to a Room.
         self.disconnectButton.isHidden = true
         self.micButton.isHidden = true
         
-        self.roomTextField.delegate = self;
+        self.roomTextField.delegate = self
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
         self.view.addGestureRecognizer(tap)
     }
-    
-    func startPreview() {
-        if PlatformUtils.isSimulator {
-            return;
-        }
-        
-        // Preview our local camera track in the local video preview view.
-        camera = TVICameraCapturer()
-        localVideoTrack = localMedia?.addVideoTrack(true, capturer: camera!)
-        if (localVideoTrack == nil) {
-            logMessage(messageText: "Failed to add video track")
-        } else {
-            // Attach view to video track for local preview
-            localVideoTrack!.attach(self.previewView)
-            
-            logMessage(messageText: "Video track added to localMedia")
-            
-            // We will flip camera on tap.
-            let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
-            self.previewView.addGestureRecognizer(tap)
-        }
-    }
-    
-    func flipCamera() {
-        self.camera?.flipCamera()
-    }
-    
-    func prepareLocalMedia() {
-        
-        // We will offer local audio and video when we connect to room.
-        
-        // Adding local audio track to localMedia
-        localAudioTrack = localMedia?.addAudioTrack(true)
-        
-        // Adding local video track to localMedia and starting local preview if it is not already started.
-        if (localMedia?.videoTracks.count == 0) {
-            self.startPreview()
-        }
-    }
-    
+
+    // MARK: IBActions
     @IBAction func connect(sender: AnyObject) {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
@@ -115,35 +78,35 @@ class ViewController: UIViewController, UITextFieldDelegate {
             }
         }
         
-        // Creating a video client with the use of the access token.
+        // Create a Client with the access token that we fetched (or hardcoded).
         if (client == nil) {
             client = TVIVideoClient(token: accessToken)
             if (client == nil) {
                 logMessage(messageText: "Failed to create video client")
-                return;
+                return
             }
         }
         
-        // Preparing local media to offer in when we connect to room.
+        // Prepare local media which we will share with Room Participants.
         self.prepareLocalMedia()
         
         // Preparing the connect options
         let connectOptions = TVIConnectOptions { (builder) in
             
-            // We will set the prepared local media in connect options.
-            builder.localMedia = self.localMedia;
+            // Use the local media that we prepared earlier.
+            builder.localMedia = self.localMedia
             
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty 
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             builder.name = self.roomTextField.text
         }
         
-        // Attempting to connect to room with connect options
+        // Connect to the Room using the options we provided.
         room = client?.connect(with: connectOptions, delegate: self)
         
         logMessage(messageText: "Attempting to connect to room \(self.roomTextField.text)")
         
-        self.toggleView()
+        self.showRoomUI(inRoom: true)
         self.dismissKeyboard()
     }
     
@@ -153,40 +116,75 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func toggleMic(sender: AnyObject) {
-        if ((self.localMedia?.audioTracks.count)! > 0) {
-            self.localMedia?.audioTracks[0].isEnabled = !(self.localMedia?.audioTracks[0].isEnabled)!
+        if (self.localAudioTrack != nil) {
+            self.localAudioTrack?.isEnabled = !(self.localMedia?.audioTracks[0].isEnabled)!
             
-            // toggle the button title
-            if (self.localMedia?.audioTracks[0].isEnabled == true) {
+            // Update the button title
+            if (self.localAudioTrack?.isEnabled == true) {
                 self.micButton.setTitle("Mute", for: .normal)
             } else {
                 self.micButton.setTitle("Unmute", for: .normal)
             }
         }
     }
-    
-    // Reset the client ui status
-    func toggleView() {
-        self.micButton.setTitle("Mute", for: .normal)
 
-        self.roomTextField.isHidden = !self.roomTextField.isHidden
-        self.connectButton.isHidden = !self.connectButton.isHidden
-        self.disconnectButton.isHidden = !self.disconnectButton.isHidden
-        self.roomLine.isHidden = !self.roomLine.isHidden
-        self.roomLabel.isHidden = !self.roomLabel.isHidden
-        self.micButton.isHidden = !self.micButton.isHidden
-        UIApplication.shared.isIdleTimerDisabled = !UIApplication.shared.isIdleTimerDisabled
+    // MARK: Private
+    func startPreview() {
+        if PlatformUtils.isSimulator {
+            return
+        }
+
+        // Preview our local camera track in the local video preview view.
+        camera = TVICameraCapturer()
+        localVideoTrack = localMedia?.addVideoTrack(true, capturer: camera!)
+        if (localVideoTrack == nil) {
+            logMessage(messageText: "Failed to add video track")
+        } else {
+            // Attach view to video track for local preview
+            localVideoTrack!.attach(self.previewView)
+
+            logMessage(messageText: "Video track added to localMedia")
+
+            // We will flip camera on tap.
+            let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
+            self.previewView.addGestureRecognizer(tap)
+        }
+    }
+
+    func flipCamera() {
+        self.camera?.flipCamera()
+    }
+
+    func prepareLocalMedia() {
+
+        // We will offer local audio and video when we connect to room.
+
+        // Adding local audio track to localMedia
+        if (localAudioTrack == nil) {
+            localAudioTrack = localMedia?.addAudioTrack(true)
+        }
+
+        // Adding local video track to localMedia and starting local preview if it is not already started.
+        if (localMedia?.videoTracks.count == 0) {
+            self.startPreview()
+        }
+    }
+
+    // Update our UI based upon if we are in a Room or not
+    func showRoomUI(inRoom: Bool) {
+        self.connectButton.isHidden = inRoom
+        self.roomTextField.isHidden = inRoom
+        self.roomLine.isHidden = inRoom
+        self.roomLabel.isHidden = inRoom
+        self.micButton.isHidden = !inRoom
+        self.disconnectButton.isHidden = !inRoom
+        UIApplication.shared.isIdleTimerDisabled = inRoom
     }
     
     func dismissKeyboard() {
         if (self.roomTextField.isFirstResponder) {
             self.roomTextField.resignFirstResponder()
         }
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        self.connect(sender: textField)
-        return true;
     }
     
     func cleanupRemoteParticipant() {
@@ -203,13 +201,21 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
 }
 
+// MARK: UITextFieldDelegate
+extension ViewController : UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        self.connect(sender: textField)
+        return true
+    }
+}
+
 // MARK: TVIRoomDelegate
 extension ViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
         
-        // // At the moment, this example only supports rendering one Participant at a time.
+        // At the moment, this example only supports rendering one Participant at a time.
         
-        logMessage(messageText: "Connected to room \(room.name)")
+        logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity)")
         
         if (room.participants.count > 0) {
             self.participant = room.participants[0]
@@ -223,14 +229,14 @@ extension ViewController : TVIRoomDelegate {
         self.cleanupRemoteParticipant()
         self.room = nil
         
-        self.toggleView()
+        self.showRoomUI(inRoom: false)
     }
     
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
         logMessage(messageText: "Failed to connect to room with error")
         self.room = nil
         
-        self.toggleView()
+        self.showRoomUI(inRoom: false)
     }
     
     func room(_ room: TVIRoom, participantDidConnect participant: TVIParticipant) {
