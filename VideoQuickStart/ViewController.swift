@@ -152,7 +152,11 @@ class ViewController: UIViewController {
     }
 
     func flipCamera() {
-        self.camera?.flipCamera()
+        if (self.camera?.source == .frontCamera) {
+            self.camera?.selectSource(.backCameraWide)
+        } else {
+            self.camera?.selectSource(.frontCamera)
+        }
     }
 
     func prepareLocalMedia() {
