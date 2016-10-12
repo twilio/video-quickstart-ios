@@ -141,7 +141,11 @@
 }
 
 - (void)flipCamera {
-    [self.camera flipCamera];
+    if (self.camera.source == TVIVideoCaptureSourceFrontCamera) {
+        [self.camera selectSource:TVIVideoCaptureSourceBackCameraWide];
+    } else {
+        [self.camera selectSource:TVIVideoCaptureSourceBackCameraWide];
+    }
 }
 
 - (void)prepareLocalMedia {
