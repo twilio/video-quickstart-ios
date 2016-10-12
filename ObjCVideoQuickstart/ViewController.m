@@ -144,7 +144,7 @@
     if (self.camera.source == TVIVideoCaptureSourceFrontCamera) {
         [self.camera selectSource:TVIVideoCaptureSourceBackCameraWide];
     } else {
-        [self.camera selectSource:TVIVideoCaptureSourceBackCameraWide];
+        [self.camera selectSource:TVIVideoCaptureSourceFrontCamera];
     }
 }
 
