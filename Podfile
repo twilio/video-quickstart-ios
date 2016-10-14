@@ -1,5 +1,5 @@
 source 'https://github.com/twilio/cocoapod-specs'
 
 target 'VideoQuickStart' do
-    pod 'TwilioConversationsClient', '~>0.25.0'
+    pod 'TwilioVideo', '1.0.0-beta1'
 end
