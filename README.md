@@ -1,6 +1,6 @@
 # Twilio Video Quick Start for Swift
 
-> NOTE: This application uses Twilio's new Programmable Video Rooms API, which is currently available under Developer Preview. If you're interested in trying out this new API, contact Programmable Video Product Management by emailing rbrazier@twilio.com and request access.
+> NOTE: This application uses Twilio's new Programmable Video Rooms API, which is currently available in Beta. The docs are [here](https://media.twiliocdn.com/sdk/ios/video/v1.0/docs/).
 
 ## Up and Running
 
