@@ -26,9 +26,11 @@ To get started, we'll make a 1:1 video call between the iPhone simulator in XCod
 
 ## What is this project?
 
-This quick start will help you get video chat integrated directly into your iOS applications using Twilio's Video SDK. This quick start is for Swift developers - if your app uses Objective-C, we've got an Objective-C quickstart in the works. 
+This project consists of two sample apps: one using CallKit, and one without CallKit support.
 
-This sample app is written in Swift 3.0. You will need at least Xcode 8.0 in order to run the application.
+The quick starts will help you get video chat integrated directly into your iOS applications using Twilio's Video SDK. These examples are for Swift developers - if your app uses Objective-C see [video-quickstart-objective-c](https://github.com/twilio/video-quickstart-objc/).
+
+The sample apps are written in Swift 3.0. You will need at least Xcode 8.0 in order to run the applications.
 
 Review the code to see how how to set up key classes like `TVIVideoClient`, `TVIRoom`, `TVIParticipant`, `TVILocalMedia`, and `TVICameraCapturer`. The ViewController implements the `TVIRoomDelegate`, and `TVIParticipantDelegate` protocols in order to display remote Participant video on screen.
 
