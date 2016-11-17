@@ -1,5 +1,15 @@
 source 'https://github.com/twilio/cocoapod-specs'
 
-target 'VideoQuickStart' do
-    pod 'TwilioVideo', '1.0.0-beta1'
+workspace 'VideoQuickStart'
+
+abstract_target 'TwilioVideo' do
+  pod 'TwilioVideo', '1.0.0-beta2'
+
+  target 'VideoQuickStart' do
+    project 'VideoQuickStart.xcproject'
+  end
+  
+  target 'VideoCallKitQuickStart' do
+    project 'VideoCallKitQuickStart.xcproject'
+  end
 end

@@ -1,0 +1,409 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		24166E171DD3AE910004C634 /* ViewController+SimulateIncomingCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24166E161DD3AE910004C634 /* ViewController+SimulateIncomingCall.swift */; };
+		24166E191DD3B0970004C634 /* ViewController+CallKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24166E181DD3B0970004C634 /* ViewController+CallKit.swift */; };
+		304A80C11C23350000CB8C03 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C01C23350000CB8C03 /* libc++.tbd */; };
+		304A80C31C23350500CB8C03 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C21C23350500CB8C03 /* AudioToolbox.framework */; };
+		304A80C51C23350A00CB8C03 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C41C23350A00CB8C03 /* VideoToolbox.framework */; };
+		304A80C71C23351000CB8C03 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C61C23351000CB8C03 /* AVFoundation.framework */; };
+		304A80C91C23351600CB8C03 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C81C23351600CB8C03 /* CoreTelephony.framework */; };
+		304A80CB1C23351B00CB8C03 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80CA1C23351B00CB8C03 /* GLKit.framework */; };
+		304A80CD1C23352100CB8C03 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80CC1C23352100CB8C03 /* CoreMedia.framework */; };
+		304A80CF1C23352700CB8C03 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80CE1C23352700CB8C03 /* SystemConfiguration.framework */; };
+		4BAA74EB1D8B5CBE00239F19 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BAA74EA1D8B5CBE00239F19 /* Utils.swift */; };
+		8B79D46A1C2252A100489AA5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B79D4691C2252A100489AA5 /* AppDelegate.swift */; };
+		8B79D46C1C2252A100489AA5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B79D46B1C2252A100489AA5 /* ViewController.swift */; };
+		8B79D46F1C2252A100489AA5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8B79D46D1C2252A100489AA5 /* Main.storyboard */; };
+		8B79D4711C2252A100489AA5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8B79D4701C2252A100489AA5 /* Assets.xcassets */; };
+		8B79D4741C2252A100489AA5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8B79D4721C2252A100489AA5 /* LaunchScreen.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4BAA74E91D8A152A00239F19 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		24166E161DD3AE910004C634 /* ViewController+SimulateIncomingCall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ViewController+SimulateIncomingCall.swift"; sourceTree = "<group>"; };
+		24166E181DD3B0970004C634 /* ViewController+CallKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ViewController+CallKit.swift"; sourceTree = "<group>"; };
+		304A80C01C23350000CB8C03 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		304A80C21C23350500CB8C03 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		304A80C41C23350A00CB8C03 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
+		304A80C61C23351000CB8C03 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		304A80C81C23351600CB8C03 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		304A80CA1C23351B00CB8C03 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
+		304A80CC1C23352100CB8C03 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		304A80CE1C23352700CB8C03 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		4BAA74EA1D8B5CBE00239F19 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		8B79D4661C2252A100489AA5 /* VideoCallKitQuickStart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoCallKitQuickStart.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8B79D4691C2252A100489AA5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		8B79D46B1C2252A100489AA5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		8B79D46E1C2252A100489AA5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		8B79D4701C2252A100489AA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8B79D4731C2252A100489AA5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8B79D4751C2252A100489AA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8B79D4631C2252A100489AA5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				304A80CF1C23352700CB8C03 /* SystemConfiguration.framework in Frameworks */,
+				304A80CD1C23352100CB8C03 /* CoreMedia.framework in Frameworks */,
+				304A80CB1C23351B00CB8C03 /* GLKit.framework in Frameworks */,
+				304A80C91C23351600CB8C03 /* CoreTelephony.framework in Frameworks */,
+				304A80C71C23351000CB8C03 /* AVFoundation.framework in Frameworks */,
+				304A80C51C23350A00CB8C03 /* VideoToolbox.framework in Frameworks */,
+				304A80C31C23350500CB8C03 /* AudioToolbox.framework in Frameworks */,
+				304A80C11C23350000CB8C03 /* libc++.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5A82245B3CA8AD8931FA33E9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				304A80CE1C23352700CB8C03 /* SystemConfiguration.framework */,
+				304A80CC1C23352100CB8C03 /* CoreMedia.framework */,
+				304A80CA1C23351B00CB8C03 /* GLKit.framework */,
+				304A80C81C23351600CB8C03 /* CoreTelephony.framework */,
+				304A80C61C23351000CB8C03 /* AVFoundation.framework */,
+				304A80C41C23350A00CB8C03 /* VideoToolbox.framework */,
+				304A80C21C23350500CB8C03 /* AudioToolbox.framework */,
+				304A80C01C23350000CB8C03 /* libc++.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8B79D45D1C2252A100489AA5 = {
+			isa = PBXGroup;
+			children = (
+				8B79D4681C2252A100489AA5 /* VideoCallKitQuickStart */,
+				8B79D4671C2252A100489AA5 /* Products */,
+				5A82245B3CA8AD8931FA33E9 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		8B79D4671C2252A100489AA5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8B79D4661C2252A100489AA5 /* VideoCallKitQuickStart.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8B79D4681C2252A100489AA5 /* VideoCallKitQuickStart */ = {
+			isa = PBXGroup;
+			children = (
+				8B99217A1C230E7800DC3BCA /* Source */,
+				8B9921791C230E6B00DC3BCA /* Storyboards */,
+				8B99217B1C230E8E00DC3BCA /* Supporting Files */,
+			);
+			path = VideoCallKitQuickStart;
+			sourceTree = "<group>";
+		};
+		8B9921791C230E6B00DC3BCA /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				8B79D4721C2252A100489AA5 /* LaunchScreen.storyboard */,
+				8B79D46D1C2252A100489AA5 /* Main.storyboard */,
+			);
+			name = Storyboards;
+			sourceTree = "<group>";
+		};
+		8B99217A1C230E7800DC3BCA /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				8B79D4691C2252A100489AA5 /* AppDelegate.swift */,
+				8B79D46B1C2252A100489AA5 /* ViewController.swift */,
+				24166E181DD3B0970004C634 /* ViewController+CallKit.swift */,
+				24166E161DD3AE910004C634 /* ViewController+SimulateIncomingCall.swift */,
+				4BAA74EA1D8B5CBE00239F19 /* Utils.swift */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		8B99217B1C230E8E00DC3BCA /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				8B79D4751C2252A100489AA5 /* Info.plist */,
+				8B79D4701C2252A100489AA5 /* Assets.xcassets */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8B79D4651C2252A100489AA5 /* VideoCallKitQuickStart */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8B79D4781C2252A100489AA5 /* Build configuration list for PBXNativeTarget "VideoCallKitQuickStart" */;
+			buildPhases = (
+				8B79D4621C2252A100489AA5 /* Sources */,
+				8B79D4631C2252A100489AA5 /* Frameworks */,
+				8B79D4641C2252A100489AA5 /* Resources */,
+				4BAA74E91D8A152A00239F19 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VideoCallKitQuickStart;
+			productName = VideoCallKitQuickStart;
+			productReference = 8B79D4661C2252A100489AA5 /* VideoCallKitQuickStart.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8B79D45E1C2252A100489AA5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0720;
+				LastUpgradeCheck = 0800;
+				ORGANIZATIONNAME = Twilio;
+				TargetAttributes = {
+					8B79D4651C2252A100489AA5 = {
+						CreatedOnToolsVersion = 7.2;
+						DevelopmentTeam = SX5J6BN2KX;
+						LastSwiftMigration = 0800;
+					};
+				};
+			};
+			buildConfigurationList = 8B79D4611C2252A100489AA5 /* Build configuration list for PBXProject "VideoCallKitQuickStart" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8B79D45D1C2252A100489AA5;
+			productRefGroup = 8B79D4671C2252A100489AA5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8B79D4651C2252A100489AA5 /* VideoCallKitQuickStart */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8B79D4641C2252A100489AA5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B79D4741C2252A100489AA5 /* LaunchScreen.storyboard in Resources */,
+				8B79D4711C2252A100489AA5 /* Assets.xcassets in Resources */,
+				8B79D46F1C2252A100489AA5 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8B79D4621C2252A100489AA5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B79D46C1C2252A100489AA5 /* ViewController.swift in Sources */,
+				24166E171DD3AE910004C634 /* ViewController+SimulateIncomingCall.swift in Sources */,
+				8B79D46A1C2252A100489AA5 /* AppDelegate.swift in Sources */,
+				4BAA74EB1D8B5CBE00239F19 /* Utils.swift in Sources */,
+				24166E191DD3B0970004C634 /* ViewController+CallKit.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		8B79D46D1C2252A100489AA5 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8B79D46E1C2252A100489AA5 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		8B79D4721C2252A100489AA5 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8B79D4731C2252A100489AA5 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		8B79D4761C2252A100489AA5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-ObjC";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8B79D4771C2252A100489AA5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = "-ObjC";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8B79D4791C2252A100489AA5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				INFOPLIST_FILE = VideoCallKitQuickStart/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoCallKitQuickStart;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		8B79D47A1C2252A100489AA5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				INFOPLIST_FILE = VideoCallKitQuickStart/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoCallKitQuickStart;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8B79D4611C2252A100489AA5 /* Build configuration list for PBXProject "VideoCallKitQuickStart" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B79D4761C2252A100489AA5 /* Debug */,
+				8B79D4771C2252A100489AA5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8B79D4781C2252A100489AA5 /* Build configuration list for PBXNativeTarget "VideoCallKitQuickStart" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B79D4791C2252A100489AA5 /* Debug */,
+				8B79D47A1C2252A100489AA5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8B79D45E1C2252A100489AA5 /* Project object */;
+}
