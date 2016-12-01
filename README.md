@@ -34,6 +34,12 @@ The sample apps are written in Swift 3.0. You will need at least Xcode 8.0 in or
 
 Review the code to see how how to set up key classes like `TVIVideoClient`, `TVIRoom`, `TVIParticipant`, `TVILocalMedia`, and `TVICameraCapturer`. The ViewController implements the `TVIRoomDelegate`, and `TVIParticipantDelegate` protocols in order to display remote Participant video on screen.
 
+### Additional Examples
+
+You will also find additional examples that provide more advanced use cases of the Video SDK. The currently included examples are as follows:
+
+- [Custom Screen Capturer](CustomScreenCapturerExample) - Shows how a custom `TVIVideoCapturer` can be implemented to capture the contents of a `UIView`.
+
 ## Prerequisites
 
 This project uses Apple's Swift programming language 3.0 for iOS, and the only supported way to develop iOS apps is on an Apple computer running OS X and Xcode. We have tested this application with the latest versions of iOS (10.0) and Xcode (8.0) at the time of this writing.
