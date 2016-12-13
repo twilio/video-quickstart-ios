@@ -165,7 +165,8 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
         var frame = TVIVideoFrame()
         frame.imageBuffer = Unmanaged<CVPixelBuffer>.passUnretained(pixelBuffer!)
         frame.orientation = TVIVideoOrientation.up
-        frame.timestamp = Int64(timer.timestamp * Double( 1000000000 ))
+        // Express timestamps in microseconds
+        frame.timestamp = Int64(timer.timestamp * Double( 1000000 ))
 
         // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
         captureConsumer?.consumeCapturedFrame(frame)
