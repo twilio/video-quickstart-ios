@@ -119,25 +119,17 @@ extension ViewController {
     func performStartCallAction(uuid: UUID, roomName: String?) {
         let callHandle = CXHandle(type: .generic, value: roomName ?? "")
         let startCallAction = CXStartCallAction(call: uuid, handle: callHandle)
+        
+        startCallAction.isVideo = true
+        
         let transaction = CXTransaction(action: startCallAction)
-
+        
         callKitCallController.request(transaction)  { error in
             if let error = error {
                 NSLog("StartCallAction transaction request failed: \(error.localizedDescription)")
                 return
             }
-
             NSLog("StartCallAction transaction request successful")
-
-            let callUpdate = CXCallUpdate()
-            callUpdate.remoteHandle = callHandle
-            callUpdate.supportsDTMF = false
-            callUpdate.supportsHolding = true
-            callUpdate.supportsGrouping = false
-            callUpdate.supportsUngrouping = false
-            callUpdate.hasVideo = true
-
-            self.callKitProvider.reportCall(with: uuid, updated: callUpdate)
         }
     }
 
