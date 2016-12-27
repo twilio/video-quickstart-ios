@@ -16,6 +16,7 @@ extension ViewController : CXProviderDelegate {
         logMessage(messageText: "providerDidReset:")
 
         localMedia?.audioController.stopAudio()
+        room?.disconnect()
     }
 
     func providerDidBegin(_ provider: CXProvider) {
@@ -39,30 +40,40 @@ extension ViewController : CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         logMessage(messageText: "provider:performStartCallAction:")
 
+        /*
+         * Configure the audio session, but do not start call audio here, since it must be done once
+         * the audio session has been activated by the system after having its priority elevated.
+         */
         localMedia?.audioController.configureAudioSession(.videoChatSpeaker)
 
         callKitProvider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: nil)
-
-        performRoomConnect(uuid: action.callUUID, roomName: action.handle.value)
-
-        // Hang on to the action, as we will either fulfill it after we succesfully connect to the room, or fail
-        // it if there is an error connecting.
-        pendingAction = action
+        
+        performRoomConnect(uuid: action.callUUID, roomName: action.handle.value) { (success) in
+            if (success) {
+                provider.reportOutgoingCall(with: action.callUUID, connectedAt: Date())
+                action.fulfill()
+            } else {
+                action.fail()
+            }
+        }
     }
 
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         logMessage(messageText: "provider:performAnswerCallAction:")
 
-        // NOTE: When using CallKit with VoIP pushes, the workaround from https://forums.developer.apple.com/message/169511 
-        //       suggests configuring audio in the completion block of the `reportNewIncomingCallWithUUID:update:completion:` 
-        //       method instead of in `provider:performAnswerCallAction:` per the Speakerbox example.
-        // localMedia?.audioController.configureAudioSession()
+        /*
+         * Configure the audio session, but do not start call audio here, since it must be done once
+         * the audio session has been activated by the system after having its priority elevated.
+         */
+        self.localMedia?.audioController.configureAudioSession(.videoChatSpeaker)
 
-        performRoomConnect(uuid: action.callUUID, roomName: self.roomTextField.text)
-
-        // Hang on to the action, as we will either fulfill it after we succesfully connect to the room, or fail
-        // it if there is an error connecting.
-        pendingAction = action
+        performRoomConnect(uuid: action.callUUID, roomName: self.roomTextField.text) { (success) in
+            if (success) {
+                action.fulfill(withDateConnected: Date())
+            } else {
+                action.fail()
+            }
+        }
     }
 
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
@@ -76,7 +87,9 @@ extension ViewController : CXProviderDelegate {
 
     func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
         NSLog("provier:performSetMutedCallAction:")
+        
         toggleMic(sender: self)
+        
         action.fulfill()
     }
 
@@ -96,7 +109,6 @@ extension ViewController : CXProviderDelegate {
         } else {
             holdCall(onHold: true)
         }
-
         action.fulfill()
     }
 }
@@ -143,13 +155,9 @@ extension ViewController {
         callKitProvider.reportNewIncomingCall(with: uuid, update: callUpdate) { error in
             if error == nil {
                 NSLog("Incoming call successfully reported.")
-
-                // NOTE: CallKit with VoIP push workaround per https://forums.developer.apple.com/message/169511
-                self.localMedia?.audioController.configureAudioSession(.videoChatSpeaker)
             } else {
                 NSLog("Failed to report incoming call successfully: \(error?.localizedDescription).")
             }
-
             completion?(error as? NSError)
         }
     }
@@ -168,7 +176,7 @@ extension ViewController {
         }
     }
 
-    func performRoomConnect(uuid: UUID, roomName: String?) {
+    func performRoomConnect(uuid: UUID, roomName: String? , completionHandler: @escaping (Bool) -> Swift.Void) {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN") {
@@ -213,5 +221,7 @@ extension ViewController {
         logMessage(messageText: "Attempting to connect to room \(roomName)")
         
         self.showRoomUI(inRoom: true)
+        
+        self.callKitCompletionHandler = completionHandler
     }
 }

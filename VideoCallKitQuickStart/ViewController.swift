@@ -33,7 +33,7 @@ class ViewController: UIViewController {
     // CallKit components
     let callKitProvider:CXProvider
     let callKitCallController:CXCallController
-    var pendingAction:CXCallAction?
+    var callKitCompletionHandler: ((Bool)->Swift.Void?)? = nil
 
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var remoteView: UIView!
@@ -228,13 +228,8 @@ extension ViewController : TVIRoomDelegate {
                 callKitProvider.reportOutgoingCall(with: uuid, connectedAt: nil)
             }
         }
-
-        // Mark the Start/Answer Call Action as being fullfilled
-        if let pendingAction = pendingAction {
-            pendingAction.fulfill()
-        }
-
-        pendingAction = nil
+        
+        self.callKitCompletionHandler!(true)
     }
     
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
@@ -242,21 +237,15 @@ extension ViewController : TVIRoomDelegate {
         
         self.cleanupRemoteParticipant()
         self.room = nil
-        
         self.showRoomUI(inRoom: false)
+        self.callKitCompletionHandler = nil
     }
     
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
         logMessage(messageText: "Failed to connect to room with error: \(error.localizedDescription)")
 
-        // Mark the Start/Answer Call Action as having failed
-        if let pendingAction = pendingAction {
-            pendingAction.fail()
-        }
-
-        pendingAction = nil
+        self.callKitCompletionHandler!(false)
         self.room = nil
-
         self.showRoomUI(inRoom: false)
     }
     
