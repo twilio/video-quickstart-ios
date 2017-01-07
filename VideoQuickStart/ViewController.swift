@@ -47,7 +47,7 @@ class ViewController: UIViewController {
         // LocalMedia represents the collection of tracks that we are sending to other Participants from our VideoClient.
         localMedia = TVILocalMedia()
         
-        // Video SDK 1.0.0-beta4 routes audio to receiver by default. We will overwrite the audio route to speaker.
+        // 1.0.0-beta4 incorrectly chooses `TVIAudioOutputVoiceChatDefault` by default. We work around this by restoring the correct default.
         let audioController = localMedia?.audioController
         audioController?.audioOutput = .videoChatDefault
 
