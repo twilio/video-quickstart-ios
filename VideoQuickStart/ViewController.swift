@@ -46,10 +46,6 @@ class ViewController: UIViewController {
 
         // LocalMedia represents the collection of tracks that we are sending to other Participants from our VideoClient.
         localMedia = TVILocalMedia()
-        
-        // 1.0.0-beta4 incorrectly chooses `TVIAudioOutputVoiceChatDefault` by default. We work around this by restoring the intended default value.
-        let audioController = localMedia?.audioController
-        audioController?.audioOutput = .videoChatDefault
 
         if PlatformUtils.isSimulator {
             self.previewView.removeFromSuperview()
