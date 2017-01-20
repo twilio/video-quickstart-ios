@@ -162,13 +162,13 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
         }
 
         // Deliver a VideoFrame to the consumer. Images drawn by UIGraphics do not need any rotation tags.
-        var frame = TVIVideoFrame()
-        frame.imageBuffer = Unmanaged<CVPixelBuffer>.passUnretained(pixelBuffer!)
-        frame.orientation = TVIVideoOrientation.up
         // Express timestamps in microseconds
-        frame.timestamp = Int64(timer.timestamp * Double( 1000000 ))
+        let timeStamp = Int64(timer.timestamp * Double( 1000000 ))
+        let frame = TVIVideoFrame(timestamp: timeStamp,
+                                  buffer: pixelBuffer!,
+                                  orientation: TVIVideoOrientation.up)
 
         // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
-        captureConsumer?.consumeCapturedFrame(frame)
+        captureConsumer?.consumeCapturedFrame(frame!)
     }
 }
