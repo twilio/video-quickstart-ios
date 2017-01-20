@@ -57,10 +57,6 @@
     // LocalMedia represents the collection of tracks that we are sending to other Participants from our VideoClient.
     self.localMedia = [[TVILocalMedia alloc] init];
     
-    // 1.0.0-beta4 incorrectly chooses `TVIAudioOutputVoiceChatDefault` by default. We work around this by restoring the intended default value.
-    TVIAudioController *audioController = self.localMedia.audioController;
-    audioController.audioOutput = TVIAudioOutputVideoChatDefault;
-    
     if ([PlatformUtils isSimulator]) {
         [self.previewView removeFromSuperview];
     } else {
