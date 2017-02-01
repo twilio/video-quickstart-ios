@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  VideoQuickStart
 //
-//  Copyright © 2015-2017 Twilio. All rights reserved.
+//  Copyright © 2015-2017 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
