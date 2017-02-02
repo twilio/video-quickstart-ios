@@ -2,7 +2,7 @@
 //  ViewController+SimulateIncomingCall.swift
 //  VideoCallKitQuickStart
 //
-//  Copyright © 2016 Twilio. All rights reserved.
+//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
