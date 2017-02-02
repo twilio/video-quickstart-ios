@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  CustomScreenCapturerExample
 //
-//  Copyright © 2016-2017 Twilio Inc. All rights reserved.
+//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
 //
 
 import TwilioVideo
