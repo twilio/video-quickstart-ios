@@ -13,9 +13,11 @@ class ViewController : UIViewController {
 
     var localMedia: TVILocalMedia?
     var remoteRenderer: TVIVideoViewRenderer?
-    var screenCapturer: ExampleScreenCapturer?
+    var screenCapturer: TVIVideoCapturer?
     var webView: WKWebView?
     var webNavigation: WKNavigation?
+
+    // Change this value to use the example screen capturer, or TVIScreenCapturer which ships with the SDK.
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,7 +69,13 @@ class ViewController : UIViewController {
         localMedia = TVILocalMedia()
 
         // Setup screen capturer
-        let capturer: ExampleScreenCapturer = ExampleScreenCapturer.init(aView: self.webView!)
+        let capturer: TVIVideoCapturer
+        if (useExampleCapturer) {
+            capturer = ExampleScreenCapturer.init(aView: self.webView!)
+        } else {
+            capturer = TVIScreenCapturer.init(view: self.webView!)
+        }
+
         let videoTrack: TVIVideoTrack? = localMedia?.addVideoTrack(true, capturer: capturer)
 
         if (videoTrack == nil) {
