@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  CustomScreenCapturerExample
+//  ScreenCapturerExample
 //
 //  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
 //
@@ -13,9 +13,12 @@ class ViewController : UIViewController {
 
     var localMedia: TVILocalMedia?
     var remoteRenderer: TVIVideoViewRenderer?
-    var screenCapturer: ExampleScreenCapturer?
+    var screenCapturer: TVIVideoCapturer?
     var webView: WKWebView?
     var webNavigation: WKNavigation?
+
+    // Set this value to 'true' to use ExampleScreenCapturer instead of TVIScreenCapturer.
+    let useExampleCapturer = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,7 +70,13 @@ class ViewController : UIViewController {
         localMedia = TVILocalMedia()
 
         // Setup screen capturer
-        let capturer: ExampleScreenCapturer = ExampleScreenCapturer.init(aView: self.webView!)
+        let capturer: TVIVideoCapturer
+        if (useExampleCapturer) {
+            capturer = ExampleScreenCapturer.init(aView: self.webView!)
+        } else {
+            capturer = TVIScreenCapturer.init(view: self.webView!)
+        }
+
         let videoTrack: TVIVideoTrack? = localMedia?.addVideoTrack(true, capturer: capturer)
 
         if (videoTrack == nil) {

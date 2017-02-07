@@ -13,7 +13,7 @@ abstract_target 'TwilioVideo' do
     project 'VideoCallKitQuickStart.xcproject'
   end
 
-  target 'CustomScreenCapturerExample' do
-    project 'CustomScreenCapturerExample.xcproject'
+  target 'ScreenCapturerExample' do
+    project 'ScreenCapturerExample.xcproject'
   end
 end
