@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  CustomScreenCapturerExample
+//  ScreenCapturerExample
 //
 //  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
 //
@@ -17,8 +17,8 @@ class ViewController : UIViewController {
     var webView: WKWebView?
     var webNavigation: WKNavigation?
 
-    // Change this value to use the example screen capturer, or TVIScreenCapturer which ships with the SDK.
-    let useExampleCapturer = true
+    // Set this value to 'true' use ExampleScreenCapturer instead of TVIScreenCapturer which ships with the SDK.
+    let useExampleCapturer = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
