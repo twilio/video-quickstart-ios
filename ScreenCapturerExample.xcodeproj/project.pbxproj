@@ -17,13 +17,13 @@
 
 /* Begin PBXFileReference section */
 		8AB81D9A1DED183B0021868E /* ExampleScreenCapturer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleScreenCapturer.swift; sourceTree = "<group>"; };
-		8AC2285D1DECF14D00AF58EA /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = CustomScreenCapturerExample/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
-		8AC2285E1DECF14D00AF58EA /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = CustomScreenCapturerExample/ViewController.swift; sourceTree = SOURCE_ROOT; };
+		8AC2285D1DECF14D00AF58EA /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ScreenCapturerExample/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
+		8AC2285E1DECF14D00AF58EA /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ScreenCapturerExample/ViewController.swift; sourceTree = SOURCE_ROOT; };
 		8AC228671DECF1AE00AF58EA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = CustomScreenCapturerExample/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		8AC228681DECF1AE00AF58EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = CustomScreenCapturerExample/Info.plist; sourceTree = SOURCE_ROOT; };
 		8AC2286B1DECF34E00AF58EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8AC2286D1DECF34E00AF58EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		8AF6E8491DECEEF600DFBE3E /* CustomScreenCapturerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CustomScreenCapturerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8AF6E8491DECEEF600DFBE3E /* ScreenCapturerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScreenCapturerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,7 +40,7 @@
 		8AF6E8401DECEEF600DFBE3E = {
 			isa = PBXGroup;
 			children = (
-				8AF6E84B1DECEEF600DFBE3E /* CustomScreenCapturerExample */,
+				8AF6E84B1DECEEF600DFBE3E /* ScreenCapturerExample */,
 				8AF6E84A1DECEEF600DFBE3E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -48,19 +48,19 @@
 		8AF6E84A1DECEEF600DFBE3E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8AF6E8491DECEEF600DFBE3E /* CustomScreenCapturerExample.app */,
+				8AF6E8491DECEEF600DFBE3E /* ScreenCapturerExample.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8AF6E84B1DECEEF600DFBE3E /* CustomScreenCapturerExample */ = {
+		8AF6E84B1DECEEF600DFBE3E /* ScreenCapturerExample */ = {
 			isa = PBXGroup;
 			children = (
 				8AF6E8641DECEFEF00DFBE3E /* Source */,
 				8AF6E8651DECEFFB00DFBE3E /* Storyboards */,
 				8AF6E8661DECF01300DFBE3E /* Supporting Files */,
 			);
-			path = CustomScreenCapturerExample;
+			path = ScreenCapturerExample;
 			sourceTree = "<group>";
 		};
 		8AF6E8641DECEFEF00DFBE3E /* Source */ = {
@@ -94,9 +94,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8AF6E8481DECEEF600DFBE3E /* CustomScreenCapturerExample */ = {
+		8AF6E8481DECEEF600DFBE3E /* ScreenCapturerExample */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8AF6E85B1DECEEF600DFBE3E /* Build configuration list for PBXNativeTarget "CustomScreenCapturerExample" */;
+			buildConfigurationList = 8AF6E85B1DECEEF600DFBE3E /* Build configuration list for PBXNativeTarget "ScreenCapturerExample" */;
 			buildPhases = (
 				8AF6E8451DECEEF600DFBE3E /* Sources */,
 				8AF6E8461DECEEF600DFBE3E /* Frameworks */,
@@ -106,9 +106,9 @@
 			);
 			dependencies = (
 			);
-			name = CustomScreenCapturerExample;
+			name = ScreenCapturerExample;
 			productName = CustomScreenCapturerExample;
-			productReference = 8AF6E8491DECEEF600DFBE3E /* CustomScreenCapturerExample.app */;
+			productReference = 8AF6E8491DECEEF600DFBE3E /* ScreenCapturerExample.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -129,7 +129,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8AF6E8441DECEEF600DFBE3E /* Build configuration list for PBXProject "CustomScreenCapturerExample" */;
+			buildConfigurationList = 8AF6E8441DECEEF600DFBE3E /* Build configuration list for PBXProject "ScreenCapturerExample" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -142,7 +142,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8AF6E8481DECEEF600DFBE3E /* CustomScreenCapturerExample */,
+				8AF6E8481DECEEF600DFBE3E /* ScreenCapturerExample */,
 			);
 		};
 /* End PBXProject section */
@@ -322,7 +322,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8AF6E8441DECEEF600DFBE3E /* Build configuration list for PBXProject "CustomScreenCapturerExample" */ = {
+		8AF6E8441DECEEF600DFBE3E /* Build configuration list for PBXProject "ScreenCapturerExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8AF6E8591DECEEF600DFBE3E /* Debug */,
@@ -331,7 +331,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8AF6E85B1DECEEF600DFBE3E /* Build configuration list for PBXNativeTarget "CustomScreenCapturerExample" */ = {
+		8AF6E85B1DECEEF600DFBE3E /* Build configuration list for PBXNativeTarget "ScreenCapturerExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8AF6E85C1DECEEF600DFBE3E /* Debug */,
