@@ -19,8 +19,8 @@
 		8AB81D9A1DED183B0021868E /* ExampleScreenCapturer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleScreenCapturer.swift; sourceTree = "<group>"; };
 		8AC2285D1DECF14D00AF58EA /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ScreenCapturerExample/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
 		8AC2285E1DECF14D00AF58EA /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ScreenCapturerExample/ViewController.swift; sourceTree = SOURCE_ROOT; };
-		8AC228671DECF1AE00AF58EA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = CustomScreenCapturerExample/Assets.xcassets; sourceTree = SOURCE_ROOT; };
-		8AC228681DECF1AE00AF58EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = CustomScreenCapturerExample/Info.plist; sourceTree = SOURCE_ROOT; };
+		8AC228671DECF1AE00AF58EA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ScreenCapturerExample/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		8AC228681DECF1AE00AF58EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = ScreenCapturerExample/Info.plist; sourceTree = SOURCE_ROOT; };
 		8AC2286B1DECF34E00AF58EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8AC2286D1DECF34E00AF58EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		8AF6E8491DECEEF600DFBE3E /* ScreenCapturerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScreenCapturerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
