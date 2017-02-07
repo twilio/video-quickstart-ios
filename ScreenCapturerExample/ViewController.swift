@@ -17,7 +17,7 @@ class ViewController : UIViewController {
     var webView: WKWebView?
     var webNavigation: WKNavigation?
 
-    // Set this value to 'true' use ExampleScreenCapturer instead of TVIScreenCapturer which ships with the SDK.
+    // Set this value to 'true' to use ExampleScreenCapturer instead of TVIScreenCapturer.
     let useExampleCapturer = false
 
     override func viewDidLoad() {

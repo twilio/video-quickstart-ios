@@ -38,7 +38,7 @@ Review the code to see how how to set up key classes like `TVIVideoClient`, `TVI
 
 You will also find additional examples that provide more advanced use cases of the Video SDK. The currently included examples are as follows:
 
-- [Custom Screen Capturer](CustomScreenCapturerExample) - Shows how a custom `TVIVideoCapturer` can be implemented to capture the contents of a `UIView`, and how to use the included `TVIScreenCapturer` class.
+- [Screen Capturer](ScreenCapturerExample) - Shows how to use `TVIScreenCapturer` to capture the contents of a `UIView`, and how a custom `TVIVideoCapturer` can be implemented to do the same.
 
 ## Prerequisites
 
