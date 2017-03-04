@@ -3,7 +3,7 @@ source 'https://github.com/twilio/cocoapod-specs'
 workspace 'VideoQuickStart'
 
 abstract_target 'TwilioVideo' do
-  pod 'TwilioVideo', '1.0.0-beta8'
+  pod 'TwilioVideo', '1.0.0-beta9'
 
   target 'VideoQuickStart' do
     project 'VideoQuickStart.xcproject'

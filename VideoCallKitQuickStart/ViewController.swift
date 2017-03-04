@@ -22,7 +22,6 @@ class ViewController: UIViewController {
     var tokenUrl = "http://localhost:8000/token.php"
     
     // Video SDK components
-    var client: TVIVideoClient?
     var room: TVIRoom?
     var localMedia: TVILocalMedia?
     var camera: TVICameraCapturer?
