@@ -181,34 +181,25 @@ extension ViewController {
             }
         }
 
-        // Create a Client with the access token that we fetched (or hardcoded).
-        if (client == nil) {
-            client = TVIVideoClient(token: accessToken)
-            if (client == nil) {
-                logMessage(messageText: "Failed to create video client")
-                return
-            }
-        }
-
         // Prepare local media which we will share with Room Participants.
         self.prepareLocalMedia()
 
-        // Preparing the connect options
-        let connectOptions = TVIConnectOptions { (builder) in
+        // Preparing the connect options with the access token that we fetched (or hardcoded).
+        let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
 
             // Use the local media that we prepared earlier.
             builder.localMedia = self.localMedia
 
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
-            builder.name = roomName
+            builder.roomName = roomName
 
             // The CallKit UUID to assoicate with this Room.
             builder.uuid = uuid
         }
         
         // Connect to the Room using the options we provided.
-        room = client?.connect(with: connectOptions, delegate: self)
+        room = TVIVideoClient.connect(with: connectOptions, delegate: self)
         
         logMessage(messageText: "Attempting to connect to room \(roomName)")
         
