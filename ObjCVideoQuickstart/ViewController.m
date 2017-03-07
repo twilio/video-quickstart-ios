@@ -18,7 +18,6 @@
 
 #pragma mark Video SDK components
 
-@property (nonatomic, strong) TVIVideoClient *client;
 @property (nonatomic, strong) TVIRoom *room;
 @property (nonatomic, strong) TVILocalMedia *localMedia;
 @property (nonatomic, strong) TVICameraCapturer *camera;
@@ -169,30 +168,22 @@
         return;
     }
     
-    // Create a Client with the access token that we fetched (or hardcoded).
-    if (!self.client) {
-        self.client = [TVIVideoClient clientWithToken:self.accessToken];
-        if (!self.client) {
-            [self logMessage:@"Failed to create video client"];
-            return;
-        }
-    }
-    
     // Prepare local media which we will share with Room Participants.
     [self prepareLocalMedia];
     
-    TVIConnectOptions *connectOptions = [TVIConnectOptions optionsWithBlock:^(TVIConnectOptionsBuilder * _Nonnull builder) {
-        
+    TVIConnectOptions *connectOptions = [TVIConnectOptions optionsWithToken:self.accessToken
+                                                                      block:^(TVIConnectOptionsBuilder * _Nonnull builder) {
+
         // Use the local media that we prepared earlier.
         builder.localMedia = self.localMedia;
         
         // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
         // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
-        builder.name = self.roomTextField.text;
+        builder.roomName = self.roomTextField.text;
     }];
     
     // Connect to the Room using the options we provided.
-    self.room = [self.client connectWithOptions:connectOptions delegate:self];
+    self.room = [TVIVideoClient connectWithOptions:connectOptions delegate:self];
     
     [self logMessage:[NSString stringWithFormat:@"Attempting to connect to room %@", self.roomTextField.text]];
 }
