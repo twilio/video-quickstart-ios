@@ -27,7 +27,7 @@ extension ViewController {
                 delay = delayFromString
             }
 
-            self.logMessage(messageText: "Simulating Incoming Call for room: \(roomName) after a \(delay) second delay")
+            self.logMessage(messageText: "Simulating Incoming Call for room: \(String(describing: roomName)) after a \(delay) second delay")
 
             let backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
             DispatchQueue.main.asyncAfter(wallDeadline: DispatchWallTime.now() + delay) {
