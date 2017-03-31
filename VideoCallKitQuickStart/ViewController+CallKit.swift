@@ -148,9 +148,9 @@ extension ViewController {
             if error == nil {
                 NSLog("Incoming call successfully reported.")
             } else {
-                NSLog("Failed to report incoming call successfully: \(error?.localizedDescription).")
+                NSLog("Failed to report incoming call successfully: \(String(describing: error?.localizedDescription)).")
             }
-            completion?(error as? NSError)
+            completion?(error as NSError?)
         }
     }
 
@@ -201,7 +201,7 @@ extension ViewController {
         // Connect to the Room using the options we provided.
         room = TVIVideoClient.connect(with: connectOptions, delegate: self)
         
-        logMessage(messageText: "Attempting to connect to room \(roomName)")
+        logMessage(messageText: "Attempting to connect to room \(String(describing: roomName))")
         
         self.showRoomUI(inRoom: true)
         

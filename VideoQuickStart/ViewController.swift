@@ -94,7 +94,7 @@ class ViewController: UIViewController {
         // Connect to the Room using the options we provided.
         room = TVIVideoClient.connect(with: connectOptions, delegate: self)
         
-        logMessage(messageText: "Attempting to connect to room \(self.roomTextField.text)")
+        logMessage(messageText: "Attempting to connect to room \(String(describing: self.roomTextField.text))")
         
         self.showRoomUI(inRoom: true)
         self.dismissKeyboard()
@@ -209,7 +209,7 @@ extension ViewController : TVIRoomDelegate {
         
         // At the moment, this example only supports rendering one Participant at a time.
         
-        logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity)")
+        logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
         
         if (room.participants.count > 0) {
             self.participant = room.participants[0]
@@ -218,7 +218,7 @@ extension ViewController : TVIRoomDelegate {
     }
     
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
-        logMessage(messageText: "Disconncted from room \(room.name), error = \(error)")
+        logMessage(messageText: "Disconncted from room \(room.name), error = \(String(describing: error))")
         
         self.cleanupRemoteParticipant()
         self.room = nil
