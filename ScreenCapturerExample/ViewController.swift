@@ -121,7 +121,7 @@ extension ViewController : WKNavigationDelegate {
     }
 }
 
-// MARK: TVIVideoRendererDelegate
+// MARK: TVIVideoViewDelegate
 extension ViewController : TVIVideoViewDelegate {
     func videoViewDidReceiveData(_ view: TVIVideoView) {
         if (view == remoteView) {

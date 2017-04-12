@@ -88,7 +88,7 @@ class ViewController: UIViewController {
     }
     
     func setupRemoteVideoView() {
-        self.remoteView = TVIVideoView.init()
+        self.remoteView = TVIVideoView.init(frame: CGRect.zero, delegate: self)
         
         self.view.addSubview(self.remoteView!)
         
@@ -357,5 +357,15 @@ extension ViewController : TVIParticipantDelegate {
             type = "audio"
         }
         logMessage(messageText: "Participant \(participant.identity) disabled \(type) track")
+    }
+}
+
+// MARK: TVIVideoViewDelegate
+extension ViewController : TVIVideoViewDelegate {
+    func videoViewDidReceiveData(_ view: TVIVideoView) {
+    }
+    
+    func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
+        self.view.setNeedsLayout()
     }
 }
