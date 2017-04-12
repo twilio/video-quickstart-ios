@@ -12,7 +12,7 @@ import WebKit
 class ViewController : UIViewController {
 
     var localMedia: TVILocalMedia?
-    var remoteRenderer: TVIVideoViewRenderer?
+    var remoteView: TVIVideoView?
     var screenCapturer: TVIVideoCapturer?
     var webView: WKWebView?
     var webNavigation: WKNavigation?
@@ -51,18 +51,18 @@ class ViewController : UIViewController {
         webView?.frame = self.view.bounds
 
         // Layout the remote video using frame based techniques. It's also possible to do this using autolayout
-        if ((remoteRenderer?.hasVideoData)!) {
-            let dimensions = remoteRenderer?.videoFrameDimensions
+        if ((remoteView?.hasVideoData)!) {
+            let dimensions = remoteView?.videoDimensions
             let remoteRect = remoteViewSize()
             let aspect = CGSize(width: CGFloat((dimensions?.width)!), height: CGFloat((dimensions?.height)!))
             let padding : CGFloat = 10.0
             let boundedRect = AVMakeRect(aspectRatio: aspect, insideRect: remoteRect).integral
-            remoteRenderer?.view.frame = CGRect(x: self.view.bounds.width - boundedRect.width - padding,
-                                                y: self.view.bounds.height - boundedRect.height - padding,
-                                                width: boundedRect.width,
-                                                height: boundedRect.height)
+            remoteView?.frame = CGRect(x: self.view.bounds.width - boundedRect.width - padding,
+                                       y: self.view.bounds.height - boundedRect.height - padding,
+                                       width: boundedRect.width,
+                                       height: boundedRect.height)
         } else {
-            remoteRenderer?.view.frame = CGRect.zero
+            remoteView?.frame = CGRect.zero
         }
     }
 
@@ -87,11 +87,11 @@ class ViewController : UIViewController {
         screenCapturer = capturer;
 
         // Setup rendering
-        remoteRenderer = TVIVideoViewRenderer(delegate: self)
-        videoTrack?.addRenderer(remoteRenderer!)
+        remoteView = TVIVideoView.init(frame: CGRect.zero, delegate: self)
+        videoTrack?.addRenderer(remoteView!)
 
-        remoteRenderer?.view.isHidden = true
-        self.view.addSubview((remoteRenderer?.view)!)
+        remoteView!.isHidden = true
+        self.view.addSubview((self.remoteView)!)
         self.view.setNeedsLayout()
     }
 
@@ -121,16 +121,16 @@ extension ViewController : WKNavigationDelegate {
     }
 }
 
-// MARK: TVIVideoRendererDelegate
-extension ViewController : TVIVideoViewRendererDelegate {
-    func rendererDidReceiveVideoData(_ renderer: TVIVideoViewRenderer) {
-        if (renderer == remoteRenderer) {
-            remoteRenderer?.view.isHidden = false
+// MARK: TVIVideoViewDelegate
+extension ViewController : TVIVideoViewDelegate {
+    func videoViewDidReceiveData(_ view: TVIVideoView) {
+        if (view == remoteView) {
+            remoteView?.isHidden = false
             self.view.setNeedsLayout()
         }
     }
 
-    func renderer(_ renderer: TVIVideoViewRenderer, dimensionsDidChange dimensions: CMVideoDimensions) {
+    func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
         self.view.setNeedsLayout()
     }
 }
