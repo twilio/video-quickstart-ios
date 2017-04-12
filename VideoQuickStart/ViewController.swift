@@ -27,10 +27,10 @@ class ViewController: UIViewController {
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
     var participant: TVIParticipant?
+    var remoteView: TVIVideoView?
     
     // MARK: UI Element Outlets and handles
-    @IBOutlet weak var remoteView: UIView!
-    @IBOutlet weak var previewView: UIView!
+    @IBOutlet weak var previewView: TVIVideoView!
     @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var disconnectButton: UIButton!
     @IBOutlet weak var messageLabel: UILabel!
@@ -61,6 +61,49 @@ class ViewController: UIViewController {
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
         self.view.addGestureRecognizer(tap)
+    }
+    
+    func setupRemoteVideoView() {
+        self.remoteView = TVIVideoView.init()
+        
+        self.view.addSubview(self.remoteView!)
+        
+        self.view.bringSubview(toFront: self.previewView)
+        self.view.bringSubview(toFront: self.micButton)
+        self.view.bringSubview(toFront: self.disconnectButton)
+        
+        let centerX = NSLayoutConstraint(item: self.remoteView!,
+                                         attribute: NSLayoutAttribute.centerX,
+                                         relatedBy: NSLayoutRelation.equal,
+                                         toItem: self.view,
+                                         attribute: NSLayoutAttribute.centerX,
+                                         multiplier: 1,
+                                         constant: 0);
+        self.view.addConstraint(centerX)
+        let centerY = NSLayoutConstraint(item: self.remoteView!,
+                                         attribute: NSLayoutAttribute.centerY,
+                                         relatedBy: NSLayoutRelation.equal,
+                                         toItem: self.view,
+                                         attribute: NSLayoutAttribute.centerY,
+                                         multiplier: 1,
+                                         constant: 0);
+        self.view.addConstraint(centerY)
+        let width = NSLayoutConstraint(item: self.remoteView!,
+                                       attribute: NSLayoutAttribute.width,
+                                       relatedBy: NSLayoutRelation.equal,
+                                       toItem: self.view,
+                                       attribute: NSLayoutAttribute.width,
+                                       multiplier: 1,
+                                       constant: 0);
+        self.view.addConstraint(width)
+        let height = NSLayoutConstraint(item: self.remoteView!,
+                                        attribute: NSLayoutAttribute.height,
+                                        relatedBy: NSLayoutRelation.equal,
+                                        toItem: self.view,
+                                        attribute: NSLayoutAttribute.height,
+                                        multiplier: 1,
+                                        constant: 0);
+        self.view.addConstraint(height)
     }
 
     // MARK: IBActions
@@ -130,8 +173,8 @@ class ViewController: UIViewController {
         if (localVideoTrack == nil) {
             logMessage(messageText: "Failed to add video track")
         } else {
-            // Attach view to video track for local preview
-            localVideoTrack!.attach(self.previewView)
+            // Add renderer to video track for local preview
+            localVideoTrack!.addRenderer(self.previewView)
 
             logMessage(messageText: "Video track added to localMedia")
 
@@ -184,7 +227,9 @@ class ViewController: UIViewController {
     func cleanupRemoteParticipant() {
         if ((self.participant) != nil) {
             if ((self.participant?.media.videoTracks.count)! > 0) {
-                self.participant?.media.videoTracks[0].detach(self.remoteView)
+                self.participant?.media.videoTracks[0].removeRenderer(self.remoteView!)
+                self.remoteView?.removeFromSuperview()
+                self.remoteView = nil
             }
         }
         self.participant = nil
@@ -255,7 +300,8 @@ extension ViewController : TVIParticipantDelegate {
         logMessage(messageText: "Participant \(participant.identity) added video track")
 
         if (self.participant == participant) {
-            videoTrack.attach(self.remoteView)
+            setupRemoteVideoView()
+            videoTrack.addRenderer(self.remoteView!)
         }
     }
     
@@ -263,7 +309,9 @@ extension ViewController : TVIParticipantDelegate {
         logMessage(messageText: "Participant \(participant.identity) removed video track")
 
         if (self.participant == participant) {
-            videoTrack.detach(self.remoteView)
+            videoTrack.removeRenderer(self.remoteView!)
+            self.remoteView?.removeFromSuperview()
+            self.remoteView = nil
         }
     }
     

@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     
     // Configure access token manually for testing, if desired! Create one manually in the console
     // at https://www.twilio.com/user/account/video/dev-tools/testing-tools
-    var accessToken = "TWILIO_ACCESS_TOKEN"
+    var accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTS2U0NGRiMjRhZmE5MTg1YjQ2YWZjMDE1NTg2OTQxZDlhLTE0OTIwMjY1MjAiLCJncmFudHMiOnsiaWRlbnRpdHkiOiJwdGFuayIsInJ0YyI6eyJjb25maWd1cmF0aW9uX3Byb2ZpbGVfc2lkIjoiVlMzZjc1ZTBmMTRlN2M4YjIwOTM4ZmM1MDkyZTgyZjIzYSJ9fSwiaWF0IjoxNDkyMDI2NTIwLCJleHAiOjE0OTIwMzM3MjAsImlzcyI6IlNLZTQ0ZGIyNGFmYTkxODViNDZhZmMwMTU1ODY5NDFkOWEiLCJzdWIiOiJBQzk2Y2NjOTA0NzUzYjMzNjRmMjQyMTFlOGQ5NzQ2YTkzIn0.FkJNaMvX5peAwBE9ghTGjL67dkGsNtHdbcT3aVUfOC0"
 
     // Configure remote URL to fetch token from
     var tokenUrl = "http://localhost:8000/token.php"
@@ -28,6 +28,7 @@ class ViewController: UIViewController {
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
     var participant: TVIParticipant?
+    var remoteView: TVIVideoView?
 
     // CallKit components
     let callKitProvider:CXProvider
@@ -35,8 +36,6 @@ class ViewController: UIViewController {
     var callKitCompletionHandler: ((Bool)->Swift.Void?)? = nil
 
     // MARK: UI Element Outlets and handles
-    @IBOutlet weak var remoteView: UIView!
-    @IBOutlet weak var previewView: UIView!
     @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var simulateIncomingButton: UIButton!
     @IBOutlet weak var disconnectButton: UIButton!
@@ -45,6 +44,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
     @IBOutlet weak var micButton: UIButton!
+    @IBOutlet weak var previewView: TVIVideoView!
 
     required init?(coder aDecoder: NSCoder) {
         let configuration = CXProviderConfiguration(localizedName: "CallKit Quickstart")
@@ -86,6 +86,49 @@ class ViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
         self.view.addGestureRecognizer(tap)
     }
+    
+    func setupRemoteVideoView() {
+        self.remoteView = TVIVideoView.init()
+        
+        self.view.addSubview(self.remoteView!)
+        
+        self.view.bringSubview(toFront: self.previewView)
+        self.view.bringSubview(toFront: self.micButton)
+        self.view.bringSubview(toFront: self.disconnectButton)
+        
+        let centerX = NSLayoutConstraint(item: self.remoteView!,
+                                         attribute: NSLayoutAttribute.centerX,
+                                         relatedBy: NSLayoutRelation.equal,
+                                         toItem: self.view,
+                                         attribute: NSLayoutAttribute.centerX,
+                                         multiplier: 1,
+                                         constant: 0);
+        self.view.addConstraint(centerX)
+        let centerY = NSLayoutConstraint(item: self.remoteView!,
+                                         attribute: NSLayoutAttribute.centerY,
+                                         relatedBy: NSLayoutRelation.equal,
+                                         toItem: self.view,
+                                         attribute: NSLayoutAttribute.centerY,
+                                         multiplier: 1,
+                                         constant: 0);
+        self.view.addConstraint(centerY)
+        let width = NSLayoutConstraint(item: self.remoteView!,
+                                       attribute: NSLayoutAttribute.width,
+                                       relatedBy: NSLayoutRelation.equal,
+                                       toItem: self.view,
+                                       attribute: NSLayoutAttribute.width,
+                                       multiplier: 1,
+                                       constant: 0);
+        self.view.addConstraint(width)
+        let height = NSLayoutConstraint(item: self.remoteView!,
+                                        attribute: NSLayoutAttribute.height,
+                                        relatedBy: NSLayoutRelation.equal,
+                                        toItem: self.view,
+                                        attribute: NSLayoutAttribute.height,
+                                        multiplier: 1,
+                                        constant: 0);
+        self.view.addConstraint(height)
+    }
 
     // MARK: IBActions
     @IBAction func connect(sender: AnyObject) {
@@ -125,8 +168,8 @@ class ViewController: UIViewController {
         if (localVideoTrack == nil) {
             logMessage(messageText: "Failed to add video track")
         } else {
-            // Attach view to video track for local preview
-            localVideoTrack!.attach(self.previewView)
+            // Add renderer to video track for local preview
+            localVideoTrack!.addRenderer(self.previewView)
 
             logMessage(messageText: "Video track added to localMedia")
 
@@ -180,7 +223,9 @@ class ViewController: UIViewController {
     func cleanupRemoteParticipant() {
         if ((self.participant) != nil) {
             if ((self.participant?.media.videoTracks.count)! > 0) {
-                self.participant?.media.videoTracks[0].detach(self.remoteView)
+                self.participant?.media.videoTracks[0].removeRenderer(self.remoteView!)
+                self.remoteView?.removeFromSuperview()
+                self.remoteView = nil
             }
         }
         self.participant = nil
@@ -270,7 +315,8 @@ extension ViewController : TVIParticipantDelegate {
         logMessage(messageText: "Participant \(participant.identity) added video track")
 
         if (self.participant == participant) {
-            videoTrack.attach(self.remoteView)
+            setupRemoteVideoView()
+            videoTrack.addRenderer(self.remoteView!)
         }
     }
     
@@ -278,7 +324,9 @@ extension ViewController : TVIParticipantDelegate {
         logMessage(messageText: "Participant \(participant.identity) removed video track")
 
         if (self.participant == participant) {
-            videoTrack.detach(self.remoteView)
+            videoTrack.removeRenderer(self.remoteView!)
+            self.remoteView?.removeFromSuperview()
+            self.remoteView = nil
         }
     }
     
