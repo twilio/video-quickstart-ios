@@ -44,6 +44,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
     @IBOutlet weak var micButton: UIButton!
+    
+    // `TVIVideoView` created from a storyboard
     @IBOutlet weak var previewView: TVIVideoView!
 
     required init?(coder aDecoder: NSCoder) {
@@ -88,13 +90,14 @@ class ViewController: UIViewController {
     }
     
     func setupRemoteVideoView() {
+        // Creating `TVIVideoView` programmatically
         self.remoteView = TVIVideoView.init(frame: CGRect.zero, delegate: self)
         
-        self.view.addSubview(self.remoteView!)
+        self.view.insertSubview(self.remoteView!, at: 0)
         
-        self.view.bringSubview(toFront: self.previewView)
-        self.view.bringSubview(toFront: self.micButton)
-        self.view.bringSubview(toFront: self.disconnectButton)
+        // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit
+        // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
+        self.remoteView!.contentMode = .scaleAspectFit;
         
         let centerX = NSLayoutConstraint(item: self.remoteView!,
                                          attribute: NSLayoutAttribute.centerX,
@@ -362,9 +365,6 @@ extension ViewController : TVIParticipantDelegate {
 
 // MARK: TVIVideoViewDelegate
 extension ViewController : TVIVideoViewDelegate {
-    func videoViewDidReceiveData(_ view: TVIVideoView) {
-    }
-    
     func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
         self.view.setNeedsLayout()
     }
