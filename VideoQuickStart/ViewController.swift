@@ -172,7 +172,7 @@ class ViewController: UIViewController {
         }
 
         // Preview our local camera track in the local video preview view.
-        camera = TVICameraCapturer()
+        camera = TVICameraCapturer(source: .frontCamera, delegate: self)
         localVideoTrack = localMedia?.addVideoTrack(true, capturer: camera!)
         if (localVideoTrack == nil) {
             logMessage(messageText: "Failed to add video track")
@@ -353,5 +353,12 @@ extension ViewController : TVIParticipantDelegate {
 extension ViewController : TVIVideoViewDelegate {
     func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
         self.view.setNeedsLayout()
+    }
+}
+
+// MARK: TVICameraCapturerDelegate
+extension ViewController : TVICameraCapturerDelegate {
+    func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
+        self.previewView.shouldMirror = (source == .frontCamera)
     }
 }
