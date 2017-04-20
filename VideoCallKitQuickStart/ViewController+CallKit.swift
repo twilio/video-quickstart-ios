@@ -200,7 +200,7 @@ extension ViewController {
         }
         
         // Connect to the Room using the options we provided.
-        room = TVIVideoClient.connect(with: connectOptions, delegate: self)
+        room = TwilioVideo.connect(with: connectOptions, delegate: self)
         
         logMessage(messageText: "Attempting to connect to room \(String(describing: roomName))")
         
