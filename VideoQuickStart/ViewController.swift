@@ -230,8 +230,8 @@ class ViewController: UIViewController {
     
     func cleanupRemoteParticipant() {
         if ((self.participant) != nil) {
-            if ((self.participant?.media.videoTracks.count)! > 0) {
-                self.participant?.media.videoTracks[0].removeRenderer(self.remoteView!)
+            if ((self.participant?.videoTracks.count)! > 0) {
+                self.participant?.videoTracks[0].removeRenderer(self.remoteView!)
                 self.remoteView?.removeFromSuperview()
                 self.remoteView = nil
             }
