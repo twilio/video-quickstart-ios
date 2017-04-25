@@ -12,7 +12,7 @@ import AVFoundation
 
 class ViewController : UIViewController {
 
-    var localMedia: TVILocalMedia?
+    var localVideoTrack: TVILocalVideoTrack?
     var remoteView: TVIVideoView?
     var screenCapturer: TVIVideoCapturer?
     var webView: WKWebView?
@@ -68,8 +68,6 @@ class ViewController : UIViewController {
     }
 
     func setupLocalMedia() {
-        localMedia = TVILocalMedia()
-
         // Setup screen capturer
         let capturer: TVIVideoCapturer
         if (useExampleCapturer) {
@@ -78,9 +76,9 @@ class ViewController : UIViewController {
             capturer = TVIScreenCapturer.init(view: self.webView!)
         }
 
-        let videoTrack: TVIVideoTrack? = localMedia?.addVideoTrack(true, capturer: capturer)
+        localVideoTrack = TVILocalVideoTrack.init(capturer: capturer)
 
-        if (videoTrack == nil) {
+        if (localVideoTrack == nil) {
             presentError(message: "Failed to add screen capturer track!")
             return;
         }
@@ -89,10 +87,10 @@ class ViewController : UIViewController {
 
         // Setup rendering
         remoteView = TVIVideoView.init(frame: CGRect.zero, delegate: self)
-        videoTrack?.addRenderer(remoteView!)
+        localVideoTrack?.addRenderer(remoteView!)
 
         remoteView!.isHidden = true
-        self.view.addSubview((self.remoteView)!)
+        self.view.addSubview(self.remoteView!)
         self.view.setNeedsLayout()
     }
 

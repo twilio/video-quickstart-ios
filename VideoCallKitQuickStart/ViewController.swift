@@ -23,7 +23,6 @@ class ViewController: UIViewController {
     
     // Video SDK components
     var room: TVIRoom?
-    var localMedia: TVILocalMedia?
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
@@ -69,9 +68,6 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // LocalMedia represents the collection of tracks that we are sending to other Participants from our VideoClient.
-        localMedia = TVILocalMedia()
-        
         if PlatformUtils.isSimulator {
             self.previewView.removeFromSuperview()
         } else {
@@ -167,14 +163,14 @@ class ViewController: UIViewController {
 
         // Preview our local camera track in the local video preview view.
         camera = TVICameraCapturer(source: .frontCamera, delegate: self)
-        localVideoTrack = localMedia?.addVideoTrack(true, capturer: camera!)
+        localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
         if (localVideoTrack == nil) {
-            logMessage(messageText: "Failed to add video track")
+            logMessage(messageText: "Failed to create video track")
         } else {
             // Add renderer to video track for local preview
             localVideoTrack!.addRenderer(self.previewView)
 
-            logMessage(messageText: "Video track added to localMedia")
+            logMessage(messageText: "Video track created")
 
             // We will flip camera on tap.
             let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
@@ -192,15 +188,19 @@ class ViewController: UIViewController {
 
     func prepareLocalMedia() {
 
-        // We will offer local audio and video when we connect to room.
+        // We will share local audio and video when we connect to the Room.
 
-        // Adding local audio track to localMedia
+        // Create an audio track.
         if (localAudioTrack == nil) {
-            localAudioTrack = localMedia?.addAudioTrack(true)
+            localAudioTrack = TVILocalAudioTrack.init()
+
+            if (localAudioTrack == nil) {
+                logMessage(messageText: "Failed to create audio track")
+            }
         }
 
-        // Adding local video track to localMedia and starting local preview if it is not already started.
-        if (localMedia?.videoTracks.count == 0) {
+        // Create a video track which captures from the camera.
+        if (localVideoTrack == nil) {
             self.startPreview()
         }
     }
