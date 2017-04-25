@@ -10,7 +10,7 @@
 
 #import <TwilioVideo/TwilioVideo.h>
 
-@interface ViewController () <UITextFieldDelegate, TVIParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate>
+@interface ViewController () <UITextFieldDelegate, TVIParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraCapturerDelegate>
 
 // Configure access token manually for testing in `ViewDidLoad`, if desired! Create one manually in the console.
 @property (nonatomic, strong) NSString *accessToken;
@@ -19,7 +19,6 @@
 #pragma mark Video SDK components
 
 @property (nonatomic, strong) TVIRoom *room;
-@property (nonatomic, strong) TVILocalMedia *localMedia;
 @property (nonatomic, strong) TVICameraCapturer *camera;
 @property (nonatomic, strong) TVILocalVideoTrack *localVideoTrack;
 @property (nonatomic, strong) TVILocalAudioTrack *localAudioTrack;
@@ -47,16 +46,13 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    NSLog(@"version = %@",[TVIVideoClient version]);
+    NSLog(@"version = %@",[TwilioVideo version]);
     // Configure access token manually for testing, if desired! Create one manually in the console
     self.accessToken = @"TWILIO_ACCESS_TOKEN";
     
     // Using the PHP server to provide access tokens? Make sure the tokenURL is pointing to the correct location -
     // the default is http://localhost:8000/token.php
     self.tokenUrl = @"http://localhost:8000/token.php";
-    
-    // LocalMedia represents the collection of tracks that we are sending to other Participants from our VideoClient.
-    self.localMedia = [[TVILocalMedia alloc] init];
     
     if ([PlatformUtils isSimulator]) {
         [self.previewView removeFromSuperview];
@@ -125,8 +121,8 @@
         return;
     }
     
-    self.camera = [[TVICameraCapturer alloc] init];
-    self.localVideoTrack = [self.localMedia addVideoTrack:YES capturer:self.camera];
+    self.camera = [[TVICameraCapturer alloc] initWithSource:TVICameraCaptureSourceFrontCamera delegate:self];
+    self.localVideoTrack = [TVILocalVideoTrack trackWithCapturer:self.camera];
     if (!self.localVideoTrack) {
         [self logMessage:@"Failed to add video track"];
     } else {
@@ -142,24 +138,28 @@
 }
 
 - (void)flipCamera {
-    if (self.camera.source == TVIVideoCaptureSourceFrontCamera) {
-        [self.camera selectSource:TVIVideoCaptureSourceBackCameraWide];
+    if (self.camera.source == TVICameraCaptureSourceFrontCamera) {
+        [self.camera selectSource:TVICameraCaptureSourceBackCameraWide];
     } else {
-        [self.camera selectSource:TVIVideoCaptureSourceFrontCamera];
+        [self.camera selectSource:TVICameraCaptureSourceFrontCamera];
     }
 }
 
 - (void)prepareLocalMedia {
     
-    // We will offer local audio and video when we connect to room.
+    // We will share local audio and video when we connect to room.
     
-    // Adding local audio track to localMedia
+    // Create an audio track.
     if (!self.localAudioTrack) {
-        self.localAudioTrack = [self.localMedia addAudioTrack:YES];
+        self.localAudioTrack = [TVILocalAudioTrack track];
+
+        if (!self.localAudioTrack) {
+            [self logMessage:@"Failed to add audio track"];
+        }
     }
-    
-    // Adding local video track to localMedia and starting local preview if it is not already started.
-    if (self.localMedia.videoTracks.count == 0) {
+
+    // Create a video track which captures from the camera.
+    if (!self.localVideoTrack) {
         [self startPreview];
     }
 }
@@ -177,15 +177,16 @@
                                                                       block:^(TVIConnectOptionsBuilder * _Nonnull builder) {
 
         // Use the local media that we prepared earlier.
-        builder.localMedia = self.localMedia;
-        
+        builder.audioTracks = self.localAudioTrack ? @[ self.localAudioTrack ] : @[ ];
+        builder.videoTracks = self.localVideoTrack ? @[ self.localVideoTrack ] : @[ ];
+
         // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
         // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
         builder.roomName = self.roomTextField.text;
     }];
     
     // Connect to the Room using the options we provided.
-    self.room = [TVIVideoClient connectWithOptions:connectOptions delegate:self];
+    self.room = [TwilioVideo connectWithOptions:connectOptions delegate:self];
     
     [self logMessage:[NSString stringWithFormat:@"Attempting to connect to room %@", self.roomTextField.text]];
 }
@@ -254,8 +255,8 @@
 
 - (void)cleanupRemoteParticipant {
     if (self.participant) {
-        if ([self.participant.media.videoTracks count] > 0) {
-            [self.participant.media.videoTracks[0] removeRenderer:self.remoteView];
+        if ([self.participant.videoTracks count] > 0) {
+            [self.participant.videoTracks[0] removeRenderer:self.remoteView];
             [self.remoteView removeFromSuperview];
         }
         self.participant = nil;
@@ -371,6 +372,12 @@
 - (void)videoView:(TVIVideoView *)view videoDimensionsDidChange:(CMVideoDimensions)dimensions {
     NSLog(@"Dimensions changed to: %d x %d", dimensions.width, dimensions.height);
     [self.view setNeedsLayout];
+}
+
+#pragma mark - TVICameraCapturerDelegate
+
+- (void)cameraCapturer:(TVICameraCapturer *)capturer didStartWithSource:(TVICameraCaptureSource)source {
+    self.previewView.mirror = (source == TVICameraCaptureSourceFrontCamera);
 }
 
 @end
