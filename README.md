@@ -68,15 +68,16 @@ To get started with the Quickstart application follow these steps:
 
 <img width="700px" src="images/quickstart/xcode-video-quickstart.png"/>
 
-2. Next, you need to generate a valid Access Token and paste in the `Viewcontroller.swift`. Step 3 provides details on Generating an Access Token. Once you generate an Access Token, paste it in the `ViewController.swift`.
+2. Next, you need to generate a valid Access Token. Log in to the Twilio Console and go to the [Testing Tools page](https://www.twilio.com/user/account/video/dev-tools/testing-tools) shown below. Pick a name for your user identity (such as "Alice"), type it in the identity textbox and click "Generate Access Token". Copy the Access Token string that will appear in the gray box - we will need in the following step.
 
-<img width="700px" src="images/quickstart/xcode-video-quickstart-token.png"/>
-
-3. Log in to the Twilio Console and go to the Testing Tools page [testing tools page](https://www.twilio.com/user/account/video/dev-tools/testing-tools) shown below. Type in the identity and click on "Generate Access Token". Pick a name for your user identity (such as "Alice"). If you enter the Room Name, then you can retrict this user's access to the specified Room only. Read this [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens) to learn more about Access Tokens that limit access to a specific Room. Copy the generated Access Token and paste it in the `ViewController.swift` as mentioned in Step 2.
 
 <img width="700px" src="images/quickstart/generate_access_tokens.png"/>
 
-*Note: Ideally, you want to implement and deploy an Access Token server to generate tokens. You can read more about setting up your own Access Token Server in this [section](#setup-an-access-token-server)*
+*Note: If you enter the Room Name, then you can retrict this user's access to the specified Room only. Ideally, you want to implement and deploy an Access Token server to generate tokens. You can read more about setting up your own Access Token Server in this [section](#setup-an-access-token-server). Read this [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens) to learn more about Access Tokens.*
+
+3. Paste the token you generated in the earlier step in the `ViewController.swift`.
+
+<img width="700px" src="images/quickstart/xcode-video-quickstart-token.png"/>
 
 
 4. Run the Quickstart app on your iOS device or iOS Simulator. 
@@ -104,9 +105,9 @@ Using Twilio's Video client within your applications requires an access token. A
 
 ### Configuring the Access Token Server
 
-If you want to be a little closer to a real environment, you can download one of the video quickstart applications - for instance, [Video Quickstart: PHP](https://github.com/TwilioDevEd/video-quickstart-php) and either run it locally, or install it on a server. You can review a detailed [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens#generating-access-tokens). 
+If you want to be a little closer to a real environment, you can download one of the video quickstart server applications - for instance, [Video Quickstart: PHP](https://github.com/TwilioDevEd/video-quickstart-php) and either run it locally, or install it on a server. You can review a detailed [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens#generating-access-tokens). 
 
-You'll need to gather a couple of configuration options from your Twilio developer console before running it, so read the directions on the quickstart. You'll copy the config.example.php file to a config.php file, and then add in these credentials:
+You'll need to gather a couple of configuration options from the Twilio developer console before running it, so read the directions on the quickstart. You'll copy the config.example.php file to a config.php file, and then add in these credentials:
  
  Credential | Description
 ---------- | -----------
