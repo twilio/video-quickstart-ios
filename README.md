@@ -1,6 +1,6 @@
 # Twilio Video Quick Start for Objective-C
 
-> NOTE: This application uses Twilio's new Programmable Video Rooms API, which is currently available in Beta. The docs are [here](https://media.twiliocdn.com/sdk/ios/video/v1.0/docs/).
+This application demonstrates the use of Twilio's new Programmable Video Rooms API. The API docs are [here](https://media.twiliocdn.com/sdk/ios/video/v1.0/docs/).
 
 ## Up and Running
 
