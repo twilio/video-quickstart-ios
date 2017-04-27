@@ -1,6 +1,6 @@
 # Twilio Video Quick Start for Objective-C
 
-> NOTE: This application uses Twilio's new Programmable Video Rooms API, which is currently available in Beta. The docs are [here](https://media.twiliocdn.com/sdk/ios/video/v1.0/docs/).
+This application demonstrates the use of Twilio's new Programmable Video Rooms API. The API docs are [here](https://media.twiliocdn.com/sdk/ios/video/v1.0/docs/).
 
 ## Up and Running
 
@@ -8,9 +8,9 @@ To get started, we'll make a 1:1 video call between the iPhone simulator in Xcod
 
 1) Download this project and run `pod install` to install TwilioVideo.framework. Open ObjCVideoQuickstart.xcworkspace in Xcode.
 
-2) Create a Twilio Video [Configuration Profile](https://www.twilio.com/console/video/profiles) in the Twilio Console. If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio). It's free!
+2) If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio). It's free!
 
-3) Generate an [Access Token](https://www.twilio.com/console/video/dev-tools/testing-tools) in the Twilio Console. Pick a name for your user identity (such as "Alice"). Leave this web page open, because you'll use it as the other side of the video chat.
+3) Generate an [Access Token](https://www.twilio.com/console/video/dev-tools/testing-tools) in the Twilio Console. Pick a name for your user identity (such as "Alice").
 
 4) Copy and paste the access token into ViewController.m.
 
@@ -30,7 +30,7 @@ This quick start will help you get video chat integrated directly into your iOS 
 
 This sample app is written in Ojective-C. You will need at least Xcode 8.0 in order to run the application.
 
-Review the code to see how how to set up key classes like `TVIVideoClient`, `TVIRoom`, `TVIParticipant`, `TVILocalMedia`, and `TVICameraCapturer`. The ViewController implements the `TVIRoomDelegate`, and `TVIParticipantDelegate` protocols in order to display remote Participant video on screen.
+Review the code to see how how to set up key classes like `TwilioVideo`, `TVIRoom`, `TVIParticipant`, and `TVICameraCapturer`. The ViewController implements the `TVIRoomDelegate`, and `TVIParticipantDelegate` protocols in order to display remote Participant video on screen.
 
 ## Prerequisites
 
