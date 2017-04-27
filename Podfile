@@ -1,5 +1,5 @@
-source 'https://github.com/twilio/cocoapod-specs'
+source 'https://github.com/CocoaPods/Specs'
 
 target 'ObjCVideoQuickstart' do
-  pod 'TwilioVideo', '1.0.0-beta16'
+  pod 'TwilioVideo', '~> 1.0.0'
 end
