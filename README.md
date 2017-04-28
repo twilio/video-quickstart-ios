@@ -66,22 +66,18 @@ Note: If you enter the Room Name, then you can restrict this user's access to th
 
 <img width="562px" src="images/quickstart/room-connected.png"/>
 
-
 ### Using a Simulator
 
 You can use the iOS Simulator that comes with Xcode to do your testing, but local video will not be shared since the Simulator cannot access a camera. 
 
-Note:If you have an iOS device, you can now run apps from Xcode on your device without a paid developer account.
-
+Note: If you have an iOS device, you can now run apps from Xcode on your device without a paid developer account.
 
 ## Examples
 
 You will also find additional examples that provide more advanced use cases of the Video SDK. The currently included examples are as follows:
 
 - [Screen Capturer](ScreenCapturerExample) - Shows how to use `TVIScreenCapturer` to capture the contents of a `UIView`, and how a custom `TVIVideoCapturer` can be implemented to do the same.
-- [Video CallKit](VideoCallKitExample) - Shows how to use Twilio Video with the [iOS CallKit framework](https://developer.apple.com/reference/callkit).
-
-
+- [Video CallKit](VideoCallKitExample) - Shows how to use Twilio Video with the [CallKit framework](https://developer.apple.com/reference/callkit).
 
 ## Setup an Access Token Server
 
@@ -97,7 +93,7 @@ You'll need to gather a couple of configuration options from the Twilio develope
 ---------- | -----------
 Twilio Account SID | Your main Twilio account identifier - [find it on your dashboard](https://www.twilio.com/user/account/video).
 API Key | Used to authenticate - [generate one here](https://www.twilio.com/user/account/messaging/dev-tools/api-keys).
-API Secret | Used to authenticate - [just like the above, you'll get one here](https://www.twilio.com/user/account/messaging/dev-tools/api-keys).
+API Secret | Used to authenticate - [just like the above, you'll get one here](https://www.twilio.com/console).
 
 Use whatever clever username you would like for the identity. If you enter the Room Name, then you can restrict this users access to the specified Room only. Read this [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens) for more information on Access Tokens. 
 
