@@ -26,11 +26,11 @@ Note: if your app uses Objective-C see [video-quickstart-objective-c](https://gi
 
 1. Install [CocoaPods 1.0.0+](https://guides.cocoapods.org/using/getting-started.html). 
 
-1. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up a `.xcworkspace`.
+1. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up an `xcworkspace`.
 
 1. Open `VideoQuickStart.xcworkspace`.
 
-Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com/CocoaPods/Specs) by running `pod repo update master` in order to fetch the latest specs of TwilioVideo.
+Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com/CocoaPods/Specs) by running `pod repo update master` in order to fetch the latest specs for TwilioVideo.
 
 ### Manual Integration
 
@@ -46,17 +46,15 @@ To get started with the Quickstart application follow these steps:
 
 <img width="700px" src="images/quickstart/xcode-video-quickstart.png"/>
 
-2. Next, you need to generate a valid Access Token. Log in to the Twilio Console and go to the [Testing Tools page](https://www.twilio.com/user/account/video/dev-tools/testing-tools) shown below. Pick a name for your user identity (such as "Alice"), type it in the identity textbox and click "Generate Access Token". Copy the Access Token string that will appear in the gray box - we will need in the following step.
-
+2. Type in an identity and click on "Generate Access Token" from the [Testing Tools page](https://www.twilio.com/user/account/video/dev-tools/testing-tools).
 
 <img width="700px" src="images/quickstart/generate_access_tokens.png"/>
 
-Note: If you enter the Room Name, then you can retrict this user's access to the specified Room only. Ideally, you want to implement and deploy an Access Token server to generate tokens. You can read more about setting up your own Access Token Server in this [section](#setup-an-access-token-server). Read this [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens) to learn more about Access Tokens.
+Note: If you enter the Room Name, then you can restrict this user's access to the specified Room only. Ideally, you want to implement and deploy an Access Token server to generate tokens. You can read more about setting up your own Access Token Server in this [section](#setup-an-access-token-server). Read this [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens) to learn more about Access Tokens.
 
 3. Paste the token you generated in the earlier step in the `ViewController.swift`.
 
 <img width="700px" src="images/quickstart/xcode-video-quickstart-token.png"/>
-
 
 4. Run the Quickstart app on your iOS device or simulator.
 
