@@ -19,21 +19,21 @@ This project uses Apple's Swift 3.0 programming language for iOS.
 
 If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 
-**Note: if your app uses Objective-C see [video-quickstart-objective-c](https://github.com/twilio/video-quickstart-objc/).**
+Note: if your app uses Objective-C see [video-quickstart-objective-c](https://github.com/twilio/video-quickstart-objc/).
 
-#### CocoaPods 
+### CocoaPods 
 
 1. Install [CocoaPods 1.0.0+](https://guides.cocoapods.org/using/getting-started.html). 
 
-1. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up a `VideoQuickStart.xcworkspace` 
+1. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up a `.xcworkspace`.
 
 1. Open `VideoQuickStart.xcworkspace`.
 
 Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com/CocoaPods/Specs) by running `pod repo update master` in order to fetch the latest specs of TwilioVideo.
 
-#### Manual Integration
+### Manual Integration
 
-You can integrate `TwilioVideo.framework` manually by following [these install instructions](https://www.twilio.com/docs/api/video/download-video-sdks#manual).
+You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/api/video/download-video-sdks#manual).
 
 ## Quickstart
 
@@ -68,11 +68,11 @@ To get started with the Quickstart application follow these steps:
 <img width="562px" src="images/quickstart/room-connected.png" style="border: 1px solid black"/>
 
 
-## Using a Simulator
+### Using a Simulator
 
 You can use the iOS Simulator that comes with Xcode to do your testing, but local video will not be shared since the Simulator cannot access a camera. 
 
-**Note:If you have an iOS device, you can now run apps from Xcode on your device without a paid developer account.**
+Note:If you have an iOS device, you can now run apps from Xcode on your device without a paid developer account.
 
 
 ## Examples
@@ -99,14 +99,6 @@ You'll need to gather a couple of configuration options from the Twilio develope
 Twilio Account SID | Your main Twilio account identifier - [find it on your dashboard](https://www.twilio.com/user/account/video).
 API Key | Used to authenticate - [generate one here](https://www.twilio.com/user/account/messaging/dev-tools/api-keys).
 API Secret | Used to authenticate - [just like the above, you'll get one here](https://www.twilio.com/user/account/messaging/dev-tools/api-keys).
-
-
-### Generating an Access Token in the Twilio Video Console
-
-If you don't want to setup an Access Token Server just yet and want to test out the Quickstart Application, then you can choose to generate your Access Tokens in the [Twilio Video Console](https://www.twilio.com/user/account/video/dev-tools/testing-tools). 
-
-
-<img width="700px" src="images/quickstart/generate_access_tokens.png"/>
 
 Use whatever clever username you would like for the identity. If you enter the Room Name, then you can retrict this users access to the specified Room only. Read this [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens) for more information on Access Tokens. 
 
