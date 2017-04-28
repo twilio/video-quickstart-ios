@@ -41,7 +41,7 @@ You can integrate `TwilioVideo.framework` manually by following [these install i
 
 To get started with the Quickstart application follow these steps:
 
-1. Open this project in Xcode
+1. Open this `VideoQuickStart.xcworkspace` in Xcode
 
 <img width="700px" src="images/quickstart/xcode-video-quickstart.png"/>
 
@@ -59,13 +59,13 @@ To get started with the Quickstart application follow these steps:
 
 4. Run the Quickstart app on your iOS device or iOS Simulator. 
 
-<img width="700px" src="images/quickstart/home-screen.png"/>
+<img width="562px" src="images/quickstart/home-screen.png"/>
 
 5. As in Step 2, generate a new Token for another identity (such as "Bob"). Copy and paste the access token into `ViewController.swift` (replacing the one you used earlier). Build and run the app on a second physical device if you have one, or the iPhone simulator.
 
 6. Once you have both apps running, enter an identical Room name (such as "MyRoom") into both apps, and tap "Connect" to connect to a video Room (you'll be prompted for mic and camera access on the physical device). Once you've connected from both devices, you should see video! (Since the iPhone Simulator doesn't have a camera you'll only see video in one direction if you're using that environment.)
 
-<img width="700px" src="images/quickstart/room-connected.png"/>
+<img width="562px" src="images/quickstart/room-connected.png"/>
 
 
 ## Using a Simulator
