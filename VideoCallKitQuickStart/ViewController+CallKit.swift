@@ -9,13 +9,14 @@ import UIKit
 
 import TwilioVideo
 import CallKit
+import AVFoundation
 
 extension ViewController : CXProviderDelegate {
 
     func providerDidReset(_ provider: CXProvider) {
         logMessage(messageText: "providerDidReset:")
 
-        localMedia?.audioController.stopAudio()
+        TVIAudioController.shared().stopAudio()
         room?.disconnect()
     }
 
@@ -26,7 +27,7 @@ extension ViewController : CXProviderDelegate {
     func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
         logMessage(messageText: "provider:didActivateAudioSession:")
 
-        localMedia?.audioController.startAudio()
+        TVIAudioController.shared().startAudio()
     }
 
     func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
@@ -44,7 +45,7 @@ extension ViewController : CXProviderDelegate {
          * Configure the audio session, but do not start call audio here, since it must be done once
          * the audio session has been activated by the system after having its priority elevated.
          */
-        localMedia?.audioController.configureAudioSession(.videoChatSpeaker)
+        TVIAudioController.shared().configureAudioSession(.videoChatSpeaker)
 
         callKitProvider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: nil)
         
@@ -65,7 +66,7 @@ extension ViewController : CXProviderDelegate {
          * Configure the audio session, but do not start call audio here, since it must be done once
          * the audio session has been activated by the system after having its priority elevated.
          */
-        self.localMedia?.audioController.configureAudioSession(.videoChatSpeaker)
+        TVIAudioController.shared().configureAudioSession(.videoChatSpeaker)
 
         performRoomConnect(uuid: action.callUUID, roomName: self.roomTextField.text) { (success) in
             if (success) {
@@ -79,7 +80,7 @@ extension ViewController : CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         NSLog("provider:performEndCallAction:")
 
-        localMedia?.audioController.stopAudio()
+        TVIAudioController.shared().stopAudio()
         room?.disconnect()
 
         action.fulfill()
@@ -188,7 +189,8 @@ extension ViewController {
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
 
             // Use the local media that we prepared earlier.
-            builder.localMedia = self.localMedia
+            builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
+            builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
 
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
@@ -199,7 +201,7 @@ extension ViewController {
         }
         
         // Connect to the Room using the options we provided.
-        room = TVIVideoClient.connect(with: connectOptions, delegate: self)
+        room = TwilioVideo.connect(with: connectOptions, delegate: self)
         
         logMessage(messageText: "Attempting to connect to room \(String(describing: roomName))")
         
