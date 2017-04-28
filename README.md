@@ -1,78 +1,91 @@
-# Twilio Video Quick Start for Objective-C
 
-This application demonstrates the use of Twilio's new Programmable Video Rooms API. The API docs are [here](https://media.twiliocdn.com/sdk/ios/video/v1.0/docs/).
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/api/video/download-video-sdks#ios-sdk)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://media.twiliocdn.com/sdk/ios/video/latest/docs/index.html)
 
-## Up and Running
+# Twilio Video Quickstart for Objective-C
 
-To get started, we'll make a 1:1 video call between the iPhone simulator in Xcode and your own iOS device.
+Get started with Video on iOS:
 
-1) Download this project and run `pod install` to install TwilioVideo.framework. Open ObjCVideoQuickstart.xcworkspace in Xcode.
+- [Setup](#setup) - Get setup
+- [Quickstart](#quickstart) - Run the Quickstart app
+- [Setup an Access Token Server](#setup-an-access-token-server) - Setup an access token server
+- [More Documentation](#more-documentation) - More documentation related to the iOS Video SDK
+- [Issues & Support](#issues-and-support) - Filing issues and general support
+- [License](#license)
 
-2) If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio). It's free!
+## Setup 
 
-3) Generate an [Access Token](https://www.twilio.com/console/video/dev-tools/testing-tools) in the Twilio Console. Pick a name for your user identity (such as "Alice").
+If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 
-4) Copy and paste the access token into ViewController.m.
+Note: if your app uses Swift see [video-quickstart-swift](https://github.com/twilio/video-quickstart-swift/).
 
-5) Build and run the app on a physical device (iPhone, iPod Touch, etc.)
+### CocoaPods 
 
-6) On the same web page where you generated the token, generate another Access Token for another identity (such as "Bob")
+1. Install [CocoaPods 1.0.0+](https://guides.cocoapods.org/using/getting-started.html). 
 
-7) Copy and paste the access token into ViewController.m (replacing the one you used earlier).
+1. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up an `xcworkspace`.
 
-8) Build and run the app on a second physical device if you have one, or the iPhone simulator.
+1. Open `ObjCVideoQuickstart.xcworkspace`.
 
-9) Once you have both apps running, enter an identical Room name (such as "MyRoom") into both apps, and tap "Connect" to connect to a video Room (you'll be prompted for mic and camera access on the physical device). Once you've connected from both devices, you should see video! (Since the iPhone Simulator doesn't have a camera you'll only see video in one direction if you're using that environment.)
+Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com/CocoaPods/Specs) by running `pod repo update master` in order to fetch the latest specs for TwilioVideo.
 
-## What is this project?
+### Manual Integration
 
-This quick start will help you get video chat integrated directly into your iOS applications using Twilio's Video SDK. This quick start is for Objective-C developers - if your app uses Swift, use the [Swift quick start](https://github.com/twilio/video-quickstart-swift/tree/rooms) instead.
+You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/api/video/download-video-sdks#manual).
 
-This sample app is written in Ojective-C. You will need at least Xcode 8.0 in order to run the application.
+## Quickstart
 
-Review the code to see how how to set up key classes like `TwilioVideo`, `TVIRoom`, `TVIParticipant`, and `TVICameraCapturer`. The ViewController implements the `TVIRoomDelegate`, and `TVIParticipantDelegate` protocols in order to display remote Participant video on screen.
+### Running the Quickstart
 
-## Prerequisites
+To get started with the Quickstart application follow these steps:
 
-This project uses Apple's Objective-C for iOS, and the only supported way to develop iOS apps is on an Apple computer running OS X and Xcode. We have tested this application with the latest versions of iOS (10.0) and Xcode (8.0) at the time of this writing.
+1. Open this `ObjCVideoQuickstart.xcworkspace` in Xcode
 
-You can use the iOS Simulator that comes with Xcode to do your testing, but local video will not be shared since the Simulator cannot access a camera. If you have an iOS device, you can now run apps from Xcode on your device without a paid developer account.
+<img width="700px" src="images/quickstart/xcode-video-quickstart.png"/>
 
-## Twilio Library Setup for the Project
+2. Type in an identity and click on "Generate Access Token" from the [Testing Tools page](https://www.twilio.com/user/account/video/dev-tools/testing-tools).
 
-You will need to add the Twilio Video library to the project to compile and run. You can do this using the [Cocoapods](https://cocoapods.org/) dependency management system. Version 1.0 or greater is required.
+<img width="700px" src="images/quickstart/generate_access_tokens.png"/>
 
-### Using Cocoapods
+Note: If you enter the Room Name, then you can restrict this user's access to the specified Room only. Ideally, you want to implement and deploy an Access Token server to generate tokens. You can read more about setting up your own Access Token Server in this [section](#setup-an-access-token-server). Read this [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens) to learn more about Access Tokens.
 
-First, you will need to have Cocoapods 1.0.0+ installed on your Mac, so go ahead and do that if you haven't already - the directions are here: [Getting Started with Cocoapods](https://guides.cocoapods.org/using/getting-started.html). If you're not sure, type `pod --version` into a command line.
+3. Paste the token you generated in the earlier step in the `ViewController.m`.
 
-Next, just run `pod install` from the command line in the top level directory of this project. Cocoapods will install the Twilio library and then set up a .xcworkspace file that you will use to run your project from now on.
+<img width="700px" src="images/quickstart/xcode-video-quickstart-token.png"/>
 
-> NOTE: If you've used [Twilio's Cocoapods Spec Repo](https://github.com/twilio/cocoapod-specs) before you may need to update it by running `pod repo update twilio` before installing dependencies.
+4. Run the Quickstart app on your iOS device or simulator.
 
-## Access Tokens and Servers
+<img width="562px" src="images/quickstart/home-screen.png"/>
 
-Using Twilio's Video client within your applications requires an access token. These access tokens can come from one of two places:
+5. As in Step 2, generate a new Token for another identity (such as "Bob"). Copy and paste the access token into `ViewController.m` (replacing the one you used earlier). Build and run the app on a second physical device if you have one, or the iPhone simulator.
 
-1) You can create a one-time use access token for testing in the [Twilio Console](https://www.twilio.com/console/video/profiles). This access token can be hard-coded directly into your mobile app, and you won't need to run your own server. This works for local development and testing, but isn't a solution for a production environment.
+6. Once you have both apps running, enter an identical Room name (such as "my-cool-room") into both apps, and tap "Connect" to connect to a video Room (you'll be prompted for mic and camera access on the physical device). Once you've connected from both devices, you should see video!
 
-2) When you're ready to take the next step, you can run your own server that provides access tokens using your Twilio credentials. This server can either run locally on your development machine, or it can be installed on a server. If you run the server on your local machine, you can use [ngrok](https://ngrok.com/) to give the server an externally accessible web address. That way, you can run the quick start app on an actual device, instead of the iOS Simulator.
+<img width="562px" src="images/quickstart/room-connected.png"/>
 
-### Generating an Access Token
+### Using a Simulator
 
-The first step is to [Generate an Access Token](https://www.twilio.com/user/account/video/dev-tools/testing-tools) from the Twilio developer console. Use whatever clever username you would like for the identity. You will get an access token that you can copy and paste into ViewController.m.
+You can use the iOS Simulator that comes with Xcode to do your testing, but local video will not be shared since the Simulator cannot access a camera. 
 
-### Setting up a Video Chat Web Server
+Note: If you have an iOS device, you can now run apps from Xcode on your device without a paid developer account.
 
-If you want to be a little closer to a real environment, you can download one of the video quickstart applications - for instance, [Video Quickstart: PHP](https://github.com/TwilioDevEd/video-quickstart-php) and either run it locally, or install it on a server.
+## Setup an Access Token Server
 
-You'll need to gather a couple of configuration options from your Twilio developer console before running it, so read the directions on the quickstart. You'll copy the config.example.php file to a config.php file, and then add in these credentials:
+Using Twilio's Video client within your applications requires an access token. Access Tokens are short-lived credentials that are signed with a Twilio API Key Secret and contain grants which govern the actions the client holding the token is permitted to perform. 
 
-Credential | Description
+### Configuring the Access Token Server
+
+If you want to be a little closer to a real environment, you can download one of the video Quickstart server applications - for instance, [Video Quickstart: PHP](https://github.com/TwilioDevEd/video-quickstart-php) and either run it locally, or install it on a server. You can review a detailed [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens#generating-access-tokens). 
+
+You'll need to gather a couple of configuration options from the Twilio developer console before running it, so read the directions on the Quickstart. You'll copy the config.example.php file to a config.php file, and then add in these credentials:
+ 
+ Credential | Description
 ---------- | -----------
 Twilio Account SID | Your main Twilio account identifier - [find it on your dashboard](https://www.twilio.com/user/account/video).
 API Key | Used to authenticate - [generate one here](https://www.twilio.com/user/account/messaging/dev-tools/api-keys).
-API Secret | Used to authenticate - [just like the above, you'll get one here](https://www.twilio.com/user/account/messaging/dev-tools/api-keys).
+API Secret | Used to authenticate - [just like the above, you'll get one here](https://www.twilio.com/console).
+
+Use whatever clever username you would like for the identity. If you enter the Room Name, then you can restrict this users access to the specified Room only. Read this [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens) for more information on Access Tokens. 
 
 #### A Note on API Keys
 
@@ -83,14 +96,23 @@ be shown once - make sure to save this in a secure location.
 
 Because we suggest that you run your video chat application on actual iOS device so that you can use the camera on the device, you'll need to provide an externally accessible URL for the app (the iOS simulator will be fine with localhost). [Ngrok](https://ngrok.com/)  creates a publicly accessible URL that you can use to send HTTP/HTTPS traffic to a server running on your localhost. Use HTTPS to make web connections that retrieve a Twilio access token.
 
-When you get a URL from ngrok, go ahead and update ViewController.m with the new URL.  If you go down this path, be sure to follow the directions in the comments in the viewDidLoad method at the top of the source file - you will need to uncomment one line, and comment out another. You will also need to update the code if your ngrok URL changes.
+When you get a URL from ngrok, go ahead and update `ViewController.m` with the new URL.  If you go down this path, be sure to follow the directions in the comments in the `viewDidLoad()` method at the top of the source file - you will need to uncomment one line, and comment out another. You will also need to update the code if your ngrok URL changes.
 
-For this quick start, the Application transport security settings are set to allow arbitrary HTTP loads for testing your app. For production applications, you'll definitely want to retrieve access tokens over HTTPS/SSL.
+For this Quickstart, the Application transport security settings are set to allow arbitrary HTTP loads for testing your app. For production applications, you'll definitely want to retrieve access tokens over HTTPS/SSL.
 
-## Have fun!
+## More Documentation
 
-This is an introduction to Twilio's Video SDK on iOS. From here, you can start building applications that use video chat across the web, iOS, and Android platforms.
+You can find more documentation on getting started as well as our latest Docs below:
+
+* [Getting Started](https://www.twilio.com/docs/api/video/getting-started)
+* [Docs](https://media.twiliocdn.com/sdk/ios/video/latest/docs)
+
+## Issues and Support
+
+Please file any issues you find here on Github.
+
+For general inquiries related to the Video SDK you can file a [support ticket](https://support.twilio.com/hc/en-us/requests/new).
 
 ## License
 
-MIT
+[MIT License](https://github.com/twilio/video-quickstart-objc/blob/master/LICENSE)
