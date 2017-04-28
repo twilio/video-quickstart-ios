@@ -15,50 +15,27 @@ Get started with Video on iOS:
 
 ## Setup 
 
-### Twilio Library Setup for the Project
+This project uses Apple's Swift 3.0 programming language for iOS. 
 
-You will need to add the Twilio Video library to the project to compile and run. You can do this using the [CocoaPods](https://cocoapods.org/) dependency management system. 
-
-#### Using CocoaPods
-
-First, you will need to have CocoaPods 1.0.0+ installed on your Mac, so go ahead and do that if you haven't already - the directions are here: [Getting Started with CocoaPods](https://guides.cocoapods.org/using/getting-started.html). If you're not sure, type `pod --version` into a command line.
-
-Next, just run `pod install` from the command line in the top level directory of this project. CocoaPods will install the Twilio library and then set up a .xcworkspace file that you will use to run your project from now on.
-
-**Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com/CocoaPods/Specs) by running `pod repo update master` in order to fetch the latest specs of TwilioVideo.** 
-
-#### Using a Simulator
-
-You can use the iOS Simulator that comes with Xcode to do your testing, but local video will not be shared since the Simulator cannot access a camera. 
-
-**Note:If you have an iOS device, you can now run apps from Xcode on your device without a paid developer account.**
-
-
-#### Prerequisites
-
-This project uses Apple's Swift programming language 3.0 for iOS, and the only supported way to develop iOS apps is on an Apple computer running OS X and Xcode. We have tested this application with the latest versions of iOS (10.3) and Xcode (8.3) at the time of this writing. 
-
-**Note: If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!**
-
-
-#### About the Quickstart Project
-
-This project consists of two sample apps: one using CallKit, and one without CallKit support.
-
-The quickstarts will help you integrate Twilio Video directly into your iOS applications using Twilio's Video SDK. These examples are for Swift developers.
+If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 
 **Note: if your app uses Objective-C see [video-quickstart-objective-c](https://github.com/twilio/video-quickstart-objc/).**
 
+#### CocoaPods 
 
-Review the code to see how how to set up key classes like `TwilioVideo`, `TVIRoom`, `TVIParticipant`, and `TVICameraCapturer`. The ViewController implements the `TVIRoomDelegate`, and `TVIParticipantDelegate` protocols in order to display remote Participant video on screen.
+1. Install [CocoaPods 1.0.0+](https://guides.cocoapods.org/using/getting-started.html). 
 
-Download this project and run `pod install` to install TwilioVideo.framework. Open VideoQuickStart.xcworkspace in Xcode.
+1. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up a `VideoQuickStart.xcworkspace` 
 
+1. Open `VideoQuickStart.xcworkspace`.
 
+Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com/CocoaPods/Specs) by running `pod repo update master` in order to fetch the latest specs of TwilioVideo.
+
+#### Manual Integration
+
+You can integrate `TwilioVideo.framework` manually by following [these install instructions](https://www.twilio.com/docs/api/video/download-video-sdks#manual).
 
 ## Quickstart
-
-
 
 ### Running the Quickstart
 
@@ -89,6 +66,13 @@ To get started with the Quickstart application follow these steps:
 6. Once you have both apps running, enter an identical Room name (such as "MyRoom") into both apps, and tap "Connect" to connect to a video Room (you'll be prompted for mic and camera access on the physical device). Once you've connected from both devices, you should see video! (Since the iPhone Simulator doesn't have a camera you'll only see video in one direction if you're using that environment.)
 
 <img width="700px" src="images/quickstart/room-connected.png"/>
+
+
+## Using a Simulator
+
+You can use the iOS Simulator that comes with Xcode to do your testing, but local video will not be shared since the Simulator cannot access a camera. 
+
+**Note:If you have an iOS device, you can now run apps from Xcode on your device without a paid developer account.**
 
 
 ## Examples
