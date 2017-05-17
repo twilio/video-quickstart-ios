@@ -64,6 +64,11 @@ class ViewController: UIViewController {
         callKitProvider.setDelegate(self, queue: nil)
     }
 
+    deinit {
+        // CallKit has an odd API contract where the developer must call invalidate or the CXProvider is leaked.
+        callKitProvider.invalidate()
+    }
+
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
