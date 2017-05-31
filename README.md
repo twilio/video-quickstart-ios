@@ -77,7 +77,7 @@ Note: If you have an iOS device, you can now run apps from Xcode on your device 
 You will also find additional examples that provide more advanced use cases of the Video SDK. The currently included examples are as follows:
 
 - [Screen Capturer](ScreenCapturerExample) - Shows how to use `TVIScreenCapturer` to capture the contents of a `UIView`, and how a custom `TVIVideoCapturer` can be implemented to do the same.
-- [Video CallKit](VideoCallKitExample) - Shows how to use Twilio Video with the [CallKit framework](https://developer.apple.com/reference/callkit).
+- [Video CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit framework](https://developer.apple.com/reference/callkit).
 
 ## Setup an Access Token Server
 
