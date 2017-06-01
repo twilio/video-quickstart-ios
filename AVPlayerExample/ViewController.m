@@ -264,7 +264,7 @@ NSString *const kStatusKey   = @"status";
                 [self doConnect];
             } else {
                 [self logMessage:[NSString stringWithFormat:@"Error retrieving the access token"]];
-                [self showInterfaceState:ViewControllerStateRoom];
+                [self showInterfaceState:ViewControllerStateLobby];
             }
         });
     }];
