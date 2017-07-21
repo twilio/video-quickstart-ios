@@ -2,7 +2,7 @@
 > Before filing an issue please check that the issue is not already addressed by the following:
 >  * [Video Guides](https://www.twilio.com/docs/api/video)
 >  * [Github Issues](https://github.com/twilio/video-quickstart-objc/issues)
->  * [Changelog](CHANGELOG.md)
+>  * [Changelog](https://www.twilio.com/docs/api/video/changelogs/ios)
 
 ### Description
 
