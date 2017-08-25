@@ -56,6 +56,7 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = true
         self.micButton.isHidden = true
         
+        self.roomTextField.autocapitalizationType = .none
         self.roomTextField.delegate = self
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
