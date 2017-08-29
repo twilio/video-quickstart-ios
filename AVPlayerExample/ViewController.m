@@ -90,6 +90,7 @@ NSString *const kStatusKey   = @"status";
     // Start with the Lobby UI
     [self showInterfaceState:ViewControllerStateLobby];
 
+    self.roomTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self.roomTextField.delegate = self;
 
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];

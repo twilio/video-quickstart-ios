@@ -63,6 +63,7 @@
     self.disconnectButton.hidden = YES;
     self.micButton.hidden = YES;
     
+    self.roomTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self.roomTextField.delegate = self;
 
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
