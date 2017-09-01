@@ -146,7 +146,7 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
         let status = CVPixelBufferCreateWithBytes(nil,
                                                   (image?.width)!,
                                                   (image?.height)!,
-                                                  TVIPixelFormat.format32ARGB.rawValue,
+                                                  TVIPixelFormat.format32BGRA.rawValue,
                                                   UnsafeMutableRawPointer( mutating: baseAddress!),
                                                   (image?.bytesPerRow)!,
                                                   { releaseContext, baseAddress in
