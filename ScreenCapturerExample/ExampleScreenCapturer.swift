@@ -34,7 +34,7 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
          */
         let screenSize = UIScreen.main.bounds.size
         let format = TVIVideoFormat()
-        format.pixelFormat = TVIPixelFormat.format32ARGB
+        format.pixelFormat = TVIPixelFormat.format32BGRA
         format.frameRate = UInt(desiredFrameRate)
         format.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
         supportedFormats = [format]
