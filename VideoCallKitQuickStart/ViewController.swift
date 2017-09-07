@@ -308,7 +308,7 @@ extension ViewController : TVIRoomDelegate {
             self.remoteParticipant = participant
             self.remoteParticipant?.delegate = self
         }
-       logMessage(messageText: "Room \(room.name), Participant \(participant.identity) connected")
+       logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
     }
     
     func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
