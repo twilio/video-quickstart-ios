@@ -388,16 +388,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
     }
     
     func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           enabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
-        logMessage(messageText: "Participant \(participant.identity) enabled audio track")
-    }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
-        logMessage(messageText: "Participant \(participant.identity) disabled audio track")
-    }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
                            enabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) enabled video track")
     }
@@ -405,6 +395,16 @@ extension ViewController : TVIRemoteParticipantDelegate {
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            disabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) disabled video track")
+    }
+    
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           enabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) enabled audio track")
+    }
+    
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) disabled audio track")
     }
 }
 
