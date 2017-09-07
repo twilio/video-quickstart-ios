@@ -26,7 +26,7 @@ class ViewController: UIViewController {
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
-    var participant: TVIParticipant?
+    var remoteParticipant: TVIRemoteParticipant?
     var remoteView: TVIVideoView?
 
     // CallKit components
@@ -230,14 +230,15 @@ class ViewController: UIViewController {
     }
     
     func cleanupRemoteParticipant() {
-        if ((self.participant) != nil) {
-            if ((self.participant?.videoTracks.count)! > 0) {
-                self.participant?.videoTracks[0].removeRenderer(self.remoteView!)
+        if ((self.remoteParticipant) != nil) {
+            if ((self.remoteParticipant?.videoTracks.count)! > 0) {
+                let remoteVideoTrack = self.remoteParticipant?.remoteVideoTracks[0].track
+                remoteVideoTrack?.removeRenderer(self.remoteView!)
                 self.remoteView?.removeFromSuperview()
                 self.remoteView = nil
             }
         }
-        self.participant = nil
+        self.remoteParticipant = nil
     }
     
     func logMessage(messageText: String) {
@@ -267,9 +268,9 @@ extension ViewController : TVIRoomDelegate {
         
         logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
         
-        if (room.participants.count > 0) {
-            self.participant = room.participants[0]
-            self.participant?.delegate = self
+        if (room.remoteParticipants.count > 0) {
+            self.remoteParticipant = room.remoteParticipants[0]
+            self.remoteParticipant?.delegate = self
         }
 
         let cxObserver = callKitCallController.callObserver
@@ -302,70 +303,126 @@ extension ViewController : TVIRoomDelegate {
         self.showRoomUI(inRoom: false)
     }
     
-    func room(_ room: TVIRoom, participantDidConnect participant: TVIParticipant) {
-        if (self.participant == nil) {
-            self.participant = participant
-            self.participant?.delegate = self
+    func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
+        if (self.remoteParticipant == nil) {
+            self.remoteParticipant = participant
+            self.remoteParticipant?.delegate = self
         }
        logMessage(messageText: "Room \(room.name), Participant \(participant.identity) connected")
     }
     
-    func room(_ room: TVIRoom, participantDidDisconnect participant: TVIParticipant) {
-        if (self.participant == participant) {
+    func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
+        if (self.remoteParticipant == participant) {
             cleanupRemoteParticipant()
         }
         logMessage(messageText: "Room \(room.name), Participant \(participant.identity) disconnected")
     }
 }
 
-// MARK: TVIParticipantDelegate
-extension ViewController : TVIParticipantDelegate {
-    func participant(_ participant: TVIParticipant, addedVideoTrack videoTrack: TVIVideoTrack) {
-        logMessage(messageText: "Participant \(participant.identity) added video track")
-
-        if (self.participant == participant) {
+// MARK: TVIRemoteParticipantDelegate
+extension ViewController : TVIRemoteParticipantDelegate {
+    
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           publishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
+        
+        // Remote participant has offered to share the video Track.
+        
+        logMessage(messageText: "Participant \(participant.identity) published video track")
+    }
+    
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           unpublishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
+        
+        // Remote participant has stopped sharing the video Track.
+        
+        logMessage(messageText: "Participant \(participant.identity) unpublished video track")
+    }
+    
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           publishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
+        
+        // Remote participant has offered to share the audio Track.
+        
+        logMessage(messageText: "Participant \(participant.identity) published audio track")
+    }
+    
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           unpublishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
+        
+        // Remote participant has stopped sharing the audio Track.
+        
+        logMessage(messageText: "Participant \(participant.identity) unpublished audio track")
+    }
+    
+    func subscribed(to videoTrack: TVIRemoteVideoTrack,
+                    publication: TVIRemoteVideoTrackPublication,
+                    for participant: TVIRemoteParticipant) {
+        
+        // We are subscribed to remote Participant's audio Track. We will start receiving the
+        // remote Participant's video frames now.
+        
+        logMessage(messageText: "Subscribed to video track for Participant \(participant.identity)")
+        
+        if (self.remoteParticipant == participant) {
             setupRemoteVideoView()
             videoTrack.addRenderer(self.remoteView!)
         }
     }
     
-    func participant(_ participant: TVIParticipant, removedVideoTrack videoTrack: TVIVideoTrack) {
-        logMessage(messageText: "Participant \(participant.identity) removed video track")
-
-        if (self.participant == participant) {
+    func unsubscribed(from videoTrack: TVIRemoteVideoTrack,
+                      publication: TVIRemoteVideoTrackPublication,
+                      for participant: TVIRemoteParticipant) {
+        
+        // We are unsubscribed from remote Participant's video Track. We will no longer receive the
+        // remote Participant's video.
+        
+        logMessage(messageText: "Unsubscribed from video track for Participant \(participant.identity)")
+        
+        if (self.remoteParticipant == participant) {
             videoTrack.removeRenderer(self.remoteView!)
             self.remoteView?.removeFromSuperview()
             self.remoteView = nil
         }
     }
     
-    func participant(_ participant: TVIParticipant, addedAudioTrack audioTrack: TVIAudioTrack) {
-        logMessage(messageText: "Participant \(participant.identity) added audio track")
-
+    func subscribed(to audioTrack: TVIRemoteAudioTrack,
+                    publication: TVIRemoteAudioTrackPublication,
+                    for participant: TVIRemoteParticipant) {
+        
+        // We are subscribed to remote Participant's audio Track. We will start receiving the
+        // remote Participant's audio now.
+        
+        logMessage(messageText: "Subscribed to audio track for Participant \(participant.identity)")
     }
     
-    func participant(_ participant: TVIParticipant, removedAudioTrack audioTrack: TVIAudioTrack) {
-        logMessage(messageText: "Participant \(participant.identity) removed audio track")
+    func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
+                      publication: TVIRemoteAudioTrackPublication,
+                      for participant: TVIRemoteParticipant) {
+        
+        // We are unsubscribed from remote Participant's audio Track. We will no longer receive the
+        // remote Participant's audio.
+        
+        logMessage(messageText: "Unsubscribed from audio track for Participant \(participant.identity)")
     }
     
-    func participant(_ participant: TVIParticipant, enabledTrack track: TVITrack) {
-        var type = ""
-        if (track is TVIVideoTrack) {
-            type = "video"
-        } else {
-            type = "audio"
-        }
-        logMessage(messageText: "Participant \(participant.identity) enabled \(type) track")
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           enabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) enabled video track")
     }
     
-    func participant(_ participant: TVIParticipant, disabledTrack track: TVITrack) {
-        var type = ""
-        if (track is TVIVideoTrack) {
-            type = "video"
-        } else {
-            type = "audio"
-        }
-        logMessage(messageText: "Participant \(participant.identity) disabled \(type) track")
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           disabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) disabled video track")
+    }
+    
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           enabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) enabled audio track")
+    }
+    
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) disabled audio track")
     }
 }
 

@@ -301,7 +301,7 @@ extension ViewController : TVIRoomDelegate {
     }
 }
 
-// MARK: TVIParticipantDelegate
+// MARK: TVIRemoteParticipantDelegate
 extension ViewController : TVIRemoteParticipantDelegate {
     
     func remoteParticipant(_ participant: TVIRemoteParticipant,
@@ -340,7 +340,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
                     publication: TVIRemoteVideoTrackPublication,
                     for participant: TVIRemoteParticipant) {
         
-        // We are subscribed to Remote Participant's audio Track. We will start receiving the remote
+        // We are subscribed to remote Participant's audio Track. We will start receiving the
         // remote Participant's video frames now.
         
         logMessage(messageText: "Subscribed to video track for Participant \(participant.identity)")
@@ -355,7 +355,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
                       publication: TVIRemoteVideoTrackPublication,
                       for participant: TVIRemoteParticipant) {
         
-        // We are unsubscribed from Remote Participant's video Track. We will no longer receive the
+        // We are unsubscribed from remote Participant's video Track. We will no longer receive the
         // remote Participant's video.
         
         logMessage(messageText: "Unsubscribed from video track for Participant \(participant.identity)")
@@ -371,8 +371,8 @@ extension ViewController : TVIRemoteParticipantDelegate {
                     publication: TVIRemoteAudioTrackPublication,
                     for participant: TVIRemoteParticipant) {
         
-        // We are subscribed to Remote Participant's audio Track. We will start receiving the
-        // remtoe Participant's audio now.
+        // We are subscribed to remote Participant's audio Track. We will start receiving the
+        // remote Participant's audio now.
        
         logMessage(messageText: "Subscribed to audio track for Participant \(participant.identity)")
     }
@@ -381,7 +381,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
                       publication: TVIRemoteAudioTrackPublication,
                       for participant: TVIRemoteParticipant) {
         
-        // We are unsubscribed from Remote Participant's audio Track. We will no longer receive the
+        // We are unsubscribed from remote Participant's audio Track. We will no longer receive the
         // remote Participant's audio.
         
         logMessage(messageText: "Unsubscribed from audio track for Participant \(participant.identity)")
