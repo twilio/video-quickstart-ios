@@ -336,31 +336,11 @@ extension ViewController : TVIRemoteParticipantDelegate {
         logMessage(messageText: "Participant \(participant.identity) unpublished audio track")
     }
     
-    func subscribed(to audioTrack: TVIRemoteAudioTrack,
-                    publication: TVIRemoteAudioTrackPublication,
-                    for participant: TVIRemoteParticipant) {
-        
-        // We are subscribed to Remote Participant's audio Track. We will start receiving the
-        // remtoe Participant's audio now.
-       
-        logMessage(messageText: "Subscribed to audio track for Participant \(participant.identity)")
-    }
-    
-    func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
-                      publication: TVIRemoteAudioTrackPublication,
-                      for participant: TVIRemoteParticipant) {
-        
-        // We are unsubscribed from Remote Participant's audio Track. We will no longer receive the
-        // remote Participant's audio.
-        
-        logMessage(messageText: "Unsubscribed from audio track for Participant \(participant.identity)")
-    }
-    
     func subscribed(to videoTrack: TVIRemoteVideoTrack,
                     publication: TVIRemoteVideoTrackPublication,
                     for participant: TVIRemoteParticipant) {
         
-        // We are subscribed to Remote Participant's audio Track. We will start receiving the remote 
+        // We are subscribed to Remote Participant's audio Track. We will start receiving the remote
         // remote Participant's video frames now.
         
         logMessage(messageText: "Subscribed to video track for Participant \(participant.identity)")
@@ -385,6 +365,26 @@ extension ViewController : TVIRemoteParticipantDelegate {
             self.remoteView?.removeFromSuperview()
             self.remoteView = nil
         }
+    }
+    
+    func subscribed(to audioTrack: TVIRemoteAudioTrack,
+                    publication: TVIRemoteAudioTrackPublication,
+                    for participant: TVIRemoteParticipant) {
+        
+        // We are subscribed to Remote Participant's audio Track. We will start receiving the
+        // remtoe Participant's audio now.
+       
+        logMessage(messageText: "Subscribed to audio track for Participant \(participant.identity)")
+    }
+    
+    func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
+                      publication: TVIRemoteAudioTrackPublication,
+                      for participant: TVIRemoteParticipant) {
+        
+        // We are unsubscribed from Remote Participant's audio Track. We will no longer receive the
+        // remote Participant's audio.
+        
+        logMessage(messageText: "Unsubscribed from audio track for Participant \(participant.identity)")
     }
     
     func remoteParticipant(_ participant: TVIRemoteParticipant,
