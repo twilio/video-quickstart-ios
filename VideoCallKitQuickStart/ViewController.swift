@@ -325,7 +325,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            publishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
         
-        // Remote participant has offered to share the video Track.
+        // Remote Participant has offered to share the video Track.
         
         logMessage(messageText: "Participant \(participant.identity) published video track")
     }
@@ -333,7 +333,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            unpublishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
         
-        // Remote participant has stopped sharing the video Track.
+        // Remote Participant has stopped sharing the video Track.
         
         logMessage(messageText: "Participant \(participant.identity) unpublished video track")
     }
@@ -341,7 +341,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            publishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
         
-        // Remote participant has offered to share the audio Track.
+        // Remote Participant has offered to share the audio Track.
         
         logMessage(messageText: "Participant \(participant.identity) published audio track")
     }
@@ -349,7 +349,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            unpublishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
         
-        // Remote participant has stopped sharing the audio Track.
+        // Remote Participant has stopped sharing the audio Track.
         
         logMessage(messageText: "Participant \(participant.identity) unpublished audio track")
     }
@@ -358,7 +358,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
                     publication: TVIRemoteVideoTrackPublication,
                     for participant: TVIRemoteParticipant) {
         
-        // We are subscribed to remote Participant's audio Track. We will start receiving the
+        // We are subscribed to the remote Participant's audio Track. We will start receiving the
         // remote Participant's video frames now.
         
         logMessage(messageText: "Subscribed to video track for Participant \(participant.identity)")
@@ -373,7 +373,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
                       publication: TVIRemoteVideoTrackPublication,
                       for participant: TVIRemoteParticipant) {
         
-        // We are unsubscribed from remote Participant's video Track. We will no longer receive the
+        // We are unsubscribed from the remote Participant's video Track. We will no longer receive the
         // remote Participant's video.
         
         logMessage(messageText: "Unsubscribed from video track for Participant \(participant.identity)")
@@ -389,7 +389,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
                     publication: TVIRemoteAudioTrackPublication,
                     for participant: TVIRemoteParticipant) {
         
-        // We are subscribed to remote Participant's audio Track. We will start receiving the
+        // We are subscribed to the remote Participant's audio Track. We will start receiving the
         // remote Participant's audio now.
         
         logMessage(messageText: "Subscribed to audio track for Participant \(participant.identity)")
@@ -399,7 +399,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
                       publication: TVIRemoteAudioTrackPublication,
                       for participant: TVIRemoteParticipant) {
         
-        // We are unsubscribed from remote Participant's audio Track. We will no longer receive the
+        // We are unsubscribed from the remote Participant's audio Track. We will no longer receive the
         // remote Participant's audio.
         
         logMessage(messageText: "Unsubscribed from audio track for Participant \(participant.identity)")
