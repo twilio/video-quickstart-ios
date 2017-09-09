@@ -1,7 +1,6 @@
 source 'https://github.com/CocoaPods/Specs'
 
 workspace 'VideoQuickStart'
-platform :ios, '8.1'
 
 abstract_target 'TwilioVideo' do
   pod 'TwilioVideo', '~> 1.3.3'
@@ -12,6 +11,7 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'VideoQuickStart' do
+    platform :ios, '8.1'
     project 'VideoQuickStart.xcproject'
   end
   
@@ -21,6 +21,7 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'ScreenCapturerExample' do
+    platform :ios, '8.1'
     project 'ScreenCapturerExample.xcproject'
   end
 end
