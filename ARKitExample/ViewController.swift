@@ -44,11 +44,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Create a new scene
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
-        
-        
-        
+
         // Set the scene to the view
         self.sceneView.scene = scene
+
+        // TODO: What sized video format should we return?
         self.supportedFormats = [TVIVideoFormat()] //idk about init()
         
         sceneView.debugOptions =
@@ -60,8 +60,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let token = accessToken
         let options = TVIConnectOptions.init(token: token, block: {(builder: TVIConnectOptionsBuilder) -> Void in
             builder.videoTracks = [self.videoTrack!]
+            builder.audioTracks = [self.audioTrack!]
             builder.roomName = "Arkit"
-            
         })
         self.room = TwilioVideo.connect(with: options, delegate: self as? TVIRoomDelegate)
     }
@@ -70,8 +70,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         self.consumer = consumer
         self.displayLink = CADisplayLink(target: self, selector: #selector(self.displayLinkDidFire))
         self.displayLink?.preferredFramesPerSecond = self.sceneView.preferredFramesPerSecond
-        // Set to half of screen refresh, which should be 30fps.
-        //[_displayLink set:30];
+
         displayLink?.add(to: RunLoop.main, forMode: RunLoopMode.commonModes)
         consumer.captureDidStart(true)
     }
