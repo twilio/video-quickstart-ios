@@ -6,11 +6,17 @@ platform :ios, '8.1'
 abstract_target 'TwilioVideo' do
   pod 'TwilioVideo', '~> 1.3.3'
 
+  target 'ARKitExample' do
+    platform :ios, '11.0'
+    project 'ARKitExample.xcproject'
+  end
+
   target 'VideoQuickStart' do
     project 'VideoQuickStart.xcproject'
   end
   
   target 'VideoCallKitQuickStart' do
+    platform :ios, '10.0'
     project 'VideoCallKitQuickStart.xcproject'
   end
 
