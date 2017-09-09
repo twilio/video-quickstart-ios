@@ -29,7 +29,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1C0964971F3CF21B008F2C19 /* ARKit1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARKit1.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1C0964971F3CF21B008F2C19 /* ARKitExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARKitExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C09649A1F3CF21B008F2C19 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1C09649C1F3CF21B008F2C19 /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
 		1C09649E1F3CF21B008F2C19 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -53,7 +53,7 @@
 		1C09648E1F3CF21B008F2C19 = {
 			isa = PBXGroup;
 			children = (
-				1C0964991F3CF21B008F2C19 /* ARKit1 */,
+				1C0964991F3CF21B008F2C19 /* ARKitExample */,
 				1C0964981F3CF21B008F2C19 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,12 +61,12 @@
 		1C0964981F3CF21B008F2C19 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1C0964971F3CF21B008F2C19 /* ARKit1.app */,
+				1C0964971F3CF21B008F2C19 /* ARKitExample.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		1C0964991F3CF21B008F2C19 /* ARKit1 */ = {
+		1C0964991F3CF21B008F2C19 /* ARKitExample */ = {
 			isa = PBXGroup;
 			children = (
 				1C09649A1F3CF21B008F2C19 /* AppDelegate.swift */,
@@ -77,15 +77,15 @@
 				1C0964A51F3CF21B008F2C19 /* LaunchScreen.storyboard */,
 				1C0964A81F3CF21B008F2C19 /* Info.plist */,
 			);
-			path = ARKit1;
+			path = ARKitExample;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		1C0964961F3CF21B008F2C19 /* ARKit1 */ = {
+		1C0964961F3CF21B008F2C19 /* ARKitExample */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1C0964AB1F3CF21B008F2C19 /* Build configuration list for PBXNativeTarget "ARKit1" */;
+			buildConfigurationList = 1C0964AB1F3CF21B008F2C19 /* Build configuration list for PBXNativeTarget "ARKitExample" */;
 			buildPhases = (
 				1C0964931F3CF21B008F2C19 /* Sources */,
 				1C0964941F3CF21B008F2C19 /* Frameworks */,
@@ -96,9 +96,9 @@
 			);
 			dependencies = (
 			);
-			name = ARKit1;
+			name = ARKitExample;
 			productName = ARKit1;
-			productReference = 1C0964971F3CF21B008F2C19 /* ARKit1.app */;
+			productReference = 1C0964971F3CF21B008F2C19 /* ARKitExample.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -116,7 +116,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 1C0964921F3CF21B008F2C19 /* Build configuration list for PBXProject "ARKit1" */;
+			buildConfigurationList = 1C0964921F3CF21B008F2C19 /* Build configuration list for PBXProject "ARKitExample" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -129,7 +129,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				1C0964961F3CF21B008F2C19 /* ARKit1 */,
+				1C0964961F3CF21B008F2C19 /* ARKitExample */,
 			);
 		};
 /* End PBXProject section */
@@ -328,7 +328,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1C0964921F3CF21B008F2C19 /* Build configuration list for PBXProject "ARKit1" */ = {
+		1C0964921F3CF21B008F2C19 /* Build configuration list for PBXProject "ARKitExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1C0964A91F3CF21B008F2C19 /* Debug */,
@@ -337,7 +337,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1C0964AB1F3CF21B008F2C19 /* Build configuration list for PBXNativeTarget "ARKit1" */ = {
+		1C0964AB1F3CF21B008F2C19 /* Build configuration list for PBXNativeTarget "ARKitExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1C0964AC1F3CF21B008F2C19 /* Debug */,
