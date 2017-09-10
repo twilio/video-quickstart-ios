@@ -24,6 +24,11 @@
 	<string>${PRODUCT_NAME} shares an augmented reality scene with other Participants connected to a Room.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>${PRODUCT_NAME} shares your voice with other Participants connected to a Room.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>voip</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
