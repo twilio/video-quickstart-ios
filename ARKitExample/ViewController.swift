@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  ARKit1
+//  ARKitExample
 //
 //  Created by Lizzie Siegle on 8/10/17.
 //  Copyright © 2017 Lizzie Siegle. All rights reserved.
