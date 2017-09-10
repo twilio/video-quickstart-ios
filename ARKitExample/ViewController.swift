@@ -11,9 +11,14 @@ import SceneKit
 import ARKit
 import TwilioVideo
 
-class ViewController: UIViewController, ARSCNViewDelegate {
+class ViewController: UIViewController {
 
     @IBOutlet var sceneView: ARSCNView!
+
+    override var prefersStatusBarHidden: Bool {
+        return true
+    }
+
     var accessToken = "TWILIO_ACCESS_TOKEN"
     var room: TVIRoom?
     weak var consumer: TVIVideoCaptureConsumer?
@@ -62,7 +67,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
         self.room = TwilioVideo.connect(with: options, delegate: self)
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }
@@ -129,20 +134,21 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
         return pixelBuffer!
     }
-    
-    // MARK: - ARSCNViewDelegate
-    
+}
+
+// MARK: ARSCNViewDelegate
+extension ViewController: ARSCNViewDelegate {
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
         print("didFailWithError \(error)")
     }
-    
+
     func sessionWasInterrupted(_ session: ARSession) {
         // Inform the user that the session has been interrupted, for example, by presenting an overlay
         print("ARSession was interrupted, disabling the VideoTrack.")
         self.videoTrack?.isEnabled = false
     }
-    
+
     func sessionInterruptionEnded(_ session: ARSession) {
         // Reset tracking and/or remove existing anchors if consistent tracking is required
         print("ARSession interruption ended, enabling the VideoTrack.")
