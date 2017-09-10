@@ -27,12 +27,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Configure the ARSCNView which will be used to display the AR content.
-        // Since we will also capture from the view we will limit ourselves to 30 fps.
         sceneView.delegate = self
 
-        // TODO: Revisit these settings.
-        // Since we are in a streaming environment, we will render at a relatively low resolution.
+        // Since we will also capture from the view we will limit ourselves to 30 fps.
         sceneView.preferredFramesPerSecond = 30
+        // Since we are in a streaming environment, we will render at a relatively low resolution.
         sceneView.contentScaleFactor = 1
 
         // Show feature points, and statistics such as fps and timing information
@@ -61,10 +60,22 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             builder.roomName = "arkit"
         })
 
-        // TODO: Implement basic delegate callbacks.
         self.room = TwilioVideo.connect(with: options, delegate: self)
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Release any cached data, images, etc that aren't in use.
+    }
+
     @objc func displayLinkDidFire() {
         // Our capturer polls the ARSCNView's snapshot for processed AR video content, and then copies the result into a CVPixelBuffer.
         // This process is not ideal, but it is the most straightforward way to capture the output of SceneKit.
@@ -84,17 +95,19 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         self.consumer?.consumeCapturedFrame(self.frame!)
     }
 
-    // Copying the pixel buffer took ~0.026 - 0.048 msec (iPhone 7 Plus).
-    // This pretty fast but still wasteful, it would be nicer to wrap the CGImage and use its CGDataProvider directly.
+    /**
+     * Copying the pixel buffer took ~0.026 - 0.048 msec (iPhone 7 Plus).
+     * This pretty fast but still wasteful, it would be nicer to wrap the CGImage and use its CGDataProvider directly.
+     **/
     func copyPixelbufferFromCGImageProvider(image: CGImage) -> CVPixelBuffer {
         let dataProvider: CGDataProvider? = image.dataProvider
         let data: CFData? = dataProvider?.data
         let baseAddress = CFDataGetBytePtr(data!)
 
-        /*
+        /**
          * We own the copied CFData which will back the CVPixelBuffer, thus the data's lifetime is bound to the buffer.
          * We will use a CVPixelBufferReleaseBytesCallback callback in order to release the CFData when the buffer dies.
-         */
+         **/
         let unmanagedData = Unmanaged<CFData>.passRetained(data!)
         var pixelBuffer: CVPixelBuffer? = nil
         let status = CVPixelBufferCreateWithBytes(nil,
@@ -115,29 +128,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
 
         return pixelBuffer!
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
-        // TODO: Move the session starting to startCapture
-        // Create a session configuration
-        let configuration = ARWorldTrackingConfiguration()
-        
-        // Run the view's session
-        sceneView.session.run(configuration)
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-        // Pause the view's session
-        sceneView.session.pause()
-    }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Release any cached data, images, etc that aren't in use.
     }
     
     // MARK: - ARSCNViewDelegate
@@ -160,6 +150,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
 }
 
+// MARK: TVIRoomDelegate
 extension ViewController: TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
         print("Connected to Room /(room.name).")
@@ -178,8 +169,7 @@ extension ViewController: TVIRoomDelegate {
     }
 }
 
-// MARK: - TVIVideoCapturer
-
+// MARK: TVIVideoCapturer
 extension ViewController: TVIVideoCapturer {
     var isScreencast: Bool {
         // We want fluid AR content, maintaining the original frame rate.
@@ -189,7 +179,10 @@ extension ViewController: TVIVideoCapturer {
     func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
         self.consumer = consumer
 
-        // Starting capture is a two step process. We need to schedule the DisplayLink timer, and start the ARSession.
+        // Starting capture is a two step process. We need to start the ARSession and schedule the CADisplayLinkTimer.
+        let configuration = ARWorldTrackingConfiguration()
+        sceneView.session.run(configuration)
+
         self.displayLink = CADisplayLink(target: self, selector: #selector(self.displayLinkDidFire))
         self.displayLink?.preferredFramesPerSecond = self.sceneView.preferredFramesPerSecond
 
