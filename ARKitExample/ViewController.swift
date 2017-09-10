@@ -11,10 +11,10 @@ import SceneKit
 import ARKit
 import TwilioVideo
 
-class ViewController: UIViewController, ARSCNViewDelegate, TVIRoomDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
-    var accessToken = "ACCESS-TOKEN"
+    var accessToken = "TWILIO_ACCESS_TOKEN"
     var room: TVIRoom?
     weak var consumer: TVIVideoCaptureConsumer?
     var frame: TVIVideoFrame?
@@ -44,7 +44,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, TVIRoomDelegate {
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
         sceneView.scene = scene
 
-        // We only support the single capture format that our ARSession will give us.
+        // We only support the single capture format that our ARSession provides.
         // Since ARSession doesn't seem to give us any way to query its output format, we will assume 1280x720x30
         let format = TVIVideoFormat.init()
         format.dimensions = CMVideoDimensions.init(width: 1280, height: 720)
@@ -58,7 +58,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, TVIRoomDelegate {
         let options = TVIConnectOptions.init(token: accessToken, block: {(builder: TVIConnectOptionsBuilder) -> Void in
             builder.videoTracks = [self.videoTrack!]
             builder.audioTracks = [self.audioTrack!]
-            builder.roomName = "Arkit"
+            builder.roomName = "arkit"
         })
 
         // TODO: Implement basic delegate callbacks.
@@ -66,24 +66,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, TVIRoomDelegate {
     }
     
     @objc func displayLinkDidFire() {
-        let snapshotDate = NSDate.init(timeIntervalSinceNow: 0)
+        // Our capturer polls the ARSCNView's snapshot for processed AR video content, and then copies the result into a CVPixelBuffer.
+        // This process is not ideal, but it is the most straightforward way to capture the output of SceneKit.
         let myImage = self.sceneView.snapshot
-        print("Downloading the snapshot took. \(snapshotDate.timeIntervalSinceNow * -1000) msec")
-
-        // TODO: Don't log this all the time.
-        print("\(NSStringFromCGSize(myImage().size))")
-
         let imageRef = myImage().cgImage
 
-        // As a TVIVideoCapturer, we must deliver CVPixelBuffers and not CGImages to the consumer.
         if (imageRef == nil) {
             return
         }
 
-        let date = NSDate.init(timeIntervalSinceNow: 0)
-//        let pixelBuffer = self.copyPixelBufferFromCGImageContext(image: imageRef!)
+        // As a TVIVideoCapturer, we must deliver CVPixelBuffers and not CGImages to the consumer.
         let pixelBuffer = self.copyPixelbufferFromCGImageProvider(image: imageRef!)
-        print("Copying the pixel buffer took. \(date.timeIntervalSinceNow * -1000) msec")
 
         self.frame = TVIVideoFrame(timestamp: Int64((displayLink?.timestamp)! * 1000000),
                                    buffer: pixelBuffer,
@@ -91,30 +84,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, TVIRoomDelegate {
         self.consumer?.consumeCapturedFrame(self.frame!)
     }
 
-    // Copying via CGContext drawing takes ~ 0.75 - 1.5 msec (iPhone 7 Plus)
-    func copyPixelBufferFromCGImageContext(image: CGImage) -> CVPixelBuffer {
-        let frameSize = CGSize(width: image.width, height: image.height)
-        let options: [AnyHashable: Any]? = [kCVPixelBufferCGImageCompatibilityKey: false, kCVPixelBufferCGBitmapContextCompatibilityKey: false]
-        var pixelBuffer: CVPixelBuffer? = nil
-        let status: CVReturn? = CVPixelBufferCreate(kCFAllocatorDefault, Int(frameSize.width), Int(frameSize.height), kCVPixelFormatType_32BGRA, (options! as CFDictionary), &pixelBuffer)
-        if status != kCVReturnSuccess {
-            // TODO: Is this correct?
-            return NSNull.self as! CVPixelBuffer
-        }
-
-        // Copy the content by drawing it into the CVPixelBuffer.
-        CVPixelBufferLockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
-
-        let data = CVPixelBufferGetBaseAddress(pixelBuffer!)
-        let rgbColorSpace: CGColorSpace? = CGColorSpaceCreateDeviceRGB()
-        let context = CGContext(data: data, width: Int(frameSize.width), height: Int(frameSize.height), bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer!), space: rgbColorSpace!, bitmapInfo: (CGImageAlphaInfo.noneSkipLast.rawValue))
-        context?.draw(image, in: CGRect(x:0, y:0, width: image.width, height: image.height))
-
-        CVPixelBufferUnlockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
-        return pixelBuffer!
-    }
-
-    // Copying the pixel buffer took. 0.026 - 0.042 msec
+    // Copying the pixel buffer took ~0.026 - 0.048 msec (iPhone 7 Plus).
+    // This pretty fast but still wasteful, it would be nicer to wrap the CGImage and use its CGDataProvider directly.
     func copyPixelbufferFromCGImageProvider(image: CGImage) -> CVPixelBuffer {
         let dataProvider: CGDataProvider? = image.dataProvider
         let data: CFData? = dataProvider?.data
@@ -178,14 +149,32 @@ class ViewController: UIViewController, ARSCNViewDelegate, TVIRoomDelegate {
     
     func sessionWasInterrupted(_ session: ARSession) {
         // Inform the user that the session has been interrupted, for example, by presenting an overlay
-        print("interrupted")
+        print("ARSession was interrupted, disabling the VideoTrack.")
         self.videoTrack?.isEnabled = false
     }
     
     func sessionInterruptionEnded(_ session: ARSession) {
         // Reset tracking and/or remove existing anchors if consistent tracking is required
-        print("interruption ended")
+        print("ARSession interruption ended, enabling the VideoTrack.")
         self.videoTrack?.isEnabled = true
+    }
+}
+
+extension ViewController: TVIRoomDelegate {
+    func didConnect(to room: TVIRoom) {
+        print("Connected to Room /(room.name).")
+    }
+
+    func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
+        print("Failed to connect to a Room: \(error).")
+    }
+
+    func room(_ room: TVIRoom, participantDidConnect participant: TVIParticipant) {
+        print("Participant \(participant.identity) connected to \(room.name).")
+    }
+
+    func room(_ room: TVIRoom, participantDidDisconnect participant: TVIParticipant) {
+        print("Participant \(participant.identity) disconnected from \(room.name).")
     }
 }
 
