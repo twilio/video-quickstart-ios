@@ -51,8 +51,12 @@ class ViewController: UIViewController {
         self.audioTrack = TVILocalAudioTrack.init()
 
         let options = TVIConnectOptions.init(token: accessToken, block: {(builder: TVIConnectOptionsBuilder) -> Void in
-            builder.videoTracks = [self.videoTrack!]
-            builder.audioTracks = [self.audioTrack!]
+            if let videoTrack = self.videoTrack {
+                builder.videoTracks = [videoTrack]
+            }
+            if let audioTrack = self.audioTrack {
+                builder.audioTracks = [audioTrack]
+            }
             builder.roomName = "arkit"
         })
 
