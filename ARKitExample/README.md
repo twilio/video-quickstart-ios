@@ -12,7 +12,9 @@ This example requires Xcode 9.0, and the iOS 11.0 SDK. An iOS device with an A9 
 
 At launch the example immediately begins capturing AR content with an `ARSession`. An `ARSCNView` is used to render the SceneKit virtual scene on top of the camera feed.
 
-At the same time the Client will attempt to connect to a Room named `arkit`. If you wish to view the content being shared then simply join the same Room using the regular QuickStart example. This project does not demonstrate rendering remote video, but you will be able to hear the audio from other Participants and they will be able to see and hear you.
+At the same time the Client will attempt to connect to a Room named `arkit`. To view the AR content being shared join the same Room using the regular QuickStart example. For this to work properly **you need to generate a new access token with a different identity** otherwise you will kick out the existing ARKit Participant.
+
+Please note that this project does not demonstrate rendering remote video, but you will be able to hear the audio from other Participants and they will be able to see and hear you.
 
 ### Known Issues
 
