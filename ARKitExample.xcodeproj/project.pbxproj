@@ -109,7 +109,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0900;
 				LastUpgradeCheck = 0900;
-				ORGANIZATIONNAME = "Lizzie Siegle";
+				ORGANIZATIONNAME = "Twilio, Inc.";
 				TargetAttributes = {
 					1C0964961F3CF21B008F2C19 = {
 						CreatedOnToolsVersion = 9.0;
