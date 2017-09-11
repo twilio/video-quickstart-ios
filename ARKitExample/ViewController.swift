@@ -155,6 +155,15 @@ extension ViewController: TVIRoomDelegate {
 
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
         print("Failed to connect to a Room: \(error).")
+
+        let alertController = UIAlertController.init(title: "Connection Failed",
+                                                     message: "Couldn't connect to Room \(room.name). code:\(error._code) \(error.localizedDescription)",
+                                                     preferredStyle: UIAlertControllerStyle.alert)
+
+        let cancelAction = UIAlertAction.init(title: "Okay", style: UIAlertActionStyle.default, handler: nil)
+        alertController.addAction(cancelAction)
+
+        self.present(alertController, animated: true, completion: nil)
     }
 
     func room(_ room: TVIRoom, participantDidConnect participant: TVIParticipant) {
