@@ -25,7 +25,6 @@ class ViewController: UIViewController {
     var frame: TVIVideoFrame?
     var displayLink: CADisplayLink?
 
-    var supportedFormats = [TVIVideoFormat]()
     var videoTrack: TVILocalVideoTrack?
     var audioTrack: TVILocalAudioTrack?
     
@@ -48,15 +47,6 @@ class ViewController: UIViewController {
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
         sceneView.scene = scene
 
-        // We only support the single capture format that ARSession provides.
-        // Furthermore, we rasterize the AR scene with a content scale factor of 1x. Use this as our capture format.
-        let format = TVIVideoFormat.init()
-        let viewSize = sceneView.bounds.size
-        format.dimensions = CMVideoDimensions.init(width: Int32(viewSize.width), height: Int32(viewSize.height))
-        format.frameRate = UInt(sceneView.preferredFramesPerSecond)
-        format.pixelFormat = TVIPixelFormat.format32BGRA
-        self.supportedFormats = [format]
-        
         self.videoTrack = TVILocalVideoTrack.init(capturer: self)
         self.audioTrack = TVILocalAudioTrack.init()
 
@@ -181,6 +171,17 @@ extension ViewController: TVIVideoCapturer {
     var isScreencast: Bool {
         // We want fluid AR content, maintaining the original frame rate.
         return false
+    }
+
+    var supportedFormats: [TVIVideoFormat] {
+        // We only support the single capture format that ARSession provides.
+        // Furthermore, we rasterize the AR scene with a content scale factor of 1x. Use this as our capture format.
+        let format = TVIVideoFormat.init()
+        let viewSize = UIScreen.main.bounds.size
+        format.dimensions = CMVideoDimensions.init(width: Int32(viewSize.width), height: Int32(viewSize.height))
+        format.frameRate = UInt(sceneView.preferredFramesPerSecond)
+        format.pixelFormat = TVIPixelFormat.format32BGRA
+        return []
     }
 
     func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
