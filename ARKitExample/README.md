@@ -1,43 +1,19 @@
 # Twilio Video ARKit Example
 
-This project provides an example of how to use Twilio Programmable Video to stream a scene using ARKit in real-time on iOS. This example was provided as part of a blog post that you can find here.
+The project demonstrates how to use Twilio's Programmable Video SDK to stream an augmented reality scene created with ARKit and SceneKit. This example was originalyl provided as part of a blog post that you can find [here]().
 
-## Setup
+### Setup
 
-This project uses Apple's Swift 3.0 programming language for iOS. 
+See the master [README](https://github.com/twilio/video-quickstart-swift/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
 
-If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
+This example requires Xcode 9.0, and the iOS 11.0 SDK. An iOS device with an A9 CPU or greater is needed for ARKit to function properly.
 
-### Prerequesites
+### Usage
 
-To get started you need the following:
+At launch the example immediately begins capturing AR content with an `ARSession`. An `ARSCNView` is used to render the SceneKit virtual scene on top of the camera feed.
 
-- An Apple device with an A9 or later processor (iPhone 6s or later, iPhone SE, any iPad Pro, or the 2017 iPad)
-- [iOS 11 beta](https://www.apple.com/ios/ios-11-preview/)
-- [XCode 9](https://developer.apple.com/download/)
+At the same time the Client will attempt to connect to a Room named `arkit`. If you wish to view the content being shared then simply join the same Room using the regular QuickStart example. This project does not demonstrate rendering remote video, but you will be able to hear the audio from other Participants and they will be able to see and hear you.
 
-### Cocoapods
+### Known Issues
 
-1. Install [CocoaPods 1.0.0+](https://guides.cocoapods.org/using/getting-started.html).
-
-1. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up an `xcworkspace`.
-
-1. Open `ARKitExample.xcworkspace`.
-
-Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com/CocoaPods/Specs) by running `pod repo update master` in order to fetch the latest specs for TwilioVideo.
-
-### Running the app
-
-To get started with the Quickstart application follow these steps:
-
-1. Open this projects .xcworkspace in Xcode
-
-2. Type in an identity and click on "Generate Access Token" from the [Testing Tools page](https://www.twilio.com/user/account/video/dev-tools/testing-tools). Note: If you enter the Room Name make sure to use room name *Arkit* as this is hard-coded in the `TVIConnectOptions` builder defined in ViewController.swift
-
-  <img width="700px" src="../images/quickstart/generate_access_tokens.png"/>
-
-3. Paste the token you generated in the earlier step in ViewController.swift assigning it to `accessToken`
-
-4. Run the app on an Apple device with an A9 or later processor (iPhone 6s or later, iPhone SE, any iPad Pro, or the 2017 iPad)
-
-5. To see the captured scene being sent to the video room by this app you can run the [quickstart app](https://github.com/twilio/video-quickstart-swift) on a different device or simulator. For this to work properly you need to **generate a new access token with a different identity** and connect to the same room *Arkit* using the quickstart app.
+The technique used to capture AR content rendered by SceneKit is somewhat un-optimized, and does not use the native sizes produced by `ARSession`. It may be possible to have SceneKit render into developer provided buffers (shared between the CPU and GPU), but we were unable to accomplish this while still using an `ARSCNView` for AR rendering.
