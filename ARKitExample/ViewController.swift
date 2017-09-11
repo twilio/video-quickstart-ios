@@ -48,13 +48,14 @@ class ViewController: UIViewController {
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
         sceneView.scene = scene
 
-        // We only support the single capture format that our ARSession provides.
-        // Since ARSession doesn't seem to give us any way to query its output format, we will assume 1280x720x30
+        // We only support the single capture format that ARSession provides.
+        // Furthermore, we rasterize the AR scene with a content scale factor of 1x. Use this as our capture format.
         let format = TVIVideoFormat.init()
-        format.dimensions = CMVideoDimensions.init(width: 1280, height: 720)
+        let viewSize = sceneView.bounds.size
+        format.dimensions = CMVideoDimensions.init(width: Int32(viewSize.width), height: Int32(viewSize.height))
         format.frameRate = UInt(sceneView.preferredFramesPerSecond)
         format.pixelFormat = TVIPixelFormat.format32BGRA
-        self.supportedFormats = []
+        self.supportedFormats = [format]
         
         self.videoTrack = TVILocalVideoTrack.init(capturer: self)
         self.audioTrack = TVILocalAudioTrack.init()
