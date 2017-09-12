@@ -16,7 +16,7 @@ Get started with Video on iOS:
 
 ## Setup 
 
-This project uses Apple's Swift 3.0 programming language for iOS. 
+This project uses Apple's Swift 3.2 programming language for iOS. 
 
 If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 
@@ -76,8 +76,9 @@ Note: If you have an iOS device, you can now run apps from Xcode on your device 
 
 You will also find additional examples that provide more advanced use cases of the Video SDK. The currently included examples are as follows:
 
+- [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `TVIRoom` via a custom `TVIVideoCapturer` source. This app requires Xcode 9 & iOS 11.
 - [Screen Capturer](ScreenCapturerExample) - Shows how to use `TVIScreenCapturer` to capture the contents of a `UIView`, and how a custom `TVIVideoCapturer` can be implemented to do the same.
-- [Video CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit framework](https://developer.apple.com/reference/callkit).
+- [Video CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit](https://developer.apple.com/reference/callkit) framework.
 
 ## Setup an Access Token Server
 
