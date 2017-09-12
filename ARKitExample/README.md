@@ -1,6 +1,6 @@
 # Twilio Video ARKit Example
 
-The project demonstrates how to use Twilio's Programmable Video SDK to stream an augmented reality scene created with ARKit and SceneKit. This example was originally provided as part of a blog post that you can find [here]().
+The project demonstrates how to use Twilio's Programmable Video SDK to stream an augmented reality scene created with ARKit and SceneKit. This example was originally written by [Lizzie Siegle](https://github.com/elizabethsiegle/) for her blog post about [ARKit]().
 
 ### Setup
 
@@ -18,4 +18,4 @@ Please note that this project does not demonstrate rendering remote video, but y
 
 ### Known Issues
 
-The technique used to capture AR content rendered by SceneKit is somewhat un-optimized, and does not use the native sizes produced by `ARSession`. It may be possible to have SceneKit render into developer provided buffers (shared between the CPU and GPU), but we were unable to accomplish this while still using an `ARSCNView` for AR rendering.
+The technique used to capture AR content rendered by SceneKit is somewhat un-optimized, and does not use the native sizes produced by `ARSession`. It may be possible to have SceneKit render into developer provided buffers (shared between the CPU and GPU), but we were unable to accomplish this while still using an `ARSCNView` for rendering.

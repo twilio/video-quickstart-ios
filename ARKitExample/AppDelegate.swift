@@ -2,7 +2,6 @@
 //  AppDelegate.swift
 //  ARKitExample
 //
-//  Created by Lizzie Siegle on 8/10/17.
 //  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
 //
 
