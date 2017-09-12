@@ -128,7 +128,7 @@ class ViewController: UIViewController {
             return nil;
         }
 
-        return pixelBuffer!
+        return pixelBuffer
     }
 }
 
