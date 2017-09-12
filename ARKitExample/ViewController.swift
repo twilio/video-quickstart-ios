@@ -89,17 +89,19 @@ class ViewController: UIViewController {
         // As a TVIVideoCapturer, we must deliver CVPixelBuffers and not CGImages to the consumer.
         let pixelBuffer = self.copyPixelbufferFromCGImageProvider(image: imageRef!)
 
-        self.frame = TVIVideoFrame(timestamp: Int64((displayLink?.timestamp)! * 1000000),
-                                   buffer: pixelBuffer,
-                                   orientation: TVIVideoOrientation.up)
-        self.consumer?.consumeCapturedFrame(self.frame!)
+        if (pixelBuffer != nil) {
+            self.frame = TVIVideoFrame(timestamp: Int64((displayLink?.timestamp)! * 1000000),
+                                       buffer: pixelBuffer!,
+                                       orientation: TVIVideoOrientation.up)
+            self.consumer?.consumeCapturedFrame(self.frame!)
+        }
     }
 
     /**
      * Copying the pixel buffer took ~0.026 - 0.048 msec (iPhone 7 Plus).
      * This pretty fast but still wasteful, it would be nicer to wrap the CGImage and use its CGDataProvider directly.
      **/
-    func copyPixelbufferFromCGImageProvider(image: CGImage) -> CVPixelBuffer {
+    func copyPixelbufferFromCGImageProvider(image: CGImage) -> CVPixelBuffer? {
         let dataProvider: CGDataProvider? = image.dataProvider
         let data: CFData? = dataProvider?.data
         let baseAddress = CFDataGetBytePtr(data!)
@@ -124,7 +126,7 @@ class ViewController: UIViewController {
                                                   &pixelBuffer)
 
         if (status != kCVReturnSuccess) {
-            return nil as CVPixelBuffer!;
+            return nil;
         }
 
         return pixelBuffer!
