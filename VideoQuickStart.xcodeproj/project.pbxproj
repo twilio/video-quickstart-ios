@@ -83,6 +83,7 @@
 			children = (
 				4B63DD321F73032D00F0737E /* SettingsTableViewController.swift */,
 				4B63DD371F730C1A00F0737E /* Settings.swift */,
+				4BAA74EA1D8B5CBE00239F19 /* Utils.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -144,7 +145,6 @@
 			children = (
 				8B79D4691C2252A100489AA5 /* AppDelegate.swift */,
 				8B79D46B1C2252A100489AA5 /* ViewController.swift */,
-				4BAA74EA1D8B5CBE00239F19 /* Utils.swift */,
 			);
 			name = Source;
 			sourceTree = "<group>";
