@@ -131,6 +131,16 @@ class ViewController: UIViewController {
             builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
             builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
             
+            // Use the preferred audio codec
+            if (Settings.shared.getAudioCodec() != Settings.shared.defaultCodecStr) {
+                builder.preferredAudioCodecs = [Settings.shared.getAudioCodec()]
+            }
+            
+            // Use the preferred video codec
+            if (Settings.shared.getVideoCodec() != Settings.shared.defaultCodecStr) {
+                builder.preferredVideoCodecs = [Settings.shared.getVideoCodec()]
+            }
+            
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             builder.roomName = self.roomTextField.text
@@ -221,6 +231,7 @@ class ViewController: UIViewController {
         self.roomLabel.isHidden = inRoom
         self.micButton.isHidden = !inRoom
         self.disconnectButton.isHidden = !inRoom
+        self.navigationController?.navigationBar.isHidden = inRoom
         UIApplication.shared.isIdleTimerDisabled = inRoom
     }
     
