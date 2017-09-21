@@ -44,6 +44,7 @@ class ViewController: UIViewController {
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.title = "QuickStart"
 
         if PlatformUtils.isSimulator {
             self.previewView.removeFromSuperview()
