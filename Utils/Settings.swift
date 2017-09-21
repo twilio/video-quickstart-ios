@@ -9,32 +9,32 @@ import TwilioVideo
 
 class Settings: NSObject {
 
-    let defaultCodecStr: String = "Default"
+    static let defaultCodecStr: String = "Default"
     
     var supportedAudioCodecs = [String]()
     var supportedVideoCodecs = [String]()
     
     // MARK: Local Variable
-    private var audioCodec:String?
-    private var videoCodec:String?
+    private var audioCodec = defaultCodecStr
+    private var videoCodec = defaultCodecStr
     
     // Can't init is singleton
     private override init() {
-        supportedAudioCodecs = [defaultCodecStr,
+        supportedAudioCodecs = [Settings.defaultCodecStr,
                                 TVIAudioCodec.ISAC.rawValue,
                                 TVIAudioCodec.opus.rawValue,
                                 TVIAudioCodec.PCMA.rawValue,
                                 TVIAudioCodec.PCMU.rawValue,
                                 TVIAudioCodec.G722.rawValue]
         
-        supportedVideoCodecs = [defaultCodecStr,
+        supportedVideoCodecs = [Settings.defaultCodecStr,
                                 TVIVideoCodec.VP8.rawValue,
                                 TVIVideoCodec.H264.rawValue,
                                 TVIVideoCodec.VP9.rawValue]
         
         // Initializing the audio and video codec selection with the default string.
-        audioCodec = defaultCodecStr
-        videoCodec = defaultCodecStr
+        audioCodec = Settings.defaultCodecStr
+        videoCodec = Settings.defaultCodecStr
     }
     
     // MARK: Shared Instance
@@ -45,7 +45,7 @@ class Settings: NSObject {
     }
     
     func getAudioCodec() -> String {
-        return audioCodec!
+        return audioCodec
     }
     
     func setVideoCodec(codec: String) {
@@ -53,6 +53,6 @@ class Settings: NSObject {
     }
     
     func getVideoCodec() -> String {
-        return videoCodec!
+        return videoCodec
     }
 }

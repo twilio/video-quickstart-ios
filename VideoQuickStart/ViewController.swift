@@ -133,12 +133,12 @@ class ViewController: UIViewController {
             builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
             
             // Use the preferred audio codec
-            if (Settings.shared.getAudioCodec() != Settings.shared.defaultCodecStr) {
+            if (Settings.shared.getAudioCodec() != Settings.defaultCodecStr) {
                 builder.preferredAudioCodecs = [Settings.shared.getAudioCodec()]
             }
             
             // Use the preferred video codec
-            if (Settings.shared.getVideoCodec() != Settings.shared.defaultCodecStr) {
+            if (Settings.shared.getVideoCodec() != Settings.defaultCodecStr) {
                 builder.preferredVideoCodecs = [Settings.shared.getVideoCodec()]
             }
             
@@ -232,7 +232,7 @@ class ViewController: UIViewController {
         self.roomLabel.isHidden = inRoom
         self.micButton.isHidden = !inRoom
         self.disconnectButton.isHidden = !inRoom
-        self.navigationController?.navigationBar.isHidden = inRoom
+        self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
         UIApplication.shared.isIdleTimerDisabled = inRoom
     }
     
