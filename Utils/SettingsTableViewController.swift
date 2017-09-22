@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import TwilioVideo
 
 class SettingsTableViewController: UITableViewController {
     
@@ -37,10 +38,21 @@ class SettingsTableViewController: UITableViewController {
         cell.textLabel?.text = label
         switch (label) {
             case SettingsTableViewController.audioCodecLabel:
-                cell.detailTextLabel?.text = settings.getAudioCodec()
-            case SettingsTableViewController.videoCodecLabel:
-                cell.detailTextLabel?.text = settings.getVideoCodec()
+                var codecStr = Settings.defaultCodecStr
+                if ((settings.getAudioCodec()) != nil) {
+                    codecStr = (settings.getAudioCodec()?.rawValue)!
+                }
+                cell.detailTextLabel?.text = codecStr
                 break;
+            
+            case SettingsTableViewController.videoCodecLabel:
+                var codecStr = Settings.defaultCodecStr
+                if ((settings.getVideoCodec()) != nil) {
+                    codecStr = (settings.getVideoCodec()?.rawValue)!
+                }
+                cell.detailTextLabel?.text = codecStr
+                break;
+
             default:
                 break;
         }
@@ -59,12 +71,15 @@ class SettingsTableViewController: UITableViewController {
                 
                 for codec in selectionArray {
                     let selectionButton = UIAlertAction(title: codec, style: .default, handler: { (action) -> Void in
-                        self.settings.setAudioCodec(codec: codec)
+                        self.settings.setAudioCodec(codec: TVIAudioCodec(rawValue: codec))
                         self.tableView.reloadData()
                     })
                     
-                    if (settings.getAudioCodec() == codec) {
-                        selectionButton.setValue("true", forKey: "checked")
+                    if UIDevice.current.userInterfaceIdiom != .pad {
+                        if (settings.getAudioCodec()?.rawValue == codec ||
+                            (codec == Settings.defaultCodecStr && settings.getAudioCodec() == nil)) {
+                            selectionButton.setValue("true", forKey: "checked")
+                        }
                     }
                     
                     alertController.addAction(selectionButton)
@@ -76,12 +91,15 @@ class SettingsTableViewController: UITableViewController {
                 
                 for codec in selectionArray {
                     let selectionButton = UIAlertAction(title: codec, style: .default, handler: { (action) -> Void in
-                        self.settings.setVideoCodec(codec: codec)
+                        self.settings.setVideoCodec(codec: TVIVideoCodec(rawValue: codec))
                         self.tableView.reloadData()
                     })
                     
-                    if (settings.getVideoCodec() == codec) {
-                        selectionButton.setValue("true", forKey: "checked")
+                    if UIDevice.current.userInterfaceIdiom != .pad {
+                        if (settings.getVideoCodec()?.rawValue == codec ||
+                            (codec == Settings.defaultCodecStr && settings.getVideoCodec() == nil)) {
+                            selectionButton.setValue("true", forKey: "checked")
+                         }
                     }
                     
                     alertController.addAction(selectionButton)
@@ -92,9 +110,14 @@ class SettingsTableViewController: UITableViewController {
                 break;
         }
         
-        let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in })
-        alertController.addAction(cancelButton)
-        
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            alertController.popoverPresentationController?.sourceView = tableView.cellForRow(at: indexPath)
+            alertController.popoverPresentationController?.sourceRect = (tableView.cellForRow(at: indexPath)?.bounds)!
+        } else {
+            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in })
+            alertController.addAction(cancelButton)
+        }
+
         self.navigationController!.present(alertController, animated: true, completion: nil)
     }
     

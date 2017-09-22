@@ -133,13 +133,13 @@ class ViewController: UIViewController {
             builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
             
             // Use the preferred audio codec
-            if (Settings.shared.getAudioCodec() != Settings.defaultCodecStr) {
-                builder.preferredAudioCodecs = [Settings.shared.getAudioCodec()]
+            if ((Settings.shared.getAudioCodec()) != nil) {
+                builder.preferredAudioCodecs = [Settings.shared.getAudioCodec()!.rawValue]
             }
             
             // Use the preferred video codec
-            if (Settings.shared.getVideoCodec() != Settings.defaultCodecStr) {
-                builder.preferredVideoCodecs = [Settings.shared.getVideoCodec()]
+            if ((Settings.shared.getVideoCodec()) != nil) {
+                builder.preferredVideoCodecs = [Settings.shared.getVideoCodec()!.rawValue]
             }
             
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty

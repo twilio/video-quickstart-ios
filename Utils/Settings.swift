@@ -40,19 +40,35 @@ class Settings: NSObject {
     // MARK: Shared Instance
     static let shared = Settings()
     
-    func setAudioCodec(codec: String) {
-        audioCodec = codec
+    func setAudioCodec(codec: TVIAudioCodec?) {
+        if (codec == nil) {
+            audioCodec = Settings.defaultCodecStr
+        } else {
+            audioCodec = codec!.rawValue
+        }
     }
     
-    func getAudioCodec() -> String {
-        return audioCodec
+    func getAudioCodec() -> TVIAudioCodec? {
+        if (audioCodec == Settings.defaultCodecStr) {
+            return nil
+        } else {
+            return TVIAudioCodec(rawValue: audioCodec)
+        }
     }
     
-    func setVideoCodec(codec: String) {
-        videoCodec = codec
+    func setVideoCodec(codec: TVIVideoCodec?) {
+        if (codec == nil) {
+            videoCodec = Settings.defaultCodecStr
+        } else {
+            videoCodec = codec!.rawValue
+        }
     }
     
-    func getVideoCodec() -> String {
-        return videoCodec
+    func getVideoCodec() -> TVIVideoCodec? {
+        if (videoCodec == Settings.defaultCodecStr) {
+            return nil
+        } else {
+            return TVIVideoCodec(rawValue: videoCodec)
+        }
     }
 }
