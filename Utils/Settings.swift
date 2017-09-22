@@ -14,11 +14,11 @@ class Settings: NSObject {
     var supportedAudioCodecs = [String]()
     var supportedVideoCodecs = [String]()
     
-    // MARK: Local Variable
+    // MARK: Local variables
     private var audioCodec = defaultCodecStr
     private var videoCodec = defaultCodecStr
     
-    // Can't init is singleton
+    // Can't initialize a singleton
     private override init() {
         supportedAudioCodecs = [Settings.defaultCodecStr,
                                 TVIAudioCodec.ISAC.rawValue,
