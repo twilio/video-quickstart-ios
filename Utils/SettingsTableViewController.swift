@@ -10,8 +10,9 @@ import TwilioVideo
 
 class SettingsTableViewController: UITableViewController {
     
-    static let audioCodecLabel: String = "Audio Codec"
-    static let videoCodecLabel: String = "Video Codec"
+    static let audioCodecLabel = "Audio Codec"
+    static let videoCodecLabel = "Video Codec"
+    static let defaultCodecStr: String = "Default"
     
     var labels: [String] = [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel]
     
@@ -36,19 +37,21 @@ class SettingsTableViewController: UITableViewController {
         // Configure the cell...
         let label = self.labels[indexPath.row]
         cell.textLabel?.text = label
+        let settings = Settings.shared
+
         switch (label) {
             case SettingsTableViewController.audioCodecLabel:
-                var codecStr = Settings.defaultCodecStr
-                if ((settings.getAudioCodec()) != nil) {
-                    codecStr = (settings.getAudioCodec()?.rawValue)!
+                var codecStr = SettingsTableViewController.defaultCodecStr
+                if settings.audioCodec != nil {
+                    codecStr = (settings.audioCodec?.rawValue)!
                 }
                 cell.detailTextLabel?.text = codecStr
                 break;
             
             case SettingsTableViewController.videoCodecLabel:
-                var codecStr = Settings.defaultCodecStr
-                if ((settings.getVideoCodec()) != nil) {
-                    codecStr = (settings.getVideoCodec()?.rawValue)!
+                var codecStr = SettingsTableViewController.defaultCodecStr
+                if Settings.shared.videoCodec != nil {
+                    codecStr = (settings.videoCodec?.rawValue)!
                 }
                 cell.detailTextLabel?.text = codecStr
                 break;
@@ -64,51 +67,63 @@ class SettingsTableViewController: UITableViewController {
         let tappedLabel = self.labels[indexPath.row]
         
         let alertController = UIAlertController(title: self.labels[indexPath.row], message: nil, preferredStyle: .actionSheet)
-
+        var selectedButton : UIAlertAction!
+        var defaultButton: UIAlertAction!
+        
         switch (tappedLabel) {
             case SettingsTableViewController.audioCodecLabel:
                 let selectionArray = settings.supportedAudioCodecs
                 
                 for codec in selectionArray {
-                    let selectionButton = UIAlertAction(title: codec, style: .default, handler: { (action) -> Void in
-                        self.settings.setAudioCodec(codec: TVIAudioCodec(rawValue: codec))
+                    let selectionButton = UIAlertAction(title: codec.rawValue, style: .default, handler: { (action) -> Void in
+                        self.settings.audioCodec = codec
                         self.tableView.reloadData()
                     })
                     
-                    if UIDevice.current.userInterfaceIdiom != .pad {
-                        if (settings.getAudioCodec()?.rawValue == codec ||
-                            (codec == Settings.defaultCodecStr && settings.getAudioCodec() == nil)) {
-                            selectionButton.setValue("true", forKey: "checked")
-                        }
+                    if (settings.audioCodec == codec) {
+                        selectedButton = selectionButton;
                     }
                     
                     alertController.addAction(selectionButton)
                 }
+                
+                defaultButton = UIAlertAction(title: "Default", style: .default, handler: { (action) -> Void in
+                    self.settings.audioCodec = nil
+                    self.tableView.reloadData()
+                })
                 break;
 
             case SettingsTableViewController.videoCodecLabel:
                 let selectionArray = settings.supportedVideoCodecs
                 
                 for codec in selectionArray {
-                    let selectionButton = UIAlertAction(title: codec, style: .default, handler: { (action) -> Void in
-                        self.settings.setVideoCodec(codec: TVIVideoCodec(rawValue: codec))
+                    let selectionButton = UIAlertAction(title: codec.rawValue, style: .default, handler: { (action) -> Void in
+                        self.settings.videoCodec = codec
                         self.tableView.reloadData()
                     })
                     
-                    if UIDevice.current.userInterfaceIdiom != .pad {
-                        if (settings.getVideoCodec()?.rawValue == codec ||
-                            (codec == Settings.defaultCodecStr && settings.getVideoCodec() == nil)) {
-                            selectionButton.setValue("true", forKey: "checked")
-                         }
+                    if (settings.videoCodec == codec) {
+                        selectedButton = selectionButton;
                     }
-                    
+
                     alertController.addAction(selectionButton)
                 }
+                
+                defaultButton = UIAlertAction(title: "Default", style: .default, handler: { (action) -> Void in
+                    self.settings.videoCodec = nil
+                    self.tableView.reloadData()
+                })
                 break;
             
             default:
                 break;
         }
+        
+        if selectedButton == nil {
+            selectedButton = defaultButton;
+        }
+        
+        alertController.addAction(defaultButton!)
         
         if UIDevice.current.userInterfaceIdiom == .pad {
             alertController.popoverPresentationController?.sourceView = tableView.cellForRow(at: indexPath)
@@ -116,6 +131,7 @@ class SettingsTableViewController: UITableViewController {
         } else {
             let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in })
             alertController.addAction(cancelButton)
+            selectedButton!.setValue("true", forKey: "checked")
         }
 
         self.navigationController!.present(alertController, animated: true, completion: nil)
