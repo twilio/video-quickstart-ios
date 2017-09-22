@@ -13,11 +13,12 @@ class SettingsTableViewController: UITableViewController {
     static let audioCodecLabel = "Audio Codec"
     static let videoCodecLabel = "Video Codec"
     static let defaultCodecStr = "Default"
+    static let desclaimerText = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported."
     
-    // The desclaimer height should be dynamically calculated.
+    // Note: The disclaimer height should be dynamically calculated.
     static let desclaimerHeight = CGFloat(160.0)
     
-    var labels: [String] = [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel]
+    let labels: [String] = [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel]
     
     let settings = Settings.shared
 
@@ -145,7 +146,7 @@ class SettingsTableViewController: UITableViewController {
         
         let desclcaimer = UILabel(frame: CGRect(x:10, y:10, width:tableView.frame.width - 20, height:SettingsTableViewController.desclaimerHeight))
         desclcaimer.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)
-        desclcaimer.text = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported."
+        desclcaimer.text = SettingsTableViewController.desclaimerText
         desclcaimer.textColor = UIColor.darkGray
         desclcaimer.numberOfLines = 0
         
