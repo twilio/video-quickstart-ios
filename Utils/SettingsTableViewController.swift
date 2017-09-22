@@ -43,7 +43,7 @@ class SettingsTableViewController: UITableViewController {
             case SettingsTableViewController.audioCodecLabel:
                 var codecStr = SettingsTableViewController.defaultCodecStr
                 if settings.audioCodec != nil {
-                    codecStr = (settings.audioCodec?.rawValue)!
+                    codecStr = settings.audioCodec!.rawValue
                 }
                 cell.detailTextLabel?.text = codecStr
                 break;
@@ -51,7 +51,7 @@ class SettingsTableViewController: UITableViewController {
             case SettingsTableViewController.videoCodecLabel:
                 var codecStr = SettingsTableViewController.defaultCodecStr
                 if Settings.shared.videoCodec != nil {
-                    codecStr = (settings.videoCodec?.rawValue)!
+                    codecStr = settings.videoCodec!.rawValue
                 }
                 cell.detailTextLabel?.text = codecStr
                 break;
