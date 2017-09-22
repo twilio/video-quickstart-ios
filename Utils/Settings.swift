@@ -9,23 +9,21 @@ import TwilioVideo
 
 class Settings: NSObject {
 
-    var supportedAudioCodecs = [TVIAudioCodec]()
-    var supportedVideoCodecs = [TVIVideoCodec]()
-    
-    var audioCodec: TVIAudioCodec?
-    var videoCodec: TVIVideoCodec?
-    
-    // Can't initialize a singleton
-    private override init() {
-        supportedAudioCodecs = [TVIAudioCodec.ISAC,
+    let supportedAudioCodecs = [TVIAudioCodec.ISAC,
                                 TVIAudioCodec.opus,
                                 TVIAudioCodec.PCMA,
                                 TVIAudioCodec.PCMU,
                                 TVIAudioCodec.G722]
-        
-        supportedVideoCodecs = [TVIVideoCodec.VP8,
+    
+    let supportedVideoCodecs = [TVIVideoCodec.VP8,
                                 TVIVideoCodec.H264,
                                 TVIVideoCodec.VP9]
+    
+    var audioCodec: TVIAudioCodec?
+    var videoCodec: TVIVideoCodec?
+    
+    private override init() {
+        // Can't initialize a singleton
     }
     
     // MARK: Shared Instance
