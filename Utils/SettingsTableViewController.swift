@@ -13,24 +13,24 @@ class SettingsTableViewController: UITableViewController {
     static let audioCodecLabel = "Audio Codec"
     static let videoCodecLabel = "Video Codec"
     static let defaultCodecStr = "Default"
-    static let desclaimerText = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported."
+    static let disclaimerText = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported."
     
     let labels: [String] = [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel]
-    
     let settings = Settings.shared
+    let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "Settings"
     }
     
-    func getDesclaimerSize() -> CGSize {
-        let desclaimerString: NSString = SettingsTableViewController.desclaimerText as NSString
+    func getDisclaimerSize() -> CGSize {
+        let disclaimerString: NSString = SettingsTableViewController.disclaimerText as NSString
         
-        return desclaimerString.boundingRect(with: CGSize(width: self.tableView.frame.width-20,
+        return disclaimerString.boundingRect(with: CGSize(width: self.tableView.frame.width-20,
                                                           height: CGFloat.greatestFiniteMagnitude),
                                              options: NSStringDrawingOptions.usesLineFragmentOrigin,
-                                             attributes: [NSFontAttributeName: UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)],
+                                             attributes: [NSFontAttributeName: disclaimerFont],
                                              context: nil).size
     }
     
@@ -151,18 +151,18 @@ class SettingsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let view = UIView()
         
-        let desclcaimer = UILabel(frame: CGRect(x:10, y:10, width:tableView.frame.width - 20, height:self.getDesclaimerSize().height))
-        desclcaimer.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)
-        desclcaimer.text = SettingsTableViewController.desclaimerText
-        desclcaimer.textColor = UIColor.darkGray
-        desclcaimer.numberOfLines = 0
+        let disclcaimer = UILabel(frame: CGRect(x:10, y:10, width:tableView.frame.width - 20, height:self.getDisclaimerSize().height))
+        disclcaimer.font = disclaimerFont
+        disclcaimer.text = SettingsTableViewController.disclaimerText
+        disclcaimer.textColor = UIColor.darkGray
+        disclcaimer.numberOfLines = 0
         
-        view.addSubview(desclcaimer)
+        view.addSubview(disclcaimer)
         
         return view;
     }
     
     override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return self.getDesclaimerSize().height
+        return self.getDisclaimerSize().height
     }
 }
