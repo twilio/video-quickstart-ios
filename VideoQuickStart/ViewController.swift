@@ -44,6 +44,7 @@ class ViewController: UIViewController {
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.title = "QuickStart"
 
         if PlatformUtils.isSimulator {
             self.previewView.removeFromSuperview()
@@ -130,6 +131,16 @@ class ViewController: UIViewController {
             // Use the local media that we prepared earlier.
             builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
             builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
+            
+            // Use the preferred audio codec
+            if let preferredAudioCodec = Settings.shared.audioCodec {
+                builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
+            }
+            
+            // Use the preferred video codec
+            if let preferredVideoCodec = Settings.shared.videoCodec {
+                builder.preferredVideoCodecs = [preferredVideoCodec.rawValue]
+            }
             
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
@@ -221,6 +232,7 @@ class ViewController: UIViewController {
         self.roomLabel.isHidden = inRoom
         self.micButton.isHidden = !inRoom
         self.disconnectButton.isHidden = !inRoom
+        self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
         UIApplication.shared.isIdleTimerDisabled = inRoom
     }
     
