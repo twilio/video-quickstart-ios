@@ -15,9 +15,6 @@ class SettingsTableViewController: UITableViewController {
     static let defaultCodecStr = "Default"
     static let desclaimerText = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported."
     
-    // Note: The disclaimer height should be dynamically calculated.
-    static let desclaimerHeight = CGFloat(160.0)
-    
     let labels: [String] = [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel]
     
     let settings = Settings.shared
@@ -26,7 +23,17 @@ class SettingsTableViewController: UITableViewController {
         super.viewDidLoad()
         self.title = "Settings"
     }
-
+    
+    func getDesclaimerSize() -> CGSize {
+        let desclaimerString: NSString = SettingsTableViewController.desclaimerText as NSString
+        
+        return desclaimerString.boundingRect(with: CGSize(width: self.tableView.frame.width-20,
+                                                          height: CGFloat.greatestFiniteMagnitude),
+                                             options: NSStringDrawingOptions.usesLineFragmentOrigin,
+                                             attributes: [NSFontAttributeName: UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)],
+                                             context: nil).size
+    }
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -144,7 +151,7 @@ class SettingsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let view = UIView()
         
-        let desclcaimer = UILabel(frame: CGRect(x:10, y:10, width:tableView.frame.width - 20, height:SettingsTableViewController.desclaimerHeight))
+        let desclcaimer = UILabel(frame: CGRect(x:10, y:10, width:tableView.frame.width - 20, height:self.getDesclaimerSize().height))
         desclcaimer.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)
         desclcaimer.text = SettingsTableViewController.desclaimerText
         desclcaimer.textColor = UIColor.darkGray
@@ -156,6 +163,6 @@ class SettingsTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return SettingsTableViewController.desclaimerHeight
+        return self.getDesclaimerSize().height
     }
 }
