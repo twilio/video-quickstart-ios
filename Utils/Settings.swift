@@ -22,8 +22,8 @@ class Settings: NSObject {
     var audioCodec: TVIAudioCodec?
     var videoCodec: TVIVideoCodec?
 
-    var maxAudioBitrate: UInt!
-    var maxVideoBitrate: UInt!
+    var maxAudioBitrate = UInt()
+    var maxVideoBitrate = UInt()
     
     func getEncodingParameters() -> TVIEncodingParameters?  {
         if maxAudioBitrate == 0 && maxVideoBitrate == 0 {
@@ -36,9 +36,6 @@ class Settings: NSObject {
     
     private override init() {
         // Can't initialize a singleton
-
-        maxAudioBitrate = 0 // WebRTC default
-        maxVideoBitrate = 0 // WebRTC default
     }
     
     // MARK: Shared Instance

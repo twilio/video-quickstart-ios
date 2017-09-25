@@ -56,33 +56,33 @@ class SettingsTableViewController: UITableViewController {
         // Configure the cell...
         let label = self.labels[indexPath.row]
         cell.textLabel?.text = label
-        var detailedText = SettingsTableViewController.defaultStr
+        var detailText = SettingsTableViewController.defaultStr
         
         switch (label) {
             case SettingsTableViewController.audioCodecLabel:
                 if let codec = settings.audioCodec {
-                    detailedText = codec.rawValue
+                    detailText = codec.rawValue
                 }
                 break;
             
             case SettingsTableViewController.videoCodecLabel:
                 if let codec = settings.videoCodec {
-                    detailedText = codec.rawValue
+                    detailText = codec.rawValue
                 }
                 break;
             
             case SettingsTableViewController.maxAudioBitrate:
-                detailedText = String(settings.maxAudioBitrate)
+                detailText = String(settings.maxAudioBitrate)
                 break;
             
             case SettingsTableViewController.maxVideoBitrate:
-                detailedText = String(settings.maxVideoBitrate)
+                detailText = String(settings.maxVideoBitrate)
                 break;
 
             default:
                 break;
         }
-        cell.detailTextLabel?.text = detailedText
+        cell.detailTextLabel?.text = detailText
         return cell
     }
 
