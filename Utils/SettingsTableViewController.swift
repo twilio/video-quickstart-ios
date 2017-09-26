@@ -12,16 +12,13 @@ class SettingsTableViewController: UITableViewController {
     
     static let audioCodecLabel = "Audio Codec"
     static let videoCodecLabel = "Video Codec"
-    static let maxAudioBitrate = "Max Audio Bitrate (bits per second)"
-    static let maxVideoBitrate = "Max Video Bitrate (bits per second)"
+    static let maxAudioBitrate = "Max Audio Bitrate (bps)"
+    static let maxVideoBitrate = "Max Video Bitrate (bps)"
     static let defaultStr = "Default"
     static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported."
     static let encodingParamsDisclaimerText = "Set sender bandwidth constraints. Zero represents the WebRTC default which varies by codec."
     
-    let codecLabels = [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel]
-    let encodingParametersLabel = [SettingsTableViewController.maxAudioBitrate, SettingsTableViewController.maxVideoBitrate]
     let disclaimers = [codecDisclaimerText, encodingParamsDisclaimerText]
-    
     let settings = Settings.shared
     let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)
     var labels: [[String]] = [[SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
