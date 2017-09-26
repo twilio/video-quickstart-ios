@@ -12,28 +12,28 @@ class SettingsTableViewController: UITableViewController {
     
     static let audioCodecLabel = "Audio Codec"
     static let videoCodecLabel = "Video Codec"
-    static let maxAudioBitrate = "Max Audio Bitrate"
-    static let maxVideoBitrate = "Max Video Bitrate"
+    static let maxAudioBitrate = "Max Audio Bitrate (bits per second)"
+    static let maxVideoBitrate = "Max Video Bitrate (bits per second)"
     static let defaultStr = "Default"
-    static let codecSectionTitle = "Codecs"
-    static let encodingParamSectionTitle = "Encoding Parameters"
-    static let disclaimerText = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported."
+    static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported."
+    static let encodingParamsDisclaimerText = "Set sender bandwidth constraints. Zero represents the WebRTC default which varies by codec."
     
-    let labels: [String] = [SettingsTableViewController.audioCodecLabel,
-                            SettingsTableViewController.videoCodecLabel,
-                            SettingsTableViewController.maxAudioBitrate,
-                            SettingsTableViewController.maxVideoBitrate]
+    let codecLabels = [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel]
+    let encodingParametersLabel = [SettingsTableViewController.maxAudioBitrate, SettingsTableViewController.maxVideoBitrate]
+    let disclaimers = [codecDisclaimerText, encodingParamsDisclaimerText]
     
     let settings = Settings.shared
     let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)
+    var labels: [[String]] = [[SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
+                             [SettingsTableViewController.maxAudioBitrate, SettingsTableViewController.maxVideoBitrate]]
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "Settings"
     }
     
-    func getDisclaimerSize() -> CGSize {
-        let disclaimerString: NSString = SettingsTableViewController.disclaimerText as NSString
+    func getDisclaimerSizeForString(string: String!) -> CGSize {
+        let disclaimerString: NSString = string as NSString
         
         return disclaimerString.boundingRect(with: CGSize(width: self.tableView.frame.width-20,
                                                           height: CGFloat.greatestFiniteMagnitude),
@@ -43,18 +43,18 @@ class SettingsTableViewController: UITableViewController {
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return (labels.count)
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return (labels.count)
+        return (labels[section].count)
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "SETTINGS-REUSE-IDENTIFIER", for: indexPath)
         
         // Configure the cell...
-        let label = self.labels[indexPath.row]
+        let label = self.labels[indexPath.section][indexPath.row]
         cell.textLabel?.text = label
         var detailText = SettingsTableViewController.defaultStr
         
@@ -87,7 +87,7 @@ class SettingsTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let tappedLabel = self.labels[indexPath.row]
+        let tappedLabel = self.labels[indexPath.section][indexPath.row]
         
         switch (tappedLabel) {
             case SettingsTableViewController.audioCodecLabel:
@@ -114,9 +114,11 @@ class SettingsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let view = UIView()
         
-        let disclcaimer = UILabel(frame: CGRect(x:10, y:10, width:tableView.frame.width - 20, height:self.getDisclaimerSize().height))
+        let disclcaimer = UILabel(frame: CGRect(x:10, y:5,
+                                                width:tableView.frame.width - 20,
+                                                height:getDisclaimerSizeForString(string: disclaimers[section]).height))
         disclcaimer.font = disclaimerFont
-        disclcaimer.text = SettingsTableViewController.disclaimerText
+        disclcaimer.text = disclaimers[section]
         disclcaimer.textColor = UIColor.darkGray
         disclcaimer.numberOfLines = 0
         
@@ -126,14 +128,14 @@ class SettingsTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return self.getDisclaimerSize().height
+        return getDisclaimerSizeForString(string: disclaimers[section]).height + 10
     }
     
     func didSelectAudioCodecRow(indexPath: IndexPath) {
         var selectedButton : UIAlertAction!
         var defaultButton: UIAlertAction!
         
-        let alertController = UIAlertController(title: self.labels[indexPath.row], message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: self.labels[indexPath.section][indexPath.row], message: nil, preferredStyle: .actionSheet)
         let selectionArray = settings.supportedAudioCodecs
         
         for codec in selectionArray {
@@ -182,7 +184,7 @@ class SettingsTableViewController: UITableViewController {
             self.tableView.reloadData()
         })
         
-        let alertController = UIAlertController(title: self.labels[indexPath.row], message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: self.labels[indexPath.section][indexPath.row], message: nil, preferredStyle: .actionSheet)
         let selectionArray = settings.supportedVideoCodecs
         
         for codec in selectionArray {
@@ -218,7 +220,7 @@ class SettingsTableViewController: UITableViewController {
     }
     
     func didSelectMaxAudioBitRateRow(indexPath: IndexPath) {
-        let alertController = UIAlertController(title: self.labels[indexPath.row], message: nil, preferredStyle: .alert)
+        let alertController = UIAlertController(title: self.labels[indexPath.section][indexPath.row], message: nil, preferredStyle: .alert)
         
         alertController.addTextField  { (textField : UITextField!) -> Void in
             textField.text = String(self.settings.maxAudioBitrate)
@@ -246,7 +248,7 @@ class SettingsTableViewController: UITableViewController {
     }
     
     func didSelectMaxVideoBitRateRow(indexPath: IndexPath) {
-        let alertController = UIAlertController(title: self.labels[indexPath.row], message: nil, preferredStyle: .alert)
+        let alertController = UIAlertController(title: self.labels[indexPath.section][indexPath.row], message: nil, preferredStyle: .alert)
         
         alertController.addTextField  { (textField : UITextField!) -> Void in
             textField.text = String(self.settings.maxVideoBitrate)
