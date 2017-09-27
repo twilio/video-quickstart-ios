@@ -79,18 +79,15 @@ class ViewController: UIViewController {
         // Our capturer polls the ARSCNView's snapshot for processed AR video content, and then copies the result into a CVPixelBuffer.
         // This process is not ideal, but it is the most straightforward way to capture the output of SceneKit.
         let myImage = self.sceneView.snapshot
-        let imageRef = myImage().cgImage
 
-        if (imageRef == nil) {
+        guard let imageRef = myImage().cgImage else {
             return
         }
 
         // As a TVIVideoCapturer, we must deliver CVPixelBuffers and not CGImages to the consumer.
-        let pixelBuffer = self.copyPixelbufferFromCGImageProvider(image: imageRef!)
-
-        if (pixelBuffer != nil) {
+        if let pixelBuffer = self.copyPixelbufferFromCGImageProvider(image: imageRef) {
             self.frame = TVIVideoFrame(timestamp: Int64((displayLink?.timestamp)! * 1000000),
-                                       buffer: pixelBuffer!,
+                                       buffer: pixelBuffer,
                                        orientation: TVIVideoOrientation.up)
             self.consumer?.consumeCapturedFrame(self.frame!)
         }
