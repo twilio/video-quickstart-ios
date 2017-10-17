@@ -1,6 +1,6 @@
 # Twilio Video ARKit Example
 
-The project demonstrates how to use Twilio's Programmable Video SDK to stream an augmented reality scene created with ARKit and SceneKit. This example was originally written by [Lizzie Siegle](https://github.com/elizabethsiegle/) for her blog post about [ARKit]().
+The project demonstrates how to use Twilio's Programmable Video SDK to stream an augmented reality scene created with ARKit and SceneKit. This example was originally written by [Lizzie Siegle](https://github.com/elizabethsiegle/) for her blog post about [ARKit](https://www.twilio.com/blog/2017/10/ios-arkit-swift-twilio-programmable-video.html).
 
 ### Setup
 
