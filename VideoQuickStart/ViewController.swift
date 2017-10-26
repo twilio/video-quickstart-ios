@@ -46,6 +46,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomLabel: UILabel!
     @IBOutlet weak var micButton: UIButton!
     @IBOutlet weak var shareLocationButton: UIButton!
+    @IBOutlet weak var shareLocationActivityIndicator: UIActivityIndicatorView!
 
     // MARK: UIViewController
     override func viewDidLoad() {
@@ -191,6 +192,8 @@ class ViewController: UIViewController {
         logMessage(messageText: "Fetching current location...")
 
         self.shareLocationButton.isEnabled = false
+        self.shareLocationButton.setTitleColor(UIColor.gray, for: .normal)
+        self.shareLocationActivityIndicator.startAnimating()
 
         locationManager.requestWhenInUseAuthorization()
         locationManager.delegate = self
@@ -582,11 +585,15 @@ extension ViewController : TVIRemoteDataTrackDelegate {
 extension ViewController : CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         self.shareLocationButton.isEnabled = true
+        self.shareLocationButton.setTitleColor(UIColor.white, for: .normal)
+        self.shareLocationActivityIndicator.stopAnimating()
         logMessage(messageText: "Unable to fetch location")
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         self.shareLocationButton.isEnabled = true
+        self.shareLocationButton.setTitleColor(UIColor.white, for: .normal)
+        self.shareLocationActivityIndicator.stopAnimating()
         manager.stopUpdatingLocation()
 
         guard let localDataTrack = self.localDataTrack else {

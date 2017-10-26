@@ -115,6 +115,13 @@
                                     <action selector="shareLocationWithSender:" destination="jSN-F6-Q4K" eventType="touchUpInside" id="gzI-DZ-Qle"/>
                                 </connections>
                             </button>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="rXc-pn-Kdi">
+                                <rect key="frame" x="151" y="573" width="20" height="20"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="20" id="IFR-tl-YdS"/>
+                                    <constraint firstAttribute="width" constant="20" id="h0N-AS-5nX"/>
+                                </constraints>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -123,6 +130,7 @@
                             <constraint firstItem="krA-sT-Z3g" firstAttribute="leading" secondItem="3Bh-pO-6uY" secondAttribute="leadingMargin" constant="-5" id="4jO-qh-yH2"/>
                             <constraint firstItem="7dZ-Ur-uSj" firstAttribute="top" secondItem="Zud-AS-DEE" secondAttribute="bottom" id="AaN-mH-AYD"/>
                             <constraint firstItem="jgR-Qy-dC6" firstAttribute="top" secondItem="EkL-i8-cDP" secondAttribute="bottom" constant="16" id="FAy-WH-Wvc"/>
+                            <constraint firstItem="rXc-pn-Kdi" firstAttribute="leading" secondItem="c1z-jF-YFf" secondAttribute="trailing" constant="-30" id="Ift-is-B0y"/>
                             <constraint firstAttribute="leadingMargin" secondItem="7dZ-Ur-uSj" secondAttribute="leading" id="OQz-Cn-mbU"/>
                             <constraint firstItem="ebq-ja-6iU" firstAttribute="leading" secondItem="3Bh-pO-6uY" secondAttribute="leading" id="OWm-Gg-PVO"/>
                             <constraint firstItem="rwp-9E-VzS" firstAttribute="leading" secondItem="krA-sT-Z3g" secondAttribute="trailing" constant="10" id="Sxy-CE-DSM"/>
@@ -133,6 +141,7 @@
                             <constraint firstAttribute="leadingMargin" secondItem="jgR-Qy-dC6" secondAttribute="leading" id="bOl-NA-2zy"/>
                             <constraint firstAttribute="trailingMargin" secondItem="jgR-Qy-dC6" secondAttribute="trailing" id="dqW-B2-5zF"/>
                             <constraint firstAttribute="trailing" secondItem="ebq-ja-6iU" secondAttribute="trailing" id="eiL-ob-cD1"/>
+                            <constraint firstItem="rXc-pn-Kdi" firstAttribute="top" secondItem="c1z-jF-YFf" secondAttribute="bottom" constant="-32" id="gmY-QA-fzH"/>
                             <constraint firstAttribute="trailingMargin" secondItem="EkL-i8-cDP" secondAttribute="trailing" id="lhs-bL-0xl"/>
                             <constraint firstItem="tZu-uw-hgi" firstAttribute="top" secondItem="krA-sT-Z3g" secondAttribute="bottom" constant="10" id="mOt-mS-dXh"/>
                             <constraint firstAttribute="trailingMargin" secondItem="7dZ-Ur-uSj" secondAttribute="trailing" id="nNa-6o-3I1"/>
@@ -162,6 +171,7 @@
                         <outlet property="roomLabel" destination="Zud-AS-DEE" id="20X-Ci-kMk"/>
                         <outlet property="roomLine" destination="7dZ-Ur-uSj" id="FnZ-FM-uD0"/>
                         <outlet property="roomTextField" destination="EkL-i8-cDP" id="lGF-ox-K6d"/>
+                        <outlet property="shareLocationActivityIndicator" destination="rXc-pn-Kdi" id="e5n-uu-wnY"/>
                         <outlet property="shareLocationButton" destination="c1z-jF-YFf" id="4st-dQ-5Kb"/>
                         <segue destination="pVj-A0-pRm" kind="show" identifier="mapSegue" id="K23-i2-uFx"/>
                     </connections>
