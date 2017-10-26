@@ -19,13 +19,10 @@ class MapViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -36,7 +33,6 @@ class MapViewController: UIViewController {
 
             mapView!.setRegion(region, animated: true)
 
-            // Drop a pin at user's Current Location
             let annotation: MKPointAnnotation = MKPointAnnotation()
             annotation.coordinate = CLLocationCoordinate2DMake(location.coordinate.latitude, location.coordinate.longitude);
 
