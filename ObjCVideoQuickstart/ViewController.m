@@ -7,10 +7,12 @@
 
 #import "ViewController.h"
 #import "Utils.h"
+#import "MapViewController.h"
 
+#import <CoreLocation/CoreLocation.h>
 #import <TwilioVideo/TwilioVideo.h>
 
-@interface ViewController () <UITextFieldDelegate, TVIRemoteParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraCapturerDelegate>
+@interface ViewController () <UITextFieldDelegate, TVIRemoteParticipantDelegate, TVIRoomDelegate, TVIRemoteDataTrackDelegate, TVIVideoViewDelegate, TVICameraCapturerDelegate, CLLocationManagerDelegate>
 
 // Configure access token manually for testing in `ViewDidLoad`, if desired! Create one manually in the console.
 @property (nonatomic, strong) NSString *accessToken;
@@ -21,9 +23,13 @@
 @property (nonatomic, strong) TVICameraCapturer *camera;
 @property (nonatomic, strong) TVILocalVideoTrack *localVideoTrack;
 @property (nonatomic, strong) TVILocalAudioTrack *localAudioTrack;
+@property (nonatomic, strong) TVILocalDataTrack *localDataTrack;
 @property (nonatomic, strong) TVIRemoteParticipant *remoteParticipant;
 @property (nonatomic, weak) TVIVideoView *remoteView;
 @property (nonatomic, strong) TVIRoom *room;
+
+@property (nonatomic, strong) CLLocationManager *locationManager;
+@property (nonatomic, strong) CLLocation *currentLocation;
 
 #pragma mark UI Element Outlets and handles
 
@@ -37,6 +43,8 @@
 @property (nonatomic, weak) IBOutlet UIButton *micButton;
 @property (nonatomic, weak) IBOutlet UILabel *roomLabel;
 @property (nonatomic, weak) IBOutlet UILabel *roomLine;
+@property (nonatomic, weak) IBOutlet UIButton *shareLocationButton;
+@property (nonatomic, weak) IBOutlet UIActivityIndicatorView *shareLocationActivityIndicator;
 
 @end
 
@@ -46,6 +54,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.title = @"QuickStart";
 
     [self logMessage:[NSString stringWithFormat:@"TwilioVideo v%@", [TwilioVideo version]]];
 
@@ -59,15 +68,23 @@
     // Preview our local camera track in the local video preview view.
     [self startPreview];
 
-    // Disconnect and mic button will be displayed when client is connected to a room.
+    // Disconnect, share location and mic button will be displayed when the Client is connected to a Room.
     self.disconnectButton.hidden = YES;
     self.micButton.hidden = YES;
+    self.shareLocationButton.hidden = YES;
     
     self.roomTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self.roomTextField.delegate = self;
 
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
     [self.view addGestureRecognizer:tap];
+
+    self.locationManager = [CLLocationManager new];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self showRoomUI:(self.room != nil)];
 }
 
 #pragma mark - Public
@@ -96,6 +113,23 @@
 
 - (IBAction)disconnectButtonPressed:(id)sender {
     [self.room disconnect];
+}
+
+- (IBAction)shareLocation:(id)sender {
+    [self logMessage:@"Fetching current location..."];
+
+    self.shareLocationButton.enabled = NO;
+    [self.shareLocationButton setTitleColor:UIColor.grayColor forState:UIControlStateNormal];
+    [self.shareLocationActivityIndicator startAnimating];
+
+    [self.locationManager requestWhenInUseAuthorization];
+    self.locationManager.delegate = self;
+
+    if ([self.locationManager respondsToSelector:@selector(requestLocation)]) {
+        [self.locationManager requestLocation];
+    } else {
+        [self.locationManager startUpdatingLocation];
+    }
 }
 
 - (IBAction)micButtonPressed:(id)sender {
@@ -163,6 +197,11 @@
     if (!self.localVideoTrack) {
         [self startPreview];
     }
+
+    // Create a data track which will be used to share location information
+    if (!self.localDataTrack) {
+        self.localDataTrack = [TVILocalDataTrack track];
+    }
 }
 
 - (void)doConnect {
@@ -180,6 +219,7 @@
         // Use the local media that we prepared earlier.
         builder.audioTracks = self.localAudioTrack ? @[ self.localAudioTrack ] : @[ ];
         builder.videoTracks = self.localVideoTrack ? @[ self.localVideoTrack ] : @[ ];
+        builder.dataTracks = self.localDataTrack ? @[ self.localDataTrack ] : @[ ];
 
         // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
         // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
@@ -245,6 +285,8 @@
     self.roomLabel.hidden = inRoom;
     self.micButton.hidden = !inRoom;
     self.disconnectButton.hidden = !inRoom;
+    self.shareLocationButton.hidden = !inRoom;
+    [self.navigationController setNavigationBarHidden:inRoom animated:YES];
     [UIApplication sharedApplication].idleTimerDisabled = inRoom;
 }
 
@@ -268,6 +310,20 @@
 - (void)logMessage:(NSString *)msg {
     NSLog(@"%@", msg);
     self.messageLabel.text = msg;
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"mapSegue"]) {
+        [self.navigationController setNavigationBarHidden:NO animated:NO];
+
+        UIBarButtonItem *backItem = [UIBarButtonItem new];
+        backItem.title = @"Back";
+        self.navigationItem.backBarButtonItem = backItem;
+
+        MapViewController *mapViewController = (MapViewController *)segue.destinationViewController;
+        mapViewController.identity = self.remoteParticipant.identity;
+        mapViewController.location = self.currentLocation;
+    }
 }
 
 #pragma mark - UITextFieldDelegate
@@ -359,6 +415,22 @@
     [self logMessage:[NSString stringWithFormat:@"Participant %@ unpublished audio track.", participant.identity]];
 }
 
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+       publishedDataTrack:(nonnull TVIRemoteDataTrackPublication *)publication {
+
+    // Remote Participant has offered to share the data Track.
+
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ published data track.", participant.identity]];
+}
+
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+     unpublishedDataTrack:(TVIRemoteDataTrackPublication *)publication {
+
+    // Remote Participant has stopped sharing the data Track.
+
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ unpublished data track.", participant.identity]];
+}
+
 - (void)subscribedToVideoTrack:(TVIRemoteVideoTrack *)videoTrack
                    publication:(TVIRemoteVideoTrackPublication *)publication
                 forParticipant:(TVIRemoteParticipant *)participant {
@@ -409,6 +481,28 @@
     [self logMessage:[NSString stringWithFormat:@"Unsubscribed from audio track for Participant %@", participant.identity]];
 }
 
+- (void)subscribedToDataTrack:(TVIRemoteDataTrack *)dataTrack
+                  publication:(TVIRemoteDataTrackPublication *)publication
+               forParticipant:(TVIRemoteParticipant *)participant {
+
+    // We are subscribed to the remote Participant's data Track. We will start receiving the
+    // remote Participant's data messages now.
+
+    [self logMessage:[NSString stringWithFormat:@"Subscribed to data track for Participant %@", participant.identity]];
+
+    dataTrack.delegate = self;
+}
+
+- (void)unsubscribedFromDataTrack:(TVIRemoteDataTrack *)dataTrack
+                      publication:(TVIRemoteDataTrackPublication *)publication
+                   forParticipant:(TVIRemoteParticipant *)participant {
+
+    // We are unsubscribed from the remote Participant's data Track. We will no longer receive the
+    // remote Participant's data messages.
+
+    [self logMessage:[NSString stringWithFormat:@"Unsubscribed from data track for Participant %@", participant.identity]];
+}
+
 - (void)remoteParticipant:(TVIRemoteParticipant *)participant
         enabledVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
     [self logMessage:[NSString stringWithFormat:@"Participant %@ enabled video track.", participant.identity]];
@@ -429,6 +523,37 @@
     [self logMessage:[NSString stringWithFormat:@"Participant %@ disabled audio track.", participant.identity]];
 }
 
+#pragma mark - TVIRemoteDataTrackDelegate
+
+- (void)remoteDataTrack:(TVIRemoteDataTrack *)remoteDataTrack didReceiveData:(NSData *)message {
+    CLLocation *location = [NSKeyedUnarchiver unarchiveObjectWithData:message];
+
+    if (location != nil) {
+        self.currentLocation = location;
+
+        NSString *alertMessage = [NSString stringWithFormat:@"%@ has shared their location. Would you like to display it?", self.remoteParticipant.identity];
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Show Location"
+                                                                                 message:alertMessage
+                                                                          preferredStyle:UIAlertControllerStyleAlert];
+
+        UIAlertAction *yesAction = [UIAlertAction actionWithTitle:@"Yes"
+                                                            style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction * _Nonnull action) {
+                                                              [self performSegueWithIdentifier:@"mapSegue" sender:self];
+                                                          }];
+
+        UIAlertAction *noAction = [UIAlertAction actionWithTitle:@"No"
+                                                           style:UIAlertActionStyleCancel
+                                                         handler:nil];
+
+        [alertController addAction:yesAction];
+        [alertController addAction:noAction];
+        [self presentViewController:alertController animated:YES completion:nil];
+    } else {
+        [self logMessage:@"Received invalid data track payload"];
+    }
+}
+
 #pragma mark - TVIVideoViewDelegate
 
 - (void)videoView:(TVIVideoView *)view videoDimensionsDidChange:(CMVideoDimensions)dimensions {
@@ -440,6 +565,31 @@
 
 - (void)cameraCapturer:(TVICameraCapturer *)capturer didStartWithSource:(TVICameraCaptureSource)source {
     self.previewView.mirror = (source == TVICameraCaptureSourceFrontCamera);
+}
+
+#pragma mark - CLLocationManagerDelegate
+
+- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
+    self.shareLocationButton.enabled = YES;
+    [self.shareLocationButton setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
+    [self.shareLocationActivityIndicator stopAnimating];
+    [self logMessage:@"Unable to fetch location"];
+}
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations {
+    self.shareLocationButton.enabled = YES;
+    [self.shareLocationButton setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
+    [self.shareLocationActivityIndicator stopAnimating];
+    [manager stopUpdatingLocation];
+
+    CLLocation *location = [locations firstObject];
+
+    if (location != nil) {
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:location];
+        [self.localDataTrack sendData:data];
+    } else {
+        [self logMessage:@"No location received"];
+    }
 }
 
 @end

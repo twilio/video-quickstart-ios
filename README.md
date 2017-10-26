@@ -6,6 +6,9 @@
 
 > NOTE: These sample applications use the Twilio Video 2.0.0-preview5 APIs. We will continue to update them throughout the preview and beta period. For examples using our Generally Available 1.x APIs, please see the [master](https://github.com/twilio/video-quickstart-objc) branch.
 
+> Data Tracks are not fully supported in Group Rooms with Twilio Video 2.0.0-preview5. Support for Group Rooms will be added in 2.0.0-preview6. See [below](#group-room-data-track-support) for more information.
+
+
 Get started with Video on iOS:
 
 - [Setup](#setup) - Get setup
@@ -115,6 +118,12 @@ You can find more documentation on getting started as well as our latest Docs be
 
 * [Getting Started](https://www.twilio.com/docs/api/video/getting-started)
 * [Docs](https://media.twiliocdn.com/sdk/ios/video/releases/2.0.0-preview5/docs)
+
+## Group Room Data Track Support
+
+Twilio Video 2.0.0-preview5 does not support Data Tracks in Group Rooms. Support for Group Rooms will be added in Twilio Video 2.0.0-preview6. Please ensure that your `Room Type` is configured to `Peer-to-peer` in the [Rooms Settings](https://www.twilio.com/console/video/configure) page of the Twilio Console.
+
+<img width="562px" src="images/quickstart/room-settings.png"/>
 
 ## Issues and Support
 

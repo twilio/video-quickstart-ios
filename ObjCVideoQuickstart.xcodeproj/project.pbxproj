@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		241FFCAF1FA22C4A00223472 /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 241FFCAE1FA22C4A00223472 /* MapViewController.m */; };
 		283214941CD1307900F1AD80 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214931CD1307900F1AD80 /* main.m */; };
 		283214971CD1307900F1AD80 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214961CD1307900F1AD80 /* AppDelegate.m */; };
 		2832149F1CD1307900F1AD80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2832149E1CD1307900F1AD80 /* Assets.xcassets */; };
@@ -38,6 +39,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		241FFCAD1FA22C4A00223472 /* MapViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MapViewController.h; sourceTree = "<group>"; };
+		241FFCAE1FA22C4A00223472 /* MapViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MapViewController.m; sourceTree = "<group>"; };
 		2832148F1CD1307900F1AD80 /* ObjCVideoQuickstart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjCVideoQuickstart.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		283214931CD1307900F1AD80 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		283214951CD1307900F1AD80 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -106,17 +109,19 @@
 		283214911CD1307900F1AD80 /* ObjCVideoQuickstart */ = {
 			isa = PBXGroup;
 			children = (
-				283214A91CD1312F00F1AD80 /* ViewController.h */,
-				283214AA1CD1312F00F1AD80 /* ViewController.m */,
-				4BF377BA1D99C8F200AC0BA3 /* Utils.h */,
-				4BF377BB1D99C8F200AC0BA3 /* Utils.m */,
 				283214951CD1307900F1AD80 /* AppDelegate.h */,
 				283214961CD1307900F1AD80 /* AppDelegate.m */,
-				4BF377BF1D99F0D700AC0BA3 /* Main.storyboard */,
 				2832149E1CD1307900F1AD80 /* Assets.xcassets */,
-				283214A01CD1307900F1AD80 /* LaunchScreen.storyboard */,
 				283214A31CD1307900F1AD80 /* Info.plist */,
+				283214A01CD1307900F1AD80 /* LaunchScreen.storyboard */,
+				4BF377BF1D99F0D700AC0BA3 /* Main.storyboard */,
+				241FFCAD1FA22C4A00223472 /* MapViewController.h */,
+				241FFCAE1FA22C4A00223472 /* MapViewController.m */,
 				283214921CD1307900F1AD80 /* Supporting Files */,
+				4BF377BA1D99C8F200AC0BA3 /* Utils.h */,
+				4BF377BB1D99C8F200AC0BA3 /* Utils.m */,
+				283214A91CD1312F00F1AD80 /* ViewController.h */,
+				283214AA1CD1312F00F1AD80 /* ViewController.m */,
 			);
 			path = ObjCVideoQuickstart;
 			sourceTree = "<group>";
@@ -203,6 +208,7 @@
 			files = (
 				283214AB1CD1312F00F1AD80 /* ViewController.m in Sources */,
 				283214971CD1307900F1AD80 /* AppDelegate.m in Sources */,
+				241FFCAF1FA22C4A00223472 /* MapViewController.m in Sources */,
 				283214941CD1307900F1AD80 /* main.m in Sources */,
 				4BF377BC1D99C8F200AC0BA3 /* Utils.m in Sources */,
 			);
