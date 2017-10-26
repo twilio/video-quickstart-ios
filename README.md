@@ -6,7 +6,6 @@
 
 > NOTE: These sample applications use the Twilio Video 2.0.0-preview5 APIs. We will continue to update them throughout the preview and beta period. For examples using our Generally Available 1.x APIs, please see the [master](https://github.com/twilio/video-quickstart-swift) branch.
 
-#
 > Data Tracks are currently only available in Peer-to-peer rooms. Support for Group rooms will be added in Twilio Video 2.0.0-preview6. See [below](#group-room-data-track-support) for more information.
 
 
