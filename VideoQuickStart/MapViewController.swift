@@ -2,8 +2,7 @@
 //  MapViewController.swift
 //  VideoQuickStart
 //
-//  Created by Ryan Payne on 10/25/17.
-//  Copyright © 2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
