@@ -491,9 +491,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
 
         logMessage(messageText: "Subscribed to data track for Participant \(participant.identity)")
         
-        if let remoteDataTrack = publication.remoteTrack {
-            remoteDataTrack.delegate = self
-        }
+        dataTrack.delegate = self
     }
 
     func unsubscribed(from dataTrack: TVIRemoteDataTrack,
@@ -504,10 +502,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
         // remote Participant's data messages.
 
         logMessage(messageText: "Unsubscribed from data track for Participant \(participant.identity)")
-
-        if let remoteDataTrack = publication.remoteTrack {
-            remoteDataTrack.delegate = nil
-        }
     }
 
     func remoteParticipant(_ participant: TVIRemoteParticipant,
