@@ -24,4 +24,10 @@ abstract_target 'TwilioVideo' do
     platform :ios, '8.1'
     project 'ScreenCapturerExample.xcproject'
   end
+
+  target 'ExampleDataTrack' do
+    platform :ios, '8.1'
+    project 'ExampleDataTrack.xcproject'
+  end
+
 end
