@@ -44,7 +44,6 @@ class ViewController: UIViewController {
     var room: TVIRoom?
     var localDataTrack: TVILocalDataTrack!
     var localParticipant: TVILocalParticipant?
-    var remoteView: TVIVideoView?
     
     // Private members
     var drawers = Dictionary<TVIDataTrack, Drawer>()
@@ -246,8 +245,8 @@ extension ViewController : TVIRoomDelegate {
         self.localParticipant = room.localParticipant!
         self.addDrawer(self.localDataTrack, color: UIColor.black.cgColor)
         
-        if room.remoteParticipants.count > 0 {
-            room.remoteParticipants[0].delegate = self
+        for remoteParticipant in room.remoteParticipants {
+            remoteParticipant.delegate = self
         }
 
         logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
@@ -276,7 +275,7 @@ extension ViewController : TVIRoomDelegate {
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
         participant.delegate = self
         
-        logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
+        logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteDataTracks.count) data, \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
     }
     
     func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
@@ -286,38 +285,6 @@ extension ViewController : TVIRoomDelegate {
 
 // MARK: TVIParticipantDelegate
 extension ViewController : TVIRemoteParticipantDelegate {
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           publishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
-        
-        // Remote Participant has offered to share the video Track.
-        
-        logMessage(messageText: "Participant \(participant.identity) published video track")
-    }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           unpublishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
-        
-        // Remote Participant has stopped sharing the video Track.
-        
-        logMessage(messageText: "Participant \(participant.identity) unpublished video track")
-    }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           publishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
-        
-        // Remote Participant has offered to share the audio Track.
-        
-        logMessage(messageText: "Participant \(participant.identity) published audio track")
-    }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           unpublishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
-        
-        // Remote Participant has stopped sharing the audio Track.
-        
-        logMessage(messageText: "Participant \(participant.identity) unpublished audio track")
-    }
-    
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            publishedDataTrack publication: TVIRemoteDataTrackPublication) {
         
@@ -332,45 +299,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
         // Remote Participant has stopped sharing the data Track.
         
         logMessage(messageText: "Participant \(participant.identity) unpublished data track")
-    }
-    
-    func subscribed(to videoTrack: TVIRemoteVideoTrack,
-                    publication: TVIRemoteVideoTrackPublication,
-                    for participant: TVIRemoteParticipant) {
-        
-        // We are subscribed to the remote Participant's audio Track. We will start receiving the
-        // remote Participant's video frames now.
-        
-        logMessage(messageText: "Subscribed to video track for Participant \(participant.identity)")
-    }
-    func unsubscribed(from videoTrack: TVIRemoteVideoTrack,
-                      publication: TVIRemoteVideoTrackPublication,
-                      for participant: TVIRemoteParticipant) {
-        
-        // We are unsubscribed from the remote Participant's video Track. We will no longer receive the
-        // remote Participant's video.
-        
-        logMessage(messageText: "Unsubscribed from video track for Participant \(participant.identity)")
-    }
-    
-    func subscribed(to audioTrack: TVIRemoteAudioTrack,
-                    publication: TVIRemoteAudioTrackPublication,
-                    for participant: TVIRemoteParticipant) {
-        
-        // We are subscribed to the remote Participant's audio Track. We will start receiving the
-        // remote Participant's audio now.
-        
-        logMessage(messageText: "Subscribed to audio track for Participant \(participant.identity)")
-    }
-    
-    func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
-                      publication: TVIRemoteAudioTrackPublication,
-                      for participant: TVIRemoteParticipant) {
-        
-        // We are unsubscribed from the remote Participant's audio Track. We will no longer receive the
-        // remote Participant's audio.
-        
-        logMessage(messageText: "Unsubscribed from audio track for Participant \(participant.identity)")
     }
     
     func subscribed(to dataTrack: TVIRemoteDataTrack,
@@ -395,26 +323,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
         
         self.removeDrawer(dataTrack)
         logMessage(messageText: "Unsubscribed from data track for Participant \(participant.identity)")
-    }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           enabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
-        logMessage(messageText: "Participant \(participant.identity) enabled video track")
-    }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           disabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
-        logMessage(messageText: "Participant \(participant.identity) disabled video track")
-    }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           enabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
-        logMessage(messageText: "Participant \(participant.identity) enabled audio track")
-    }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
-        logMessage(messageText: "Participant \(participant.identity) disabled audio track")
     }
 }
 
