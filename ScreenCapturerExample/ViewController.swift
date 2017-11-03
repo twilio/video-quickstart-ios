@@ -76,7 +76,7 @@ class ViewController : UIViewController {
             capturer = TVIScreenCapturer.init(view: self.webView!)
         }
 
-        localVideoTrack = TVILocalVideoTrack.init(capturer: capturer)
+        localVideoTrack = TVILocalVideoTrack.init(capturer: capturer, enabled: true, constraints: nil, name: "Screen")
 
         if (localVideoTrack == nil) {
             presentError(message: "Failed to add screen capturer track!")
