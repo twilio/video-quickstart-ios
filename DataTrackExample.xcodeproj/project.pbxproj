@@ -9,7 +9,9 @@
 /* Begin PBXBuildFile section */
 		4B0F4B341FAC4DCF006784F1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B0F4B301FAC4DCF006784F1 /* LaunchScreen.storyboard */; };
 		4B0F4B351FAC4DCF006784F1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B0F4B321FAC4DCF006784F1 /* Main.storyboard */; };
-		4B2FBDBE1FAC4C2B00907871 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2FBDBD1FAC4C2B00907871 /* Utils.swift */; };
+		4B0F4B3A1FAC4EEC006784F1 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B0F4B371FAC4EEC006784F1 /* Settings.swift */; };
+		4B0F4B3B1FAC4EEC006784F1 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B0F4B381FAC4EEC006784F1 /* SettingsTableViewController.swift */; };
+		4B0F4B3C1FAC4EEC006784F1 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B0F4B391FAC4EEC006784F1 /* Utils.swift */; };
 		4BA53D851FAC42340050BDF7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA53D7F1FAC42340050BDF7 /* AppDelegate.swift */; };
 		4BA53D861FAC42340050BDF7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BA53D801FAC42340050BDF7 /* Assets.xcassets */; };
 		4BA53D871FAC42340050BDF7 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4BA53D811FAC42340050BDF7 /* Info.plist */; };
@@ -19,7 +21,9 @@
 /* Begin PBXFileReference section */
 		4B0F4B311FAC4DCF006784F1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4B0F4B331FAC4DCF006784F1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		4B2FBDBD1FAC4C2B00907871 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Utils.swift; path = DataTrackExample.xcodeproj/../Utils/Utils.swift; sourceTree = SOURCE_ROOT; };
+		4B0F4B371FAC4EEC006784F1 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		4B0F4B381FAC4EEC006784F1 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		4B0F4B391FAC4EEC006784F1 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		4B3F66821FAB81E400ADB3F7 /* DataTrackExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DataTrackExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B3F66981FAB82AB00ADB3F7 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		4B3F66991FAB82B900ADB3F7 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
@@ -46,10 +50,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4B0F4B361FAC4EEC006784F1 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				4B0F4B371FAC4EEC006784F1 /* Settings.swift */,
+				4B0F4B381FAC4EEC006784F1 /* SettingsTableViewController.swift */,
+				4B0F4B391FAC4EEC006784F1 /* Utils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		4B3F66791FAB81E400ADB3F7 = {
 			isa = PBXGroup;
 			children = (
 				4BA53D7E1FAC42340050BDF7 /* DataTrackExample */,
+				4B0F4B361FAC4EEC006784F1 /* Utils */,
 				4B3F66831FAB81E400ADB3F7 /* Products */,
 				4B3F66971FAB82AA00ADB3F7 /* Frameworks */,
 			);
@@ -83,7 +98,6 @@
 			children = (
 				4BA53D7F1FAC42340050BDF7 /* AppDelegate.swift */,
 				4BA53D841FAC42340050BDF7 /* ViewController.swift */,
-				4B2FBDBD1FAC4C2B00907871 /* Utils.swift */,
 				4B0F4B321FAC4DCF006784F1 /* Main.storyboard */,
 				4BA53D801FAC42340050BDF7 /* Assets.xcassets */,
 				4B0F4B301FAC4DCF006784F1 /* LaunchScreen.storyboard */,
@@ -108,7 +122,7 @@
 			dependencies = (
 			);
 			name = DataTrackExample;
-			productName = ExampleDataTrack;
+			productName = DataTrackExample;
 			productReference = 4B3F66821FAB81E400ADB3F7 /* DataTrackExample.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -165,9 +179,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B0F4B3C1FAC4EEC006784F1 /* Utils.swift in Sources */,
+				4B0F4B3B1FAC4EEC006784F1 /* SettingsTableViewController.swift in Sources */,
+				4B0F4B3A1FAC4EEC006784F1 /* Settings.swift in Sources */,
 				4BA53D891FAC42340050BDF7 /* ViewController.swift in Sources */,
 				4BA53D851FAC42340050BDF7 /* AppDelegate.swift in Sources */,
-				4B2FBDBE1FAC4C2B00907871 /* Utils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
