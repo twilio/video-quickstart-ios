@@ -25,7 +25,7 @@ Once you have setup your access token you can run the application and you will b
 
 Once connected you can start drawing and see other connected Participant's drawing.
 
-<img height="400px" src="../images/quickstart/data-track-drawing.gif"/>
+<img height="400px" src="../images/quickstart/data-track-drawing.png"/>
 
 
 
