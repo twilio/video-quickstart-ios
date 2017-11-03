@@ -109,8 +109,10 @@ class ViewController: UIViewController {
     }
     
     @IBAction func disconnect(sender: AnyObject) {
-        self.room!.disconnect()
-        logMessage(messageText: "Attempting to disconnect from room \(room!.name)")
+        if let room = self.room {
+            room.disconnect()
+            logMessage(messageText: "Attempting to disconnect from room \(room.name)")
+        }
     }
     
     // Update our UI based upon if we are in a Room or not
@@ -214,7 +216,6 @@ class ViewController: UIViewController {
             self.view.layer.addSublayer(drawer.shapeLayer!)
             self.view.bringSubview(toFront: disconnectButton)
         }
-
     }
     
     func addDrawer(_ key: TVIDataTrack, color: CGColor) {
@@ -391,7 +392,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
         
         // We are unsubscribed from the remote Participant's data Track. We will no longer receive the
         // remote Participant's data messages.
-        
         
         self.removeDrawer(dataTrack)
         logMessage(messageText: "Unsubscribed from data track for Participant \(participant.identity)")
