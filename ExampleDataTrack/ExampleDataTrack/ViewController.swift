@@ -223,7 +223,10 @@ class ViewController: UIViewController {
     }
     
     func removeDrawer(_ key: TVIDataTrack) {
-        drawers.removeValue(forKey: key)
+        if let drawer = drawers[key] {
+            drawer.shapeLayer.removeFromSuperlayer()
+            drawers.removeValue(forKey: key)
+        }
     }
 }
 
@@ -389,6 +392,8 @@ extension ViewController : TVIRemoteParticipantDelegate {
         // We are unsubscribed from the remote Participant's data Track. We will no longer receive the
         // remote Participant's data messages.
         
+        
+        self.removeDrawer(dataTrack)
         logMessage(messageText: "Unsubscribed from data track for Participant \(participant.identity)")
     }
     
