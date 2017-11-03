@@ -19,13 +19,13 @@ README.md) for instructions on how to generate access tokens and connect to a Ro
 
 Once you have setup your access token you can run the application and you will be presented with the following screen:
 
-<img width="700px" src="../images/quickstart/data-track-home.png"/>
+<img width="400px" src="../images/quickstart/data-track-home.png"/>
 
 ### <a name="bullet3"></a>Connect and draw! 
 
 Once connected you can start drawing and see other connected Participant's drawing.
 
-<img height="700px" src="../images/quickstart/data-track-drawing.png"/>
+<img width="400px" src="../images/quickstart/data-track-drawing.gif"/>
 
 
 
