@@ -51,7 +51,10 @@ class ViewController: UIViewController {
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         self.title = "QuickStart"
+        self.messageLabel.adjustsFontSizeToFitWidth = true;
+        self.messageLabel.minimumScaleFactor = 0.75;
 
         if PlatformUtils.isSimulator {
             self.previewView.removeFromSuperview()
