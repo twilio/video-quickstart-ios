@@ -141,6 +141,8 @@ class ViewController: UIViewController {
             return
         }
         
+        // We don't support multi-touch and assume the first touch that began is the same one that moved later.
+        
         if let location = touches.first?.location(in: self.view) {
             let drawer = drawers[localDataTrack!]
             drawer?.startingPoint = location
