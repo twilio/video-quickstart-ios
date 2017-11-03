@@ -25,9 +25,9 @@ abstract_target 'TwilioVideo' do
     project 'ScreenCapturerExample.xcproject'
   end
 
-  target 'ExampleDataTrack' do
+  target 'DataTrackExample' do
     platform :ios, '8.1'
-    project 'ExampleDataTrack.xcproject'
+    project 'DataTrackExample.xcproject'
   end
 
 end

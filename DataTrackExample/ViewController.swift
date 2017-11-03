@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  ExampleDataTrack
+//  DataTrackExample
 //
 //  Copyright © 2017 Twilio. All rights reserved.
 //

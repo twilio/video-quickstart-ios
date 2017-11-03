@@ -13,7 +13,7 @@
         <!--View Controller-->
         <scene sceneID="nZR-qd-fY9">
             <objects>
-                <viewController storyboardIdentifier="ViewController" id="jSN-F6-Q4K" customClass="ViewController" customModule="VideoQuickStart" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ViewController" id="jSN-F6-Q4K" customClass="ViewController" customModule="DataTrackExample" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="8oD-ke-cGW"/>
                         <viewControllerLayoutGuide type="bottom" id="tZu-uw-hgi"/>
