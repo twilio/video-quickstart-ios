@@ -2,7 +2,6 @@
 //  AppDelegate.swift
 //  ExampleDataTrack
 //
-//  Created by Piyush Tank on 11/2/17.
 //  Copyright © 2017 Twilio. All rights reserved.
 //
 
