@@ -21,7 +21,7 @@ class ViewController: UIViewController {
     var tokenUrl = "http://localhost:8000/token.php"
 
     // Automatically record audio for all `TVIAudioTrack`s published in a Room.
-    let recordAudio = false
+    var recordAudio = false
 
     // Video SDK components
     var room: TVIRoom?
@@ -56,7 +56,6 @@ class ViewController: UIViewController {
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
     // MARK: IBActions
@@ -99,8 +98,8 @@ class ViewController: UIViewController {
 
     @IBAction func disconnect(sender: AnyObject) {
         if let room = self.room {
-            room.disconnect()
             logMessage(messageText: "Attempting to disconnect from room \(room.name)")
+            room.disconnect()
         }
     }
 
@@ -149,33 +148,30 @@ class ViewController: UIViewController {
             recognizer.stopRecognizing()
             self.speechRecognizer = nil
         } else if let audioTrack = self.localAudioTrack {
-            // TODO: Only allow this operation when we are in a Room.
-
-            self.speechRecognizer = ExampleSpeechRecognizer.init(audioTrack: audioTrack,
-                                                                 identifier: audioTrack.trackId,
-                                                                 resultHandler: { (result, error) in
-                                                                    if let validResult = result {
-                                                                        self.messageLabel.text = validResult.bestTranscription.formattedString;
-                                                                    } else if let error = error {
-                                                                        self.messageLabel.text = error.localizedDescription
-                                                                        // TODO: Stop recognition here, or should it be done in the recognizer?
-                                                                    }
-            })
+            // TODO: CE - Only allow this operation when we are in a Room.
+            recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.trackId)
         }
+    }
+
+    func recognizeAudio(audioTrack: TVIAudioTrack, identifier: String) {
+        self.speechRecognizer = ExampleSpeechRecognizer(audioTrack: audioTrack,
+                                                        identifier: identifier,
+                                                             resultHandler: { (result, error) in
+                                                                if let validResult = result {
+                                                                    self.messageLabel.text = validResult.bestTranscription.formattedString;
+                                                                } else if let error = error {
+                                                                    self.messageLabel.text = error.localizedDescription
+                                                                    // TODO: Stop recognition here, or should it be done in the recognizer?
+                                                                }
+        })
     }
 
     func prepareLocalMedia() {
 
-        // We will share local audio and video in the Room.
-
         // Create an audio track.
         localAudioTrack = TVILocalAudioTrack.init()
 
-        if (localAudioTrack == nil) {
-            logMessage(messageText: "Failed to create audio track")
-        }
-
-        // Create a video track which captures from the camera.
+        // Create a video track which captures from the front camera.
         if (TVICameraCapturer.isSourceAvailable(TVICameraCaptureSource.frontCamera)) {
 
             // We will render from the camera using TVICameraPreviewView.
@@ -195,6 +191,8 @@ class ViewController: UIViewController {
             }
         } else if (localAudioTrack != nil) {
             logMessage(messageText: "Front camera not available, using microphone only.")
+        } else {
+            logMessage(messageText: "Failed to create audio track")
         }
     }
 }
@@ -215,11 +213,32 @@ extension ViewController : TVIRoomDelegate {
             remoteParticipant.delegate = self
         }
 
+        // Wait until our LocalAudioTrack is assigned a SID to record it.
+        if (recordAudio) {
+            if let localParticipant = room.localParticipant {
+                localParticipant.delegate = self
+            }
+
+            if let localAudioPublication = room.localParticipant?.localAudioTracks.first {
+                if let localAudioTrack = localAudioPublication.localTrack {
+                    let trackSid = localAudioPublication.trackSid
+                    self.audioRecorders[trackSid] = ExampleAudioRecorder.init(audioTrack: localAudioTrack,
+                                                                              identifier: trackSid)
+                    logMessage(messageText: "Recording local microphone audio...")
+                }
+            }
+        }
+
         logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
     }
 
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
         logMessage(messageText: "Disconncted from room \(room.name), error = \(String(describing: error))")
+
+        for recorder in self.audioRecorders.values {
+            recorder.stopRecording()
+        }
+        self.audioRecorders.removeAll()
 
         self.room = nil
 
@@ -304,6 +323,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
 
         logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
 
+        // TODO: CE - Start remote rendering, and touch handler.
 //        if (self.remoteParticipant == participant) {
 //            setupRemoteVideoView()
 //            videoTrack.addRenderer(self.remoteView!)
@@ -319,6 +339,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
 
         logMessage(messageText: "Unsubscribed from \(publication.trackName) video track for Participant \(participant.identity)")
 
+        // TODO: CE - Stop remote rendering.
 //        if (self.remoteParticipant == participant) {
 //            videoTrack.removeRenderer(self.remoteView!)
 //            self.remoteView?.removeFromSuperview()
@@ -338,6 +359,10 @@ extension ViewController : TVIRemoteParticipantDelegate {
         if (self.recordAudio) {
             self.audioRecorders[publication.trackSid] = ExampleAudioRecorder.init(audioTrack: audioTrack,
                                                                                   identifier: publication.trackSid)
+        }
+        if (self.speechRecognizer?.identifier == publication.trackSid) {
+            self.speechRecognizer?.stopRecognizing()
+            self.speechRecognizer = nil
         }
     }
 
@@ -373,7 +398,20 @@ extension ViewController : TVIRemoteParticipantDelegate {
 
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
+        // We will continue to record silence and/or recognize audio while a Track is disabled.
         logMessage(messageText: "Participant \(participant.identity) disabled \(publication.trackName) audio track")
+    }
+}
+
+// MARK: TVILocalParticipantDelegate
+extension ViewController : TVILocalParticipantDelegate {
+    func localParticipant(_ participant: TVILocalParticipant, publishedAudioTrack: TVILocalAudioTrackPublication) {
+        if (recordAudio) {
+            let trackSid = publishedAudioTrack.trackSid
+            self.audioRecorders[trackSid] = ExampleAudioRecorder.init(audioTrack: publishedAudioTrack.localTrack!,
+                                                                      identifier: trackSid)
+            logMessage(messageText: "Recording local microphone audio...")
+        }
     }
 }
 
