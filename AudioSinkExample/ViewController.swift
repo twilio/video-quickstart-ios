@@ -57,6 +57,10 @@ class ViewController: UIViewController {
         self.roomTextField.delegate = self
         self.messageLabel.layer.cornerRadius = 2
 
+        if (recordAudio == false) {
+            self.navigationItem.leftBarButtonItem = nil
+        }
+
         prepareLocalMedia()
     }
 
@@ -88,12 +92,10 @@ class ViewController: UIViewController {
                 builder.videoTracks = [videoTrack]
             }
 
-            // Use the preferred audio codec
+            // Use the preferred codecs
             if let preferredAudioCodec = Settings.shared.audioCodec {
                 builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
             }
-
-            // Use the preferred video codec
             if let preferredVideoCodec = Settings.shared.videoCodec {
                 builder.preferredVideoCodecs = [preferredVideoCodec.rawValue]
             }
