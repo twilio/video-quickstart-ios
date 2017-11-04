@@ -38,11 +38,13 @@ class ViewController: UIViewController {
     @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var disconnectButton: UIButton!
     @IBOutlet weak var messageLabel: UILabel!
+    @IBOutlet weak var remoteViewStack: UIStackView!
     @IBOutlet weak var roomTextField: UITextField!
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
 
-    let previewPadding = CGFloat(10)
+    let kPreviewPadding = CGFloat(10)
+    let kMaxRemoteVideos = Int(2)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -90,7 +92,7 @@ class ViewController: UIViewController {
         // Connect to the Room using the options we provided.
         room = TwilioVideo.connect(with: connectOptions, delegate: self)
 
-        logMessage(messageText: "Attempting to connect to room \(String(describing: self.roomTextField.text))")
+        logMessage(messageText: "Connecting to \(roomTextField.text ?? "a Room")")
 
         self.showRoomUI(inRoom: true)
         self.dismissKeyboard()
@@ -98,7 +100,7 @@ class ViewController: UIViewController {
 
     @IBAction func disconnect(sender: AnyObject) {
         if let room = self.room {
-            logMessage(messageText: "Attempting to disconnect from room \(room.name)")
+            logMessage(messageText: "Disconnecting from Room \(room.name)")
             room.disconnect()
         }
     }
@@ -116,10 +118,22 @@ class ViewController: UIViewController {
 
             previewBounds = previewBounds.integral
 
-            previewBounds.origin = CGPoint.init(x: view.bounds.width - previewBounds.width - previewPadding,
-                                                y: view.bounds.height - previewBounds.height - previewPadding)
+            previewBounds.origin = CGPoint.init(x: view.bounds.width - previewBounds.width - kPreviewPadding,
+                                                y: view.bounds.height - previewBounds.height - kPreviewPadding)
 
             previewView.frame = previewBounds
+        }
+    }
+
+    override func prefersHomeIndicatorAutoHidden() -> Bool {
+        return self.room != nil
+    }
+
+    override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
+        if (newCollection.horizontalSizeClass == .regular) {
+            self.remoteViewStack.axis = .horizontal
+        } else {
+            self.remoteViewStack.axis = .vertical
         }
     }
 
@@ -131,6 +145,7 @@ class ViewController: UIViewController {
         self.roomLabel.isHidden = inRoom
         self.disconnectButton.isHidden = !inRoom
         UIApplication.shared.isIdleTimerDisabled = inRoom
+        self.setNeedsUpdateOfHomeIndicatorAutoHidden()
     }
 
     func dismissKeyboard() {
@@ -195,6 +210,32 @@ class ViewController: UIViewController {
             logMessage(messageText: "Failed to create audio track")
         }
     }
+
+    func setupRemoteVideoView(publication: TVIRemoteVideoTrackPublication) {
+        // Create a `TVIVideoView` programmatically, and add to our `UIStackView`
+        if let remoteView = TVIVideoView.init(frame: CGRect.zero, delegate:nil) {
+            // We will bet that a hash collision between two unique SIDs is very rare.
+            remoteView.tag = publication.trackSid.hashValue
+
+            // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit
+            // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
+            remoteView.contentMode = .scaleAspectFit;
+
+            // Start rendering, and add to our stack.
+            publication.remoteTrack?.addRenderer(remoteView)
+            self.remoteViewStack.addArrangedSubview(remoteView)
+        }
+    }
+
+    func removeRemoteVideoView(publication: TVIRemoteVideoTrackPublication) {
+        let viewTag = publication.trackSid.hashValue
+        if let remoteView = self.remoteViewStack.viewWithTag(viewTag) {
+            // Stop rendering, and remove the view from screen.
+            publication.remoteTrack?.removeRenderer(remoteView as! TVIVideoRenderer)
+            // Automatically removes it from the UIStackView's arranged subviews.
+            remoteView.removeFromSuperview()
+        }
+    }
 }
 
 // MARK: UITextFieldDelegate
@@ -229,11 +270,15 @@ extension ViewController : TVIRoomDelegate {
             }
         }
 
-        logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
+        logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")")
     }
 
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
-        logMessage(messageText: "Disconncted from room \(room.name), error = \(String(describing: error))")
+        if let disconnectError = error {
+            logMessage(messageText: "Disconncted from \(room.name).\ncode = \((disconnectError as NSError).code) error = \(disconnectError.localizedDescription)")
+        } else {
+            logMessage(messageText: "Disconncted from \(room.name)")
+        }
 
         for recorder in self.audioRecorders.values {
             recorder.stopRecording()
@@ -323,11 +368,10 @@ extension ViewController : TVIRemoteParticipantDelegate {
 
         logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
 
-        // TODO: CE - Start remote rendering, and touch handler.
-//        if (self.remoteParticipant == participant) {
-//            setupRemoteVideoView()
-//            videoTrack.addRenderer(self.remoteView!)
-//        }
+        // Start remote rendering, and add a touch handler.
+        if (self.remoteViewStack.arrangedSubviews.count < kMaxRemoteVideos) {
+            setupRemoteVideoView(publication: publication)
+        }
     }
 
     func unsubscribed(from videoTrack: TVIRemoteVideoTrack,
@@ -339,12 +383,8 @@ extension ViewController : TVIRemoteParticipantDelegate {
 
         logMessage(messageText: "Unsubscribed from \(publication.trackName) video track for Participant \(participant.identity)")
 
-        // TODO: CE - Stop remote rendering.
-//        if (self.remoteParticipant == participant) {
-//            videoTrack.removeRenderer(self.remoteView!)
-//            self.remoteView?.removeFromSuperview()
-//            self.remoteView = nil
-//        }
+        // Stop remote rendering.
+        removeRemoteVideoView(publication: publication)
     }
 
     func subscribed(to audioTrack: TVIRemoteAudioTrack,
