@@ -2,7 +2,6 @@
 //  ViewController.swift
 //  AudioSinkExample
 //
-//  Created by Chris Eagleston on 11/3/17.
 //  Copyright © 2017 Twilio Inc. All rights reserved.
 //
 
