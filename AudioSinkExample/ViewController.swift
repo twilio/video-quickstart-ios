@@ -30,6 +30,7 @@ class ViewController: UIViewController {
     var localVideoTrack: TVILocalVideoTrack!
 
     // Audio Sinks
+    var audioRecorders = Dictionary<NSString, ExampleAudioRecorder>()
     var speechRecognizer: ExampleSpeechRecognizer?
 
     // MARK: UI Element Outlets and handles
@@ -192,6 +193,8 @@ class ViewController: UIViewController {
                     view.addSubview(preview);
                 }
             }
+        } else if (localAudioTrack != nil) {
+            logMessage(messageText: "Front camera not available, using microphone only.")
         }
     }
 }
