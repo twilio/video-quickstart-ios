@@ -49,6 +49,8 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = true
         self.roomTextField.autocapitalizationType = .none
         self.roomTextField.delegate = self
+
+        prepareLocalMedia()
     }
 
     override func didReceiveMemoryWarning() {
@@ -100,7 +102,7 @@ class ViewController: UIViewController {
         // Layout the preview view.
         if let previewView = self.camera?.previewView {
             let dimensions = previewView.videoDimensions
-            var previewBounds = CGRect.init(origin: CGPoint.zero, size: CGSize.init(width: 128, height: 128))
+            var previewBounds = CGRect.init(origin: CGPoint.zero, size: CGSize.init(width: 160, height: 160))
 
             previewBounds = AVMakeRect(aspectRatio: CGSize.init(width: CGFloat(dimensions.width), height: CGFloat(dimensions.height)),
                                        insideRect: previewBounds)
@@ -108,9 +110,9 @@ class ViewController: UIViewController {
             previewBounds = previewBounds.integral
 
             previewBounds.origin = CGPoint.init(x: view.bounds.width - previewBounds.width - previewPadding,
-                                                y: view.bounds.height - previewBounds.width - previewPadding)
+                                                y: view.bounds.height - previewBounds.height - previewPadding)
 
-            previewView.bounds = previewBounds
+            previewView.frame = previewBounds
         }
     }
 
