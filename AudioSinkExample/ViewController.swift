@@ -75,6 +75,13 @@ class ViewController: UIViewController {
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
 
+            if let videoTrack = self.localVideoTrack {
+                builder.videoTracks = [videoTrack]
+            }
+            if let audioTrack = self.localAudioTrack {
+                builder.audioTracks = [audioTrack]
+            }
+
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             builder.roomName = self.roomTextField.text
