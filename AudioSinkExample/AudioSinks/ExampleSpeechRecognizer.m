@@ -61,10 +61,14 @@
     return self;
 }
 
+- (void)dealloc {
+    [self.speechTask cancel];
+}
+
 - (void)stopRecognizing {
     [self.audioTrack removeSink:self];
 
-    [self.speechTask cancel];
+    [self.speechTask finish];
     self.speechRequest = nil;
     self.speechRecognizer = nil;
 
