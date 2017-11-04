@@ -22,6 +22,9 @@
 		8A6C2E521FAD3AD2008EB058 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8A6C2E551FAD3AD2008EB058 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8A6C2E571FAD3AD2008EB058 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8A6C2E5F1FAD3EAC008EB058 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		8A6C2E601FAD3EAC008EB058 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		8A6C2E611FAD3EAC008EB058 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +42,7 @@
 			isa = PBXGroup;
 			children = (
 				8A6C2E4A1FAD3AD2008EB058 /* AudioSinkExample */,
+				8A6C2E5E1FAD3EAC008EB058 /* Utils */,
 				8A6C2E491FAD3AD2008EB058 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -62,6 +66,16 @@
 				8A6C2E571FAD3AD2008EB058 /* Info.plist */,
 			);
 			path = AudioSinkExample;
+			sourceTree = "<group>";
+		};
+		8A6C2E5E1FAD3EAC008EB058 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				8A6C2E5F1FAD3EAC008EB058 /* Settings.swift */,
+				8A6C2E601FAD3EAC008EB058 /* SettingsTableViewController.swift */,
+				8A6C2E611FAD3EAC008EB058 /* Utils.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
