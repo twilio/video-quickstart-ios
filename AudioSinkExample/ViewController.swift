@@ -43,15 +43,19 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
 
+    var messageTimer: Timer!
+
     let kPreviewPadding = CGFloat(10)
     let kMaxRemoteVideos = Int(2)
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.title = "AudioSink Example"
         self.disconnectButton.isHidden = true
         self.roomTextField.autocapitalizationType = .none
         self.roomTextField.delegate = self
+        self.messageLabel.layer.cornerRadius = 2
 
         prepareLocalMedia()
     }
@@ -82,6 +86,21 @@ class ViewController: UIViewController {
             }
             if let videoTrack = self.localVideoTrack {
                 builder.videoTracks = [videoTrack]
+            }
+
+            // Use the preferred audio codec
+            if let preferredAudioCodec = Settings.shared.audioCodec {
+                builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
+            }
+
+            // Use the preferred video codec
+            if let preferredVideoCodec = Settings.shared.videoCodec {
+                builder.preferredVideoCodecs = [preferredVideoCodec.rawValue]
+            }
+
+            // Use the preferred encoding parameters
+            if let encodingParameters = Settings.shared.getEncodingParameters() {
+                builder.encodingParameters = encodingParameters
             }
 
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
@@ -156,6 +175,29 @@ class ViewController: UIViewController {
 
     func logMessage(messageText: String) {
         messageLabel.text = messageText
+
+        if (messageLabel.alpha < 1.0) {
+            self.messageLabel.isHidden = false
+            UIView.animate(withDuration: 0.4, animations: {
+                self.messageLabel.alpha = 1.0
+            })
+        }
+
+        self.messageTimer?.invalidate()
+        let timer = Timer.init(timeInterval: TimeInterval(6), repeats: false) { (timer) in
+            if (self.messageLabel.isHidden == false) {
+                UIView.animate(withDuration: 0.8, animations: {
+                    self.messageLabel.alpha = 0
+                }, completion: { (complete) in
+                    if (complete) {
+                        self.messageLabel.isHidden = true
+                    }
+                })
+            }
+        }
+
+        self.messageTimer = timer
+        RunLoop.main.add(timer, forMode: .commonModes)
     }
 
     func recognizeLocalAudio() {
@@ -165,6 +207,31 @@ class ViewController: UIViewController {
         } else if let audioTrack = self.localAudioTrack {
             // TODO: CE - Only allow this operation when we are in a Room.
             recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.trackId)
+        }
+    }
+
+    func recognizeRemoteAudio(gestureRecognizer: UIGestureRecognizer) {
+        if let remoteView = gestureRecognizer.view {
+            // Find the Participant.
+            let hashedSid = remoteView.hashValue
+            for remoteParticipant in room!.remoteParticipants {
+                for videoTrackPublication in remoteParticipant.remoteVideoTracks {
+                    if (videoTrackPublication.trackSid.hashValue == hashedSid) {
+                        if let audioTrack = remoteParticipant.remoteAudioTracks.first?.remoteTrack {
+                            recognizeRemoteParticipantAudio(audioTrack: audioTrack, sid: remoteParticipant.remoteAudioTracks.first!.trackSid)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    func recognizeRemoteParticipantAudio(audioTrack: TVIRemoteAudioTrack, sid: String) {
+        if let recognizer = self.speechRecognizer {
+            recognizer.stopRecognizing()
+            self.speechRecognizer = nil
+        } else {
+            recognizeAudio(audioTrack: audioTrack, identifier: sid)
         }
     }
 
@@ -189,8 +256,8 @@ class ViewController: UIViewController {
         // Create a video track which captures from the front camera.
         if (TVICameraCapturer.isSourceAvailable(TVICameraCaptureSource.frontCamera)) {
 
-            // We will render from the camera using TVICameraPreviewView.
-            camera = TVICameraCapturer(source: .frontCamera, delegate: nil, enablePreview: true)
+            // We will render the camera using TVICameraPreviewView.
+            camera = TVICameraCapturer(source: .frontCamera, delegate: self, enablePreview: true)
             localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
 
             if (localVideoTrack == nil) {
@@ -221,6 +288,9 @@ class ViewController: UIViewController {
             // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
             remoteView.contentMode = .scaleAspectFit;
 
+            let recognizerTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeRemoteAudio))
+            remoteView.addGestureRecognizer(recognizerTap)
+
             // Start rendering, and add to our stack.
             publication.remoteTrack?.addRenderer(remoteView)
             self.remoteViewStack.addArrangedSubview(remoteView)
@@ -230,9 +300,9 @@ class ViewController: UIViewController {
     func removeRemoteVideoView(publication: TVIRemoteVideoTrackPublication) {
         let viewTag = publication.trackSid.hashValue
         if let remoteView = self.remoteViewStack.viewWithTag(viewTag) {
-            // Stop rendering, and remove the view from screen.
+            // Stop rendering, we don't want to receive any more frames.
             publication.remoteTrack?.removeRenderer(remoteView as! TVIVideoRenderer)
-            // Automatically removes it from the UIStackView's arranged subviews.
+            // Automatically removes us from the UIStackView's arranged subviews.
             remoteView.removeFromSuperview()
         }
     }
@@ -446,12 +516,24 @@ extension ViewController : TVIRemoteParticipantDelegate {
 // MARK: TVILocalParticipantDelegate
 extension ViewController : TVILocalParticipantDelegate {
     func localParticipant(_ participant: TVILocalParticipant, publishedAudioTrack: TVILocalAudioTrackPublication) {
+        // We expect to publish our AudioTrack at Room connect time, but handle a late publish just to be sure.
         if (recordAudio) {
             let trackSid = publishedAudioTrack.trackSid
             self.audioRecorders[trackSid] = ExampleAudioRecorder.init(audioTrack: publishedAudioTrack.localTrack!,
                                                                       identifier: trackSid)
             logMessage(messageText: "Recording local microphone audio...")
         }
+    }
+}
+
+extension ViewController : TVICameraCapturerDelegate {
+    func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
+        self.view.setNeedsLayout()
+    }
+
+    func cameraCapturer(_ capturer: TVICameraCapturer, didFailWithError error: Error) {
+        logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+        capturer.previewView.removeFromSuperview()
     }
 }
 
