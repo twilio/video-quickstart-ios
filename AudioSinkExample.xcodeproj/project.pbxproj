@@ -12,6 +12,8 @@
 		8A6C2E511FAD3AD2008EB058 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A6C2E4F1FAD3AD2008EB058 /* Main.storyboard */; };
 		8A6C2E531FAD3AD2008EB058 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A6C2E521FAD3AD2008EB058 /* Assets.xcassets */; };
 		8A6C2E561FAD3AD2008EB058 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A6C2E541FAD3AD2008EB058 /* LaunchScreen.storyboard */; };
+		8A6C2E671FAD48EC008EB058 /* ExampleAudioRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C2E641FAD48DB008EB058 /* ExampleAudioRecorder.m */; };
+		8A6C2E681FAD48EF008EB058 /* ExampleSpeechRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C2E661FAD48DB008EB058 /* ExampleSpeechRecognizer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +27,10 @@
 		8A6C2E5F1FAD3EAC008EB058 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		8A6C2E601FAD3EAC008EB058 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
 		8A6C2E611FAD3EAC008EB058 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		8A6C2E631FAD48DB008EB058 /* ExampleAudioRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleAudioRecorder.h; sourceTree = "<group>"; };
+		8A6C2E641FAD48DB008EB058 /* ExampleAudioRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleAudioRecorder.m; sourceTree = "<group>"; };
+		8A6C2E651FAD48DB008EB058 /* ExampleSpeechRecognizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleSpeechRecognizer.h; sourceTree = "<group>"; };
+		8A6C2E661FAD48DB008EB058 /* ExampleSpeechRecognizer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleSpeechRecognizer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				8A6C2E4B1FAD3AD2008EB058 /* AppDelegate.swift */,
+				8A6C2E621FAD48DB008EB058 /* AudioSinks */,
 				8A6C2E4D1FAD3AD2008EB058 /* ViewController.swift */,
 				8A6C2E4F1FAD3AD2008EB058 /* Main.storyboard */,
 				8A6C2E521FAD3AD2008EB058 /* Assets.xcassets */,
@@ -76,6 +83,17 @@
 				8A6C2E611FAD3EAC008EB058 /* Utils.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		8A6C2E621FAD48DB008EB058 /* AudioSinks */ = {
+			isa = PBXGroup;
+			children = (
+				8A6C2E631FAD48DB008EB058 /* ExampleAudioRecorder.h */,
+				8A6C2E641FAD48DB008EB058 /* ExampleAudioRecorder.m */,
+				8A6C2E651FAD48DB008EB058 /* ExampleSpeechRecognizer.h */,
+				8A6C2E661FAD48DB008EB058 /* ExampleSpeechRecognizer.m */,
+			);
+			path = AudioSinks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -150,6 +168,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8A6C2E681FAD48EF008EB058 /* ExampleSpeechRecognizer.m in Sources */,
+				8A6C2E671FAD48EC008EB058 /* ExampleAudioRecorder.m in Sources */,
 				8A6C2E4E1FAD3AD2008EB058 /* ViewController.swift in Sources */,
 				8A6C2E4C1FAD3AD2008EB058 /* AppDelegate.swift in Sources */,
 			);
