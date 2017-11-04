@@ -75,11 +75,11 @@ class ViewController: UIViewController {
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
 
-            if let videoTrack = self.localVideoTrack {
-                builder.videoTracks = [videoTrack]
-            }
             if let audioTrack = self.localAudioTrack {
                 builder.audioTracks = [audioTrack]
+            }
+            if let videoTrack = self.localVideoTrack {
+                builder.videoTracks = [videoTrack]
             }
 
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
@@ -148,8 +148,18 @@ class ViewController: UIViewController {
             recognizer.stopRecognizing()
             self.speechRecognizer = nil
         } else if let audioTrack = self.localAudioTrack {
-            // TODO: Only when we are in a Room?
-            self.speechRecognizer = ExampleSpeechRecognizer.init(audioTrack: audioTrack, identifier: audioTrack.trackId)
+            // TODO: Only allow this operation when we are in a Room.
+
+            self.speechRecognizer = ExampleSpeechRecognizer.init(audioTrack: audioTrack,
+                                                                 identifier: audioTrack.trackId,
+                                                                 resultHandler: { (result, error) in
+                                                                    if let validResult = result {
+                                                                        self.messageLabel.text = validResult.bestTranscription.formattedString;
+                                                                    } else if let error = error {
+                                                                        self.messageLabel.text = error.localizedDescription
+                                                                        // TODO: Stop recognition here, or should it be done in the recognizer?
+                                                                    }
+            })
         }
     }
 
@@ -167,7 +177,7 @@ class ViewController: UIViewController {
         // Create a video track which captures from the camera.
         if (TVICameraCapturer.isSourceAvailable(TVICameraCaptureSource.frontCamera)) {
 
-            // We will render preview using TVICameraPreviewView.
+            // We will render from the camera using TVICameraPreviewView.
             camera = TVICameraCapturer(source: .frontCamera, delegate: nil, enablePreview: true)
             localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
 

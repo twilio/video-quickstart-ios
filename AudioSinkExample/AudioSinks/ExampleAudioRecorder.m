@@ -1,8 +1,7 @@
 //
 //  ExampleAudioRecorder.m
-//  RTCRoomsDemo
+//  AudioSinkExample
 //
-//  Created by Chris Eagleston on 6/23/17.
 //  Copyright © 2017 Twilio, Inc. All rights reserved.
 //
 
@@ -10,7 +9,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-@interface ExampleAudioRecorder() <TVIAudioSink>
+@interface ExampleAudioRecorder()
 
 @property (nonatomic, strong) AVAssetWriter *audioRecorder;
 @property (nonatomic, strong) AVAssetWriterInput *audioRecorderInput;
@@ -48,6 +47,8 @@
         return;
     }
 
+    // The iOS audio device captures in mono.
+    // The mixer produces stereo audio for each remote Participant, even if they send mono audio.
     _numberOfChannels = [audioTrack isKindOfClass:[TVILocalAudioTrack class]] ? 1 : 2;
 
     // Assume that TVIAudioTrack will produce interleaved stereo LPCM @ 16-bit / 48khz

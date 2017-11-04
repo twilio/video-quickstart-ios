@@ -1,22 +1,25 @@
 //
 //  ExampleSpeechRecognizer.h
-//  RTCRoomsDemo
+//  AudioSinkExample
 //
-//  Created by Chris Eagleston on 6/23/17.
 //  Copyright © 2017 Twilio, Inc. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
+@import Speech;
+
 #import <TwilioVideo/TwilioVideo.h>
 
-@interface ExampleSpeechRecognizer : NSObject
+@interface ExampleSpeechRecognizer : NSObject <TVIAudioSink>
 
-- (instancetype)initWithAudioTrack:(TVIAudioTrack *)audioTrack identifier:(NSString *)identifier;
+- (null_unspecified instancetype)initWithAudioTrack:(nonnull TVIAudioTrack *)audioTrack
+                                         identifier:(nonnull NSString *)identifier
+                                      resultHandler:(void (^ _Nonnull)(SFSpeechRecognitionResult * __nullable result, NSError * __nullable error))resultHandler;
 
 // Breaks the strong reference from TVIAudioTrack by removing its Sink.
 - (void)stopRecognizing;
 
-@property (nonatomic, copy, readonly) NSString *speechResult;
-@property (nonatomic, copy, readonly) NSString *identifier;
+@property (nonatomic, copy, readonly, nullable) NSString *speechResult;
+@property (nonatomic, copy, readonly, nonnull) NSString *identifier;
 
 @end

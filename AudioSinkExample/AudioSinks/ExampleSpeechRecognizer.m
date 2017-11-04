@@ -1,17 +1,15 @@
 //
 //  ExampleSpeechRecognizer.m
-//  RTCRoomsDemo
+//  AudioSinkExample
 //
-//  Created by Chris Eagleston on 6/23/17.
 //  Copyright © 2017 Twilio, Inc. All rights reserved.
 //
 
 #import "ExampleSpeechRecognizer.h"
 
 #import <AudioToolbox/AudioToolbox.h>
-#import <Speech/Speech.h>
 
-@interface ExampleSpeechRecognizer() <TVIAudioSink>
+@interface ExampleSpeechRecognizer()
 
 @property (nonatomic, strong) SFSpeechRecognizer *speechRecognizer;
 @property (nonatomic, strong) SFSpeechAudioBufferRecognitionRequest *speechRequest;
@@ -26,7 +24,9 @@
 
 @implementation ExampleSpeechRecognizer
 
-- (instancetype)initWithAudioTrack:(TVIAudioTrack *)audioTrack identifier:(NSString *)identifier {
+- (instancetype)initWithAudioTrack:(TVIAudioTrack *)audioTrack
+                        identifier:(NSString *)identifier
+                     resultHandler:(void (^)(SFSpeechRecognitionResult * result, NSError * error))resultHandler {
     self = [super init];
 
     if (self != nil) {
@@ -36,6 +36,8 @@
         _speechRequest = [[SFSpeechAudioBufferRecognitionRequest alloc] init];
         _speechRequest.shouldReportPartialResults = YES;
 
+        // The iOS audio device captures in mono.
+        // The mixer produces stereo audio for each remote Participant, even if they send mono audio.
         _numberOfChannels = [audioTrack isKindOfClass:[TVILocalAudioTrack class]] ? 1 : 2;
 
         __weak typeof(self) weakSelf = self;
@@ -43,10 +45,12 @@
             __strong typeof(self) strongSelf = weakSelf;
             if (result) {
                 strongSelf.speechResult = result.bestTranscription.formattedString;
-                NSLog(@"Results: %@", strongSelf.speechResult);
             } else {
+                // TODO: CE - do we handle errors or let our owner?
                 NSLog(@"Speech recognition error: %@", error);
             }
+
+            resultHandler(result, error);
         }];
 
         _audioTrack = audioTrack;
@@ -77,7 +81,7 @@
     const AudioStreamBasicDescription *basicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(coreMediaFormat);
 
     // Detect and discard the initial invalid samples...
-    // Waits for the track to start producing the expected audio channels, and for the timestamp to be reset.
+    // Waits for the track to start producing the expected audio channels.
     if (basicDescription->mChannelsPerFrame != _numberOfChannels) {
         return;
     }

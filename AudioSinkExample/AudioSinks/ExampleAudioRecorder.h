@@ -1,17 +1,18 @@
 //
 //  ExampleAudioRecorder.h
-//  RTCRoomsDemo
+//  AudioSinkExample
 //
-//  Created by Chris Eagleston on 6/23/17.
 //  Copyright © 2017 Twilio, Inc. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
+
 #import <TwilioVideo/TwilioVideo.h>
 
-@interface ExampleAudioRecorder : NSObject
+@interface ExampleAudioRecorder : NSObject <TVIAudioSink>
 
-- (null_unspecified instancetype)initWithAudioTrack:(nonnull TVIAudioTrack *)audioTrack identifier:(nonnull NSString *)identifier;
+- (null_unspecified instancetype)initWithAudioTrack:(nonnull TVIAudioTrack *)audioTrack
+                                         identifier:(nonnull NSString *)identifier;
 
 // Breaks the strong reference from TVIAudioTrack by removing its Sink.
 - (void)stopRecording;
