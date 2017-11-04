@@ -20,7 +20,7 @@ class ViewController: UIViewController {
     // Configure remote URL to fetch token from
     var tokenUrl = "http://localhost:8000/token.php"
 
-    // Automatically record audio for all remote
+    // Automatically record audio for all `TVIAudioTrack`s published in a Room.
     let recordAudio = false
 
     // Video SDK components
@@ -30,7 +30,7 @@ class ViewController: UIViewController {
     var localVideoTrack: TVILocalVideoTrack!
 
     // Audio Sinks
-    var audioRecorders = Dictionary<NSString, ExampleAudioRecorder>()
+    var audioRecorders = Dictionary<String, ExampleAudioRecorder>()
     var speechRecognizer: ExampleSpeechRecognizer?
 
     // MARK: UI Element Outlets and handles
@@ -334,6 +334,11 @@ extension ViewController : TVIRemoteParticipantDelegate {
         // remote Participant's audio now.
 
         logMessage(messageText: "Subscribed to \(publication.trackName) audio track for Participant \(participant.identity)")
+
+        if (self.recordAudio) {
+            self.audioRecorders[publication.trackSid] = ExampleAudioRecorder.init(audioTrack: audioTrack,
+                                                                                  identifier: publication.trackSid)
+        }
     }
 
     func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
@@ -344,26 +349,11 @@ extension ViewController : TVIRemoteParticipantDelegate {
         // remote Participant's audio.
 
         logMessage(messageText: "Unsubscribed from \(publication.trackName) audio track for Participant \(participant.identity)")
-    }
 
-    func subscribed(to dataTrack: TVIRemoteDataTrack,
-                    publication: TVIRemoteDataTrackPublication,
-                    for participant: TVIRemoteParticipant) {
-
-        // We are subscribed to the remote Participant's data Track. We will start receiving the
-        // remote Participant's data messages now.
-
-        logMessage(messageText: "Subscribed to \(publication.trackName) data track for Participant \(participant.identity)")
-    }
-
-    func unsubscribed(from dataTrack: TVIRemoteDataTrack,
-                      publication: TVIRemoteDataTrackPublication,
-                      for participant: TVIRemoteParticipant) {
-
-        // We are unsubscribed from the remote Participant's data Track. We will no longer receive the
-        // remote Participant's data messages.
-
-        logMessage(messageText: "Unsubscribed from \(publication.trackName) data track for Participant \(participant.identity)")
+        if let recorder = self.audioRecorders[publication.trackSid] {
+            recorder.stopRecording()
+            self.audioRecorders.removeValue(forKey: publication.trackSid)
+        }
     }
 
     func remoteParticipant(_ participant: TVIRemoteParticipant,
