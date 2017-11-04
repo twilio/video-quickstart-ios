@@ -34,6 +34,7 @@
 		8A6C2E641FAD48DB008EB058 /* ExampleAudioRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleAudioRecorder.m; sourceTree = "<group>"; };
 		8A6C2E651FAD48DB008EB058 /* ExampleSpeechRecognizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleSpeechRecognizer.h; sourceTree = "<group>"; };
 		8A6C2E661FAD48DB008EB058 /* ExampleSpeechRecognizer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleSpeechRecognizer.m; sourceTree = "<group>"; };
+		8A7FE3B51FAD6409003A4C41 /* AudioSinks-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudioSinks-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +92,7 @@
 		8A6C2E621FAD48DB008EB058 /* AudioSinks */ = {
 			isa = PBXGroup;
 			children = (
+				8A7FE3B51FAD6409003A4C41 /* AudioSinks-Bridging-Header.h */,
 				8A6C2E631FAD48DB008EB058 /* ExampleAudioRecorder.h */,
 				8A6C2E641FAD48DB008EB058 /* ExampleAudioRecorder.m */,
 				8A6C2E651FAD48DB008EB058 /* ExampleSpeechRecognizer.h */,
@@ -320,6 +322,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AudioSinkExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "AudioSinkExample/AudioSinks/AudioSinks-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -335,6 +338,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AudioSinkExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "AudioSinkExample/AudioSinks/AudioSinks-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
