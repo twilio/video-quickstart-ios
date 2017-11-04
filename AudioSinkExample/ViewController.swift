@@ -137,7 +137,13 @@ class ViewController: UIViewController {
     }
 
     func recognizeLocalAudio() {
-
+        if let recognizer = self.speechRecognizer {
+            recognizer.stopRecognizing()
+            self.speechRecognizer = nil
+        } else if let audioTrack = self.localAudioTrack {
+            // TODO: Only when we are in a Room?
+            self.speechRecognizer = ExampleSpeechRecognizer.init(audioTrack: audioTrack, identifier: audioTrack.trackId)
+        }
     }
 
     func prepareLocalMedia() {
