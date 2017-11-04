@@ -3,9 +3,6 @@
 
 The DataTrack API lets you create a DataTrack channel which can be used to send low latency messages to zero or more receivers subscribed to the data. For a detailed guide about DataTracks reference [our documentation](https://www.twilio.com/docs/api/video/using-the-datatrack-api). 
  
- >NOTE: DataTrack support for Group Rooms is currently available only on JavaScript. 
- DataTrack support for Group Rooms will be available on iOS and Android soon.
- 
 This example illustrates how to use the DataTrack API to write a simple collaborative drawing app.
 
 In this example, participants can join a Room and begin drawing on a UIView. The drawing is shared to all other participants using the DataTrack API to provide a collaborative whiteboard experience. Once disconnected from the Room, your UIView clears and your drawings are removed from all other participant's UIView as well. Local participant's drawings will be presented in black color while remote participant's drawing will be presented in light gray color.
