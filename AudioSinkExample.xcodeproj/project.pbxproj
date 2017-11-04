@@ -14,6 +14,9 @@
 		8A6C2E561FAD3AD2008EB058 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A6C2E541FAD3AD2008EB058 /* LaunchScreen.storyboard */; };
 		8A6C2E671FAD48EC008EB058 /* ExampleAudioRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C2E641FAD48DB008EB058 /* ExampleAudioRecorder.m */; };
 		8A6C2E681FAD48EF008EB058 /* ExampleSpeechRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C2E661FAD48DB008EB058 /* ExampleSpeechRecognizer.m */; };
+		8A6C2E691FAD4DAC008EB058 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C2E5F1FAD3EAC008EB058 /* Settings.swift */; };
+		8A6C2E6A1FAD4DAF008EB058 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C2E601FAD3EAC008EB058 /* SettingsTableViewController.swift */; };
+		8A6C2E6B1FAD4DB3008EB058 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C2E611FAD3EAC008EB058 /* Utils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -170,8 +173,11 @@
 			files = (
 				8A6C2E681FAD48EF008EB058 /* ExampleSpeechRecognizer.m in Sources */,
 				8A6C2E671FAD48EC008EB058 /* ExampleAudioRecorder.m in Sources */,
+				8A6C2E6A1FAD4DAF008EB058 /* SettingsTableViewController.swift in Sources */,
+				8A6C2E6B1FAD4DB3008EB058 /* Utils.swift in Sources */,
 				8A6C2E4E1FAD3AD2008EB058 /* ViewController.swift in Sources */,
 				8A6C2E4C1FAD3AD2008EB058 /* AppDelegate.swift in Sources */,
+				8A6C2E691FAD4DAC008EB058 /* Settings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
