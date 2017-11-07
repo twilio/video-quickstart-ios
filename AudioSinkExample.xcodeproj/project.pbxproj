@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8A42F03D1FB275EA0043E445 /* TVIVideoView+IntrinsicContentSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A42F03C1FB275EA0043E445 /* TVIVideoView+IntrinsicContentSize.m */; };
 		8A6598E51FB13ED6005A8849 /* RecordingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6598E41FB13ED6005A8849 /* RecordingsViewController.swift */; };
 		8A6C2E4C1FAD3AD2008EB058 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C2E4B1FAD3AD2008EB058 /* AppDelegate.swift */; };
 		8A6C2E4E1FAD3AD2008EB058 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6C2E4D1FAD3AD2008EB058 /* ViewController.swift */; };
@@ -21,6 +22,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8A42F03B1FB275EA0043E445 /* TVIVideoView+IntrinsicContentSize.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TVIVideoView+IntrinsicContentSize.h"; sourceTree = "<group>"; };
+		8A42F03C1FB275EA0043E445 /* TVIVideoView+IntrinsicContentSize.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVIVideoView+IntrinsicContentSize.m"; sourceTree = "<group>"; };
 		8A6598E41FB13ED6005A8849 /* RecordingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsViewController.swift; sourceTree = "<group>"; };
 		8A6C2E481FAD3AD2008EB058 /* AudioSinkExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioSinkExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A6C2E4B1FAD3AD2008EB058 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -100,6 +103,8 @@
 				8A6C2E641FAD48DB008EB058 /* ExampleAudioRecorder.m */,
 				8A6C2E651FAD48DB008EB058 /* ExampleSpeechRecognizer.h */,
 				8A6C2E661FAD48DB008EB058 /* ExampleSpeechRecognizer.m */,
+				8A42F03B1FB275EA0043E445 /* TVIVideoView+IntrinsicContentSize.h */,
+				8A42F03C1FB275EA0043E445 /* TVIVideoView+IntrinsicContentSize.m */,
 			);
 			path = AudioSinks;
 			sourceTree = "<group>";
@@ -184,6 +189,7 @@
 				8A6C2E4E1FAD3AD2008EB058 /* ViewController.swift in Sources */,
 				8A6C2E4C1FAD3AD2008EB058 /* AppDelegate.swift in Sources */,
 				8A6C2E691FAD4DAC008EB058 /* Settings.swift in Sources */,
+				8A42F03D1FB275EA0043E445 /* TVIVideoView+IntrinsicContentSize.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
