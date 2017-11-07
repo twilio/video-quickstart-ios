@@ -34,7 +34,7 @@ class RecordingsViewController: UITableViewController {
 
         for path in directoryContents! {
             if (path.hasSuffix("wav") || path.hasSuffix("WAV")) {
-                recordings.append(URL(fileURLWithPath: path))
+                recordings.append(URL(fileURLWithPath: path, relativeTo: documentsDirectory))
             }
         }
     }
