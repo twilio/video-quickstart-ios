@@ -78,6 +78,8 @@ You will also find additional examples that provide more advanced use cases of t
 
 - [AVPlayer](AVPlayerExample) - Shows how to use `AVPlayer` to stream Audio & Video content while connected to a `TVIRoom`.
 
+>NOTE: Some of our more advanced examples are only available in Swift. For usage of APIs like DataTrack, TVIVideoCapturer, and TVIAudioSink see our Swift [repo](https://github.com/twilio/video-quickstart-swift/tree/2.0.0-preview/).
+
 ## Setup an Access Token Server
 
 Using Twilio's Video client within your applications requires an access token. Access Tokens are short-lived credentials that are signed with a Twilio API Key Secret and contain grants which govern the actions the client holding the token is permitted to perform. 
