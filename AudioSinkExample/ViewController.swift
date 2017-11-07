@@ -242,9 +242,9 @@ class ViewController: UIViewController {
                                                         identifier: identifier,
                                                              resultHandler: { (result, error) in
                                                                 if let validResult = result {
-                                                                    self.messageLabel.text = validResult.bestTranscription.formattedString;
+                                                                    self.logMessage(messageText: validResult.bestTranscription.formattedString)
                                                                 } else if let error = error {
-                                                                    self.messageLabel.text = error.localizedDescription
+                                                                    self.logMessage(messageText: error.localizedDescription)
                                                                     // TODO: Stop recognition here, or should it be done in the recognizer?
                                                                 }
         })
