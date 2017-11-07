@@ -122,7 +122,7 @@ class ViewController: UIViewController {
 
     @IBAction func disconnect(sender: AnyObject) {
         if let room = self.room {
-            logMessage(messageText: "Disconnecting from Room \(room.name)")
+            logMessage(messageText: "Disconnecting from \(room.name)")
             room.disconnect()
         }
     }
@@ -215,10 +215,11 @@ class ViewController: UIViewController {
             })
         }
 
+        // Hide the message with a delay.
         self.messageTimer?.invalidate()
         let timer = Timer.init(timeInterval: TimeInterval(6), repeats: false) { (timer) in
             if (self.messageLabel.isHidden == false) {
-                UIView.animate(withDuration: 0.8, animations: {
+                UIView.animate(withDuration: 0.6, animations: {
                     self.messageLabel.alpha = 0
                 }, completion: { (complete) in
                     if (complete) {

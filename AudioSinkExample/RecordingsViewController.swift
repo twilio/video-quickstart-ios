@@ -78,6 +78,8 @@ class RecordingsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: kReuseIdentifier, for: indexPath)
         let recordingItem = recordings[indexPath.row]
+        cell.textLabel?.adjustsFontSizeToFitWidth = true
+        cell.textLabel?.minimumScaleFactor = 0.75
         cell.textLabel?.text = recordingItem.lastPathComponent
 
         return cell
