@@ -48,7 +48,7 @@ class RecordingsViewController: UITableViewController {
                 self.recordings.remove(at: indexPath.row)
                 self.tableView.deleteRows(at: [indexPath], with: .automatic)
             } catch {
-                // Log an error?
+                print("Couldn't delete recording: \(recordingToDelete)")
             }
         }
     }
@@ -59,11 +59,6 @@ class RecordingsViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         return self.recordings.count > 0 ? "Tap to playback audio recordings." : "Enter a Room to record audio Tracks."
-    }
-
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        // Do something.
-        print("\(object!) \(change)")
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
