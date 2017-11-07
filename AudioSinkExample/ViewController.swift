@@ -45,6 +45,7 @@ class ViewController: UIViewController {
 
     weak var speechRecognizerView: UIView!
     weak var dimmingView: UIView!
+    weak var speechLabel: UILabel!
 
     var messageTimer: Timer!
 
@@ -149,6 +150,11 @@ class ViewController: UIViewController {
             previewView.center = CGPoint.init(x: view.bounds.width - previewBounds.width / 2 - kPreviewPadding,
                                               y: view.bounds.height - previewBounds.height / 2 - kPreviewPadding)
         }
+
+        // Give autolayout some help with multi-line text layouts.
+        if let speechLabel = self.speechLabel {
+            speechLabel.preferredMaxLayoutWidth = view.bounds.width - (kPreviewPadding * 2)
+        }
     }
 
     override func prefersHomeIndicatorAutoHidden() -> Bool {
@@ -178,26 +184,48 @@ class ViewController: UIViewController {
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
     }
 
-    func showSpeechRecognitionUI(isRecognizing: Bool, view: UIView) {
+    func showSpeechRecognitionUI(isRecognizing: Bool, view: UIView, message: String) {
+        // TODO - Separate show/hide into their own functions
         if (isRecognizing) {
             let dimmer = UIView.init(frame: view.bounds)
             dimmer.alpha = 0
             dimmer.backgroundColor = UIColor.init(white: 1, alpha: 0.26)
+            dimmer.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             view.addSubview(dimmer)
             self.dimmingView = dimmer
             self.speechRecognizerView = view
 
+            let messageLabel = UILabel.init()
+            messageLabel.font = UIFont.boldSystemFont(ofSize: 16)
+            messageLabel.textColor = UIColor.black
+            messageLabel.backgroundColor = UIColor.white
+            messageLabel.alpha = 0
+            messageLabel.numberOfLines = 0
+            messageLabel.text = message
+            messageLabel.textAlignment = NSTextAlignment.center
+            self.remoteViewStack.addArrangedSubview(messageLabel)
+
+            self.speechLabel = messageLabel
+
             UIView.animate(withDuration: 0.4, animations: {
                 dimmer.alpha = 1.0
+                messageLabel.alpha = 1.0
                 view.transform = CGAffineTransform.init(scaleX: 1.08, y: 1.08)
+                self.disconnectButton.alpha = 0
             })
         } else {
             if let dimmer = self.dimmingView {
                 UIView.animate(withDuration: 0.4, animations: {
                     dimmer.alpha = 0.0
                     view.transform = CGAffineTransform.identity
+                    self.speechLabel?.alpha = 0.0
+                    self.disconnectButton.alpha = 1.0
                 }, completion: { (complete) in
                     if (complete) {
+                        if let label = self.speechLabel {
+                            self.remoteViewStack.removeArrangedSubview(label)
+                            self.speechLabel = nil
+                        }
                         dimmer.removeFromSuperview()
                         self.dimmingView = nil
                         self.speechRecognizerView = nil
@@ -248,7 +276,7 @@ class ViewController: UIViewController {
             self.speechRecognizer = nil
 
             if let view = self.speechRecognizerView {
-                showSpeechRecognitionUI(isRecognizing: false, view:view)
+                showSpeechRecognitionUI(isRecognizing: false, view:view, message: "")
             }
         }
     }
@@ -279,9 +307,7 @@ class ViewController: UIViewController {
         if (self.speechRecognizer != nil) {
             stopRecognizingAudio()
         } else {
-            showSpeechRecognitionUI(isRecognizing: true, view: view)
-
-            self.logMessage(messageText: "Listening to \(name)...")
+            showSpeechRecognitionUI(isRecognizing: true, view: view, message: "Listening to \(name)...")
 
             recognizeAudio(audioTrack: audioTrack, identifier: sid)
         }
@@ -291,13 +317,14 @@ class ViewController: UIViewController {
         if (self.speechRecognizer != nil) {
             stopRecognizingAudio()
         } else if let audioTrack = self.localAudioTrack {
+            // TODO: CE - Only allow this operation when we are in a Room.
+
             if let view = self.camera?.previewView {
-                showSpeechRecognitionUI(isRecognizing: true, view: view)
+                showSpeechRecognitionUI(isRecognizing: true,
+                                        view: view,
+                                        message: "Listening to \(room?.localParticipant?.identity ?? "yourself")...")
             }
 
-            self.logMessage(messageText: "Listening to \(room?.localParticipant?.identity ?? "yourself")...")
-
-            // TODO: CE - Only allow this operation when we are in a Room.
             recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.trackId)
         }
     }
@@ -307,9 +334,9 @@ class ViewController: UIViewController {
                                                         identifier: identifier,
                                                              resultHandler: { (result, error) in
                                                                 if let validResult = result {
-                                                                    self.logMessage(messageText: validResult.bestTranscription.formattedString)
+                                                                    self.speechLabel?.text = validResult.bestTranscription.formattedString
                                                                 } else if let error = error {
-                                                                    self.logMessage(messageText: error.localizedDescription)
+                                                                    self.speechLabel?.text = error.localizedDescription
                                                                     // TODO: Stop recognition here, or should it be done in the recognizer?
                                                                 }
         })
