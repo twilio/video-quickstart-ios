@@ -180,7 +180,7 @@ class ViewController: UIViewController {
 
     func showSpeechRecognitionUI(isRecognizing: Bool, view: UIView) {
         if (isRecognizing) {
-            let dimmer = UIView.init(frame: (self.camera?.previewView.bounds)!)
+            let dimmer = UIView.init(frame: view.bounds)
             dimmer.alpha = 0
             dimmer.backgroundColor = UIColor.init(white: 1, alpha: 0.26)
             view.addSubview(dimmer)
