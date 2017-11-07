@@ -42,6 +42,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomTextField: UITextField!
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
+    weak var dimmingView: UIView!
 
     var messageTimer: Timer!
 
@@ -138,11 +139,10 @@ class ViewController: UIViewController {
                                        insideRect: previewBounds)
 
             previewBounds = previewBounds.integral
+            previewView.bounds = previewBounds
 
-            previewBounds.origin = CGPoint.init(x: view.bounds.width - previewBounds.width - kPreviewPadding,
-                                                y: view.bounds.height - previewBounds.height - kPreviewPadding)
-
-            previewView.frame = previewBounds
+            previewView.center = CGPoint.init(x: view.bounds.width - previewBounds.width / 2 - kPreviewPadding,
+                                              y: view.bounds.height - previewBounds.height / 2 - kPreviewPadding)
         }
     }
 
@@ -169,6 +169,34 @@ class ViewController: UIViewController {
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
 
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
+    }
+
+    // TODO: Parameterize to take a UIView.
+    func showSpeechRecognitionUI(isRecognizing: Bool) {
+        if (isRecognizing) {
+            let dimmer = UIView.init(frame: (self.camera?.previewView.bounds)!)
+            dimmer.alpha = 0
+            dimmer.backgroundColor = UIColor.init(white: 0, alpha: 0.26)
+            self.camera?.previewView.addSubview(dimmer)
+            self.dimmingView = dimmer
+
+            UIView.animate(withDuration: 0.4, animations: {
+                dimmer.alpha = 1.0
+                self.camera?.previewView.transform = CGAffineTransform.init(scaleX: 1.08, y: 1.08)
+            })
+        } else {
+            if let dimmer = self.dimmingView {
+                UIView.animate(withDuration: 0.4, animations: {
+                    dimmer.alpha = 0.0
+                    self.camera?.previewView.transform = CGAffineTransform.identity
+                }, completion: { (complete) in
+                    if (complete) {
+                        dimmer.removeFromSuperview()
+                        self.dimmingView = nil
+                    }
+                })
+            }
+        }
     }
 
     func dismissKeyboard() {
@@ -204,12 +232,23 @@ class ViewController: UIViewController {
         RunLoop.main.add(timer, forMode: .commonModes)
     }
 
-    func recognizeLocalAudio() {
+    func stopRecognizingAudio() {
         if let recognizer = self.speechRecognizer {
             recognizer.stopRecognizing()
             self.speechRecognizer = nil
+
+            showSpeechRecognitionUI(isRecognizing: false)
+        }
+    }
+
+    func recognizeLocalAudio() {
+        if (self.speechRecognizer != nil) {
+            stopRecognizingAudio()
         } else if let audioTrack = self.localAudioTrack {
+            showSpeechRecognitionUI(isRecognizing: true)
+
             self.logMessage(messageText: "Listening to \(room?.localParticipant?.identity ?? "yourself")...")
+
             // TODO: CE - Only allow this operation when we are in a Room.
             recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.trackId)
         }
@@ -363,6 +402,9 @@ extension ViewController : TVIRoomDelegate {
         }
         self.audioRecorders.removeAll()
 
+        // Stop speech recognition!
+        stopRecognizingAudio()
+
         self.room = nil
 
         self.showRoomUI(inRoom: false)
@@ -478,10 +520,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
             self.audioRecorders[publication.trackSid] = ExampleAudioRecorder.init(audioTrack: audioTrack,
                                                                                   identifier: publication.trackSid)
         }
-        if (self.speechRecognizer?.identifier == publication.trackSid) {
-            self.speechRecognizer?.stopRecognizing()
-            self.speechRecognizer = nil
-        }
     }
 
     func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
@@ -496,6 +534,11 @@ extension ViewController : TVIRemoteParticipantDelegate {
         if let recorder = self.audioRecorders[publication.trackSid] {
             recorder.stopRecording()
             self.audioRecorders.removeValue(forKey: publication.trackSid)
+        }
+
+        if (self.speechRecognizer?.identifier == publication.trackSid) {
+            self.speechRecognizer?.stopRecognizing()
+            self.speechRecognizer = nil
         }
     }
 
@@ -529,7 +572,7 @@ extension ViewController : TVILocalParticipantDelegate {
             let trackSid = publishedAudioTrack.trackSid
             self.audioRecorders[trackSid] = ExampleAudioRecorder.init(audioTrack: publishedAudioTrack.localTrack!,
                                                                       identifier: trackSid)
-            logMessage(messageText: "Recording local microphone audio...")
+            logMessage(messageText: "Recording local audio...")
         }
     }
 }
