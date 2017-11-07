@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import CoreLocation
 
 import TwilioVideo
 
@@ -26,13 +25,9 @@ class ViewController: UIViewController {
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
-    var localDataTrack: TVILocalDataTrack?
     var remoteParticipant: TVIRemoteParticipant?
     var remoteView: TVIVideoView?
-
-    let locationManager = CLLocationManager()
-    var currentLocation: CLLocation?
-
+    
     // MARK: UI Element Outlets and handles
     
     // `TVIVideoView` created from a storyboard
@@ -45,8 +40,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
     @IBOutlet weak var micButton: UIButton!
-    @IBOutlet weak var shareLocationButton: UIButton!
-    @IBOutlet weak var shareLocationActivityIndicator: UIActivityIndicatorView!
 
     // MARK: UIViewController
     override func viewDidLoad() {
@@ -63,21 +56,15 @@ class ViewController: UIViewController {
             self.startPreview()
         }
         
-        // Disconnect, share location and mic button will be displayed when the Client is connected to a Room.
+        // Disconnect and mic button will be displayed when the Client is connected to a Room.
         self.disconnectButton.isHidden = true
         self.micButton.isHidden = true
-        self.shareLocationButton.isHidden = true
-
+        
         self.roomTextField.autocapitalizationType = .none
         self.roomTextField.delegate = self
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
         self.view.addGestureRecognizer(tap)
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        showRoomUI(inRoom: (self.room != nil))
     }
     
     func setupRemoteVideoView() {
@@ -145,18 +132,9 @@ class ViewController: UIViewController {
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
             
             // Use the local media that we prepared earlier.
-            if let localAudioTrack = self.localAudioTrack {
-                builder.audioTracks = [localAudioTrack]
-            }
-
-            if let localVideoTrack = self.localVideoTrack {
-                builder.videoTracks = [localVideoTrack]
-            }
-
-            if let localDataTrack = self.localDataTrack {
-                builder.dataTracks = [localDataTrack]
-            }
-
+            builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
+            builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
+            
             // Use the preferred audio codec
             if let preferredAudioCodec = Settings.shared.audioCodec {
                 builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
@@ -190,23 +168,6 @@ class ViewController: UIViewController {
         self.room!.disconnect()
         logMessage(messageText: "Attempting to disconnect from room \(room!.name)")
     }
-
-    @IBAction func shareLocation(sender: AnyObject) {
-        logMessage(messageText: "Fetching current location...")
-
-        self.shareLocationButton.isEnabled = false
-        self.shareLocationButton.setTitleColor(UIColor.gray, for: .normal)
-        self.shareLocationActivityIndicator.startAnimating()
-
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.delegate = self
-
-        if #available(iOS 9, *) {
-            locationManager.requestLocation()
-        } else {
-            locationManager.startUpdatingLocation()
-        }
-    }
     
     @IBAction func toggleMic(sender: AnyObject) {
         if (self.localAudioTrack != nil) {
@@ -222,22 +183,6 @@ class ViewController: UIViewController {
     }
 
     // MARK: Private
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let location = self.currentLocation,
-            let mapViewController = segue.destination as? MapViewController {
-            if let navigationController = self.navigationController {
-                navigationController.setNavigationBarHidden(false, animated: false)
-
-                let backItem = UIBarButtonItem()
-                backItem.title = "Back"
-                navigationItem.backBarButtonItem = backItem
-            }
-
-            mapViewController.identity = self.remoteParticipant?.identity
-            mapViewController.location = location
-        }
-    }
-
     func startPreview() {
         if PlatformUtils.isSimulator {
             return
@@ -285,12 +230,7 @@ class ViewController: UIViewController {
         if (localVideoTrack == nil) {
             self.startPreview()
         }
-
-        // Create a data track which will be used to share location information
-        if (localDataTrack == nil) {
-            localDataTrack = TVILocalDataTrack.init(options: nil, name: "Location")
-        }
-    }
+   }
 
     // Update our UI based upon if we are in a Room or not
     func showRoomUI(inRoom: Bool) {
@@ -300,7 +240,6 @@ class ViewController: UIViewController {
         self.roomLabel.isHidden = inRoom
         self.micButton.isHidden = !inRoom
         self.disconnectButton.isHidden = !inRoom
-        self.shareLocationButton.isHidden = !inRoom
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
         UIApplication.shared.isIdleTimerDisabled = inRoom
     }
@@ -325,7 +264,6 @@ class ViewController: UIViewController {
     
     func logMessage(messageText: String) {
         messageLabel.text = messageText
-        print(messageText)
     }
 }
 
@@ -361,7 +299,7 @@ extension ViewController : TVIRoomDelegate {
     }
     
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
-        logMessage(messageText: "Failed to connect to room with error: \(error.localizedDescription)")
+        logMessage(messageText: "Failed to connect to room with error")
         self.room = nil
         
         self.showRoomUI(inRoom: false)
@@ -418,23 +356,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
         logMessage(messageText: "Participant \(participant.identity) unpublished \(publication.trackName) audio track")
     }
 
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           publishedDataTrack publication: TVIRemoteDataTrackPublication) {
-
-        // Remote Participant has offered to share the data Track.
-
-        logMessage(messageText: "Participant \(participant.identity) published \(publication.trackName) data track")
-    }
-
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           unpublishedDataTrack publication: TVIRemoteDataTrackPublication) {
-
-        // Remote Participant has stopped sharing the data Track.
-
-        logMessage(messageText: "Participant \(participant.identity) unpublished \(publication.trackName) data track")
-    }
-
-    func subscribed(to videoTrack: TVIRemoteVideoTrack,
+   func subscribed(to videoTrack: TVIRemoteVideoTrack,
                     publication: TVIRemoteVideoTrackPublication,
                     for participant: TVIRemoteParticipant) {
         
@@ -485,29 +407,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
         logMessage(messageText: "Unsubscribed from \(publication.trackName) audio track for Participant \(participant.identity)")
     }
     
-    func subscribed(to dataTrack: TVIRemoteDataTrack,
-                    publication: TVIRemoteDataTrackPublication,
-                    for participant: TVIRemoteParticipant) {
-
-        // We are subscribed to the remote Participant's data Track. We will start receiving the
-        // remote Participant's data messages now.
-
-        logMessage(messageText: "Subscribed to \(publication.trackName) data track for Participant \(participant.identity)")
-        
-        dataTrack.delegate = self
-    }
-
-    func unsubscribed(from dataTrack: TVIRemoteDataTrack,
-                      publication: TVIRemoteDataTrackPublication,
-                      for participant: TVIRemoteParticipant) {
-
-        // We are unsubscribed from the remote Participant's data Track. We will no longer receive the
-        // remote Participant's data messages.
-
-        logMessage(messageText: "Unsubscribed from \(publication.trackName) data track for Participant \(participant.identity)")
-    }
-
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
+   func remoteParticipant(_ participant: TVIRemoteParticipant,
                            enabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) enabled \(publication.trackName) video track")
     }
@@ -539,72 +439,5 @@ extension ViewController : TVIVideoViewDelegate {
 extension ViewController : TVICameraCapturerDelegate {
     func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
         self.previewView.shouldMirror = (source == .frontCamera)
-    }
-}
-
-// MARK: TVIRemoteDataTrackDelegate
-extension ViewController : TVIRemoteDataTrackDelegate {
-    func remoteDataTrack(_ remoteDataTrack: TVIRemoteDataTrack, didReceive message: String) {
-        print(message)
-    }
-
-    func remoteDataTrack(_ remoteDataTrack: TVIRemoteDataTrack, didReceive message: Data) {
-        guard let location = NSKeyedUnarchiver.unarchiveObject(with: message) as? CLLocation else {
-            logMessage(messageText: "Received invalid data track payload")
-            return
-        }
-
-        guard let remoteParticipant = self.remoteParticipant else {
-            logMessage(messageText: "We have no remote participant")
-            return
-        }
-
-        self.currentLocation = location
-
-        let alertController = UIAlertController(title: "Show Location",
-                                                    message: "\(remoteParticipant.identity) has shared their location. Would you like to display it?",
-                                                    preferredStyle: UIAlertControllerStyle.alert)
-
-        let yesAction = UIAlertAction(title: "Yes", style: .default) {
-            (result : UIAlertAction) -> Void in
-            self.performSegue(withIdentifier: "mapSegue", sender: self)
-        }
-
-        let noAction = UIAlertAction(title: "No", style: .cancel)
-
-        alertController.addAction(yesAction)
-        alertController.addAction(noAction)
-        self.present(alertController, animated: true, completion: nil)
-    }
-}
-
-// MARK: CLLocationManagerDelegate
-extension ViewController : CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        self.shareLocationButton.isEnabled = true
-        self.shareLocationButton.setTitleColor(UIColor.white, for: .normal)
-        self.shareLocationActivityIndicator.stopAnimating()
-        logMessage(messageText: "Unable to fetch location")
-    }
-
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        self.shareLocationButton.isEnabled = true
-        self.shareLocationButton.setTitleColor(UIColor.white, for: .normal)
-        self.shareLocationActivityIndicator.stopAnimating()
-        manager.stopUpdatingLocation()
-
-        guard let localDataTrack = self.localDataTrack else {
-            logMessage(messageText: "No local data track available")
-            return
-        }
-
-        guard let location = locations.first else {
-            logMessage(messageText: "No location received")
-            return
-        }
-
-        logMessage(messageText: "Sending current location")
-        let data = NSKeyedArchiver.archivedData(withRootObject: location)
-        localDataTrack.send(data)
     }
 }
