@@ -104,14 +104,7 @@
 + (NSURL *)recordingURLWithIdentifier:(NSString *)identifier {
     NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 
-    // Choose a filename which will be unique if the TrackId is reused (Append RFC3339 formatted date).
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-    dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ssZZZZZ";
-    dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-
-    NSString *dateComponent = [dateFormatter stringFromDate:[NSDate date]];
-    NSString *filename = [NSString stringWithFormat:@"%@-%@.wav", identifier, dateComponent];
+    NSString *filename = [NSString stringWithFormat:@"%@.wav", identifier];
 
     return [documentsDirectory URLByAppendingPathComponent:filename];
 }
