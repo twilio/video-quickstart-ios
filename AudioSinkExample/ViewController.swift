@@ -530,6 +530,7 @@ extension ViewController : TVILocalParticipantDelegate {
 
 extension ViewController : TVICameraCapturerDelegate {
     func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
+        // Layout the preview with dimensions appropriate for our orientation.
         self.view.setNeedsLayout()
     }
 

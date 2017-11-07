@@ -16,6 +16,7 @@ class RecordingsViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.title = "Recordings"
         tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: kReuseIdentifier)
 
         let fileManager = FileManager.default
@@ -43,7 +44,7 @@ class RecordingsViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        return "Tap to playback audio recordings."
+        return self.recordings.count > 0 ? "Tap to playback audio recordings." : "Enter a Room to record audio Tracks."
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
