@@ -340,12 +340,15 @@ extension ViewController : TVIRoomDelegate {
                     let trackSid = localAudioPublication.trackSid
                     self.audioRecorders[trackSid] = ExampleAudioRecorder.init(audioTrack: localAudioTrack,
                                                                               identifier: trackSid)
-                    logMessage(messageText: "Recording local microphone audio...")
                 }
             }
         }
 
-        logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")")
+        var connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")"
+        if (self.audioRecorders.count > 0) {
+            connectMessage.append(".\nRecording local audio...")
+        }
+        logMessage(messageText: connectMessage)
     }
 
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {

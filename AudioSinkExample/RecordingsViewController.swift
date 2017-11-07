@@ -6,12 +6,12 @@
 //
 
 import Foundation
+import AVKit
 
 class RecordingsViewController: UITableViewController {
 
     let kReuseIdentifier = "ReuseId"
     var recordings = Array<URL>()
-    var audioPlayer: AVPlayer?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,6 +39,20 @@ class RecordingsViewController: UITableViewController {
         }
     }
 
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let recordingToDelete = self.recordings[indexPath.row]
+
+            do {
+                try FileManager.default.removeItem(at: recordingToDelete)
+                self.recordings.remove(at: indexPath.row)
+                self.tableView.deleteRows(at: [indexPath], with: .automatic)
+            } catch {
+                // Log an error?
+            }
+        }
+    }
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return recordings.count
     }
@@ -47,20 +61,23 @@ class RecordingsViewController: UITableViewController {
         return self.recordings.count > 0 ? "Tap to playback audio recordings." : "Enter a Room to record audio Tracks."
     }
 
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        // Do something.
+        print("\(object!) \(change)")
+    }
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let item = recordings[indexPath.row]
 
-        if let currentPlayer = audioPlayer {
-            currentPlayer.pause()
-            audioPlayer = nil
-        }
-
-        // TODO: Use KVO!
+        // Present a full-screen AVPlayerViewController and begin playback.
         let nextPlayer = AVPlayer.init(url: item as URL)
-        nextPlayer.playImmediately(atRate: 1)
-        audioPlayer = nextPlayer
+        let playerVC = AVPlayerViewController.init()
+        playerVC.player = nextPlayer
+        playerVC.entersFullScreenWhenPlaybackBegins = true
 
-        tableView.deselectRow(at: indexPath, animated: true)
+        self.showDetailViewController(playerVC, sender: self)
+
+        nextPlayer.play()
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
