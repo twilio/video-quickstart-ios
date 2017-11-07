@@ -54,6 +54,8 @@ class ViewController: UIViewController {
 
         self.title = "AudioSink Example"
         self.disconnectButton.isHidden = true
+        self.disconnectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
+        self.connectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
         self.roomTextField.autocapitalizationType = .none
         self.roomTextField.delegate = self
         self.messageLabel.layer.cornerRadius = 2
@@ -120,10 +122,11 @@ class ViewController: UIViewController {
         self.dismissKeyboard()
     }
 
-    @IBAction func disconnect(sender: AnyObject) {
+    @IBAction func disconnect(sender: UIButton) {
         if let room = self.room {
             logMessage(messageText: "Disconnecting from \(room.name)")
             room.disconnect()
+            sender.isEnabled = false
         }
     }
 
@@ -161,10 +164,12 @@ class ViewController: UIViewController {
     // Update our UI based upon if we are in a Room or not
     func showRoomUI(inRoom: Bool) {
         self.connectButton.isHidden = inRoom
+        self.connectButton.isEnabled = !inRoom
         self.roomTextField.isHidden = inRoom
         self.roomLine.isHidden = inRoom
         self.roomLabel.isHidden = inRoom
         self.disconnectButton.isHidden = !inRoom
+        self.disconnectButton.isEnabled = inRoom
         UIApplication.shared.isIdleTimerDisabled = inRoom
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
 
@@ -176,7 +181,7 @@ class ViewController: UIViewController {
         if (isRecognizing) {
             let dimmer = UIView.init(frame: (self.camera?.previewView.bounds)!)
             dimmer.alpha = 0
-            dimmer.backgroundColor = UIColor.init(white: 0, alpha: 0.26)
+            dimmer.backgroundColor = UIColor.init(white: 1, alpha: 0.26)
             self.camera?.previewView.addSubview(dimmer)
             self.dimmingView = dimmer
 
@@ -412,7 +417,7 @@ extension ViewController : TVIRoomDelegate {
     }
 
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
-        logMessage(messageText: "Failed to connect to room with error: \(error.localizedDescription)")
+        logMessage(messageText: "Failed to connect to Room:\n\(error.localizedDescription)")
         self.room = nil
 
         self.showRoomUI(inRoom: false)

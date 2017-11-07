@@ -58,7 +58,7 @@ class RecordingsViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        return self.recordings.count > 0 ? "Tap to playback audio recordings." : "Enter a Room to record audio Tracks."
+        return self.recordings.count > 0 ? "" : "Enter a Room to record audio Tracks."
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
