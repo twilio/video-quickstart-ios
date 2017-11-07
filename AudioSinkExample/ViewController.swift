@@ -136,6 +136,11 @@ class ViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
+        // Give autolayout some help with multi-line text layouts.
+        if let speechLabel = self.speechLabel {
+            speechLabel.preferredMaxLayoutWidth = view.bounds.width - (kPreviewPadding * 2)
+        }
+
         // Layout the preview view.
         if let previewView = self.camera?.previewView {
             let dimensions = previewView.videoDimensions
@@ -149,11 +154,12 @@ class ViewController: UIViewController {
 
             previewView.center = CGPoint.init(x: view.bounds.width - previewBounds.width / 2 - kPreviewPadding,
                                               y: view.bounds.height - previewBounds.height / 2 - kPreviewPadding)
-        }
 
-        // Give autolayout some help with multi-line text layouts.
-        if let speechLabel = self.speechLabel {
-            speechLabel.preferredMaxLayoutWidth = view.bounds.width - (kPreviewPadding * 2)
+            if let speechLabel = self.speechLabel {
+                if (self.remoteViewStack.arrangedSubviews.count > 1 && self.remoteViewStack.axis == .vertical) {
+                    previewView.center.y -= speechLabel.intrinsicContentSize.height + kPreviewPadding;
+                }
+            }
         }
     }
 
@@ -215,11 +221,14 @@ class ViewController: UIViewController {
             })
         } else {
             if let dimmer = self.dimmingView {
+                self.view.setNeedsLayout()
+
                 UIView.animate(withDuration: 0.4, animations: {
                     dimmer.alpha = 0.0
                     view.transform = CGAffineTransform.identity
                     self.speechLabel?.alpha = 0.0
                     self.disconnectButton.alpha = 1.0
+                    self.view.layoutIfNeeded()
                 }, completion: { (complete) in
                     if (complete) {
                         if let label = self.speechLabel {
@@ -339,6 +348,7 @@ class ViewController: UIViewController {
                                                                     self.speechLabel?.text = error.localizedDescription
                                                                     // TODO: Stop recognition here, or should it be done in the recognizer?
                                                                 }
+                                                                self.view.setNeedsLayout()
         })
     }
 
