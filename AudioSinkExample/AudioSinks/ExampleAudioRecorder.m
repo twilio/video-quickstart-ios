@@ -107,7 +107,7 @@
     // Choose a filename which will be unique if the TrackId is reused (Append RFC3339 formatted date).
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-    dateFormatter.dateFormat = @"HH:mm:ssZZZZZ";
+    dateFormatter.dateFormat = @"HH:mm:ss";
     dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
 
     NSString *dateComponent = [dateFormatter stringFromDate:[NSDate date]];

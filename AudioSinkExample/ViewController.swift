@@ -42,6 +42,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomTextField: UITextField!
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
+
+    weak var speechRecognizerView: UIView!
     weak var dimmingView: UIView!
 
     var messageTimer: Timer!
@@ -176,28 +178,29 @@ class ViewController: UIViewController {
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
     }
 
-    // TODO: Parameterize to take a UIView.
-    func showSpeechRecognitionUI(isRecognizing: Bool) {
+    func showSpeechRecognitionUI(isRecognizing: Bool, view: UIView) {
         if (isRecognizing) {
             let dimmer = UIView.init(frame: (self.camera?.previewView.bounds)!)
             dimmer.alpha = 0
             dimmer.backgroundColor = UIColor.init(white: 1, alpha: 0.26)
-            self.camera?.previewView.addSubview(dimmer)
+            view.addSubview(dimmer)
             self.dimmingView = dimmer
+            self.speechRecognizerView = view
 
             UIView.animate(withDuration: 0.4, animations: {
                 dimmer.alpha = 1.0
-                self.camera?.previewView.transform = CGAffineTransform.init(scaleX: 1.08, y: 1.08)
+                view.transform = CGAffineTransform.init(scaleX: 1.08, y: 1.08)
             })
         } else {
             if let dimmer = self.dimmingView {
                 UIView.animate(withDuration: 0.4, animations: {
                     dimmer.alpha = 0.0
-                    self.camera?.previewView.transform = CGAffineTransform.identity
+                    view.transform = CGAffineTransform.identity
                 }, completion: { (complete) in
                     if (complete) {
                         dimmer.removeFromSuperview()
                         self.dimmingView = nil
+                        self.speechRecognizerView = nil
                     }
                 })
             }
@@ -238,12 +241,49 @@ class ViewController: UIViewController {
         RunLoop.main.add(timer, forMode: .commonModes)
     }
 
+    // MARK: Speech Recognition
     func stopRecognizingAudio() {
         if let recognizer = self.speechRecognizer {
             recognizer.stopRecognizing()
             self.speechRecognizer = nil
 
-            showSpeechRecognitionUI(isRecognizing: false)
+            if let view = self.speechRecognizerView {
+                showSpeechRecognitionUI(isRecognizing: false, view:view)
+            }
+        }
+    }
+
+    func recognizeRemoteAudio(gestureRecognizer: UIGestureRecognizer) {
+        guard let remoteView = gestureRecognizer.view else {
+            print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
+            return;
+        }
+
+        // Find the Participant.
+        let hashedSid = remoteView.tag
+        for remoteParticipant in room!.remoteParticipants {
+            for videoTrackPublication in remoteParticipant.remoteVideoTracks {
+                if (videoTrackPublication.trackSid.hashValue == hashedSid) {
+                    if let audioTrack = remoteParticipant.remoteAudioTracks.first?.remoteTrack {
+                        recognizeRemoteParticipantAudio(audioTrack: audioTrack,
+                                                        sid: remoteParticipant.remoteAudioTracks.first!.trackSid,
+                                                        name: remoteParticipant.identity,
+                                                        view: remoteView)
+                    }
+                }
+            }
+        }
+    }
+
+    func recognizeRemoteParticipantAudio(audioTrack: TVIRemoteAudioTrack, sid: String, name: String, view: UIView) {
+        if (self.speechRecognizer != nil) {
+            stopRecognizingAudio()
+        } else {
+            showSpeechRecognitionUI(isRecognizing: true, view: view)
+
+            self.logMessage(messageText: "Listening to \(name)...")
+
+            recognizeAudio(audioTrack: audioTrack, identifier: sid)
         }
     }
 
@@ -251,37 +291,14 @@ class ViewController: UIViewController {
         if (self.speechRecognizer != nil) {
             stopRecognizingAudio()
         } else if let audioTrack = self.localAudioTrack {
-            showSpeechRecognitionUI(isRecognizing: true)
+            if let view = self.camera?.previewView {
+                showSpeechRecognitionUI(isRecognizing: true, view: view)
+            }
 
             self.logMessage(messageText: "Listening to \(room?.localParticipant?.identity ?? "yourself")...")
 
             // TODO: CE - Only allow this operation when we are in a Room.
             recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.trackId)
-        }
-    }
-
-    func recognizeRemoteAudio(gestureRecognizer: UIGestureRecognizer) {
-        if let remoteView = gestureRecognizer.view {
-            // Find the Participant.
-            let hashedSid = remoteView.hashValue
-            for remoteParticipant in room!.remoteParticipants {
-                for videoTrackPublication in remoteParticipant.remoteVideoTracks {
-                    if (videoTrackPublication.trackSid.hashValue == hashedSid) {
-                        if let audioTrack = remoteParticipant.remoteAudioTracks.first?.remoteTrack {
-                            recognizeRemoteParticipantAudio(audioTrack: audioTrack, sid: remoteParticipant.remoteAudioTracks.first!.trackSid)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    func recognizeRemoteParticipantAudio(audioTrack: TVIRemoteAudioTrack, sid: String) {
-        if let recognizer = self.speechRecognizer {
-            recognizer.stopRecognizing()
-            self.speechRecognizer = nil
-        } else {
-            recognizeAudio(audioTrack: audioTrack, identifier: sid)
         }
     }
 
@@ -370,6 +387,7 @@ extension ViewController : UITextFieldDelegate {
 extension ViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
 
+        // Listen to events from existing `TVIRemoteParticipant`s
         for remoteParticipant in room.remoteParticipants {
             remoteParticipant.delegate = self
         }
@@ -585,7 +603,7 @@ extension ViewController : TVILocalParticipantDelegate {
 
 extension ViewController : TVICameraCapturerDelegate {
     func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
-        // Layout the preview with dimensions appropriate for our orientation.
+        // Layout the camera preview with dimensions appropriate for our orientation.
         self.view.setNeedsLayout()
     }
 
