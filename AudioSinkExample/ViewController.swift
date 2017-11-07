@@ -167,6 +167,8 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = !inRoom
         UIApplication.shared.isIdleTimerDisabled = inRoom
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+
+        self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
     }
 
     func dismissKeyboard() {
@@ -207,6 +209,7 @@ class ViewController: UIViewController {
             recognizer.stopRecognizing()
             self.speechRecognizer = nil
         } else if let audioTrack = self.localAudioTrack {
+            self.logMessage(messageText: "Listening to \(room?.localParticipant?.identity ?? "yourself")...")
             // TODO: CE - Only allow this operation when we are in a Room.
             recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.trackId)
         }
