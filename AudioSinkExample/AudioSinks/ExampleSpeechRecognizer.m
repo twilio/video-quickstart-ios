@@ -9,6 +9,9 @@
 
 #import <AudioToolbox/AudioToolbox.h>
 
+static int kChannelCountMono = 1;
+static int kChannelCountStereo = 2;
+
 @interface ExampleSpeechRecognizer()
 
 @property (nonatomic, strong) SFSpeechRecognizer *speechRecognizer;
@@ -38,7 +41,7 @@
 
         // The iOS audio device captures in mono.
         // The mixer produces stereo audio for each remote Participant, even if they send mono audio.
-        _numberOfChannels = [audioTrack isKindOfClass:[TVILocalAudioTrack class]] ? 1 : 2;
+        _numberOfChannels = [audioTrack isKindOfClass:[TVILocalAudioTrack class]] ? kChannelCountMono : kChannelCountStereo;
 
         __weak typeof(self) weakSelf = self;
         _speechTask = [_speechRecognizer recognitionTaskWithRequest:_speechRequest resultHandler:^(SFSpeechRecognitionResult * _Nullable result, NSError * _Nullable error) {
@@ -93,7 +96,7 @@
     AVAudioFrameCount frameCount = (AVAudioFrameCount)CMSampleBufferGetNumSamples(audioSample);
     AVAudioFormat *avAudioFormat = [[AVAudioFormat alloc] initWithCommonFormat:AVAudioPCMFormatInt16
                                                                     sampleRate:basicDescription->mSampleRate
-                                                                      channels:1
+                                                                      channels:kChannelCountMono
                                                                    interleaved:YES];
 
     // Allocate an AudioConverter to perform mono downmixing for us.
@@ -106,7 +109,7 @@
     }
 
     // SFSpeechAudioBufferRecognitionRequest will only handle mono input correctly.
-    if (_numberOfChannels == 1) {
+    if (_numberOfChannels == kChannelCountMono) {
         [self.speechRequest appendAudioSampleBuffer:audioSample];
     } else {
         AVAudioPCMBuffer *pcmBuffer = [[AVAudioPCMBuffer alloc] initWithPCMFormat:avAudioFormat frameCapacity:frameCount];
