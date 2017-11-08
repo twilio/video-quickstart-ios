@@ -57,15 +57,15 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.title = "AudioSink Example"
-        self.disconnectButton.isHidden = true
-        self.disconnectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
-        self.connectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
-        self.roomTextField.autocapitalizationType = .none
-        self.roomTextField.delegate = self
+        title = "AudioSink Example"
+        disconnectButton.isHidden = true
+        disconnectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
+        connectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
+        roomTextField.autocapitalizationType = .none
+        roomTextField.delegate = self
 
         if (recordAudio == false) {
-            self.navigationItem.leftBarButtonItem = nil
+            navigationItem.leftBarButtonItem = nil
         }
 
         prepareLocalMedia()
@@ -181,9 +181,9 @@ class ViewController: UIViewController {
     override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
         if (newCollection.horizontalSizeClass == .regular ||
             (newCollection.horizontalSizeClass == .compact && newCollection.verticalSizeClass == .compact)) {
-            self.remoteViewStack.axis = .horizontal
+            remoteViewStack.axis = .horizontal
         } else {
-            self.remoteViewStack.axis = .vertical
+            remoteViewStack.axis = .vertical
         }
     }
 
@@ -374,7 +374,7 @@ class ViewController: UIViewController {
     func recognizeAudio(audioTrack: TVIAudioTrack, identifier: String) {
         self.speechRecognizer = ExampleSpeechRecognizer(audioTrack: audioTrack,
                                                         identifier: identifier,
-                                                             resultHandler: { (result, error) in
+                                                     resultHandler: { (result, error) in
                                                                 if let validResult = result {
                                                                     self.speechLabel?.text = validResult.bestTranscription.formattedString
                                                                 } else if let error = error {
