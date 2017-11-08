@@ -43,6 +43,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
 
+    // Speech UI
     weak var speechRecognizerView: UIView!
     weak var dimmingView: UIView!
     weak var speechLabel: UILabel!
@@ -61,7 +62,6 @@ class ViewController: UIViewController {
         self.connectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
         self.roomTextField.autocapitalizationType = .none
         self.roomTextField.delegate = self
-        self.messageLabel.layer.cornerRadius = 2
 
         if (recordAudio == false) {
             self.navigationItem.leftBarButtonItem = nil
@@ -136,9 +136,17 @@ class ViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        // Give autolayout some help with multi-line text layouts.
+        // Layout the speech label.
         if let speechLabel = self.speechLabel {
             speechLabel.preferredMaxLayoutWidth = view.bounds.width - (kPreviewPadding * 2)
+
+            let constrainedSize = CGSize(width: view.bounds.width,
+                                         height: view.bounds.height)
+            let fittingSize = speechLabel.sizeThatFits(constrainedSize)
+            let speechFrame = CGRect(x: 0,
+                                     y: view.bounds.height - fittingSize.height - 4,
+                                     width: view.bounds.width, height: fittingSize.height)
+            speechLabel.frame = speechFrame.integral
         }
 
         // Layout the preview view.
@@ -156,9 +164,7 @@ class ViewController: UIViewController {
                                               y: view.bounds.height - previewBounds.height / 2 - kPreviewPadding)
 
             if let speechLabel = self.speechLabel {
-                if (self.remoteViewStack.arrangedSubviews.count > 1 && self.remoteViewStack.axis == .vertical) {
-                    previewView.center.y -= speechLabel.intrinsicContentSize.height + kPreviewPadding;
-                }
+                previewView.center.y -= speechLabel.bounds.height + kPreviewPadding;
             }
         }
     }
@@ -207,17 +213,25 @@ class ViewController: UIViewController {
         messageLabel.backgroundColor = UIColor.white
         messageLabel.alpha = 0
         messageLabel.numberOfLines = 0
-        messageLabel.text = message
         messageLabel.textAlignment = NSTextAlignment.center
-        self.remoteViewStack.addArrangedSubview(messageLabel)
 
+        self.view.addSubview(messageLabel)
         self.speechLabel = messageLabel
 
+        // Force a layout to position the speech label before animations.
+        self.view.setNeedsLayout()
+        self.view.layoutIfNeeded()
+
         UIView.animate(withDuration: 0.4, animations: {
+            self.view.setNeedsLayout()
+
+            messageLabel.text = message
             dimmer.alpha = 1.0
             messageLabel.alpha = 1.0
             view.transform = CGAffineTransform.init(scaleX: 1.08, y: 1.08)
             self.disconnectButton.alpha = 0
+
+            self.view.layoutIfNeeded()
         })
     }
 
@@ -236,13 +250,15 @@ class ViewController: UIViewController {
             self.view.layoutIfNeeded()
         }, completion: { (complete) in
             if (complete) {
-                if let label = self.speechLabel {
-                    self.remoteViewStack.removeArrangedSubview(label)
-                    self.speechLabel = nil
-                }
+                self.speechLabel?.removeFromSuperview()
+                self.speechLabel = nil
                 dimmer.removeFromSuperview()
                 self.dimmingView = nil
                 self.speechRecognizerView = nil
+                UIView.animate(withDuration: 0.4, animations: {
+                    self.view.setNeedsLayout()
+                    self.view.layoutIfNeeded()
+                })
             }
         })
     }
@@ -329,14 +345,16 @@ class ViewController: UIViewController {
         if (self.speechRecognizer != nil) {
             stopRecognizingAudio()
         } else if let audioTrack = self.localAudioTrack {
-            // TODO: CE - Only allow this operation when we are in a Room.
+            // TODO: CE - Only allow this operation when we are in a Room, and recording audio.
 
-            if let view = self.camera?.previewView {
-                showSpeechRecognitionUI(view: view,
-                                        message: "Listening to \(room?.localParticipant?.identity ?? "yourself")...")
+            if (self.room?.state == TVIRoomState.connected) {
+                if let view = self.camera?.previewView {
+                    showSpeechRecognitionUI(view: view,
+                                            message: "Listening to \(room?.localParticipant?.identity ?? "yourself")...")
+                }
+
+                recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.trackId)
             }
-
-            recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.trackId)
         }
     }
 
