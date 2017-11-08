@@ -432,9 +432,8 @@ class ViewController: UIViewController {
 
             // Single tap to recognize remote audio.
             let recognizerTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeRemoteAudio))
-            remoteView.addGestureRecognizer(recognizerTap)
-
             recognizerTap.require(toFail: recognizerDoubleTap)
+            remoteView.addGestureRecognizer(recognizerTap)
 
             // Start rendering, and add to our stack.
             publication.remoteTrack?.addRenderer(remoteView)
