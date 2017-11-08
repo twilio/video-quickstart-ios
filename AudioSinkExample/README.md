@@ -14,7 +14,7 @@ Once you have setup your access token install and run the example. You will be p
 
 <img width="400px" src="../images/quickstart/audio-sink-launched.png"/>
 
-After you connect to a Room tap on your camera preview to begin recognizing local audio. Once other Participants join you can select their video to recognize remote speech.
+After you connect to a Room tap on your camera preview to begin recognizing local audio. As you speak `ExampleSpeechRecognizer` will attempt to use `Speech.Framework` to transcribe your speech and display the text on screen. Once other Participants join you can select their video to recognize remote speech.
 
 // TODO: Image of connected Room with speech recognition here.
 
