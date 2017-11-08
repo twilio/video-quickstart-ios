@@ -534,7 +534,7 @@ extension ViewController : TVIRoomDelegate {
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
         participant.delegate = self
 
-        logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteDataTracks.count) data, \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
+        logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
     }
 
     func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
@@ -575,22 +575,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
         // Remote Participant has stopped sharing the audio Track.
 
         logMessage(messageText: "Participant \(participant.identity) unpublished \(publication.trackName) audio track")
-    }
-
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           publishedDataTrack publication: TVIRemoteDataTrackPublication) {
-
-        // Remote Participant has offered to share the data Track.
-
-        logMessage(messageText: "Participant \(participant.identity) published \(publication.trackName) data track")
-    }
-
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           unpublishedDataTrack publication: TVIRemoteDataTrackPublication) {
-
-        // Remote Participant has stopped sharing the data Track.
-
-        logMessage(messageText: "Participant \(participant.identity) unpublished \(publication.trackName) data track")
     }
 
     func subscribed(to videoTrack: TVIRemoteVideoTrack,
