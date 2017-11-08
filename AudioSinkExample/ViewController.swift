@@ -51,6 +51,7 @@ class ViewController: UIViewController {
     var messageTimer: Timer!
 
     let kPreviewPadding = CGFloat(10)
+    let kTextBottomPadding = CGFloat(4)
     let kMaxRemoteVideos = Int(2)
 
     override func viewDidLoad() {
@@ -144,8 +145,8 @@ class ViewController: UIViewController {
                                          height: view.bounds.height)
             let fittingSize = speechLabel.sizeThatFits(constrainedSize)
             let speechFrame = CGRect(x: 0,
-                                     y: view.bounds.height - fittingSize.height - 4,
-                                     width: view.bounds.width, height: fittingSize.height)
+                                     y: view.bounds.height - fittingSize.height - kTextBottomPadding,
+                                     width: view.bounds.width, height: fittingSize.height + kTextBottomPadding)
             speechLabel.frame = speechFrame.integral
         }
 
@@ -210,7 +211,7 @@ class ViewController: UIViewController {
         let messageLabel = UILabel.init()
         messageLabel.font = UIFont.boldSystemFont(ofSize: 16)
         messageLabel.textColor = UIColor.black
-        messageLabel.backgroundColor = UIColor.white
+        messageLabel.backgroundColor = UIColor.white.withAlphaComponent(0.86)
         messageLabel.alpha = 0
         messageLabel.numberOfLines = 0
         messageLabel.textAlignment = NSTextAlignment.center
