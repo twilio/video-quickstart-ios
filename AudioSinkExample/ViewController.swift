@@ -398,9 +398,9 @@ class ViewController: UIViewController {
             localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
 
             if (localVideoTrack == nil) {
-                logMessage(messageText: "Failed to create video track")
+                logMessage(messageText: "Failed to create video track!")
             } else {
-                logMessage(messageText: "Video track created")
+                logMessage(messageText: "Video track created.")
 
                 if let preview = camera?.previewView {
                     let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeLocalAudio))
@@ -409,9 +409,9 @@ class ViewController: UIViewController {
                 }
             }
         } else if (localAudioTrack != nil) {
-            logMessage(messageText: "Front camera not available, using microphone only.")
+            logMessage(messageText: "Front camera is not available, using microphone only.")
         } else {
-            logMessage(messageText: "Failed to create audio track")
+            logMessage(messageText: "Failed to create audio track!")
         }
     }
 
@@ -425,8 +425,16 @@ class ViewController: UIViewController {
             // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
             remoteView.contentMode = .scaleAspectFit;
 
+            // Double tap to change the content mode.
+            let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.changeRemoteVideoAspect))
+            recognizerDoubleTap.numberOfTapsRequired = 2
+            remoteView.addGestureRecognizer(recognizerDoubleTap)
+
+            // Single tap to recognize remote audio.
             let recognizerTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeRemoteAudio))
             remoteView.addGestureRecognizer(recognizerTap)
+
+            recognizerTap.require(toFail: recognizerDoubleTap)
 
             // Start rendering, and add to our stack.
             publication.remoteTrack?.addRenderer(remoteView)
@@ -441,6 +449,19 @@ class ViewController: UIViewController {
             publication.remoteTrack?.removeRenderer(remoteView as! TVIVideoRenderer)
             // Automatically removes us from the UIStackView's arranged subviews.
             remoteView.removeFromSuperview()
+        }
+    }
+
+    func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
+        guard let remoteView = gestureRecognizer.view else {
+            print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
+            return;
+        }
+
+        if (remoteView.contentMode == .scaleAspectFit) {
+            remoteView.contentMode = .scaleAspectFill
+        } else {
+            remoteView.contentMode = .scaleAspectFit
         }
     }
 }
