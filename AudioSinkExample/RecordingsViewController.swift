@@ -10,7 +10,7 @@ import AVKit
 
 class RecordingsViewController: UITableViewController {
 
-    let kReuseIdentifier = "ReuseId"
+    let kReuseIdentifier = "RecordingsCellId"
     var recordings = Array<URL>()
 
     override func viewDidLoad() {
@@ -33,7 +33,7 @@ class RecordingsViewController: UITableViewController {
         }
 
         for path in directoryContents! {
-            if (path.hasSuffix("wav") || path.hasSuffix("WAV")) {
+            if (path.lowercased().hasSuffix("wav")) {
                 recordings.append(URL(fileURLWithPath: path, relativeTo: documentsDirectory))
             }
         }
@@ -65,24 +65,27 @@ class RecordingsViewController: UITableViewController {
         let item = recordings[indexPath.row]
 
         // Present a full-screen AVPlayerViewController and begin playback.
-        let nextPlayer = AVPlayer.init(url: item as URL)
+        let player = AVPlayer.init(url: item as URL)
         let playerVC = AVPlayerViewController.init()
-        playerVC.player = nextPlayer
+        playerVC.player = player
         if #available(iOS 11.0, *) {
             playerVC.entersFullScreenWhenPlaybackBegins = true
         }
 
         self.showDetailViewController(playerVC, sender: self)
 
-        nextPlayer.play()
+        player.play()
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: kReuseIdentifier, for: indexPath)
         let recordingItem = recordings[indexPath.row]
-        cell.textLabel?.adjustsFontSizeToFitWidth = true
-        cell.textLabel?.minimumScaleFactor = 0.75
-        cell.textLabel?.text = recordingItem.lastPathComponent
+
+        if let textLabel = cell.textLabel {
+            textLabel.adjustsFontSizeToFitWidth = true
+            textLabel.minimumScaleFactor = 0.75
+            textLabel.text = recordingItem.lastPathComponent
+        }
 
         return cell
     }

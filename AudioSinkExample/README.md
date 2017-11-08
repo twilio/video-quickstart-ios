@@ -18,7 +18,7 @@ After you connect to a Room tap on your camera preview to begin recognizing loca
 
 // TODO: Image of connected Room with speech recognition here.
 
-Audio is automatically recorded when you join a Room. After disconnecting, tap "Recordings" to browse a list of your `TVIAudioTrack`s recorded using `ExampleAudioRecorder`. Select a recording cell to being playback using `AVPlayerViewController`, or swipe to delete the file.
+Audio is automatically recorded when you join a Room. After disconnecting, tap "Recordings" to browse a list of your `TVIAudioTrack`s recorded using `ExampleAudioRecorder`. Select a recording cell to begin playback using `AVPlayerViewController`, or swipe to delete the file.
 
 <img width="400px" src="../images/quickstart/audio-sink-recordings.png"/>
 
