@@ -24,18 +24,16 @@ class RecordingsViewController: UITableViewController {
             return
         }
 
-        var directoryContents : [String]?
         do {
-            try directoryContents = fileManager.contentsOfDirectory(atPath: documentsDirectory.path)
+            let directoryContents = try fileManager.contentsOfDirectory(atPath: documentsDirectory.path)
+
+            for path in directoryContents {
+                if (path.lowercased().hasSuffix("wav")) {
+                    recordings.append(URL(fileURLWithPath: path, relativeTo: documentsDirectory))
+                }
+            }
         } catch {
             print("Couldn't fetch directory contents. \(error)")
-            return
-        }
-
-        for path in directoryContents! {
-            if (path.lowercased().hasSuffix("wav")) {
-                recordings.append(URL(fileURLWithPath: path, relativeTo: documentsDirectory))
-            }
         }
     }
 
