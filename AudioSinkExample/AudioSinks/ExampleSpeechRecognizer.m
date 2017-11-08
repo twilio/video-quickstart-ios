@@ -103,7 +103,7 @@ static int kChannelCountStereo = 2;
     if (self.speechConverter == NULL && _numberOfChannels != 1) {
         OSStatus status = AudioConverterNew(basicDescription, avAudioFormat.streamDescription, &_speechConverter);
         if (status != 0) {
-            NSLog(@"Failed to create AudioConverter: %d", status);
+            NSLog(@"Failed to create AudioConverter: %d", (int)status);
             return;
         }
     }
@@ -121,7 +121,7 @@ static int kChannelCountStereo = 2;
         OSStatus status = CMBlockBufferGetDataPointer(blockBuffer, 0, NULL, &inputBytes, &inputSamples);
 
         if (status != kCMBlockBufferNoErr) {
-            NSLog(@"Failed to get data pointer: %d", status);
+            NSLog(@"Failed to get data pointer: %d", (int)status);
             return;
         }
 
@@ -137,7 +137,7 @@ static int kChannelCountStereo = 2;
         if (status == 0) {
             [self.speechRequest appendAudioPCMBuffer:pcmBuffer];
         } else {
-            NSLog(@"Failed to convert audio: %d", status);
+            NSLog(@"Failed to convert audio: %d", (int)status);
         }
     }
 }
