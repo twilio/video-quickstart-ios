@@ -174,8 +174,13 @@ class ViewController: UIViewController {
         return self.room != nil
     }
 
+    override var prefersStatusBarHidden: Bool {
+        return self.room != nil
+    }
+
     override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
-        if (newCollection.horizontalSizeClass == .regular) {
+        if (newCollection.horizontalSizeClass == .regular ||
+            (newCollection.horizontalSizeClass == .compact && newCollection.verticalSizeClass == .compact)) {
             self.remoteViewStack.axis = .horizontal
         } else {
             self.remoteViewStack.axis = .vertical
@@ -193,6 +198,7 @@ class ViewController: UIViewController {
         self.disconnectButton.isEnabled = inRoom
         UIApplication.shared.isIdleTimerDisabled = inRoom
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        self.setNeedsStatusBarAppearanceUpdate()
 
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
     }
@@ -210,8 +216,8 @@ class ViewController: UIViewController {
         // Create a label which will be added to the stack and display recognized speech.
         let messageLabel = UILabel.init()
         messageLabel.font = UIFont.boldSystemFont(ofSize: 16)
-        messageLabel.textColor = UIColor.black
-        messageLabel.backgroundColor = UIColor.white.withAlphaComponent(0.86)
+        messageLabel.textColor = UIColor.white
+        messageLabel.backgroundColor = UIColor.init(red: 226/255, green: 29/255, blue: 37/255, alpha: 1)
         messageLabel.alpha = 0
         messageLabel.numberOfLines = 0
         messageLabel.textAlignment = NSTextAlignment.center
@@ -369,7 +375,11 @@ class ViewController: UIViewController {
                                                                     self.speechLabel?.text = error.localizedDescription
                                                                     // TODO: CE - Stop recognition here, or should it be done in the recognizer?
                                                                 }
-                                                                self.view.setNeedsLayout()
+
+                                                                UIView.animate(withDuration: 0.1, animations: {
+                                                                    self.view.setNeedsLayout()
+                                                                    self.view.layoutIfNeeded()
+                                                                })
         })
     }
 
