@@ -18,10 +18,10 @@ class ViewController: UIViewController {
     var accessToken = "TWILIO_ACCESS_TOKEN"
 
     // Configure remote URL to fetch token from
-    var tokenUrl = "http://localhost:8000/token.php"
+    let tokenUrl = "http://localhost:8000/token.php"
 
     // Automatically record audio for all `TVIAudioTrack`s published in a Room.
-    var recordAudio = true
+    let recordAudio = true
 
     // Video SDK components
     var room: TVIRoom?
