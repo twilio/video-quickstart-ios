@@ -492,12 +492,11 @@ extension ViewController : TVIRoomDelegate {
                 localParticipant.delegate = self
             }
 
-            if let localAudioPublication = room.localParticipant?.localAudioTracks.first {
-                if let localAudioTrack = localAudioPublication.localTrack {
-                    let trackSid = localAudioPublication.trackSid
-                    self.audioRecorders[trackSid] = ExampleAudioRecorder.init(audioTrack: localAudioTrack,
-                                                                              identifier: trackSid)
-                }
+            if let localAudioPublication = room.localParticipant?.localAudioTracks.first,
+               let localAudioTrack = localAudioPublication.localTrack {
+                let trackSid = localAudioPublication.trackSid
+                self.audioRecorders[trackSid] = ExampleAudioRecorder.init(audioTrack: localAudioTrack,
+                                                                          identifier: trackSid)
             }
         }
 
