@@ -6,8 +6,7 @@
 //
 
 @import Foundation;
-
-#import <TwilioVideo/TwilioVideo.h>
+@import TwilioVideo;
 
 @interface ExampleAudioRecorder : NSObject <TVIAudioSink>
 

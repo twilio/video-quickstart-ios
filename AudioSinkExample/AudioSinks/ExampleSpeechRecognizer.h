@@ -7,8 +7,7 @@
 
 @import Foundation;
 @import Speech;
-
-#import <TwilioVideo/TwilioVideo.h>
+@import TwilioVideo;
 
 @interface ExampleSpeechRecognizer : NSObject <TVIAudioSink>
 
