@@ -197,7 +197,9 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = !inRoom
         self.disconnectButton.isEnabled = inRoom
         UIApplication.shared.isIdleTimerDisabled = inRoom
-        self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        if #available(iOS 11.0, *) {
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
         self.setNeedsStatusBarAppearanceUpdate()
 
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
