@@ -51,7 +51,8 @@
     // The mixer produces stereo audio for each remote Participant, even if they send mono audio.
     _numberOfChannels = [audioTrack isKindOfClass:[TVILocalAudioTrack class]] ? 1 : 2;
 
-    // Assume that TVIAudioTrack will produce interleaved stereo LPCM @ 16-bit / 48khz
+    // Assume that TVIAudioTrack will produce interleaved LPCM @ 16-bit / 48khz.
+    // If the sample rate differs AVAssetWriterInput will upsample to 48 khz.
     NSDictionary<NSString *, id> *outputSettings = @{AVFormatIDKey : @(kAudioFormatLinearPCM),
                                                      AVSampleRateKey : @(48000),
                                                      AVNumberOfChannelsKey : @(self.numberOfChannels),
@@ -77,7 +78,8 @@
         }
     }
 
-    // TODO: CE - Backgrounding support. We could start a task here, and handle cleanup if it expires.
+    // This example does not support backgrounding. This is a good point to consider kicking off a background
+    // task, and handling failures.
 }
 
 - (void)stopRecording {
@@ -104,7 +106,7 @@
 + (NSURL *)recordingURLWithIdentifier:(NSString *)identifier {
     NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 
-    // Choose a filename which will be unique if the TrackId is reused (Append RFC3339 formatted date).
+    // Choose a filename which will be unique if the `identifier` is reused (Append RFC3339 formatted date).
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
     dateFormatter.dateFormat = @"HH:mm:ss";
