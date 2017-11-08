@@ -323,10 +323,14 @@ class ViewController: UIViewController {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;
         }
+        guard let room = self.room else {
+            print("We are no longer connected to the Room!")
+            return
+        }
 
         // Find the Participant.
         let hashedSid = remoteView.tag
-        for remoteParticipant in room!.remoteParticipants {
+        for remoteParticipant in room.remoteParticipants {
             for videoTrackPublication in remoteParticipant.remoteVideoTracks {
                 if (videoTrackPublication.trackSid.hashValue == hashedSid) {
                     if let audioTrack = remoteParticipant.remoteAudioTracks.first?.remoteTrack {
