@@ -8,9 +8,19 @@ See the master [README](https://github.com/twilio/video-quickstart-swift/blob/ma
 
 This example requires Xcode 9.0, and a device running iOS 10.0 or above.
 
-### Usage
+### Running
 
-TODO. Add screenshots and instructions on how to use.
+Once you have setup your access token install and run the example. You will be presented with the following screen:
+
+<img width="400px" src="../images/quickstart/audio-sink-launched.png"/>
+
+After you connect to a Room tap on your camera preview to begin recognizing local audio. Once other Participants join you can select their video to recognize remote speech.
+
+// TODO: Image of connected Room with speech recognition here.
+
+Audio is automatically recorded when you join a Room. After disconnecting, tap "Recordings" to browse a list of your `TVIAudioTrack`s recorded using `ExampleAudioRecorder`. Select a recording cell to being playback using `AVPlayerViewController`, or swipe to delete the file.
+
+<img width="400px" src="../images/quickstart/audio-sink-recordings.png"/>
 
 ### Known Issues
 

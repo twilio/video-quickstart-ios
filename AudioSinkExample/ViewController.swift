@@ -21,7 +21,7 @@ class ViewController: UIViewController {
     var tokenUrl = "http://localhost:8000/token.php"
 
     // Automatically record audio for all `TVIAudioTrack`s published in a Room.
-    var recordAudio = false
+    var recordAudio = true
 
     // Video SDK components
     var room: TVIRoom?
