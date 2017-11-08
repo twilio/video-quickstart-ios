@@ -425,7 +425,7 @@ class ViewController: UIViewController {
             // We will bet that a hash collision between two unique SIDs is very rare.
             remoteView.tag = publication.trackSid.hashValue
 
-            // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit
+            // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
             // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
             remoteView.contentMode = .scaleAspectFit;
 
