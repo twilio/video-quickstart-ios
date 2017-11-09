@@ -6,11 +6,11 @@ The project demonstrates how to use Twilio's Programmable Video SDK to access ra
 
 See the master [README](https://github.com/twilio/video-quickstart-swift/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
 
-This example requires Xcode 9.0, and a device running iOS 10.0 or above.
+This example requires Xcode 9.0 and the iOS 11.0 SDK, as well as a device running iOS 10.0 or above.
 
 ### Running
 
-Once you have setup your access token install and run the example. You will be presented with the following screen:
+Once you have setup your access token, install and run the example. You will be presented with the following screen:
 
 <img width="400px" src="../images/quickstart/audio-sink-launched.png"/>
 
