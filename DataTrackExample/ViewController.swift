@@ -84,9 +84,10 @@ class ViewController: UIViewController {
 
         let dataTrackOptions = TVIDataTrackOptions.init { (builder) in
             builder.isOrdered = true
+            builder.name = "Draw"
         }
         
-        self.localDataTrack = TVILocalDataTrack.init(options: dataTrackOptions, name: "Draw")
+        self.localDataTrack = TVILocalDataTrack.init(options: dataTrackOptions)
         
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
