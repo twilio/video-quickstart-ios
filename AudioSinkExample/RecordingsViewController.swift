@@ -63,7 +63,7 @@ class RecordingsViewController: UITableViewController {
         let item = recordings[indexPath.row]
 
         // Present a full-screen AVPlayerViewController and begin playback.
-        let player = AVPlayer.init(url: item as URL)
+        let player = AVPlayer.init(url: item)
         let playerVC = AVPlayerViewController.init()
         playerVC.player = player
         if #available(iOS 11.0, *) {

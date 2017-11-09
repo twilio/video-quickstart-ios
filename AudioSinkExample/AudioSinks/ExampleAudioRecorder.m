@@ -109,7 +109,7 @@
     // Choose a filename which will be unique if the `identifier` is reused (Append RFC3339 formatted date).
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-    dateFormatter.dateFormat = @"HH:mm:ss";
+    dateFormatter.dateFormat = @"HHmmss";
     dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
 
     NSString *dateComponent = [dateFormatter stringFromDate:[NSDate date]];
@@ -132,6 +132,7 @@
     CMTime presentationTimestamp = CMSampleBufferGetPresentationTimeStamp(audioSample);
 
     if (CMTIME_IS_INVALID(self.recorderTimestamp)) {
+        NSLog(@"Received first valid sample. Starting recording session.");
         [self.audioRecorder startSessionAtSourceTime:presentationTimestamp];
         self.recorderTimestamp = presentationTimestamp;
     }
