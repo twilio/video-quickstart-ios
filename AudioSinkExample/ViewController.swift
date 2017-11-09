@@ -500,9 +500,10 @@ extension ViewController : TVIRoomDelegate {
             }
         }
 
-        var connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")"
+        var connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
+        connectMessage.append("\nTap a video to recognize speech.")
         if (self.audioRecorders.count > 0) {
-            connectMessage.append(".\nRecording local audio...")
+            connectMessage.append("\nRecording local audio...")
         }
         logMessage(messageText: connectMessage)
     }
