@@ -358,8 +358,8 @@ class ViewController: UIViewController {
         if (self.speechRecognizer != nil) {
             stopRecognizingAudio()
         } else if let audioTrack = self.localAudioTrack {
-            // TODO: CE - Only allow this operation when we are in a Room, and recording audio.
-
+            // Known issue - local audio is not available in a Peer-to-Peer Room unless there are >= 1 RemoteParticipants.
+            
             if (self.room?.state == TVIRoomState.connected) {
                 if let view = self.camera?.previewView {
                     showSpeechRecognitionUI(view: view,
