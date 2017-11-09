@@ -12,15 +12,15 @@ This example requires Xcode 9.0 and the iOS 11.0 SDK, as well as a device runnin
 
 Once you have setup your access token, install and run the example. You will be presented with the following screen:
 
-<img width="400px" src="../images/quickstart/audio-sink-launched.jpg"/>
+<kbd><img width="400px" src="../images/quickstart/audio-sink-launched.jpg"/></kbd>
 
 After you connect to a Room tap on your camera preview to begin recognizing local audio. As you speak `ExampleSpeechRecognizer` will attempt to use `Speech.Framework` to transcribe your speech and display the text on screen. Once other Participants join you can select their video to recognize remote speech.
 
-<img width="400px" src="../images/quickstart/audio-sink-recognizing.jpg"/>
+<kbd><img width="400px" src="../images/quickstart/audio-sink-recognizing.jpg"/></kbd>
 
 Audio is automatically recorded when you join a Room. After disconnecting, tap "Recordings" to browse a list of your `TVIAudioTrack`s recorded using `ExampleAudioRecorder`. Select a recording cell to begin playback using `AVPlayerViewController`, or swipe to delete the file.
 
-<img width="400px" src="../images/quickstart/audio-sink-recordings.png"/>
+<kbd><img width="400px" src="../images/quickstart/audio-sink-recordings.png"/></kbd>
 
 ### Known Issues
 
