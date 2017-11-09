@@ -49,7 +49,6 @@ static int kChannelCountStereo = 2;
             if (result) {
                 strongSelf.speechResult = result.bestTranscription.formattedString;
             } else {
-                // TODO: CE - do we handle errors or let our owner?
                 NSLog(@"Speech recognition error: %@", error);
             }
 

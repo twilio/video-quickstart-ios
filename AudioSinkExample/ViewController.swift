@@ -379,7 +379,7 @@ class ViewController: UIViewController {
                                                                     self.speechLabel?.text = validResult.bestTranscription.formattedString
                                                                 } else if let error = error {
                                                                     self.speechLabel?.text = error.localizedDescription
-                                                                    // TODO: CE - Stop recognition here, or should it be done in the recognizer?
+                                                                    self.stopRecognizingAudio()
                                                                 }
 
                                                                 UIView.animate(withDuration: 0.1, animations: {
