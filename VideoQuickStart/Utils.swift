@@ -24,12 +24,8 @@ struct TokenUtils {
         let requestURL: URL = URL(string: url)!
         do {
             let data = try Data(contentsOf: requestURL)
-            do {
-                let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
-                token = json["token"] as! String
-            } catch let error as NSError{
-                print ("Error with json, error = \(error)")
-                throw error
+            if let tokenReponse = String.init(data: data, encoding: String.Encoding.utf8) {
+                token = tokenReponse
             }
         } catch let error as NSError {
             print ("Invalid token url, error = \(error)")
