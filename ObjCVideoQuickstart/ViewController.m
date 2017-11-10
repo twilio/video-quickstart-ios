@@ -49,11 +49,11 @@
 
     [self logMessage:[NSString stringWithFormat:@"TwilioVideo v%@", [TwilioVideo version]]];
 
-    // Configure access token manually for testing, if desired! Create one manually in the console
+    // Configure access token for testing. Create one manually in the console
+    // at https://www.twilio.com/console/video/runtime/testing-tools
     self.accessToken = @"TWILIO_ACCESS_TOKEN";
     
-    // Using the PHP server to provide access tokens? Make sure the tokenURL is pointing to the correct location -
-    // the default is http://localhost:8000/token.php
+    // Using a token server to provide access tokens? Make sure the tokenURL is pointing to the correct location.
     self.tokenUrl = @"http://localhost:8000/token.php";
     
     // Preview our local camera track in the local video preview view.
