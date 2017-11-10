@@ -18,6 +18,8 @@ class ViewController: UIViewController {
         return true
     }
 
+    // Configure access token for testing. Create one manually in the console
+    // at https://www.twilio.com/console/video/runtime/testing-tools
     var accessToken = "TWILIO_ACCESS_TOKEN"
     var room: TVIRoom?
     weak var consumer: TVIVideoCaptureConsumer?
