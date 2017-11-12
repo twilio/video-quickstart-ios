@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zMP-uD-vpd">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -29,7 +29,7 @@
         <!--View Controller-->
         <scene sceneID="kyM-zd-6dW">
             <objects>
-                <viewController storyboardIdentifier="ViewController" id="6Fe-yO-Bst" customClass="ViewController" customModule="AudioSinkExample" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ViewController" id="6Fe-yO-Bst" customClass="ViewController" customModule="VideoRendererExample" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="ha1-po-S9p"/>
                         <viewControllerLayoutGuide type="bottom" id="iKH-Gb-ajd"/>
@@ -154,7 +154,7 @@
         <!--Settings Table View Controller-->
         <scene sceneID="bUz-kF-7op">
             <objects>
-                <tableViewController id="2Lk-kl-fH7" customClass="SettingsTableViewController" customModule="AudioSinkExample" sceneMemberID="viewController">
+                <tableViewController id="2Lk-kl-fH7" customClass="SettingsTableViewController" customModule="VideoRendererExample" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="I1l-Sq-FCd">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

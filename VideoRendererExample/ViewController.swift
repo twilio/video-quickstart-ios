@@ -222,12 +222,6 @@ class ViewController: UIViewController {
                 logMessage(messageText: "Failed to create video track!")
             } else {
                 logMessage(messageText: "Video track created.")
-
-                if let preview = camera?.previewView {
-                    let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeLocalAudio))
-                    preview.addGestureRecognizer(tap)
-                    view.addSubview(preview);
-                }
             }
         } else if (localAudioTrack != nil) {
             logMessage(messageText: "Front camera is not available, using microphone only.")
@@ -251,11 +245,6 @@ class ViewController: UIViewController {
             recognizerDoubleTap.numberOfTapsRequired = 2
             remoteView.addGestureRecognizer(recognizerDoubleTap)
 
-            // Single tap to recognize remote audio.
-            let recognizerTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeRemoteAudio))
-            recognizerTap.require(toFail: recognizerDoubleTap)
-            remoteView.addGestureRecognizer(recognizerTap)
-
             // Start rendering, and add to our stack.
             publication.remoteTrack?.addRenderer(remoteView)
             self.remoteViewStack.addArrangedSubview(remoteView)
@@ -272,7 +261,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
+    @objc func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
         guard let remoteView = gestureRecognizer.view else {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;
@@ -303,7 +292,7 @@ extension ViewController : TVIRoomDelegate {
             remoteParticipant.delegate = self
         }
 
-        var connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
+        let connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
         logMessage(messageText: connectMessage)
     }
 

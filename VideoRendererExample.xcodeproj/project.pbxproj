@@ -15,6 +15,9 @@
 		8AC2014F1FB803DF0044B865 /* ExampleSampleBufferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC2014E1FB803DF0044B865 /* ExampleSampleBufferView.swift */; };
 		8AC201511FB8041E0044B865 /* ExampleSnapshotRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC201501FB8041E0044B865 /* ExampleSnapshotRecorder.swift */; };
 		8AC201531FB804290044B865 /* ExampleVideoRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC201521FB804290044B865 /* ExampleVideoRecorder.swift */; };
+		8AE816621FB806B000D10308 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE8165F1FB8069F00D10308 /* Settings.swift */; };
+		8AE816631FB806B300D10308 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE816601FB8069F00D10308 /* SettingsTableViewController.swift */; };
+		8AE816641FB806B500D10308 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE816611FB8069F00D10308 /* Utils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +31,9 @@
 		8AC2014E1FB803DF0044B865 /* ExampleSampleBufferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleSampleBufferView.swift; sourceTree = "<group>"; };
 		8AC201501FB8041E0044B865 /* ExampleSnapshotRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleSnapshotRecorder.swift; sourceTree = "<group>"; };
 		8AC201521FB804290044B865 /* ExampleVideoRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleVideoRecorder.swift; sourceTree = "<group>"; };
+		8AE8165F1FB8069F00D10308 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		8AE816601FB8069F00D10308 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		8AE816611FB8069F00D10308 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,6 +51,7 @@
 			isa = PBXGroup;
 			children = (
 				8AC2013A1FB801A10044B865 /* VideoRendererExample */,
+				8AE8165E1FB8069F00D10308 /* Utils */,
 				8AC201391FB801A10044B865 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -79,6 +86,16 @@
 				8AC201521FB804290044B865 /* ExampleVideoRecorder.swift */,
 			);
 			path = VideoRenderers;
+			sourceTree = "<group>";
+		};
+		8AE8165E1FB8069F00D10308 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				8AE8165F1FB8069F00D10308 /* Settings.swift */,
+				8AE816601FB8069F00D10308 /* SettingsTableViewController.swift */,
+				8AE816611FB8069F00D10308 /* Utils.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -153,11 +170,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8AE816621FB806B000D10308 /* Settings.swift in Sources */,
 				8AC201531FB804290044B865 /* ExampleVideoRecorder.swift in Sources */,
 				8AC2014F1FB803DF0044B865 /* ExampleSampleBufferView.swift in Sources */,
 				8AC2013E1FB801A10044B865 /* ViewController.swift in Sources */,
 				8AC201511FB8041E0044B865 /* ExampleSnapshotRecorder.swift in Sources */,
 				8AC2013C1FB801A10044B865 /* AppDelegate.swift in Sources */,
+				8AE816631FB806B300D10308 /* SettingsTableViewController.swift in Sources */,
+				8AE816641FB806B500D10308 /* Utils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -300,7 +320,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoRendererExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -315,7 +335,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoRendererExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
