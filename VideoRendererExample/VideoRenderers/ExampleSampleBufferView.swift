@@ -72,19 +72,19 @@ class ExampleSampleBufferRenderer : UIView {
 extension ExampleSampleBufferRenderer : TVIVideoRenderer {
 
     func renderFrame(_ frame: TVIVideoFrame) {
-        if (displayLayer.error != nil) {
-            return
-        } else if (displayLayer.isReadyForMoreMediaData == false) {
-            return
-        } else if (CVPixelBufferGetPixelFormatType(frame.imageBuffer) == TVIPixelFormat.formatYUV420PlanarFullRange.rawValue ||
-                   CVPixelBufferGetPixelFormatType(frame.imageBuffer) == TVIPixelFormat.formatYUV420PlanarVideoRange.rawValue) {
-            print("Unsupperted pixel format!");
-            return
-        }
-
-        let imageBuffer = frame.imageBuffer
-
         DispatchQueue.main.async {
+            let imageBuffer = frame.imageBuffer
+
+            if (self.displayLayer.error != nil) {
+                return
+            } else if (self.displayLayer.isReadyForMoreMediaData == false) {
+                return
+            } else if (CVPixelBufferGetPixelFormatType(imageBuffer) == TVIPixelFormat.formatYUV420PlanarFullRange.rawValue ||
+                CVPixelBufferGetPixelFormatType(imageBuffer) == TVIPixelFormat.formatYUV420PlanarVideoRange.rawValue) {
+                print("Unsupported I420 pixel format!");
+                return
+            }
+
             // Ensure that we have a valid CMVideoFormatDescription.
             if (self.outputFormatDescription == nil ||
                 CMVideoFormatDescriptionMatchesImageBuffer(self.outputFormatDescription!, imageBuffer) == false) {
@@ -95,7 +95,8 @@ extension ExampleSampleBufferRenderer : TVIVideoRenderer {
             var sampleBuffer: CMSampleBuffer?
             // TODO: What is an appropriate timescale?
             var sampleTiming = CMSampleTimingInfo.init(duration: kCMTimeInvalid,
-                                                       presentationTimeStamp: CMTime(seconds: CACurrentMediaTime(), preferredTimescale: 1000),
+                                                       presentationTimeStamp: CMTime.init(value: frame.timestamp,
+                                                                                          timescale: CMTimeScale(1000000)),
                                                        decodeTimeStamp: kCMTimeInvalid)
 
             let status = CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault,
@@ -106,8 +107,15 @@ extension ExampleSampleBufferRenderer : TVIVideoRenderer {
 
             // Enqueue the frame for display via AVSampleBufferDisplayLayer.
             if (status != kCVReturnSuccess) {
+                print("Couldn't create a SampleBuffer.")
                 return
             } else if let sampleBuffer = sampleBuffer {
+
+                // Force immediate display of the Buffer.
+                let sampleAttachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, true) as NSArray!
+                let firstAttachment  = sampleAttachments?.firstObject as! NSMutableDictionary?
+                firstAttachment?[kCMSampleAttachmentKey_DisplayImmediately] = true
+
                 self.displayLayer.enqueue(sampleBuffer)
             }
         }
