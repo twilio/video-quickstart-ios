@@ -12,33 +12,51 @@ import TwilioVideo
 
 class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
 
+    public var videoDimensions: CMVideoDimensions
+
+    var outputFormatDescription: CMFormatDescription?
+
+    var isRendering = true
+
+    var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
+                                            NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
+                                            NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue)]
+
     required init?(coder aDecoder: NSCoder) {
         // This example does not support storyboards.
         return nil
     }
 
     override init(frame: CGRect) {
-        // TODO: Register for application lifecycle observers.
         videoDimensions = CMVideoDimensions(width: 0, height: 0)
+
         super.init(frame: frame)
+
+        let center = NotificationCenter.default
+
+        center.addObserver(self, selector: #selector(ExampleSampleBufferRenderer.willEnterForeground),
+                           name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
+        center.addObserver(self, selector: #selector(ExampleSampleBufferRenderer.didEnterBackground),
+                           name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
+        center.addObserver(self, selector: #selector(ExampleSampleBufferRenderer.willResignActive),
+                           name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
+
+//        [_sampleView addObserver:self forKeyPath:@"layer.status" options:NSKeyValueObservingOptionNew context:NULL];
     }
 
     deinit {
-        // TODO: Unregister for application lifecycle observers.
         outputFormatDescription = nil
-    }
 
-    var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue)]
+        NotificationCenter.default.removeObserver(self)
+
+//        [self.sampleView removeObserver:self forKeyPath:@"layer.status"];
+    }
 
     var displayLayer: AVSampleBufferDisplayLayer {
         get {
             return self.layer as! AVSampleBufferDisplayLayer
         }
     }
-
-    public var videoDimensions: CMVideoDimensions
 
     override class var layerClass: Swift.AnyClass {
         get {
@@ -66,8 +84,27 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
             super.contentMode = newValue
         }
     }
+}
 
-    var outputFormatDescription: CMFormatDescription?
+extension ExampleSampleBufferRenderer {
+    func willEnterForeground(_: NSNotification) {
+
+        if (displayLayer.status == AVQueuedSampleBufferRenderingStatus.failed) {
+            // TODO: Restore failed sample buffer view. AVErrorOperationInterrupted.
+        }
+
+        isRendering = true
+    }
+
+    func didEnterBackground(_: NSNotification) {
+        isRendering = false
+        self.displayLayer.flushAndRemoveImage()
+    }
+
+    func willResignActive(_: NSNotification) {
+        // TODO: - CE Do we care about this?
+        self.displayLayer.flushAndRemoveImage()
+    }
 }
 
 extension ExampleSampleBufferRenderer {
@@ -77,7 +114,9 @@ extension ExampleSampleBufferRenderer {
             let imageBuffer = frame.imageBuffer
             let pixelFormat = CVPixelBufferGetPixelFormatType(imageBuffer)
 
-            if (self.displayLayer.error != nil) {
+            if (self.isRendering == false ) {
+                return
+            } else if (self.displayLayer.error != nil) {
                 return
             } else if (self.displayLayer.isReadyForMoreMediaData == false) {
                 print("AVSampleBufferDisplayLayer is not ready for more frames.");
