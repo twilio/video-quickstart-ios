@@ -10,12 +10,11 @@ import Foundation
 import UIKit
 import TwilioVideo
 
-class ExampleSampleBufferRenderer : UIView {
+class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
 
     required init?(coder aDecoder: NSCoder) {
-        // TODO: Register for application lifecycle observers.
-        videoDimensions = CMVideoDimensions(width: 0, height: 0)
-        super.init(coder: aDecoder)
+        // This example does not support storyboards.
+        return nil
     }
 
     override init(frame: CGRect) {
@@ -26,6 +25,7 @@ class ExampleSampleBufferRenderer : UIView {
 
     deinit {
         // TODO: Unregister for application lifecycle observers.
+        outputFormatDescription = nil
     }
 
     var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
@@ -61,26 +61,29 @@ class ExampleSampleBufferRenderer : UIView {
             default:
                 displayLayer.videoGravity = AVLayerVideoGravityResize
             }
+            setNeedsLayout()
 
-            super.contentMode = contentMode
+            super.contentMode = newValue
         }
     }
 
     var outputFormatDescription: CMFormatDescription?
 }
 
-extension ExampleSampleBufferRenderer : TVIVideoRenderer {
+extension ExampleSampleBufferRenderer {
 
     func renderFrame(_ frame: TVIVideoFrame) {
         DispatchQueue.main.async {
             let imageBuffer = frame.imageBuffer
+            let pixelFormat = CVPixelBufferGetPixelFormatType(imageBuffer)
 
             if (self.displayLayer.error != nil) {
                 return
             } else if (self.displayLayer.isReadyForMoreMediaData == false) {
+                print("AVSampleBufferDisplayLayer is not ready for more frames.");
                 return
-            } else if (CVPixelBufferGetPixelFormatType(imageBuffer) == TVIPixelFormat.formatYUV420PlanarFullRange.rawValue ||
-                CVPixelBufferGetPixelFormatType(imageBuffer) == TVIPixelFormat.formatYUV420PlanarVideoRange.rawValue) {
+            } else if (pixelFormat == TVIPixelFormat.formatYUV420PlanarFullRange.rawValue ||
+                       pixelFormat == TVIPixelFormat.formatYUV420PlanarVideoRange.rawValue) {
                 print("Unsupported I420 pixel format!");
                 return
             }
@@ -89,15 +92,28 @@ extension ExampleSampleBufferRenderer : TVIVideoRenderer {
             if (self.outputFormatDescription == nil ||
                 CMVideoFormatDescriptionMatchesImageBuffer(self.outputFormatDescription!, imageBuffer) == false) {
                 CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, imageBuffer, &self.outputFormatDescription)
+
+                if let format = self.outputFormatDescription {
+                    let dimensions = CMVideoFormatDescriptionGetDimensions(format)
+                    let utf16 = [
+                        UInt16((pixelFormat >> 24) & 0xFF),
+                        UInt16((pixelFormat >> 16) & 0xFF),
+                        UInt16((pixelFormat >> 8) & 0xFF),
+                        UInt16((pixelFormat & 0xFF)) ]
+                    let pixelFormatString = String(utf16CodeUnits: utf16, count: 4)
+                    print("Detected format change: \(dimensions.width) x \(dimensions.height) - \(pixelFormatString)")
+                }
             }
 
-            // Create a CMSampleBuffer
-            var sampleBuffer: CMSampleBuffer?
-            // TODO: What is an appropriate timescale?
+            // Represent TVIVideoFrame timestamps with microsecond timescale.
+            // Our uncompressed buffers do not need to be decoded.
             var sampleTiming = CMSampleTimingInfo.init(duration: kCMTimeInvalid,
                                                        presentationTimeStamp: CMTime.init(value: frame.timestamp,
                                                                                           timescale: CMTimeScale(1000000)),
                                                        decodeTimeStamp: kCMTimeInvalid)
+
+            // Create a CMSampleBuffer
+            var sampleBuffer: CMSampleBuffer?
 
             let status = CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault,
                                                                   imageBuffer,
@@ -107,7 +123,7 @@ extension ExampleSampleBufferRenderer : TVIVideoRenderer {
 
             // Enqueue the frame for display via AVSampleBufferDisplayLayer.
             if (status != kCVReturnSuccess) {
-                print("Couldn't create a SampleBuffer.")
+                print("Couldn't create a SampleBuffer. Status=\(status)")
                 return
             } else if let sampleBuffer = sampleBuffer {
 

@@ -39,7 +39,12 @@ class ViewController: UIViewController {
     var messageTimer: Timer!
 
     let kPreviewPadding = CGFloat(10)
+
+    // How many remote videos to display.
     let kMaxRemoteVideos = Int(2)
+
+    // Use the ExampleSampleBufferView instead of TVIVideoView to render remote Participant video.
+    let kUseExampleSampleBufferView = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -235,7 +240,8 @@ class ViewController: UIViewController {
 
     func setupRemoteVideoView(publication: TVIRemoteVideoTrackPublication) {
         // Create `ExampleSampleBufferRenderer`, and add it to our `UIStackView`.
-        let remoteView = ExampleSampleBufferRenderer(frame: CGRect.zero)
+        let remoteView = kUseExampleSampleBufferView ?
+            ExampleSampleBufferRenderer(frame: CGRect.zero) : TVIVideoView(frame: CGRect.zero)
 
         // We will bet that a hash collision between two unique SIDs is very rare.
         remoteView.tag = publication.trackSid.hashValue
@@ -249,7 +255,7 @@ class ViewController: UIViewController {
         remoteView.addGestureRecognizer(recognizerDoubleTap)
 
         // Start rendering, and add to our stack.
-        publication.remoteTrack?.addRenderer(remoteView)
+        publication.remoteTrack?.addRenderer(remoteView as! TVIVideoRenderer)
         self.remoteViewStack.addArrangedSubview(remoteView)
     }
 
