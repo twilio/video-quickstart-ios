@@ -2,7 +2,6 @@
 //  AppDelegate.swift
 //  VideoRendererExample
 //
-//  Created by Chris Eagleston on 11/11/17.
 //  Copyright © 2017 Twilio Inc. All rights reserved.
 //
 
