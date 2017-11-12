@@ -39,7 +39,6 @@ class ViewController: UIViewController {
     var messageTimer: Timer!
 
     let kPreviewPadding = CGFloat(10)
-    let kTextBottomPadding = CGFloat(4)
     let kMaxRemoteVideos = Int(2)
 
     override func viewDidLoad() {
@@ -222,6 +221,10 @@ class ViewController: UIViewController {
                 logMessage(messageText: "Failed to create video track!")
             } else {
                 logMessage(messageText: "Video track created.")
+
+                if let preview = camera?.previewView {
+                    view.addSubview(preview);
+                }
             }
         } else if (localAudioTrack != nil) {
             logMessage(messageText: "Front camera is not available, using microphone only.")
@@ -231,24 +234,23 @@ class ViewController: UIViewController {
     }
 
     func setupRemoteVideoView(publication: TVIRemoteVideoTrackPublication) {
-        // Create a `TVIVideoView` programmatically, and add to our `UIStackView`
-        if let remoteView = TVIVideoView.init(frame: CGRect.zero, delegate:nil) {
-            // We will bet that a hash collision between two unique SIDs is very rare.
-            remoteView.tag = publication.trackSid.hashValue
+        // Create `ExampleSampleBufferRenderer`, and add it to our `UIStackView`.
+        let remoteView = ExampleSampleBufferRenderer(frame: CGRect.zero)
 
-            // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
-            // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
-            remoteView.contentMode = .scaleAspectFit;
+        // We will bet that a hash collision between two unique SIDs is very rare.
+        remoteView.tag = publication.trackSid.hashValue
 
-            // Double tap to change the content mode.
-            let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.changeRemoteVideoAspect))
-            recognizerDoubleTap.numberOfTapsRequired = 2
-            remoteView.addGestureRecognizer(recognizerDoubleTap)
+        // `ExampleSampleBufferRenderer` supports scaleToFill, scaleAspectFill and scaleAspectFit.
+        remoteView.contentMode = .scaleAspectFit;
 
-            // Start rendering, and add to our stack.
-            publication.remoteTrack?.addRenderer(remoteView)
-            self.remoteViewStack.addArrangedSubview(remoteView)
-        }
+        // Double tap to change the content mode.
+        let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.changeRemoteVideoAspect))
+        recognizerDoubleTap.numberOfTapsRequired = 2
+        remoteView.addGestureRecognizer(recognizerDoubleTap)
+
+        // Start rendering, and add to our stack.
+        publication.remoteTrack?.addRenderer(remoteView)
+        self.remoteViewStack.addArrangedSubview(remoteView)
     }
 
     func removeRemoteVideoView(publication: TVIRemoteVideoTrackPublication) {
