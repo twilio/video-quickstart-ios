@@ -5,6 +5,11 @@ workspace 'VideoQuickStart'
 abstract_target 'TwilioVideo' do
   pod 'TwilioVideo', '~> 1.3.3'
 
+  target 'ARKitFullExample' do
+    platform :ios, '11.0'
+    project 'ARKitFullExample.xcproject'
+  end
+
   target 'ARKitExample' do
     platform :ios, '11.0'
     project 'ARKitExample.xcproject'
