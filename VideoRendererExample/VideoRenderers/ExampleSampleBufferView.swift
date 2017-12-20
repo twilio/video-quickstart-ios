@@ -116,6 +116,10 @@ extension ExampleSampleBufferRenderer {
     func renderFrame(_ frame: TVIVideoFrame) {
         let pixelFormat = CVPixelBufferGetPixelFormatType(frame.imageBuffer)
 
+        // Unfortunately I420 is not directly supported by AVSampleBufferDisplayLayer.
+        // This example renderer does not attempt to support I420, but please see ExampleVideoRecorder for an example of
+        // performing an I420 to NV12 format conversion. Doing so efficiently for a renderer would require maintaining
+        // a CVPixelBufferPool of NV12 frames which are ready to be displayed.
         if (self.isRendering == false ) {
             return
         } else if (pixelFormat == TVIPixelFormat.formatYUV420PlanarFullRange.rawValue ||
