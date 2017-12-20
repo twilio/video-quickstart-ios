@@ -16,10 +16,7 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
 
     var isRendering = UIApplication.shared.applicationState != .background
     var outputFormatDescription: CMFormatDescription?
-
-    let useDisplayLink = false
-    var displayLink : CADisplayLink?
-    var displayFrameQueue : CMSimpleQueue?
+    // Allows us to enqueue to the layer from a background thread without accessing self.layer directly.
     var cachedDisplayLayer : AVSampleBufferDisplayLayer?
 
     // Register pixel formats that are known to work with AVSampleBufferDisplayLayer.
@@ -36,10 +33,6 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
     override init(frame: CGRect) {
         videoDimensions = CMVideoDimensions(width: 0, height: 0)
 
-        if (useDisplayLink) {
-            CMSimpleQueueCreate(kCFAllocatorDefault, 64, &displayFrameQueue)
-        }
-
         super.init(frame: frame)
 
         cachedDisplayLayer = super.layer as? AVSampleBufferDisplayLayer
@@ -52,9 +45,6 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
         center.addObserver(self, selector: #selector(ExampleSampleBufferRenderer.willResignActive),
                            name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
 
-        if (useDisplayLink) {
-            startTimer()
-        }
 //        [_sampleView addObserver:self forKeyPath:@"layer.status" options:NSKeyValueObservingOptionNew context:NULL];
     }
 
@@ -62,13 +52,6 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
         outputFormatDescription = nil
 
         NotificationCenter.default.removeObserver(self)
-
-        if (useDisplayLink) {
-            while let dequeuedFrame = CMSimpleQueueDequeue(displayFrameQueue!) {
-                let unmanagedFrame: Unmanaged<TVIVideoFrame> = Unmanaged.fromOpaque(dequeuedFrame)
-                _ = unmanagedFrame.takeRetainedValue()
-            }
-        }
 
 //        [self.sampleView removeObserver:self forKeyPath:@"layer.status"];
     }
@@ -116,46 +99,15 @@ extension ExampleSampleBufferRenderer {
         }
 
         isRendering = true
-        self.displayLink?.isPaused = isRendering
     }
 
     func didEnterBackground(_: NSNotification) {
         isRendering = false
-        self.displayLink?.isPaused = isRendering
-        self.displayLayer.flushAndRemoveImage()
+        displayLayer.flushAndRemoveImage()
     }
 
     func willResignActive(_: NSNotification) {
         // TODO: - Should we stop rendering when resigning active?
-    }
-
-    func startTimer() {
-        invalidateTimer()
-
-        let displayLink = CADisplayLink(target: self, selector: #selector(ExampleSampleBufferRenderer.timerFired))
-        displayLink.preferredFramesPerSecond = 60
-        displayLink.add(to: RunLoop.main, forMode: RunLoopMode.commonModes)
-        displayLink.isPaused = !isRendering
-        self.displayLink = displayLink
-    }
-
-    func invalidateTimer() {
-        if let timer = displayLink {
-            timer.invalidate()
-            displayLink = nil
-        }
-    }
-
-    func timerFired(timer: CADisplayLink) {
-        // Drain the queue. We will only display the most recent frame at the back of the queue.
-        var frameToDisplay: TVIVideoFrame?
-        while let dequeuedFrame = CMSimpleQueueDequeue(displayFrameQueue!) {
-            let unmanagedFrame: Unmanaged<TVIVideoFrame> = Unmanaged.fromOpaque(dequeuedFrame)
-            frameToDisplay = unmanagedFrame.takeRetainedValue()
-        }
-        if let frameToDisplay = frameToDisplay {
-            enqueueFrame(frame: frameToDisplay)
-        }
     }
 }
 
@@ -172,24 +124,14 @@ extension ExampleSampleBufferRenderer {
             return
         }
 
-        if (useDisplayLink) {
-            if let queue = displayFrameQueue {
-                let unmanagedFrame = Unmanaged.passRetained(frame)
-                let status = CMSimpleQueueEnqueue(queue, unmanagedFrame.toOpaque())
-                if (status != kCVReturnSuccess) {
-                    print("Couldn't enqueue status: \(status).")
-                }
+        // Enqueuing a frame to AVSampleDisplayLayer may cause UIKit related accesses if the resolution has changed.
+        // When a format change occurs ensure that we synchronize with the main queue to deliver the first frame.
+        if (detectFormatChange(imageBuffer: frame.imageBuffer) && !Thread.isMainThread) {
+            DispatchQueue.main.sync {
+                self.enqueueFrame(frame: frame)
             }
         } else {
-            // Enqueuing a frame to AVSampleDisplayLayer may cause UIKit related accesses if the resolution has changed.
-            // When a format change occurs ensure that we synchronize with the main queue to deliver the frame.
-            if (detectFormatChange(imageBuffer: frame.imageBuffer) && !Thread.isMainThread) {
-                DispatchQueue.main.sync {
-                    self.enqueueFrame(frame: frame)
-                }
-            } else {
-                enqueueFrame(frame: frame)
-            }
+            enqueueFrame(frame: frame)
         }
     }
 
@@ -234,9 +176,6 @@ extension ExampleSampleBufferRenderer {
             print("AVSampleBufferDisplayLayer is not ready for more frames.");
             return
         }
-
-        // Ensure that we have a valid CMVideoFormatDescription.
-        detectFormatChange(imageBuffer: imageBuffer)
 
         // Represent TVIVideoFrame timestamps with microsecond timescale.
         // Our uncompressed buffers do not need to be decoded.
