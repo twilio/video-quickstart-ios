@@ -14,20 +14,22 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
 
     public var videoDimensions: CMVideoDimensions
 
+    var isRendering = UIApplication.shared.applicationState != .background
     var outputFormatDescription: CMFormatDescription?
 
-    var isRendering = UIApplication.shared.applicationState != .background
-
-    let useDisplayLink = true
+    let useDisplayLink = false
     var displayLink : CADisplayLink?
     var displayFrameQueue : CMSimpleQueue?
+    var cachedDisplayLayer : AVSampleBufferDisplayLayer?
 
+    // Register pixel formats that are known to work with AVSampleBufferDisplayLayer.
     var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
                                             NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
                                             NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue)]
 
     required init?(coder aDecoder: NSCoder) {
         // This example does not support storyboards.
+        assert(false, "Unsupported.")
         return nil
     }
 
@@ -40,6 +42,7 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
 
         super.init(frame: frame)
 
+        cachedDisplayLayer = super.layer as? AVSampleBufferDisplayLayer
         let center = NotificationCenter.default
 
         center.addObserver(self, selector: #selector(ExampleSampleBufferRenderer.willEnterForeground),
@@ -60,9 +63,11 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
 
         NotificationCenter.default.removeObserver(self)
 
-        while let dequeuedFrame = CMSimpleQueueDequeue(displayFrameQueue!) {
-            let unmanagedFrame: Unmanaged<TVIVideoFrame> = Unmanaged.fromOpaque(dequeuedFrame)
-            _ = unmanagedFrame.takeRetainedValue()
+        if (useDisplayLink) {
+            while let dequeuedFrame = CMSimpleQueueDequeue(displayFrameQueue!) {
+                let unmanagedFrame: Unmanaged<TVIVideoFrame> = Unmanaged.fromOpaque(dequeuedFrame)
+                _ = unmanagedFrame.takeRetainedValue()
+            }
         }
 
 //        [self.sampleView removeObserver:self forKeyPath:@"layer.status"];
@@ -85,6 +90,7 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
             return super.contentMode
         }
         set {
+            // Map UIViewContentMode to AVLayerVideoGravity. The layer supports a subset of possible content modes.
             switch newValue {
             case .scaleAspectFill:
                 displayLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
@@ -120,7 +126,7 @@ extension ExampleSampleBufferRenderer {
     }
 
     func willResignActive(_: NSNotification) {
-        // TODO: - CE Do we care about this?
+        // TODO: - Should we stop rendering when resigning active?
     }
 
     func startTimer() {
@@ -175,8 +181,14 @@ extension ExampleSampleBufferRenderer {
                 }
             }
         } else {
-            DispatchQueue.main.async {
-                self.enqueueFrame(frame: frame)
+            // Enqueuing a frame to AVSampleDisplayLayer may cause UIKit related accesses if the resolution has changed.
+            // When a format change occurs ensure that we synchronize with the main queue to deliver the frame.
+            if (detectFormatChange(imageBuffer: frame.imageBuffer) && !Thread.isMainThread) {
+                DispatchQueue.main.sync {
+                    self.enqueueFrame(frame: frame)
+                }
+            } else {
+                enqueueFrame(frame: frame)
             }
         }
     }
@@ -188,25 +200,15 @@ extension ExampleSampleBufferRenderer {
         }
     }
 
-    // TODO: Return OSStatus?
-    func enqueueFrame(frame: TVIVideoFrame) {
-        let imageBuffer = frame.imageBuffer
-
-        if (self.displayLayer.error != nil) {
-            return
-        } else if (self.displayLayer.isReadyForMoreMediaData == false) {
-            print("AVSampleBufferDisplayLayer is not ready for more frames.");
-            return
-        }
-
-        // Ensure that we have a valid CMVideoFormatDescription.
+    func detectFormatChange(imageBuffer: CVPixelBuffer) -> Bool {
+        var didChange = false
         if (self.outputFormatDescription == nil ||
             CMVideoFormatDescriptionMatchesImageBuffer(self.outputFormatDescription!, imageBuffer) == false) {
-            CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, imageBuffer, &self.outputFormatDescription)
+            let status = CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, imageBuffer, &self.outputFormatDescription)
 
             if let format = self.outputFormatDescription {
                 let dimensions = CMVideoFormatDescriptionGetDimensions(format)
-                let pixelFormat = CVPixelBufferGetPixelFormatType(frame.imageBuffer)
+                let pixelFormat = CVPixelBufferGetPixelFormatType(imageBuffer)
                 let utf16 = [
                     UInt16((pixelFormat >> 24) & 0xFF),
                     UInt16((pixelFormat >> 16) & 0xFF),
@@ -214,8 +216,27 @@ extension ExampleSampleBufferRenderer {
                     UInt16((pixelFormat & 0xFF)) ]
                 let pixelFormatString = String(utf16CodeUnits: utf16, count: 4)
                 print("Detected format change: \(dimensions.width) x \(dimensions.height) - \(pixelFormatString)")
+                didChange = true
+            } else {
+                print("Failed to create output format description with status: \(status)")
             }
         }
+        return didChange
+    }
+
+    // TODO: Return OSStatus?
+    func enqueueFrame(frame: TVIVideoFrame) {
+        let imageBuffer = frame.imageBuffer
+
+        if (self.cachedDisplayLayer?.error != nil) {
+            return
+        } else if (self.cachedDisplayLayer?.isReadyForMoreMediaData == false) {
+            print("AVSampleBufferDisplayLayer is not ready for more frames.");
+            return
+        }
+
+        // Ensure that we have a valid CMVideoFormatDescription.
+        detectFormatChange(imageBuffer: imageBuffer)
 
         // Represent TVIVideoFrame timestamps with microsecond timescale.
         // Our uncompressed buffers do not need to be decoded.
@@ -237,14 +258,15 @@ extension ExampleSampleBufferRenderer {
         if (status != kCVReturnSuccess) {
             print("Couldn't create a SampleBuffer. Status=\(status)")
             return
-        } else if let sampleBuffer = sampleBuffer {
+        } else if let sampleBuffer = sampleBuffer,
+                  let displayLayer = cachedDisplayLayer {
 
             // Force immediate display of the Buffer.
             let sampleAttachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, true) as NSArray!
             let firstAttachment  = sampleAttachments?.firstObject as! NSMutableDictionary?
             firstAttachment?[kCMSampleAttachmentKey_DisplayImmediately] = true
 
-            self.displayLayer.enqueue(sampleBuffer)
+            displayLayer.enqueue(sampleBuffer)
         }
     }
 }

@@ -56,10 +56,8 @@ class ViewController: UIViewController {
         roomTextField.autocapitalizationType = .none
         roomTextField.delegate = self
 
-        // Prefer to work which H.264 where we can guarantee rendering of decoded video from remote Participants.
-        if (kUseExampleSampleBufferView) {
-            Settings.shared.videoCodec = TVIVideoCodec.H264
-        }
+        // Prefer to work which H.264 where we can guarantee rendering of decoded video using ExampleSampleBufferView.
+        Settings.shared.videoCodec = TVIVideoCodec.H264
         Settings.shared.maxAudioBitrate = 1024 * 64
         Settings.shared.maxVideoBitrate = 1024 * 850
 
