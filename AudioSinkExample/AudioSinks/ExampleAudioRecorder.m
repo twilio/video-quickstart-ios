@@ -78,7 +78,7 @@
         }
     }
 
-    // This example does not support backgrounding. This is a good point to consider kicking off a background
+    // This example does not support backgrounding. Now is a good point to consider kicking off a background
     // task, and handling failures.
 }
 
