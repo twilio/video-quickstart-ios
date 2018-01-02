@@ -23,6 +23,7 @@ class ViewController: UIViewController {
     
     // Video SDK components
     var room: TVIRoom?
+    var audioDevice: TVIDefaultAudioDevice = TVIDefaultAudioDevice()
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
