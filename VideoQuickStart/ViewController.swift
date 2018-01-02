@@ -426,6 +426,14 @@ extension ViewController : TVIRemoteParticipantDelegate {
                            disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) disabled \(publication.trackName) audio track")
     }
+
+    func failedToSubscribe(toAudioTrack publication: TVIRemoteAudioTrackPublication, error: Error, for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) audio track, error = \(String(describing: error))")
+    }
+
+    func failedToSubscribe(toVideoTrack publication: TVIRemoteVideoTrackPublication, error: Error, for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) video track, error = \(String(describing: error))")
+    }
 }
 
 // MARK: TVIVideoViewDelegate
