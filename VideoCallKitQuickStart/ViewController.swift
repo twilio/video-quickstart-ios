@@ -24,10 +24,10 @@ class ViewController: UIViewController {
     // Video SDK components
     var room: TVIRoom?
     /**
-     * We will create an audio device and use it in Room. Please note that the SDK does not support the use of multiple
-     * audio devices at the same time. If you've already connected to a Room, then all future connection attempts must
-     * use the same TVIDefaultAudioDevice as the first Room. Once all the existing Rooms are disconnected you are free to
-     * choose a new audio device for your next connection attempt.
+     * We will create an audio device and manage it's lifecycle in response to CallKit events. Please note that the SDK
+     * does not support the use of multiple audio devices at the same time. If you've already connected to a Room, then
+     * all future connection attempts must use the same TVIDefaultAudioDevice as the first Room. Once all the existing
+     * Rooms are disconnected you are free to choose a new audio device for your next connection attempt.
      */
     var audioDevice: TVIDefaultAudioDevice = TVIDefaultAudioDevice()
     var camera: TVICameraCapturer?

@@ -205,12 +205,7 @@ extension ViewController {
             builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
             builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
 
-            /**
-             * Use the audio device. Please note that the SDK does not support the use of multiple audio devices at the
-             * same time. If you've already connected to a Room, then all future connection attempts must use the same
-             * TVIDefaultAudioDevice as the first Room. Once all the existing Rooms are disconnected you are free to
-             * choose a new audio device for your next connection attempt.
-             */
+            // Use the audio device that we created earlier. All connection attempts will use the same device.
             builder.audioDevice = self.audioDevice
             
             // Use the preferred audio codec
