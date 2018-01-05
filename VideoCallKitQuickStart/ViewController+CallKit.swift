@@ -93,7 +93,7 @@ extension ViewController : CXProviderDelegate {
         NSLog("provider:performEndCallAction:")
 
         // AudioDevice is enabled by default
-        self.audioDevice.isEnabled = true;
+        self.audioDevice.isEnabled = true
         room?.disconnect()
 
         action.fulfill()
@@ -205,7 +205,12 @@ extension ViewController {
             builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
             builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
 
-            // Use the audio device
+            /**
+             * Use the audio device. Please note that the SDK does not support the use of multiple audio devices at the
+             * same time. If you've already connected to a Room, then all future connection attempts must use the same
+             * TVIDefaultAudioDevice as the first Room. Once all the existing Rooms are disconnected you are free to
+             * choose a new audio device for your next connection attempt.
+             */
             builder.audioDevice = self.audioDevice
             
             // Use the preferred audio codec

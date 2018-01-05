@@ -327,6 +327,12 @@ extension ViewController : TVIRemoteParticipantDelegate {
         self.removeDrawer(dataTrack)
         logMessage(messageText: "Unsubscribed from data track for Participant \(participant.identity)")
     }
+
+    func failedToSubscribe(toDataTrack publication: TVIRemoteDataTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) data track, error = \(String(describing: error))")
+    }
 }
 
 // MARK: TVIRemoteDataTrackDelegate
