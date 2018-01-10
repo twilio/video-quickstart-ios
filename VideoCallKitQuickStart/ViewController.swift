@@ -23,6 +23,13 @@ class ViewController: UIViewController {
     
     // Video SDK components
     var room: TVIRoom?
+    /**
+     * We will create an audio device and manage it's lifecycle in response to CallKit events. Please note that the SDK
+     * does not support the use of multiple audio devices at the same time. If you've already connected to a Room, then
+     * all future connection attempts must use the same TVIDefaultAudioDevice as the first Room. Once all the existing
+     * Rooms are disconnected you are free to choose a new audio device for your next connection attempt.
+     */
+    var audioDevice: TVIDefaultAudioDevice = TVIDefaultAudioDevice()
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
@@ -425,6 +432,18 @@ extension ViewController : TVIRemoteParticipantDelegate {
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) disabled audio track")
+    }
+
+    func failedToSubscribe(toAudioTrack publication: TVIRemoteAudioTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) audio track, error = \(String(describing: error))")
+    }
+
+    func failedToSubscribe(toVideoTrack publication: TVIRemoteVideoTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) video track, error = \(String(describing: error))")
     }
 }
 

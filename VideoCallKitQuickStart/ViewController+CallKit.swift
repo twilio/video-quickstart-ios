@@ -16,7 +16,9 @@ extension ViewController : CXProviderDelegate {
     func providerDidReset(_ provider: CXProvider) {
         logMessage(messageText: "providerDidReset:")
 
-        TVIAudioController.shared().stopAudio()
+        // AudioDevice is enabled by default
+        self.audioDevice.isEnabled = true
+        
         room?.disconnect()
     }
 
@@ -27,7 +29,7 @@ extension ViewController : CXProviderDelegate {
     func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
         logMessage(messageText: "provider:didActivateAudioSession:")
 
-        TVIAudioController.shared().startAudio()
+        self.audioDevice.isEnabled = true
     }
 
     func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
@@ -45,7 +47,12 @@ extension ViewController : CXProviderDelegate {
          * Configure the audio session, but do not start call audio here, since it must be done once
          * the audio session has been activated by the system after having its priority elevated.
          */
-        TVIAudioController.shared().configureAudioSession(.videoChatSpeaker)
+
+        // Stop the audio unit by setting isEnabled to `false`.
+        self.audioDevice.isEnabled = false;
+
+        // Configure the AVAudioSession by executign the audio device's `block`.
+        self.audioDevice.block()
 
         callKitProvider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: nil)
         
@@ -66,7 +73,12 @@ extension ViewController : CXProviderDelegate {
          * Configure the audio session, but do not start call audio here, since it must be done once
          * the audio session has been activated by the system after having its priority elevated.
          */
-        TVIAudioController.shared().configureAudioSession(.videoChatSpeaker)
+
+        // Stop the audio unit by setting isEnabled to `false`.
+        self.audioDevice.isEnabled = false;
+
+        // Configure the AVAudioSession by executign the audio device's `block`.
+        self.audioDevice.block()
 
         performRoomConnect(uuid: action.callUUID, roomName: self.roomTextField.text) { (success) in
             if (success) {
@@ -80,7 +92,8 @@ extension ViewController : CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         NSLog("provider:performEndCallAction:")
 
-        TVIAudioController.shared().stopAudio()
+        // AudioDevice is enabled by default
+        self.audioDevice.isEnabled = true
         room?.disconnect()
 
         action.fulfill()
@@ -191,6 +204,9 @@ extension ViewController {
             // Use the local media that we prepared earlier.
             builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
             builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
+
+            // Use the audio device that we created earlier. All connection attempts will use the same device.
+            builder.audioDevice = self.audioDevice
             
             // Use the preferred audio codec
             if let preferredAudioCodec = Settings.shared.audioCodec {
