@@ -40,6 +40,7 @@ NSString *const kStatusKey   = @"status";
 #pragma mark Video SDK components
 
 @property (nonatomic, strong) TVIRoom *room;
+@property (nonatomic, strong) TVIDefaultAudioDevice *audioDevice;
 @property (nonatomic, strong) TVICameraCapturer *camera;
 @property (nonatomic, strong) TVILocalVideoTrack *localVideoTrack;
 @property (nonatomic, strong) TVILocalAudioTrack *localAudioTrack;
@@ -70,7 +71,7 @@ NSString *const kStatusKey   = @"status";
 
 - (void)dealloc {
     // We are done with AVAudioSession
-    [self resetAudioSession];
+    [self stopAudioDevice];
 }
 
 #pragma mark - UIViewController
@@ -96,8 +97,13 @@ NSString *const kStatusKey   = @"status";
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
     [self.view addGestureRecognizer:tap];
 
-    // Manually configure the AudioSession
-    [self setupAudioSession];
+    /**
+     * We will create an audio device and manage it's lifecycle in response to the AVPlayer events. Please note that the
+     * SDK does not support the use of multiple audio devices at the same time. If you've already connected to a Room,
+     * then all future connection attempts must use the same TVIDefaultAudioDevice as the first Room. Once all the existing
+     * Rooms are disconnected you are free to choose a new audio device for your next connection attempt.
+     */
+    self.audioDevice = [TVIDefaultAudioDevice audioDevice];
 
     // Prepare local media which we will share with Room Participants.
     [self prepareMedia];
@@ -195,31 +201,12 @@ NSString *const kStatusKey   = @"status";
     [self startPreview];
 }
 
-- (void)setupAudioSession {
-    // In this example we don't want TwilioVideo to dynamically configure and activate / deactivate the AVAudioSession.
-    // Instead we will setup audio once, and deal with activation and de-activation manually.
-    [[TVIAudioController sharedController] configureAudioSession:TVIAudioOutputVideoChatDefault];
-
-    // This is similar to when CallKit is used, but instead we will activate AVAudioSession ourselves.
-    NSError *error = nil;
-    [[AVAudioSession sharedInstance] setActive:YES error:&error];
-    if (error) {
-        [self logMessage:[NSString stringWithFormat:@"Couldn't activate AVAudioSession. %@", error]];
-    }
-
-    [[TVIAudioController sharedController] startAudio];
+- (void)startAudioDevice {
+    self.audioDevice.enabled = YES;
 }
 
-- (void)resetAudioSession {
-    [[TVIAudioController sharedController] stopAudio];
-
-    NSError *error = nil;
-    [[AVAudioSession sharedInstance] setActive:NO
-                                   withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
-                                         error:&error];
-    if (error) {
-        [self logMessage:[NSString stringWithFormat:@"Couldn't deactivate AVAudioSession. %@", error]];
-    }
+- (void)stopAudioDevice {
+    self.audioDevice.enabled = NO;
 }
 
 - (void)startVideoPlayer {
@@ -277,8 +264,8 @@ NSString *const kStatusKey   = @"status";
         return;
     }
 
-    // Since we are configuring audio session explicitly, we will call setupAudioSession every time we attempt to connect.
-    [self setupAudioSession];
+    // Since we are configuring audio session explicitly, we will call startAudioDevice every time we attempt to connect.
+    [self startAudioDevice];
 
     TVIConnectOptions *connectOptions = [TVIConnectOptions optionsWithToken:self.accessToken
                                                                       block:^(TVIConnectOptionsBuilder * _Nonnull builder) {
@@ -290,6 +277,9 @@ NSString *const kStatusKey   = @"status";
                                                                           // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
                                                                           // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
                                                                           builder.roomName = self.roomTextField.text;
+
+                                                                          // Use the audio device that we created earlier. All connection attempts will use the same device.
+                                                                          builder.audioDevice = self.audioDevice;
                                                                       }];
 
     // Connect to the Room using the options we provided.
@@ -368,9 +358,8 @@ NSString *const kStatusKey   = @"status";
 - (void)room:(TVIRoom *)room didDisconnectWithError:(nullable NSError *)error {
     [self logMessage:[NSString stringWithFormat:@"Disconncted from room %@, error = %@", room.name, error]];
     
-    // If AVPlayer is playing, we will not deactivate the audio session
     if (!self.videoPlayer) {
-        [self resetAudioSession];
+        [self stopAudioDevice];
     } else {
         [self stopVideoPlayer];
     }
@@ -522,6 +511,20 @@ NSString *const kStatusKey   = @"status";
     [self logMessage:[NSString stringWithFormat:@"Participant %@ disabled audio track.", participant.identity]];
 }
 
+- (void)failedToSubscribeToAudioTrack:(TVIRemoteAudioTrackPublication *)publication
+                                error:(NSError *)error
+                       forParticipant:(TVIRemoteParticipant *)participant {
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ failed to subscribe to %@ audio track.",
+                      participant.identity, publication.trackName]];
+}
+
+- (void)failedToSubscribeToVideoTrack:(TVIRemoteVideoTrackPublication *)publication
+                                error:(NSError *)error
+                       forParticipant:(TVIRemoteParticipant *)participant {
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ failed to subscribe to %@ video track.",
+                      participant.identity, publication.trackName]];
+}
+
 #pragma mark - TVIVideoViewDelegate
 
 - (void)videoView:(TVIVideoView *)view videoDimensionsDidChange:(CMVideoDimensions)dimensions {
@@ -537,7 +540,7 @@ NSString *const kStatusKey   = @"status";
     self.localVideoTrack.enabled = YES;
 }
 
-- (void)cameraCapturerWasInterrupted:(TVICameraCapturer *)capturer reason:(TVICameraCapturerInterruptionReason)reason {
+- (void)cameraCapturerWasInterrupted:(TVICameraCapturer *)capturer reason:(AVCaptureSessionInterruptionReason)reason {
     // We will disable `self.localVideoTrack` when the TVICameraCapturer is interrupted.
     // This prevents other Participants from seeing a frozen frame while the Client is backgrounded.
     self.localVideoTrack.enabled = NO;
