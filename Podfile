@@ -3,7 +3,7 @@ source 'https://github.com/CocoaPods/Specs'
 workspace 'VideoQuickStart'
 
 abstract_target 'TwilioVideo' do
-  pod 'TwilioVideo', '2.0.0-preview8'
+  pod 'TwilioVideo', '2.0.0-preview9'
 
   target 'ARKitExample' do
     platform :ios, '11.0'
