@@ -13,6 +13,9 @@
 		8A713C85202A585C009E776A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A713C84202A585C009E776A /* Assets.xcassets */; };
 		8A713C88202A585C009E776A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A713C86202A585C009E776A /* LaunchScreen.storyboard */; };
 		8A713C92202A5C96009E776A /* ExampleCoreAudioDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A713C91202A5C96009E776A /* ExampleCoreAudioDevice.m */; };
+		8A713C97202A7087009E776A /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A713C94202A7087009E776A /* Settings.swift */; };
+		8A713C98202A7087009E776A /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A713C95202A7087009E776A /* SettingsTableViewController.swift */; };
+		8A713C99202A7087009E776A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A713C96202A7087009E776A /* Utils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +28,9 @@
 		8A713C89202A585C009E776A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8A713C90202A5C96009E776A /* ExampleCoreAudioDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExampleCoreAudioDevice.h; sourceTree = "<group>"; };
 		8A713C91202A5C96009E776A /* ExampleCoreAudioDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExampleCoreAudioDevice.m; sourceTree = "<group>"; };
+		8A713C94202A7087009E776A /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		8A713C95202A7087009E776A /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		8A713C96202A7087009E776A /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -42,6 +48,7 @@
 			isa = PBXGroup;
 			children = (
 				8A713C7C202A585B009E776A /* AudioDeviceExample */,
+				8A713C93202A7087009E776A /* Utils */,
 				8A713C7B202A585B009E776A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -75,6 +82,16 @@
 				8A713C91202A5C96009E776A /* ExampleCoreAudioDevice.m */,
 			);
 			path = AudioDevices;
+			sourceTree = "<group>";
+		};
+		8A713C93202A7087009E776A /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				8A713C94202A7087009E776A /* Settings.swift */,
+				8A713C95202A7087009E776A /* SettingsTableViewController.swift */,
+				8A713C96202A7087009E776A /* Utils.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -150,8 +167,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				8A713C80202A585C009E776A /* ViewController.swift in Sources */,
+				8A713C98202A7087009E776A /* SettingsTableViewController.swift in Sources */,
 				8A713C92202A5C96009E776A /* ExampleCoreAudioDevice.m in Sources */,
+				8A713C97202A7087009E776A /* Settings.swift in Sources */,
 				8A713C7E202A585C009E776A /* AppDelegate.swift in Sources */,
+				8A713C99202A7087009E776A /* Utils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -293,7 +313,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AudioDeviceExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -309,7 +329,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AudioDeviceExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
