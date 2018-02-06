@@ -10,6 +10,11 @@ abstract_target 'TwilioVideo' do
     project 'ARKitExample.xcproject'
   end
 
+  target 'AudioDeviceExample' do
+    platform :ios, '9.0'
+    project 'AudioDeviceExample.xcproject'
+  end
+
   target 'AudioSinkExample' do
     platform :ios, '10.0'
     project 'AudioSinkExample.xcproject'
