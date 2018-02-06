@@ -12,6 +12,7 @@
 		8A713C83202A585C009E776A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A713C81202A585C009E776A /* Main.storyboard */; };
 		8A713C85202A585C009E776A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A713C84202A585C009E776A /* Assets.xcassets */; };
 		8A713C88202A585C009E776A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A713C86202A585C009E776A /* LaunchScreen.storyboard */; };
+		8A713C92202A5C96009E776A /* ExampleCoreAudioDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A713C91202A5C96009E776A /* ExampleCoreAudioDevice.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,8 @@
 		8A713C84202A585C009E776A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8A713C87202A585C009E776A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8A713C89202A585C009E776A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8A713C90202A5C96009E776A /* ExampleCoreAudioDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExampleCoreAudioDevice.h; sourceTree = "<group>"; };
+		8A713C91202A5C96009E776A /* ExampleCoreAudioDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExampleCoreAudioDevice.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,12 +59,22 @@
 			children = (
 				8A713C7D202A585C009E776A /* AppDelegate.swift */,
 				8A713C7F202A585C009E776A /* ViewController.swift */,
+				8A713C8F202A5C96009E776A /* AudioDevices */,
 				8A713C81202A585C009E776A /* Main.storyboard */,
 				8A713C84202A585C009E776A /* Assets.xcassets */,
 				8A713C86202A585C009E776A /* LaunchScreen.storyboard */,
 				8A713C89202A585C009E776A /* Info.plist */,
 			);
 			path = AudioDeviceExample;
+			sourceTree = "<group>";
+		};
+		8A713C8F202A5C96009E776A /* AudioDevices */ = {
+			isa = PBXGroup;
+			children = (
+				8A713C90202A5C96009E776A /* ExampleCoreAudioDevice.h */,
+				8A713C91202A5C96009E776A /* ExampleCoreAudioDevice.m */,
+			);
+			path = AudioDevices;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,6 +150,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8A713C80202A585C009E776A /* ViewController.swift in Sources */,
+				8A713C92202A5C96009E776A /* ExampleCoreAudioDevice.m in Sources */,
 				8A713C7E202A585C009E776A /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
