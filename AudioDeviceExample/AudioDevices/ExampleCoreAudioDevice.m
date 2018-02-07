@@ -200,7 +200,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
 + (nullable TVIAudioFormat *)activeRenderingFormat {
     /*
-     * Use the pre-determined maximum frame size. AudioUnit callbacks are variable, and in most sutations will be close
+     * Use the pre-determined maximum frame size. AudioUnit callbacks are variable, and in most sitations will be close
      * to the `AVAudioSession.preferredIOBufferDuration` that we've requested.
      */
     const size_t sessionFramesPerBuffer = kMaximumFramesPerBuffer;
@@ -366,8 +366,9 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 - (void)registerAVAudioSessionObservers {
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
-    // When an interruption ends and your application is not foregrounded you might not get a notification.
     [center addObserver:self selector:@selector(handleAudioInterruption:) name:AVAudioSessionInterruptionNotification object:nil];
+    // On iOS 9.x, when an interruption ends and your application is not foregrounded you might not get a notification.
+    // TODO: Test this on iOS 9.x to see if its needed.
 //    [center addObserver:self selector:@selector(handleApplicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
 
     [center addObserver:self selector:@selector(handleRouteChange:) name:AVAudioSessionRouteChangeNotification object:nil];

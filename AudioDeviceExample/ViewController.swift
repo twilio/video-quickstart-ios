@@ -207,10 +207,17 @@ class ViewController: UIViewController {
     }
 
     func prepareLocalMedia() {
+        /*
+         * The important thing to remember when using a custom TVIAudioDevice is that the device must be set
+         * before performing any other actions with the SDK (such as creating Tracks, or connecting to a Room).
+         */
+        TwilioVideo.audioDevice = ExampleCoreAudioDevice.init();
 
-        // ExampleCoreAudioDevice only supports.
-
-        // Create a video track which captures from the front camera.
+        /*
+         * ExampleCoreAudioDevice is a playback only device. Because of this, any attempts to create a
+         * TVILocalAudioTrack will result in an exception being thrown, and nil being returned. In this example we will
+         * only share video (where available) and not audio.
+         */
         if (TVICameraCapturer.isSourceAvailable(TVICameraCaptureSource.frontCamera)) {
 
             // We will render the camera using TVICameraPreviewView.
