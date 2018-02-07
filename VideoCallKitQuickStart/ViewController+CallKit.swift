@@ -205,9 +205,6 @@ extension ViewController {
             builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
             builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
 
-            // Use the audio device that we created earlier. All connection attempts will use the same device.
-            builder.audioDevice = self.audioDevice
-            
             // Use the preferred audio codec
             if let preferredAudioCodec = Settings.shared.audioCodec {
                 builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
