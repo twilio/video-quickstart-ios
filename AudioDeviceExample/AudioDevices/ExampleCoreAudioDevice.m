@@ -359,7 +359,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 }
 
 - (void)registerAVAudioSessionObservers {
-    // And audio device that interacts with AVAudioSession should handle events like route interruptions and route changes.
+    // An audio device that interacts with AVAudioSession should handle events like interruptions and route changes.
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
     [center addObserver:self selector:@selector(handleAudioInterruption:) name:AVAudioSessionInterruptionNotification object:nil];
