@@ -8,15 +8,10 @@
 #import "ExampleCoreAudioDevice.h"
 
 // We want to get as close to 10 msec buffers as possible because this is what the media engine prefers.
-static double kPreferredIOBufferDuration = 0.01;
+static double const kPreferredIOBufferDuration = 0.01;
 // We will use stereo playback where available. Some audio routes may be restricted to mono only.
 static size_t const kPreferredNumberOfChannels = 2;
-
-#if TARGET_IPHONE_SIMULATOR
-static uint32_t kPreferredSampleRate = 48000;
-#else
-static uint32_t kPreferredSampleRate = 48000;
-#endif
+static uint32_t const kPreferredSampleRate = 48000;
 
 typedef struct ExampleCoreAudioContext {
     TVIAudioDeviceContext deviceContext;
@@ -364,12 +359,18 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 }
 
 - (void)registerAVAudioSessionObservers {
+    // And audio device that interacts with AVAudioSession should handle events like route interruptions and route changes.
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
     [center addObserver:self selector:@selector(handleAudioInterruption:) name:AVAudioSessionInterruptionNotification object:nil];
-    // On iOS 9.x, when an interruption ends and your application is not foregrounded you might not get a notification.
-    // TODO: Test this on iOS 9.x to see if its needed.
-//    [center addObserver:self selector:@selector(handleApplicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+    /*
+     * Interruption handling is different on iOS 9.x. If your application becomes interrupted while it is in the
+     * background then you will not get a corresponding notification when the interruption ends. We workaround this
+     * by handling UIApplicationDidBecomeActiveNotification and treating it the same as an interruption end.
+     */
+    if (![[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 0, 0}]) {
+        [center addObserver:self selector:@selector(handleApplicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+    }
 
     [center addObserver:self selector:@selector(handleRouteChange:) name:AVAudioSessionRouteChangeNotification object:nil];
     [center addObserver:self selector:@selector(handleMediaServiceLost:) name:AVAudioSessionMediaServicesWereLostNotification object:nil];
@@ -401,6 +402,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
         if (self.renderingContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
                 if (self.interrupted) {
+                    NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
                     self.interrupted = NO;
                     [self startAudioUnit];
                 }

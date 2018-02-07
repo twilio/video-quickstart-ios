@@ -186,23 +186,24 @@ class ViewController: UIViewController {
 
         // Hide the message with a delay.
         self.messageTimer?.invalidate()
-        if #available(iOS 10.0, *) {
-            let timer = Timer.init(timeInterval: TimeInterval(6), repeats: false) { (timer) in
-                if (self.messageLabel.isHidden == false) {
-                    UIView.animate(withDuration: 0.6, animations: {
-                        self.messageLabel.alpha = 0
-                    }, completion: { (complete) in
-                        if (complete) {
-                            self.messageLabel.isHidden = true
-                        }
-                    })
-                }
-            }
 
-            self.messageTimer = timer
-            RunLoop.main.add(timer, forMode: .commonModes)
-        } else {
-            // TODO: iOS 9.x support.
+        self.messageTimer = Timer.init(timeInterval: TimeInterval(6),
+                                       target: self,
+                                       selector: #selector(hideMessageLabel),
+                                       userInfo: nil,
+                                       repeats: false)
+        RunLoop.main.add(self.messageTimer, forMode: .commonModes)
+    }
+
+    @objc func hideMessageLabel() {
+        if (self.messageLabel.isHidden == false) {
+            UIView.animate(withDuration: 0.6, animations: {
+                self.messageLabel.alpha = 0
+            }, completion: { (complete) in
+                if (complete) {
+                    self.messageLabel.isHidden = true
+                }
+            })
         }
     }
 
@@ -230,8 +231,6 @@ class ViewController: UIViewController {
                 logMessage(messageText: "Video track created.")
 
                 if let preview = camera?.previewView {
-//                    let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeLocalAudio))
-//                    preview.addGestureRecognizer(tap)
                     view.addSubview(preview);
                 }
             }
