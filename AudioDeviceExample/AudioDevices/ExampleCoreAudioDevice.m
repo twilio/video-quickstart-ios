@@ -75,7 +75,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
         return;
     }
 
-    NSLog(@"This device uses a maximum slice size of %d frames.", framesPerSlice);
+    NSLog(@"This device uses a maximum slice size of %d frames.", (unsigned int)framesPerSlice);
     kMaximumFramesPerBuffer = (size_t)framesPerSlice;
     AudioComponentInstanceDispose(audioUnit);
 }
