@@ -510,9 +510,9 @@ extension ViewController : TVIRoomDelegate {
 
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
         if let disconnectError = error {
-            logMessage(messageText: "Disconncted from \(room.name).\ncode = \((disconnectError as NSError).code) error = \(disconnectError.localizedDescription)")
+            logMessage(messageText: "Disconnected from \(room.name).\ncode = \((disconnectError as NSError).code) error = \(disconnectError.localizedDescription)")
         } else {
-            logMessage(messageText: "Disconncted from \(room.name)")
+            logMessage(messageText: "Disconnected from \(room.name)")
         }
 
         for recorder in self.audioRecorders.values {
@@ -585,7 +585,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
                     publication: TVIRemoteVideoTrackPublication,
                     for participant: TVIRemoteParticipant) {
 
-        // We are subscribed to the remote Participant's audio Track. We will start receiving the
+        // We are subscribed to the remote Participant's video Track. We will start receiving the
         // remote Participant's video frames now.
 
         logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")

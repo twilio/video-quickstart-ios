@@ -308,9 +308,9 @@ extension ViewController : TVIRoomDelegate {
 
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
         if let disconnectError = error {
-            logMessage(messageText: "Disconncted from \(room.name).\ncode = \((disconnectError as NSError).code) error = \(disconnectError.localizedDescription)")
+            logMessage(messageText: "Disconnected from \(room.name).\ncode = \((disconnectError as NSError).code) error = \(disconnectError.localizedDescription)")
         } else {
-            logMessage(messageText: "Disconncted from \(room.name)")
+            logMessage(messageText: "Disconnected from \(room.name)")
         }
 
         self.room = nil
