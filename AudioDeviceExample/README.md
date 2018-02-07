@@ -24,7 +24,7 @@ This example requires Xcode 9.0 and the iOS 11.0 SDK, as well as a device runnin
 
 Once you have configured your access token, build and run the example. You will be presented with the following screen:
 
-<kbd><img width="400px" src="../images/quickstart/audio-sink-launched.jpg"/></kbd>
+<kbd><img width="400px" src="../images/quickstart/audio-device-launched.jpg"/></kbd>
 
 Tap the "Connect" button to join a Room. Once you've joined you will be sharing video but not audio. In order to playback audio from a remote Participant you will need a Client which supports audio recording. The easiest way to do this is to build and run the normal QuickStart [example](https://github.com/twilio/video-quickstart-swift/tree/2.0.0-preview/VideoQuickStart) and join the same Room.
 
