@@ -6,7 +6,7 @@ The example demonstrates the following custom audio device(s):
 
 #### ExampleCoreAudioDevice
 
-Uses a RemoteIO audio unit to playback stereo audio at up to 48 kHz. In contrast to `TVIDefaultAudioDevice`, this class does not record audio and is intended for high quality playback. Since recording is not needed this device does not use the built in echo cancellation provided by CoreAudio's VoiceProcessingIO audio unit and does not require microphone permissions from the user.
+Uses a RemoteIO audio unit to playback stereo audio at up to 48 kHz. In contrast to `TVIDefaultAudioDevice`, this class does not record audio and is intended for high quality playback. Since recording is not needed this device does not use the built in echo cancellation provided by CoreAudio's VoiceProcessingIO audio unit nor does it require microphone permissions from the user.
 
 ### Setup
 
