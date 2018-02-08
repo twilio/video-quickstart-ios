@@ -170,11 +170,11 @@ extension ViewController: TVIRoomDelegate {
         self.present(alertController, animated: true, completion: nil)
     }
 
-    func room(_ room: TVIRoom, participantDidConnect participant: TVIParticipant) {
+    func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
         print("Participant \(participant.identity) connected to \(room.name).")
     }
 
-    func room(_ room: TVIRoom, participantDidDisconnect participant: TVIParticipant) {
+    func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
         print("Participant \(participant.identity) disconnected from \(room.name).")
     }
 }

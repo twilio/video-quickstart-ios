@@ -15,6 +15,8 @@
 		304A80CB1C23351B00CB8C03 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80CA1C23351B00CB8C03 /* GLKit.framework */; };
 		304A80CD1C23352100CB8C03 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80CC1C23352100CB8C03 /* CoreMedia.framework */; };
 		304A80CF1C23352700CB8C03 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80CE1C23352700CB8C03 /* SystemConfiguration.framework */; };
+		4B63DD331F73032D00F0737E /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B63DD321F73032D00F0737E /* SettingsTableViewController.swift */; };
+		4B63DD381F730C1A00F0737E /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B63DD371F730C1A00F0737E /* Settings.swift */; };
 		4BAA74EB1D8B5CBE00239F19 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BAA74EA1D8B5CBE00239F19 /* Utils.swift */; };
 		8B79D46A1C2252A100489AA5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B79D4691C2252A100489AA5 /* AppDelegate.swift */; };
 		8B79D46C1C2252A100489AA5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B79D46B1C2252A100489AA5 /* ViewController.swift */; };
@@ -45,6 +47,8 @@
 		304A80CA1C23351B00CB8C03 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		304A80CC1C23352100CB8C03 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		304A80CE1C23352700CB8C03 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		4B63DD321F73032D00F0737E /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		4B63DD371F730C1A00F0737E /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		4BAA74EA1D8B5CBE00239F19 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		8B79D4661C2252A100489AA5 /* VideoQuickStart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoQuickStart.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B79D4691C2252A100489AA5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -74,6 +78,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4B63DD311F7302F500F0737E /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				4B63DD321F73032D00F0737E /* SettingsTableViewController.swift */,
+				4B63DD371F730C1A00F0737E /* Settings.swift */,
+				4BAA74EA1D8B5CBE00239F19 /* Utils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		5A82245B3CA8AD8931FA33E9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -93,6 +107,7 @@
 			isa = PBXGroup;
 			children = (
 				8B79D4681C2252A100489AA5 /* VideoQuickStart */,
+				4B63DD311F7302F500F0737E /* Utils */,
 				8B79D4671C2252A100489AA5 /* Products */,
 				5A82245B3CA8AD8931FA33E9 /* Frameworks */,
 			);
@@ -130,7 +145,6 @@
 			children = (
 				8B79D4691C2252A100489AA5 /* AppDelegate.swift */,
 				8B79D46B1C2252A100489AA5 /* ViewController.swift */,
-				4BAA74EA1D8B5CBE00239F19 /* Utils.swift */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -218,9 +232,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B63DD331F73032D00F0737E /* SettingsTableViewController.swift in Sources */,
 				8B79D46C1C2252A100489AA5 /* ViewController.swift in Sources */,
 				8B79D46A1C2252A100489AA5 /* AppDelegate.swift in Sources */,
 				4BAA74EB1D8B5CBE00239F19 /* Utils.swift in Sources */,
+				4B63DD381F730C1A00F0737E /* Settings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -346,10 +362,10 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = VideoQuickStart/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoQuickStart;
+				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoQuickStart1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
