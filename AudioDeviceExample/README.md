@@ -36,4 +36,4 @@ The AVAudioSession is configured and activated at playback initialization time. 
 
 You will also notice that backgrounding the application causes the signaling connection to die. 
 
-Both issues are limitations with custom `TVIAudioDevice`s in `2.0.0-beta1` and we expect to rectify them in future releases.
+Both issues are limitations with custom `TVIAudioDevice`s in [2.0.0-beta1](https://www.twilio.com/docs/api/video/changelog-twilio-video-ios-version-2x#200-beta1-february-7-2018) and we expect to rectify them in future releases.
