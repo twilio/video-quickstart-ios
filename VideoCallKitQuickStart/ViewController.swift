@@ -24,10 +24,7 @@ class ViewController: UIViewController {
     // Video SDK components
     var room: TVIRoom?
     /**
-     * We will create an audio device and manage it's lifecycle in response to CallKit events. Please note that the SDK
-     * does not support the use of multiple audio devices at the same time. If you've already connected to a Room, then
-     * all future connection attempts must use the same TVIDefaultAudioDevice as the first Room. Once all the existing
-     * Rooms are disconnected you are free to choose a new audio device for your next connection attempt.
+     * We will create an audio device and manage it's lifecycle in response to CallKit events.
      */
     var audioDevice: TVIDefaultAudioDevice = TVIDefaultAudioDevice()
     var camera: TVICameraCapturer?
@@ -37,8 +34,8 @@ class ViewController: UIViewController {
     var remoteView: TVIVideoView?
 
     // CallKit components
-    let callKitProvider:CXProvider
-    let callKitCallController:CXCallController
+    let callKitProvider: CXProvider
+    let callKitCallController: CXCallController
     var callKitCompletionHandler: ((Bool)->Swift.Void?)? = nil
 
     // MARK: UI Element Outlets and handles
@@ -80,6 +77,13 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "QuickStart"
+
+        /*
+         * The important thing to remember when providing a TVIAudioDevice is that the device must be set
+         * before performing any other actions with the SDK (such as creating Tracks, or connecting to a Room).
+         * In this case we've already initialized our own `TVIDefaultAudioDevice` instance which we will now set.
+         */
+        TwilioVideo.audioDevice = self.audioDevice;
         
         if PlatformUtils.isSimulator {
             self.previewView.removeFromSuperview()
@@ -201,7 +205,6 @@ class ViewController: UIViewController {
     }
 
     func prepareLocalMedia() {
-
         // We will share local audio and video when we connect to the Room.
 
         // Create an audio track.

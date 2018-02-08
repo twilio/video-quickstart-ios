@@ -1,11 +1,10 @@
 //
 //  ViewController.swift
-//  AudioSinkExample
+//  AudioDeviceExample
 //
-//  Copyright © 2017 Twilio Inc. All rights reserved.
+//  Copyright © 2018 Twilio Inc. All rights reserved.
 //
 
-import AVFoundation
 import TwilioVideo
 import UIKit
 
@@ -20,18 +19,10 @@ class ViewController: UIViewController {
     // Configure remote URL to fetch token from
     let tokenUrl = "http://localhost:8000/token.php"
 
-    // Automatically record audio for all `TVIAudioTrack`s published in a Room.
-    let recordAudio = true
-
     // Video SDK components
     var room: TVIRoom?
     var camera: TVICameraCapturer?
-    var localAudioTrack: TVILocalAudioTrack!
     var localVideoTrack: TVILocalVideoTrack!
-
-    // Audio Sinks
-    var audioRecorders = Dictionary<String, ExampleAudioRecorder>()
-    var speechRecognizer: ExampleSpeechRecognizer?
 
     // MARK: UI Element Outlets and handles
 
@@ -43,11 +34,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
 
-    // Speech UI
-    weak var speechRecognizerView: UIView!
-    weak var dimmingView: UIView!
-    weak var speechLabel: UILabel!
-
     var messageTimer: Timer!
 
     let kPreviewPadding = CGFloat(10)
@@ -57,16 +43,12 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "AudioSink Example"
+        title = "AudioDevice Example"
         disconnectButton.isHidden = true
         disconnectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
         connectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
         roomTextField.autocapitalizationType = .none
         roomTextField.delegate = self
-
-        if (recordAudio == false) {
-            navigationItem.leftBarButtonItem = nil
-        }
 
         prepareLocalMedia()
     }
@@ -92,9 +74,7 @@ class ViewController: UIViewController {
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
 
-            if let audioTrack = self.localAudioTrack {
-                builder.audioTracks = [audioTrack]
-            }
+            // This example does not share audio since the ExampleCoreAudioDevice is playback only.
             if let videoTrack = self.localVideoTrack {
                 builder.videoTracks = [videoTrack]
             }
@@ -137,19 +117,6 @@ class ViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        // Layout the speech label.
-        if let speechLabel = self.speechLabel {
-            speechLabel.preferredMaxLayoutWidth = view.bounds.width - (kPreviewPadding * 2)
-
-            let constrainedSize = CGSize(width: view.bounds.width,
-                                         height: view.bounds.height)
-            let fittingSize = speechLabel.sizeThatFits(constrainedSize)
-            let speechFrame = CGRect(x: 0,
-                                     y: view.bounds.height - fittingSize.height - kTextBottomPadding,
-                                     width: view.bounds.width, height: fittingSize.height + kTextBottomPadding)
-            speechLabel.frame = speechFrame.integral
-        }
-
         // Layout the preview view.
         if let previewView = self.camera?.previewView {
             let dimensions = previewView.videoDimensions
@@ -163,10 +130,6 @@ class ViewController: UIViewController {
 
             previewView.center = CGPoint.init(x: view.bounds.width - previewBounds.width / 2 - kPreviewPadding,
                                               y: view.bounds.height - previewBounds.height / 2 - kPreviewPadding)
-
-            if let speechLabel = self.speechLabel {
-                previewView.center.y -= speechLabel.bounds.height + kPreviewPadding;
-            }
         }
     }
 
@@ -205,73 +168,6 @@ class ViewController: UIViewController {
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
     }
 
-    func showSpeechRecognitionUI(view: UIView, message: String) {
-        // Create a dimmer view for the Participant being recognized.
-        let dimmer = UIView.init(frame: view.bounds)
-        dimmer.alpha = 0
-        dimmer.backgroundColor = UIColor.init(white: 1, alpha: 0.26)
-        dimmer.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(dimmer)
-        self.dimmingView = dimmer
-        self.speechRecognizerView = view
-
-        // Create a label which will be added to the stack and display recognized speech.
-        let messageLabel = UILabel.init()
-        messageLabel.font = UIFont.boldSystemFont(ofSize: 16)
-        messageLabel.textColor = UIColor.white
-        messageLabel.backgroundColor = UIColor.init(red: 226/255, green: 29/255, blue: 37/255, alpha: 1)
-        messageLabel.alpha = 0
-        messageLabel.numberOfLines = 0
-        messageLabel.textAlignment = NSTextAlignment.center
-
-        self.view.addSubview(messageLabel)
-        self.speechLabel = messageLabel
-
-        // Force a layout to position the speech label before animations.
-        self.view.setNeedsLayout()
-        self.view.layoutIfNeeded()
-
-        UIView.animate(withDuration: 0.4, animations: {
-            self.view.setNeedsLayout()
-
-            messageLabel.text = message
-            dimmer.alpha = 1.0
-            messageLabel.alpha = 1.0
-            view.transform = CGAffineTransform.init(scaleX: 1.08, y: 1.08)
-            self.disconnectButton.alpha = 0
-
-            self.view.layoutIfNeeded()
-        })
-    }
-
-    func hideSpeechRecognitionUI(view: UIView) {
-        guard let dimmer = self.dimmingView else {
-            return
-        }
-
-        self.view.setNeedsLayout()
-
-        UIView.animate(withDuration: 0.4, animations: {
-            dimmer.alpha = 0.0
-            view.transform = CGAffineTransform.identity
-            self.speechLabel?.alpha = 0.0
-            self.disconnectButton.alpha = 1.0
-            self.view.layoutIfNeeded()
-        }, completion: { (complete) in
-            if (complete) {
-                self.speechLabel?.removeFromSuperview()
-                self.speechLabel = nil
-                dimmer.removeFromSuperview()
-                self.dimmingView = nil
-                self.speechRecognizerView = nil
-                UIView.animate(withDuration: 0.4, animations: {
-                    self.view.setNeedsLayout()
-                    self.view.layoutIfNeeded()
-                })
-            }
-        })
-    }
-
     func dismissKeyboard() {
         if (self.roomTextField.isFirstResponder) {
             self.roomTextField.resignFirstResponder()
@@ -290,111 +186,39 @@ class ViewController: UIViewController {
 
         // Hide the message with a delay.
         self.messageTimer?.invalidate()
-        let timer = Timer.init(timeInterval: TimeInterval(6), repeats: false) { (timer) in
-            if (self.messageLabel.isHidden == false) {
-                UIView.animate(withDuration: 0.6, animations: {
-                    self.messageLabel.alpha = 0
-                }, completion: { (complete) in
-                    if (complete) {
-                        self.messageLabel.isHidden = true
-                    }
-                })
-            }
-        }
 
-        self.messageTimer = timer
-        RunLoop.main.add(timer, forMode: .commonModes)
+        self.messageTimer = Timer.init(timeInterval: TimeInterval(6),
+                                       target: self,
+                                       selector: #selector(hideMessageLabel),
+                                       userInfo: nil,
+                                       repeats: false)
+        RunLoop.main.add(self.messageTimer, forMode: .commonModes)
     }
 
-    // MARK: Speech Recognition
-    func stopRecognizingAudio() {
-        if let recognizer = self.speechRecognizer {
-            recognizer.stopRecognizing()
-            self.speechRecognizer = nil
-
-            if let view = self.speechRecognizerView {
-                hideSpeechRecognitionUI(view: view)
-            }
-        }
-    }
-
-    func recognizeRemoteAudio(gestureRecognizer: UIGestureRecognizer) {
-        guard let remoteView = gestureRecognizer.view else {
-            print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
-            return;
-        }
-        guard let room = self.room else {
-            print("We are no longer connected to the Room!")
-            return
-        }
-
-        // Find the Participant.
-        let hashedSid = remoteView.tag
-        for remoteParticipant in room.remoteParticipants {
-            for videoTrackPublication in remoteParticipant.remoteVideoTracks {
-                if (videoTrackPublication.trackSid.hashValue == hashedSid) {
-                    if let audioTrack = remoteParticipant.remoteAudioTracks.first?.remoteTrack {
-                        recognizeRemoteParticipantAudio(audioTrack: audioTrack,
-                                                        sid: remoteParticipant.remoteAudioTracks.first!.trackSid,
-                                                        name: remoteParticipant.identity,
-                                                        view: remoteView)
-                    }
+    @objc func hideMessageLabel() {
+        if (self.messageLabel.isHidden == false) {
+            UIView.animate(withDuration: 0.6, animations: {
+                self.messageLabel.alpha = 0
+            }, completion: { (complete) in
+                if (complete) {
+                    self.messageLabel.isHidden = true
                 }
-            }
+            })
         }
-    }
-
-    func recognizeRemoteParticipantAudio(audioTrack: TVIRemoteAudioTrack, sid: String, name: String, view: UIView) {
-        if (self.speechRecognizer != nil) {
-            stopRecognizingAudio()
-        } else {
-            showSpeechRecognitionUI(view: view, message: "Listening to \(name)...")
-
-            recognizeAudio(audioTrack: audioTrack, identifier: sid)
-        }
-    }
-
-    func recognizeLocalAudio() {
-        if (self.speechRecognizer != nil) {
-            stopRecognizingAudio()
-        } else if let audioTrack = self.localAudioTrack {
-            // Known issue - local audio is not available in a Peer-to-Peer Room unless there are >= 1 RemoteParticipants.
-            
-            if (self.room?.state == TVIRoomState.connected) {
-                if let view = self.camera?.previewView {
-                    showSpeechRecognitionUI(view: view,
-                                            message: "Listening to \(room?.localParticipant?.identity ?? "yourself")...")
-                }
-
-                recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.trackId)
-            }
-        }
-    }
-
-    func recognizeAudio(audioTrack: TVIAudioTrack, identifier: String) {
-        self.speechRecognizer = ExampleSpeechRecognizer(audioTrack: audioTrack,
-                                                        identifier: identifier,
-                                                     resultHandler: { (result, error) in
-                                                                if let validResult = result {
-                                                                    self.speechLabel?.text = validResult.bestTranscription.formattedString
-                                                                } else if let error = error {
-                                                                    self.speechLabel?.text = error.localizedDescription
-                                                                    self.stopRecognizingAudio()
-                                                                }
-
-                                                                UIView.animate(withDuration: 0.1, animations: {
-                                                                    self.view.setNeedsLayout()
-                                                                    self.view.layoutIfNeeded()
-                                                                })
-        })
     }
 
     func prepareLocalMedia() {
+        /*
+         * The important thing to remember when using a custom TVIAudioDevice is that the device must be set
+         * before performing any other actions with the SDK (such as creating Tracks, or connecting to a Room).
+         */
+        TwilioVideo.audioDevice = ExampleCoreAudioDevice.init();
 
-        // Create an audio track.
-        localAudioTrack = TVILocalAudioTrack.init()
-
-        // Create a video track which captures from the front camera.
+        /*
+         * ExampleCoreAudioDevice is a playback only device. Because of this, any attempts to create a
+         * TVILocalAudioTrack will result in an exception being thrown. In this example we will only share video
+         * (where available) and not audio.
+         */
         if (TVICameraCapturer.isSourceAvailable(TVICameraCaptureSource.frontCamera)) {
 
             // We will render the camera using TVICameraPreviewView.
@@ -407,15 +231,11 @@ class ViewController: UIViewController {
                 logMessage(messageText: "Video track created.")
 
                 if let preview = camera?.previewView {
-                    let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeLocalAudio))
-                    preview.addGestureRecognizer(tap)
                     view.addSubview(preview);
                 }
             }
-        } else if (localAudioTrack != nil) {
-            logMessage(messageText: "Front camera is not available, using microphone only.")
         } else {
-            logMessage(messageText: "Failed to create audio track!")
+            logMessage(messageText: "Front camera is not available, using audio playback only.")
         }
     }
 
@@ -433,11 +253,6 @@ class ViewController: UIViewController {
             let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.changeRemoteVideoAspect))
             recognizerDoubleTap.numberOfTapsRequired = 2
             remoteView.addGestureRecognizer(recognizerDoubleTap)
-
-            // Single tap to recognize remote audio.
-            let recognizerTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeRemoteAudio))
-            recognizerTap.require(toFail: recognizerDoubleTap)
-            remoteView.addGestureRecognizer(recognizerTap)
 
             // Start rendering, and add to our stack.
             publication.remoteTrack?.addRenderer(remoteView)
@@ -486,25 +301,7 @@ extension ViewController : TVIRoomDelegate {
             remoteParticipant.delegate = self
         }
 
-        // Wait until our LocalAudioTrack is assigned a SID to record it.
-        if (recordAudio) {
-            if let localParticipant = room.localParticipant {
-                localParticipant.delegate = self
-            }
-
-            if let localAudioPublication = room.localParticipant?.localAudioTracks.first,
-               let localAudioTrack = localAudioPublication.localTrack {
-                let trackSid = localAudioPublication.trackSid
-                self.audioRecorders[trackSid] = ExampleAudioRecorder.init(audioTrack: localAudioTrack,
-                                                                          identifier: trackSid)
-            }
-        }
-
-        var connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
-        connectMessage.append("\nTap a video to recognize speech.")
-        if (self.audioRecorders.count > 0) {
-            connectMessage.append("\nRecording local audio...")
-        }
+        let connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
         logMessage(messageText: connectMessage)
     }
 
@@ -515,16 +312,7 @@ extension ViewController : TVIRoomDelegate {
             logMessage(messageText: "Disconnected from \(room.name)")
         }
 
-        for recorder in self.audioRecorders.values {
-            recorder.stopRecording()
-        }
-        self.audioRecorders.removeAll()
-
-        // Stop speech recognition!
-        stopRecognizingAudio()
-
         self.room = nil
-
         self.showRoomUI(inRoom: false)
     }
 
@@ -617,11 +405,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
         // remote Participant's audio now.
 
         logMessage(messageText: "Subscribed to \(publication.trackName) audio track for Participant \(participant.identity)")
-
-        if (self.recordAudio) {
-            self.audioRecorders[publication.trackSid] = ExampleAudioRecorder.init(audioTrack: audioTrack,
-                                                                                  identifier: publication.trackSid)
-        }
     }
 
     func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
@@ -632,16 +415,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
         // remote Participant's audio.
 
         logMessage(messageText: "Unsubscribed from \(publication.trackName) audio track for Participant \(participant.identity)")
-
-        if let recorder = self.audioRecorders[publication.trackSid] {
-            recorder.stopRecording()
-            self.audioRecorders.removeValue(forKey: publication.trackSid)
-        }
-
-        if (self.speechRecognizer?.identifier == publication.trackSid) {
-            self.speechRecognizer?.stopRecognizing()
-            self.speechRecognizer = nil
-        }
     }
 
     func remoteParticipant(_ participant: TVIRemoteParticipant,
@@ -675,19 +448,6 @@ extension ViewController : TVIRemoteParticipantDelegate {
                            error: Error,
                            for participant: TVIRemoteParticipant) {
         logMessage(messageText: "FailedToSubscribe \(publication.trackName) video track, error = \(String(describing: error))")
-    }
-}
-
-// MARK: TVILocalParticipantDelegate
-extension ViewController : TVILocalParticipantDelegate {
-    func localParticipant(_ participant: TVILocalParticipant, publishedAudioTrack: TVILocalAudioTrackPublication) {
-        // We expect to publish our AudioTrack at Room connect time, but handle a late publish just to be sure.
-        if (recordAudio) {
-            let trackSid = publishedAudioTrack.trackSid
-            self.audioRecorders[trackSid] = ExampleAudioRecorder.init(audioTrack: publishedAudioTrack.localTrack!,
-                                                                      identifier: trackSid)
-            logMessage(messageText: "Recording local audio...")
-        }
     }
 }
 
