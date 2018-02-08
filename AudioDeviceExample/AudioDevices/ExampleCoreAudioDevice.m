@@ -249,12 +249,6 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     if (![session setActive:YES error:&error]) {
         NSLog(@"Error activating AVAudioSession: %@", error);
     }
-
-    if (session.maximumInputNumberOfChannels > 0) {
-        if (![session setPreferredInputNumberOfChannels:TVIAudioChannelsMono error:&error]) {
-            NSLog(@"Error setting number of input channels: %@", error);
-        }
-    }
 }
 
 - (BOOL)setupAudioUnit:(ExampleCoreAudioContext *)context {
