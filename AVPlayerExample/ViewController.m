@@ -188,6 +188,13 @@ NSString *const kStatusKey   = @"status";
 - (void)prepareMedia {
     // We will share audio and video when we connect to the Room.
 
+    /*
+     * The important thing to remember when providing a TVIAudioDevice is that the device must be set
+     * before performing any other actions with the SDK (such as creating Tracks, or connecting to a Room).
+     * In this case we've already initialized our own `TVIDefaultAudioDevice` instance which we will now set.
+     */
+    TwilioVideo.audioDevice = self.audioDevice;
+
     // Create an audio track.
     if (!self.localAudioTrack) {
         self.localAudioTrack = [TVILocalAudioTrack track];
@@ -277,9 +284,6 @@ NSString *const kStatusKey   = @"status";
                                                                           // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
                                                                           // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
                                                                           builder.roomName = self.roomTextField.text;
-
-                                                                          // Use the audio device that we created earlier. All connection attempts will use the same device.
-                                                                          builder.audioDevice = self.audioDevice;
                                                                       }];
 
     // Connect to the Room using the options we provided.
