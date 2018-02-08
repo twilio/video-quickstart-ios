@@ -15,20 +15,4 @@
  */
 @interface ExampleCoreAudioDevice : NSObject <TVIAudioDevice>
 
-- (nullable TVIAudioFormat *)renderFormat;
-
-- (BOOL)initializeRenderer;
-
-- (BOOL)startRendering:(nonnull TVIAudioDeviceContext)context;
-
-- (BOOL)stopRendering;
-
-- (nullable TVIAudioFormat *)captureFormat;
-
-- (BOOL)initializeCapturer;
-
-- (BOOL)startCapturing:(nonnull TVIAudioDeviceContext)context;
-
-- (BOOL)stopCapturing;
-
 @end

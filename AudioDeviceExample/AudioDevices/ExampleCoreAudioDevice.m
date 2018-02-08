@@ -11,6 +11,8 @@
 static double const kPreferredIOBufferDuration = 0.01;
 // We will use stereo playback where available. Some audio routes may be restricted to mono only.
 static size_t const kPreferredNumberOfChannels = 2;
+// An audio sample is a signed 16-bit integer.
+static size_t const kAudioSampleSize = 2;
 static uint32_t const kPreferredSampleRate = 48000;
 
 typedef struct ExampleCoreAudioContext {
@@ -186,7 +188,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
     // Pull decoded, mixed audio data from the media engine into the AudioUnit's AudioBufferList.
     assert(numFrames <= context->maxFramesPerBuffer);
-    assert(audioBufferSizeInBytes == (bufferList->mBuffers[0].mNumberChannels * 2 * numFrames));
+    assert(audioBufferSizeInBytes == (bufferList->mBuffers[0].mNumberChannels * kAudioSampleSize * numFrames));
     TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
     return noErr;
 }
@@ -203,7 +205,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     const NSInteger sessionOutputChannels = [AVAudioSession sharedInstance].outputNumberOfChannels;
     size_t rendererChannels = sessionOutputChannels >= TVIAudioChannelsStereo ? TVIAudioChannelsStereo : TVIAudioChannelsMono;
 
-    return [[TVIAudioFormat alloc] initWithChannels:(size_t)rendererChannels
+    return [[TVIAudioFormat alloc] initWithChannels:rendererChannels
                                          sampleRate:sessionSampleRate
                                     framesPerBuffer:sessionFramesPerBuffer];
 }
@@ -358,6 +360,8 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     }
 }
 
+#pragma mark - NSNotification Observers
+
 - (void)registerAVAudioSessionObservers {
     // An audio device that interacts with AVAudioSession should handle events like interruptions and route changes.
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
@@ -366,7 +370,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     /*
      * Interruption handling is different on iOS 9.x. If your application becomes interrupted while it is in the
      * background then you will not get a corresponding notification when the interruption ends. We workaround this
-     * by handling UIApplicationDidBecomeActiveNotification and treating it the same as an interruption end.
+     * by handling UIApplicationDidBecomeActiveNotification and treating it as an interruption end.
      */
     if (![[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 0, 0}]) {
         [center addObserver:self selector:@selector(handleApplicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
@@ -401,7 +405,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     @synchronized(self) {
         if (self.renderingContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
-                if (self.interrupted) {
+                if (self.isInterrupted) {
                     NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
                     self.interrupted = NO;
                     [self startAudioUnit];
@@ -412,7 +416,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 }
 
 - (void)handleRouteChange:(NSNotification *)notification {
-    // Check if the sample rate, channels or buffer duration changed. and trigger a format change if it did.
+    // Check if the sample rate, or channels changed and trigger a format change if it did.
     AVAudioSessionRouteChangeReason reason = [notification.userInfo[AVAudioSessionRouteChangeReasonKey] unsignedIntegerValue];
 
     switch (reason) {
@@ -441,7 +445,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
 - (void)handleValidRouteChange {
     // Nothing to process while we are interrupted. We will interrogate the AVAudioSession once the interruption ends.
-    if (self.interrupted) {
+    if (self.isInterrupted) {
         return;
     } else if (_audioUnit == NULL) {
         return;
