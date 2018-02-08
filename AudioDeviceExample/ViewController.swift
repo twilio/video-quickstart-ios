@@ -216,8 +216,8 @@ class ViewController: UIViewController {
 
         /*
          * ExampleCoreAudioDevice is a playback only device. Because of this, any attempts to create a
-         * TVILocalAudioTrack will result in an exception being thrown, and nil being returned. In this example we will
-         * only share video (where available) and not audio.
+         * TVILocalAudioTrack will result in an exception being thrown. In this example we will only share video
+         * (where available) and not audio.
          */
         if (TVICameraCapturer.isSourceAvailable(TVICameraCaptureSource.frontCamera)) {
 
