@@ -1,10 +1,10 @@
 
 [ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/api/video/download-video-sdks#ios-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://media.twiliocdn.com/sdk/ios/video/latest/docs/index.html)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://media.twiliocdn.com/sdk/ios/video/releases/2.0.0-beta1/docs)
 
 # Twilio Video Quickstart for Objective-C
 
-> NOTE: These sample applications use the Twilio Video 1.x APIs. For examples using our 2.0.0-preview APIs, please see the [2.0.0-preview](https://github.com/twilio/video-quickstart-objc/tree/2.0.0-preview) branch.
+> NOTE: These sample applications use the Twilio Video 2.0.0-beta1 APIs. We will continue to update them throughout the beta period. For examples using our Generally Available 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-objc) branch.
 
 Get started with Video on iOS:
 
@@ -78,6 +78,8 @@ You will also find additional examples that provide more advanced use cases of t
 
 - [AVPlayer](AVPlayerExample) - Shows how to use `AVPlayer` to stream Audio & Video content while connected to a `TVIRoom`.
 
+>NOTE: Some of our more advanced examples are only available in Swift. For usage of APIs like DataTrack, TVIVideoCapturer, and TVIAudioSink see our Swift [repo](https://github.com/twilio/video-quickstart-swift/tree/master).
+
 ## Setup an Access Token Server
 
 Using Twilio's Video client within your applications requires an access token. Access Tokens are short-lived credentials that are signed with a Twilio API Key Secret and contain grants which govern the actions the client holding the token is permitted to perform. 
@@ -114,7 +116,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/api/video/getting-started)
-* [Docs](https://media.twiliocdn.com/sdk/ios/video/latest/docs)
+* [Docs](https://media.twiliocdn.com/sdk/ios/video/releases/2.0.0-beta1/docs)
 
 ## Issues and Support
 

@@ -1,10 +1,10 @@
 source 'https://github.com/CocoaPods/Specs'
 
 workspace 'VideoQuickStart'
-platform :ios, '8.1'
+platform :ios, '9.0'
 
 abstract_target 'TwilioVideo' do
-  pod 'TwilioVideo', '~> 1.3.0'
+  pod 'TwilioVideo', '2.0.0-beta1'
 
   target 'ObjCVideoQuickstart' do
     project 'ObjCVideoQuickstart.xcproject'

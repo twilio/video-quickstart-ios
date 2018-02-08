@@ -31,7 +31,7 @@ typedef NS_ENUM(NSUInteger, ViewControllerState) {
 NSString *const kVideoMovURL = @"https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov";
 NSString *const kStatusKey   = @"status";
 
-@interface ViewController () <UITextFieldDelegate, TVIParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraCapturerDelegate>
+@interface ViewController () <UITextFieldDelegate, TVIRemoteParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraCapturerDelegate>
 
 // Configure access token manually for testing in `viewDidLoad`, if desired! Create one manually in the console.
 @property (nonatomic, strong) NSString *accessToken;
@@ -40,10 +40,11 @@ NSString *const kStatusKey   = @"status";
 #pragma mark Video SDK components
 
 @property (nonatomic, strong) TVIRoom *room;
+@property (nonatomic, strong) TVIDefaultAudioDevice *audioDevice;
 @property (nonatomic, strong) TVICameraCapturer *camera;
 @property (nonatomic, strong) TVILocalVideoTrack *localVideoTrack;
 @property (nonatomic, strong) TVILocalAudioTrack *localAudioTrack;
-@property (nonatomic, strong) TVIParticipant *participant;
+@property (nonatomic, strong) TVIRemoteParticipant *remoteParticipant;
 @property (nonatomic, weak) TVIVideoView *remoteView;
 
 #pragma mark AVPlayer
@@ -70,7 +71,7 @@ NSString *const kStatusKey   = @"status";
 
 - (void)dealloc {
     // We are done with AVAudioSession
-    [self resetAudioSession];
+    [self stopAudioDevice];
 }
 
 #pragma mark - UIViewController
@@ -96,8 +97,13 @@ NSString *const kStatusKey   = @"status";
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
     [self.view addGestureRecognizer:tap];
 
-    // Manually configure the AudioSession
-    [self setupAudioSession];
+    /**
+     * We will create an audio device and manage it's lifecycle in response to the AVPlayer events. Please note that the
+     * SDK does not support the use of multiple audio devices at the same time. If you've already connected to a Room,
+     * then all future connection attempts must use the same TVIDefaultAudioDevice as the first Room. Once all the existing
+     * Rooms are disconnected you are free to choose a new audio device for your next connection attempt.
+     */
+    self.audioDevice = [TVIDefaultAudioDevice audioDevice];
 
     // Prepare local media which we will share with Room Participants.
     [self prepareMedia];
@@ -182,6 +188,13 @@ NSString *const kStatusKey   = @"status";
 - (void)prepareMedia {
     // We will share audio and video when we connect to the Room.
 
+    /*
+     * The important thing to remember when providing a TVIAudioDevice is that the device must be set
+     * before performing any other actions with the SDK (such as creating Tracks, or connecting to a Room).
+     * In this case we've already initialized our own `TVIDefaultAudioDevice` instance which we will now set.
+     */
+    TwilioVideo.audioDevice = self.audioDevice;
+
     // Create an audio track.
     if (!self.localAudioTrack) {
         self.localAudioTrack = [TVILocalAudioTrack track];
@@ -195,31 +208,12 @@ NSString *const kStatusKey   = @"status";
     [self startPreview];
 }
 
-- (void)setupAudioSession {
-    // In this example we don't want TwilioVideo to dynamically configure and activate / deactivate the AVAudioSession.
-    // Instead we will setup audio once, and deal with activation and de-activation manually.
-    [[TVIAudioController sharedController] configureAudioSession:TVIAudioOutputVideoChatDefault];
-
-    // This is similar to when CallKit is used, but instead we will activate AVAudioSession ourselves.
-    NSError *error = nil;
-    [[AVAudioSession sharedInstance] setActive:YES error:&error];
-    if (error) {
-        [self logMessage:[NSString stringWithFormat:@"Couldn't activate AVAudioSession. %@", error]];
-    }
-
-    [[TVIAudioController sharedController] startAudio];
+- (void)startAudioDevice {
+    self.audioDevice.enabled = YES;
 }
 
-- (void)resetAudioSession {
-    [[TVIAudioController sharedController] stopAudio];
-
-    NSError *error = nil;
-    [[AVAudioSession sharedInstance] setActive:NO
-                                   withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
-                                         error:&error];
-    if (error) {
-        [self logMessage:[NSString stringWithFormat:@"Couldn't deactivate AVAudioSession. %@", error]];
-    }
+- (void)stopAudioDevice {
+    self.audioDevice.enabled = NO;
 }
 
 - (void)startVideoPlayer {
@@ -277,8 +271,8 @@ NSString *const kStatusKey   = @"status";
         return;
     }
 
-    // Since we are configuring audio session explicitly, we will call setupAudioSession every time we attempt to connect.
-    [self setupAudioSession];
+    // Since we are configuring audio session explicitly, we will call startAudioDevice every time we attempt to connect.
+    [self startAudioDevice];
 
     TVIConnectOptions *connectOptions = [TVIConnectOptions optionsWithToken:self.accessToken
                                                                       block:^(TVIConnectOptionsBuilder * _Nonnull builder) {
@@ -332,12 +326,13 @@ NSString *const kStatusKey   = @"status";
 }
 
 - (void)cleanupRemoteParticipant {
-    if (self.participant) {
-        if ([self.participant.videoTracks count] > 0) {
-            [self.participant.videoTracks[0] removeRenderer:self.remoteView];
+    if (self.remoteParticipant) {
+        if ([self.remoteParticipant.videoTracks count] > 0) {
+            TVIRemoteVideoTrack *videoTrack = self.remoteParticipant.remoteVideoTracks[0].remoteTrack;
+            [videoTrack removeRenderer:self.remoteView];
             [self.remoteView removeFromSuperview];
         }
-        self.participant = nil;
+        self.remoteParticipant = nil;
     }
 }
 
@@ -353,9 +348,9 @@ NSString *const kStatusKey   = @"status";
 
     [self logMessage:[NSString stringWithFormat:@"Connected to room %@ as %@", room.name, room.localParticipant.identity]];
 
-    if (room.participants.count > 0) {
-        self.participant = room.participants[0];
-        self.participant.delegate = self;
+    if (room.remoteParticipants.count > 0) {
+        self.remoteParticipant = room.remoteParticipants[0];
+        self.remoteParticipant.delegate = self;
         [self showInterfaceState:ViewControllerStateRoom];
     } else {
         // If there are no Participants, we will play the pre-roll content instead.
@@ -367,9 +362,8 @@ NSString *const kStatusKey   = @"status";
 - (void)room:(TVIRoom *)room didDisconnectWithError:(nullable NSError *)error {
     [self logMessage:[NSString stringWithFormat:@"Disconncted from room %@, error = %@", room.name, error]];
     
-    // If AVPlayer is playing, we will not deactivate the audio session
     if (!self.videoPlayer) {
-        [self resetAudioSession];
+        [self stopAudioDevice];
     } else {
         [self stopVideoPlayer];
     }
@@ -387,26 +381,29 @@ NSString *const kStatusKey   = @"status";
     [self showInterfaceState:ViewControllerStateLobby];
 }
 
-- (void)room:(TVIRoom *)room participantDidConnect:(TVIParticipant *)participant {
-    if (!self.participant) {
-        self.participant = participant;
-        self.participant.delegate = self;
+- (void)room:(TVIRoom *)room participantDidConnect:(TVIRemoteParticipant *)participant {
+    if (!self.remoteParticipant) {
+        self.remoteParticipant = participant;
+        self.remoteParticipant.delegate = self;
     }
 
-    if ([room.participants count] == 1) {
+    if ([room.remoteParticipants count] == 1) {
         [self stopVideoPlayer];
         [self showInterfaceState:ViewControllerStateRoom];
     }
 
-    [self logMessage:[NSString stringWithFormat:@"Room %@ participant %@ connected", room.name, participant.identity]];
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ connected with %lu audio and %lu video tracks",
+                      participant.identity,
+                      (unsigned long)[participant.audioTracks count],
+                      (unsigned long)[participant.videoTracks count]]];
 }
 
-- (void)room:(TVIRoom *)room participantDidDisconnect:(TVIParticipant *)participant {
-    if (self.participant == participant) {
+- (void)room:(TVIRoom *)room participantDidDisconnect:(TVIRemoteParticipant *)participant {
+    if (self.remoteParticipant == participant) {
         [self cleanupRemoteParticipant];
     }
 
-    if ([room.participants count] == 0) {
+    if ([room.remoteParticipants count] == 0) {
         [self startVideoPlayer];
         [self showInterfaceState:ViewControllerStateMediaPlayer];
     }
@@ -414,52 +411,122 @@ NSString *const kStatusKey   = @"status";
     [self logMessage:[NSString stringWithFormat:@"Room %@ participant %@ disconnected", room.name, participant.identity]];
 }
 
-#pragma mark - TVIParticipantDelegate
+#pragma mark - TVIRemoteParticipantDelegate
 
-- (void)participant:(TVIParticipant *)participant addedVideoTrack:(TVIVideoTrack *)videoTrack {
-    [self logMessage:[NSString stringWithFormat:@"Participant %@ added video track.", participant.identity]];
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+      publishedVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
+    
+    // Remote Participant has offered to share the video Track.
+    
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ published video track.", participant.identity]];
+}
 
-    if (self.participant == participant) {
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+    unpublishedVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
+    
+    // Remote Participant has stopped sharing the video Track.
+    
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ unpublished video track.", participant.identity]];
+}
+
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+      publishedAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
+    
+    // Remote Participant has offered to share the audio Track.
+    
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ published audio track.", participant.identity]];
+}
+
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+    unpublishedAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
+    
+    // Remote Participant has stopped sharing the audio Track.
+    
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ unpublished audio track.", participant.identity]];
+}
+
+- (void)subscribedToVideoTrack:(TVIRemoteVideoTrack *)videoTrack
+                   publication:(TVIRemoteVideoTrackPublication *)publication
+                forParticipant:(TVIRemoteParticipant *)participant {
+    
+    // We are subscribed to the remote Participant's audio Track. We will start receiving the
+    // remote Participant's video frames now.
+    
+    [self logMessage:[NSString stringWithFormat:@"Subscribed to video track for Participant %@", participant.identity]];
+    
+    if (self.remoteParticipant == participant) {
         [self setupRemoteView];
         [videoTrack addRenderer:self.remoteView];
     }
 }
 
-- (void)participant:(TVIParticipant *)participant removedVideoTrack:(TVIVideoTrack *)videoTrack {
-    [self logMessage:[NSString stringWithFormat:@"Participant %@ removed video track.", participant.identity]];
-
-    if (self.participant == participant) {
+- (void)unsubscribedFromVideoTrack:(TVIRemoteVideoTrack *)videoTrack
+                       publication:(TVIRemoteVideoTrackPublication *)publication
+                    forParticipant:(TVIRemoteParticipant *)participant {
+    
+    // We are unsubscribed from the remote Participant's video Track. We will no longer receive the
+    // remote Participant's video.
+    
+    [self logMessage:[NSString stringWithFormat:@"Unsubscribed from video track for Participant %@", participant.identity]];
+    
+    if (self.remoteParticipant == participant) {
         [videoTrack removeRenderer:self.remoteView];
         [self.remoteView removeFromSuperview];
     }
 }
 
-- (void)participant:(TVIParticipant *)participant addedAudioTrack:(TVIAudioTrack *)audioTrack {
-    [self logMessage:[NSString stringWithFormat:@"Participant %@ added audio track.", participant.identity]];
+- (void)subscribedToAudioTrack:(TVIRemoteAudioTrack *)audioTrack
+                   publication:(TVIRemoteAudioTrackPublication *)publication
+                forParticipant:(TVIRemoteParticipant *)participant {
+    
+    // We are subscribed to the remote Participant's audio Track. We will start receiving the
+    // remote Participant's audio now.
+    
+    [self logMessage:[NSString stringWithFormat:@"Subscribed to audio track for Participant %@", participant.identity]];
 }
 
-- (void)participant:(TVIParticipant *)participant removedAudioTrack:(TVIAudioTrack *)audioTrack {
-    [self logMessage:[NSString stringWithFormat:@"Participant %@ removed audio track.", participant.identity]];
+- (void)unsubscribedFromAudioTrack:(TVIRemoteAudioTrack *)audioTrack
+                       publication:(TVIRemoteAudioTrackPublication *)publication
+                    forParticipant:(TVIRemoteParticipant *)participant {
+    
+    // We are unsubscribed from the remote Participant's audio Track. We will no longer receive the
+    // remote Participant's audio.
+    
+    [self logMessage:[NSString stringWithFormat:@"Unsubscribed from audio track for Participant %@", participant.identity]];
 }
 
-- (void)participant:(TVIParticipant *)participant enabledTrack:(TVITrack *)track {
-    NSString *type = @"";
-    if ([track isKindOfClass:[TVIAudioTrack class]]) {
-        type = @"audio";
-    } else {
-        type = @"video";
-    }
-    [self logMessage:[NSString stringWithFormat:@"Participant %@ enabled %@ track.", participant.identity, type]];
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+        enabledVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ enabled video track.", participant.identity]];
 }
 
-- (void)participant:(TVIParticipant *)participant disabledTrack:(TVITrack *)track {
-    NSString *type = @"";
-    if ([track isKindOfClass:[TVIAudioTrack class]]) {
-        type = @"audio";
-    } else {
-        type = @"video";
-    }
-    [self logMessage:[NSString stringWithFormat:@"Participant %@ disabled %@ track.", participant.identity, type]];
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+       disabledVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ disabled video track.", participant.identity]];
+}
+
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+        enabledAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ enabled audio track.", participant.identity]];
+}
+
+- (void)remoteParticipant:(TVIRemoteParticipant *)participant
+       disabledAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ disabled audio track.", participant.identity]];
+}
+
+- (void)failedToSubscribeToAudioTrack:(TVIRemoteAudioTrackPublication *)publication
+                                error:(NSError *)error
+                       forParticipant:(TVIRemoteParticipant *)participant {
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ failed to subscribe to %@ audio track.",
+                      participant.identity, publication.trackName]];
+}
+
+- (void)failedToSubscribeToVideoTrack:(TVIRemoteVideoTrackPublication *)publication
+                                error:(NSError *)error
+                       forParticipant:(TVIRemoteParticipant *)participant {
+    [self logMessage:[NSString stringWithFormat:@"Participant %@ failed to subscribe to %@ video track.",
+                      participant.identity, publication.trackName]];
 }
 
 #pragma mark - TVIVideoViewDelegate
@@ -477,7 +544,7 @@ NSString *const kStatusKey   = @"status";
     self.localVideoTrack.enabled = YES;
 }
 
-- (void)cameraCapturerWasInterrupted:(TVICameraCapturer *)capturer reason:(TVICameraCapturerInterruptionReason)reason {
+- (void)cameraCapturerWasInterrupted:(TVICameraCapturer *)capturer reason:(AVCaptureSessionInterruptionReason)reason {
     // We will disable `self.localVideoTrack` when the TVICameraCapturer is interrupted.
     // This prevents other Participants from seeing a frozen frame while the Client is backgrounded.
     self.localVideoTrack.enabled = NO;
