@@ -281,7 +281,9 @@ extension ViewController : TVIRoomDelegate {
         
         // At the moment, this example only supports rendering one Participant at a time.
         
-        logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
+        if let identity = room.localParticipant?.identity {
+            logMessage(messageText: "Connected to room \(room.name) as \(String(identity))")
+        }
         
         if (room.remoteParticipants.count > 0) {
             self.remoteParticipant = room.remoteParticipants[0]
