@@ -454,7 +454,12 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
         NSLog(@"The rendering format changed. Restarting with %@", activeFormat);
         // Signal a change by clearing our cached format, and allowing TVIAudioDevice to drive the process.
         _renderingFormat = nil;
-        TVIAudioDeviceFormatChanged(self.renderingContext->deviceContext);
+
+        @synchronized(self) {
+            if (self.renderingContext) {
+                TVIAudioDeviceFormatChanged(self.renderingContext->deviceContext);
+            }
+        }
     }
 }
 
