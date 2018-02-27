@@ -456,7 +456,9 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
         _renderingFormat = nil;
 
         @synchronized(self) {
-            TVIAudioDeviceFormatChanged(self.renderingContext->deviceContext);
+            if (self.renderingContext) {
+                TVIAudioDeviceFormatChanged(self.renderingContext->deviceContext);
+            }
         }
     }
 }
