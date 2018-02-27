@@ -4,7 +4,7 @@ workspace 'VideoQuickStart'
 platform :ios, '9.0'
 
 abstract_target 'TwilioVideo' do
-  pod 'TwilioVideo', '2.0.0-beta1'
+  pod 'TwilioVideo', '2.0.0-beta2'
 
   target 'ObjCVideoQuickstart' do
     project 'ObjCVideoQuickstart.xcproject'
