@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="TlR-oo-oyD">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14101" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="TlR-oo-oyD">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14086"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -101,6 +100,21 @@
                                     <action selector="disconnectWithSender:" destination="jSN-F6-Q4K" eventType="touchUpInside" id="PjE-WV-6Eg"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QzL-Qu-Vi9">
+                                <rect key="frame" x="106" y="613" width="80" height="44"/>
+                                <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="80" id="a87-XT-bM2"/>
+                                    <constraint firstAttribute="height" constant="44" id="hDP-NO-3bF"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <state key="normal" title="Music">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="playMusicWithSender:" destination="jSN-F6-Q4K" eventType="touchUpInside" id="FvS-QW-FnJ"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -110,13 +124,18 @@
                             <constraint firstItem="jgR-Qy-dC6" firstAttribute="top" secondItem="EkL-i8-cDP" secondAttribute="bottom" constant="16" id="FAy-WH-Wvc"/>
                             <constraint firstAttribute="leadingMargin" secondItem="7dZ-Ur-uSj" secondAttribute="leading" id="OQz-Cn-mbU"/>
                             <constraint firstItem="ebq-ja-6iU" firstAttribute="leading" secondItem="3Bh-pO-6uY" secondAttribute="leading" constant="20" id="OWm-Gg-PVO"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="QzL-Qu-Vi9" secondAttribute="trailing" constant="20" symbolic="YES" id="PgV-Vc-ybn"/>
                             <constraint firstItem="ebq-ja-6iU" firstAttribute="top" secondItem="8oD-ke-cGW" secondAttribute="bottom" constant="10" id="TRB-BK-jVi"/>
                             <constraint firstItem="Zud-AS-DEE" firstAttribute="centerY" secondItem="3Bh-pO-6uY" secondAttribute="centerY" constant="-40" id="W6X-SU-S4S"/>
                             <constraint firstItem="EkL-i8-cDP" firstAttribute="leading" secondItem="Zud-AS-DEE" secondAttribute="trailing" constant="21" id="Xef-61-OpD"/>
+                            <constraint firstItem="QzL-Qu-Vi9" firstAttribute="width" secondItem="krA-sT-Z3g" secondAttribute="width" id="Z1S-0F-XCU"/>
                             <constraint firstAttribute="leadingMargin" secondItem="jgR-Qy-dC6" secondAttribute="leading" id="bOl-NA-2zy"/>
+                            <constraint firstItem="QzL-Qu-Vi9" firstAttribute="leading" secondItem="krA-sT-Z3g" secondAttribute="trailing" constant="15" id="dqC-ZT-9Pb"/>
                             <constraint firstAttribute="trailingMargin" secondItem="jgR-Qy-dC6" secondAttribute="trailing" id="dqW-B2-5zF"/>
                             <constraint firstAttribute="bottom" secondItem="2VU-s1-tUr" secondAttribute="bottom" id="eWs-fv-UU3"/>
                             <constraint firstAttribute="trailing" secondItem="ebq-ja-6iU" secondAttribute="trailing" constant="20" id="eiL-ob-cD1"/>
+                            <constraint firstItem="QzL-Qu-Vi9" firstAttribute="bottom" secondItem="krA-sT-Z3g" secondAttribute="bottom" id="fAy-Om-Wja"/>
+                            <constraint firstItem="QzL-Qu-Vi9" firstAttribute="height" secondItem="krA-sT-Z3g" secondAttribute="height" id="iF8-10-AxJ"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="krA-sT-Z3g" secondAttribute="trailingMargin" id="k2U-Zq-c6R"/>
                             <constraint firstItem="2VU-s1-tUr" firstAttribute="top" secondItem="3Bh-pO-6uY" secondAttribute="top" id="knx-ij-08N"/>
                             <constraint firstAttribute="trailingMargin" secondItem="EkL-i8-cDP" secondAttribute="trailing" id="lhs-bL-0xl"/>

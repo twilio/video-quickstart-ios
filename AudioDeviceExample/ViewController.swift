@@ -23,6 +23,7 @@ class ViewController: UIViewController {
     var room: TVIRoom?
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack!
+    var localAudioTrack: TVILocalAudioTrack!
 
     // MARK: UI Element Outlets and handles
 
@@ -79,6 +80,10 @@ class ViewController: UIViewController {
                 builder.videoTracks = [videoTrack]
             }
 
+            if let audioTrack = self.localAudioTrack {
+                builder.audioTracks = [audioTrack]
+            }
+
             // Use the preferred codecs
             if let preferredAudioCodec = Settings.shared.audioCodec {
                 builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
@@ -111,6 +116,13 @@ class ViewController: UIViewController {
             logMessage(messageText: "Disconnecting from \(room.name)")
             room.disconnect()
             sender.isEnabled = false
+        }
+    }
+
+
+    @IBAction func playMusic(sender: UIButton) {
+        if let audioDevie = TwilioVideo.audioDevice as? ExampleEngineAudioDevice {
+            audioDevie.playMusic()
         }
     }
 
@@ -212,7 +224,12 @@ class ViewController: UIViewController {
          * The important thing to remember when using a custom TVIAudioDevice is that the device must be set
          * before performing any other actions with the SDK (such as creating Tracks, or connecting to a Room).
          */
-        TwilioVideo.audioDevice = ExampleCoreAudioDevice.init();
+        TwilioVideo.audioDevice = ExampleEngineAudioDevice.init();
+
+        // Only ExampleAudioDevice supports local audio capturing.
+        if ((TwilioVideo.audioDevice as? ExampleEngineAudioDevice) != nil) {
+            localAudioTrack = TVILocalAudioTrack()
+        }
 
         /*
          * ExampleCoreAudioDevice is a playback only device. Because of this, any attempts to create a
