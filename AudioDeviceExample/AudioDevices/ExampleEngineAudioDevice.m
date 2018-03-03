@@ -15,14 +15,12 @@ static size_t const kPreferredNumberOfChannels = 1;
 static size_t const kAudioSampleSize = 2;
 static uint32_t const kPreferredSampleRate = 48000;
 
-
 typedef struct ExampleEngineAudioContext {
     TVIAudioDeviceContext deviceContext;
     size_t expectedFramesPerBuffer;
     size_t maxFramesPerBuffer;
     __unsafe_unretained AVAudioEngineManualRenderingBlock renderBlock;
-    AudioBufferList *renderBufferList;
-    AudioBufferList *captureBufferList;
+    AudioBufferList *bufferList;
     AudioUnit audioUnit;
 } ExampleEngineAudioContext;
 
@@ -37,19 +35,17 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
 @property (nonatomic, assign) AudioUnit audioUnit;
+@property (nonatomic, assign) AudioBufferList audioBufferList;
 
 @property (nonatomic, strong, nullable) TVIAudioFormat *renderingFormat;
 @property (nonatomic, strong, nullable) TVIAudioFormat *capturingFormat;
-
 @property (atomic, assign) ExampleEngineAudioContext *renderingContext;
-@property (nonatomic, assign) ExampleEngineAudioContext *captureContext;
-
-@property (atomic, assign, getter=isRendering) BOOL rendering;
+@property (nonatomic, assign) ExampleEngineAudioContext *capturingContext;
 
 // AVAudioEngine
 @property (nonatomic, strong) AVAudioEngine *engine;
-@property (nonatomic, strong) AVAudioFormat *format;
-@property (nonatomic, assign) AudioBufferList audioBufferList;
+@property (nonatomic, strong) AVAudioPlayerNode *player;
+@property (nonatomic, strong) AVAudioUnitReverb *reverb;
 
 @end
 
@@ -68,6 +64,8 @@ static size_t kMaximumFramesPerBuffer = 1156;
         self.renderingFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
                                                              sampleRate:kPreferredSampleRate
                                                         framesPerBuffer:kMaximumFramesPerBuffer];
+
+        [self setupAVAudioSession];
     }
     return self;
 }
@@ -106,39 +104,44 @@ static size_t kMaximumFramesPerBuffer = 1156;
     AudioComponentInstanceDispose(audioUnit);
 }
 
+#pragma mark - AudioEngine
+
 - (void)setupAudioEngine {
-    // TODO: @ptank - do we need this check?
-    if (_engine) {
-        NSLog(@"AVAudioEngine is already configured");
-        return;
-    }
+    NSAssert(_engine == nil, @"AVAudioEngine is already configured");
+
     _engine = [AVAudioEngine new];
-    const AudioStreamBasicDescription asbd = [self.renderingFormat streamDescription];
-    _format = [[AVAudioFormat alloc] initWithStreamDescription:&asbd];
     [_engine stop];
+
     NSError *error = nil;
+    const AudioStreamBasicDescription asbd = [self.renderingFormat streamDescription];
+    AVAudioFormat *format = [[AVAudioFormat alloc] initWithStreamDescription:&asbd];
     BOOL success = [_engine enableManualRenderingMode:AVAudioEngineManualRenderingModeRealtime
-                                               format:_format
-                                    maximumFrameCount:1156 // TODO: PTPT
+                                               format:format
+                                    maximumFrameCount:(uint32_t)kMaximumFramesPerBuffer
                                                 error:&error];
     if (!success) {
         NSLog(@"Failed to setup manual rendering mode, error = %@", error);
         return;
     }
 
-    [_engine connect:_engine.inputNode to:_engine.mainMixerNode format:_format];
-    [_engine connect:_engine.mainMixerNode to:_engine.outputNode format:_format];
+    [_engine connect:_engine.inputNode to:_engine.mainMixerNode format:format];
 
     _renderingContext->renderBlock = _engine.manualRenderingBlock;
 
     ExampleEngineAudioContext *context = _renderingContext;
+    success = [_engine.inputNode setManualRenderingInputPCMFormat:format
+                                                       inputBlock: ^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
 
-    success = [_engine.inputNode setManualRenderingInputPCMFormat:_format
-                                                       inputBlock:^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
-                                                           AudioBufferList *bufferList = context->renderBufferList;
+                                                           AudioBufferList *bufferList = context->bufferList;
                                                            int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
                                                            UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
+
+                                                           /*
+                                                            * Pull decoded the all remote Participant's mixed audio data from the media
+                                                            * engine into the AudioUnit's AudioBufferList.
+                                                            */
                                                            TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
+
                                                            return bufferList;
                                                        }];
     if (!success) {
@@ -159,20 +162,32 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 - (void)playMusic {
     if (!_engine) {
-        NSLog(@"Engine has not been created");
+        NSLog(@"Cannot play music. AudioEngine has not been created yet.");
         return;
     }
-    AVAudioPlayerNode *player = [[AVAudioPlayerNode alloc] init];
+
+    if (_player.isPlaying) {
+        [_player stop];
+    }
 
     NSString *fileName = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], @"mixLoop.caf"];
     NSURL *url = [NSURL fileURLWithPath:fileName];
     AVAudioFile *file = [[AVAudioFile alloc] initForReading:url error:nil];
 
-    [_engine attachNode:player];
-    [self.engine connect:player to:_engine.mainMixerNode format:file.processingFormat];
+    _player = [[AVAudioPlayerNode alloc] init];
+    _reverb = [[AVAudioUnitReverb alloc] init];
 
-    [player scheduleFile:file atTime:nil completionHandler:^{}];
-    [player play];
+    [_reverb loadFactoryPreset:AVAudioUnitReverbPresetMediumHall];
+    _reverb.wetDryMix = 50;
+
+    [_engine attachNode:_player];
+    [_engine attachNode:_reverb];
+
+    [_engine connect:_player to:_reverb format:file.processingFormat];
+    [_engine connect:_reverb to:_engine.mainMixerNode format:file.processingFormat];
+
+    [_player scheduleFile:file atTime:nil completionHandler:^{}];
+    [_player play];
 }
 
 #pragma mark - TVIAudioDeviceRenderer
@@ -202,13 +217,12 @@ static size_t kMaximumFramesPerBuffer = 1156;
     @synchronized(self) {
         NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
 
-        // TODO: can we have only one context for render and capture?
         self.renderingContext = malloc(sizeof(ExampleEngineAudioContext));
         memset(self.renderingContext, 0, sizeof(ExampleEngineAudioContext));
+
         self.renderingContext->deviceContext = context;
         self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
         self.renderingContext->renderBlock = _engine.manualRenderingBlock;
-        self.renderingContext->captureBufferList = &_audioBufferList;
 
         const NSTimeInterval sessionBufferDuration = [AVAudioSession sharedInstance].IOBufferDuration;
         const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
@@ -217,27 +231,33 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
         [self setupAudioEngine];
 
-        NSAssert(self.audioUnit == NULL, @"The audio unit should not be created yet.");
-        if (![self setupAudioUnit:self.renderingContext]) {
-            free(self.renderingContext);
-            self.renderingContext = NULL;
-            return NO;
+        if (self.capturingContext) {
+            if (![self setupAudioUnitWithRenderContext:self.renderingContext
+                                        capturingContext:self.capturingContext]) {
+                free(self.renderingContext);
+                self.renderingContext = NULL;
+                return NO;
+            }
+            return [self startAudioUnit];
         }
-        self.renderingContext->audioUnit = _audioUnit;
     }
-    return [self startAudioUnit];
+    return YES;
 }
 
 - (BOOL)stopRendering {
-    [self teardownAudioEngine];
     [self stopAudioUnit];
 
     @synchronized(self) {
         [self teardownAudioUnit];
+        [self teardownAudioEngine];
 
         NSAssert(self.renderingContext != NULL, @"Should have a rendering context.");
         free(self.renderingContext);
         self.renderingContext = NULL;
+
+        NSAssert(self.capturingContext != NULL, @"Should have a capture context.");
+        free(self.capturingContext);
+        self.capturingContext = NULL;
     }
 
     return YES;
@@ -250,28 +270,29 @@ static size_t kMaximumFramesPerBuffer = 1156;
 }
 
 - (BOOL)initializeCapturer {
+    _audioBufferList.mNumberBuffers = 1;
+    _audioBufferList.mBuffers[0].mNumberChannels = kPreferredNumberOfChannels;
     return YES;
 }
 
 - (BOOL)startCapturing:(nonnull TVIAudioDeviceContext)context {
+    @synchronized (self) {
+        self.capturingContext = malloc(sizeof(ExampleEngineAudioContext));
+        memset(self.capturingContext, 0, sizeof(ExampleEngineAudioContext));
 
-    self.captureContext = malloc(sizeof(ExampleEngineAudioContext));
-    memset(self.captureContext, 0, sizeof(ExampleEngineAudioContext));
-    self.captureContext->deviceContext = context;
-    self.captureContext->maxFramesPerBuffer = _capturingFormat.framesPerBuffer;
-    self.captureContext->audioUnit = _audioUnit;
+        self.capturingContext->deviceContext = context;
+        self.capturingContext->maxFramesPerBuffer = _capturingFormat.framesPerBuffer;
+        self.capturingContext->bufferList = &_audioBufferList;
 
-    OSStatus status = noErr;
-    // Setup the capturing callback.
-    AURenderCallbackStruct captureCallback;
-    captureCallback.inputProc = ExampleCoreAudioDeviceCaptureCallback;
-    captureCallback.inputProcRefCon = (void *)(self.captureContext);
-    status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_SetInputCallback,
-                                  kAudioUnitScope_Input, kInputBus, &captureCallback,
-                                  sizeof(captureCallback));
-    if (status != 0) {
-        NSLog(@"Could not set capture callback!");
-        return NO;
+        if (self.renderingContext) {
+            if (![self setupAudioUnitWithRenderContext:self.renderingContext
+                                        capturingContext:self.capturingContext]) {
+                free(self.renderingContext);
+                self.renderingContext = NULL;
+                return NO;
+            }
+            return [self startAudioUnit];
+        }
     }
     return YES;
 }
@@ -293,27 +314,30 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     assert(bufferList->mBuffers[0].mNumberChannels > 0);
 
     ExampleEngineAudioContext *context = (ExampleEngineAudioContext *)refCon;
+    context->bufferList = bufferList;
+
     int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
     UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
-    context->renderBufferList = bufferList;
 
-    OSStatus outputStatus = noErr;
-    const AVAudioEngineManualRenderingStatus status = context->renderBlock(numFrames, bufferList, &outputStatus);
-    switch (status) {
-        case AVAudioEngineManualRenderingStatusSuccess:
-            //NSLog(@"AVAudioEngineManualRenderingStatusSuccess");
-            break;
-        case AVAudioEngineManualRenderingStatusInsufficientDataFromInputNode:
-            NSLog(@"AVAudioEngineManualRenderingStatusInsufficientDataFromInputNode");
-            *actionFlags |= kAudioUnitRenderAction_OutputIsSilence;
-            memset(audioBuffer, 0, audioBufferSizeInBytes);
-            break;
-        default:
-            break;
-    }
-
+    // Pull decoded, mixed audio data from the media engine into the AudioUnit's AudioBufferList.
     assert(numFrames <= context->maxFramesPerBuffer);
     assert(audioBufferSizeInBytes == (bufferList->mBuffers[0].mNumberChannels * kAudioSampleSize * numFrames));
+    OSStatus outputStatus = noErr;
+    const AVAudioEngineManualRenderingStatus status = context->renderBlock(numFrames, bufferList, &outputStatus);
+
+    /*
+     * Render silence if there are temporary mismatches between CoreAudio and our rendering format or AVAudioEngine
+     * could not render the audio samples.
+     */
+    if (numFrames > context->maxFramesPerBuffer ||
+        status != AVAudioEngineManualRenderingStatusSuccess) {
+        if (numFrames > context->maxFramesPerBuffer) {
+            NSLog(@"Can handle a max of %u frames but got %u.", (unsigned int)context->maxFramesPerBuffer, (unsigned int)numFrames);
+        }
+        *actionFlags |= kAudioUnitRenderAction_OutputIsSilence;
+        memset(audioBuffer, 0, audioBufferSizeInBytes);
+    }
+
     return noErr;
 }
 
@@ -324,49 +348,26 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
                                                       UInt32 numFrames,
                                                       AudioBufferList *bufferList) {
 
-
-
-    if (!bufferList) {
-        if (bufferList) {
-            free(bufferList->mBuffers[0].mData);
-            free(bufferList);
-        }
-
-        bufferList = (AudioBufferList*)malloc(sizeof(AudioBufferList) + sizeof(AudioBuffer));
-        bufferList->mNumberBuffers = 1;
-        bufferList->mBuffers[0].mNumberChannels = kPreferredNumberOfChannels;
-
-        bufferList->mBuffers[0].mDataByteSize = numFrames * sizeof(UInt16) * kPreferredNumberOfChannels;
-        bufferList->mBuffers[0].mData = malloc(numFrames * sizeof(UInt16) * kPreferredNumberOfChannels);
+    if (numFrames > kMaximumFramesPerBuffer) {
+        NSLog(@"Expected %u frames but got %u.", (unsigned int)kMaximumFramesPerBuffer, (unsigned int)numFrames);
+        return noErr;
     }
 
-
     ExampleEngineAudioContext *context = (ExampleEngineAudioContext *)refCon;
-    assert(context);
+    AudioBufferList *audioBufferList = context->bufferList;
+    audioBufferList->mBuffers[0].mDataByteSize = numFrames * sizeof(UInt16) * kPreferredNumberOfChannels;
+    audioBufferList->mBuffers[0].mData = NULL;
 
-    OSStatus status;
+    OSStatus status = noErr;
     status = AudioUnitRender(context->audioUnit,
                              actionFlags,
                              timestamp,
                              1,
                              numFrames,
-                             bufferList);
+                             audioBufferList);
 
-
-
-    assert(bufferList->mNumberBuffers == 1);
-    assert(bufferList->mBuffers[0].mNumberChannels <= 2);
-    assert(bufferList->mBuffers[0].mNumberChannels > 0);
-
-    int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
-    UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
-
-    if (numFrames > kMaximumFramesPerBuffer) {
-        NSLog(@"Expected %u frames but got %u.", (unsigned int)kMaximumFramesPerBuffer, (unsigned int)numFrames);
-        *actionFlags |= kAudioUnitRenderAction_OutputIsSilence;
-        memset(audioBuffer, 0, audioBufferSizeInBytes);
-        return noErr;
-    }
+    int8_t *audioBuffer = (int8_t *)audioBufferList->mBuffers[0].mData;
+    UInt32 audioBufferSizeInBytes = audioBufferList->mBuffers[0].mDataByteSize;
 
     TVIAudioDeviceWriteCaptureData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
     return noErr;
@@ -440,7 +441,11 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
     }
 }
 
-- (BOOL)setupAudioUnit:(ExampleEngineAudioContext *)context {
+- (BOOL)setupAudioUnitWithRenderContext:(ExampleEngineAudioContext *)renderContext
+                         capturingContext:(ExampleEngineAudioContext *)capturingContext {
+    assert(renderContext);
+    assert(capturingContext);
+
     // Find and instantiate the RemoteIO audio unit.
     AudioComponentDescription audioUnitDescription = [[self class] audioUnitDescription];
     AudioComponent audioComponent = AudioComponentFindNext(NULL, &audioUnitDescription);
@@ -502,7 +507,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
     // Setup the rendering callback.
     AURenderCallbackStruct renderCallback;
     renderCallback.inputProc = ExampleCoreAudioDevicePlayoutCallback;
-    renderCallback.inputProcRefCon = (void *)(context);
+    renderCallback.inputProcRefCon = (void *)(renderContext);
     status = AudioUnitSetProperty(_audioUnit, kAudioUnitProperty_SetRenderCallback,
                                   kAudioUnitScope_Output, kOutputBus, &renderCallback,
                                   sizeof(renderCallback));
@@ -513,20 +518,19 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
         return NO;
     }
 
-    /*
-     AURenderCallbackStruct captureCallback;
-     captureCallback.inputProc = ExampleCoreAudioDeviceCaptureCallback;
-     captureCallback.inputProcRefCon = (void *)(context);
-     status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_SetInputCallback,
-     kAudioUnitScope_Output, kInputBus, &captureCallback,
-     sizeof(captureCallback));
-     if (status != 0) {
-     NSLog(@"Could not set capturing callback!");
-     AudioComponentInstanceDispose(_audioUnit);
-     _audioUnit = NULL;
-     return NO;
-     }*/
-
+    // Setup the capturing callback.
+    AURenderCallbackStruct captureCallback;
+    captureCallback.inputProc = ExampleCoreAudioDeviceCaptureCallback;
+    captureCallback.inputProcRefCon = (void *)(self.capturingContext);
+    status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_SetInputCallback,
+                                  kAudioUnitScope_Input, kInputBus, &captureCallback,
+                                  sizeof(captureCallback));
+    if (status != 0) {
+        NSLog(@"Could not set rendering callback!");
+        AudioComponentInstanceDispose(_audioUnit);
+        _audioUnit = NULL;
+        return NO;
+    }
 
     // Finally, initialize and start the RemoteIO audio unit.
     status = AudioUnitInitialize(_audioUnit);
@@ -536,6 +540,8 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
         _audioUnit = NULL;
         return NO;
     }
+
+    self.capturingContext->audioUnit = _audioUnit;
 
     return YES;
 }

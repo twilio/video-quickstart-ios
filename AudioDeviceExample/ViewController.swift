@@ -29,6 +29,7 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var disconnectButton: UIButton!
+    @IBOutlet weak var musicButton: UIButton!
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var remoteViewStack: UIStackView!
     @IBOutlet weak var roomTextField: UITextField!
@@ -46,6 +47,7 @@ class ViewController: UIViewController {
 
         title = "AudioDevice Example"
         disconnectButton.isHidden = true
+        musicButton.isHidden = true
         disconnectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
         connectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
         roomTextField.autocapitalizationType = .none
@@ -171,6 +173,8 @@ class ViewController: UIViewController {
         self.roomLabel.isHidden = inRoom
         self.disconnectButton.isHidden = !inRoom
         self.disconnectButton.isEnabled = inRoom
+        self.musicButton.isHidden = !inRoom
+        self.musicButton.isEnabled = inRoom
         UIApplication.shared.isIdleTimerDisabled = inRoom
         if #available(iOS 11.0, *) {
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()

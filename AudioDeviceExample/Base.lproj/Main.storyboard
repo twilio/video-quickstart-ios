@@ -159,6 +159,7 @@
                         <outlet property="connectButton" destination="jgR-Qy-dC6" id="AHC-LZ-2fO"/>
                         <outlet property="disconnectButton" destination="krA-sT-Z3g" id="bY5-b1-Kgm"/>
                         <outlet property="messageLabel" destination="ebq-ja-6iU" id="yjH-dj-KgF"/>
+                        <outlet property="musicButton" destination="QzL-Qu-Vi9" id="tyl-5D-rf6"/>
                         <outlet property="remoteViewStack" destination="2VU-s1-tUr" id="Tl6-vT-VUZ"/>
                         <outlet property="roomLabel" destination="Zud-AS-DEE" id="20X-Ci-kMk"/>
                         <outlet property="roomLine" destination="7dZ-Ur-uSj" id="FnZ-FM-uD0"/>
