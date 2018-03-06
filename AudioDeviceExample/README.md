@@ -10,9 +10,14 @@ Uses a RemoteIO audio unit to playback stereo audio at up to 48 kHz. In contrast
 
 **ExampleAudioEngineDevice**
 
-Coming soon.
+Uses the CoreAudio's VoiceProcessingIO audio unit to record and playback at up to 48KHz. Since this example supports audio capturing, the audio device uses the built-in echo cancellation provided by CoreAudio's VoiceProcessingIO audio unit. The example uses AVAudioEngine in manual rendering mode for mixing the Remote Participant's audio and audio from a file. CoreAudio receives the mixed audio samples from the AVAudioUnit's 
+output node.
 
-Use AVAudioEngine to play and record Room audio, while mixing in sound effects.
+Please note, this example requires iOS 11.0 or above.
+
+Following example describes how audio device uses TwilioVideo, AVAudioEngine, and CoreAudio -
+
+<kbd><img width="600px" src="../images/quickstart/audio-engine-example.jpg"/></kbd>
 
 ### Setup
 

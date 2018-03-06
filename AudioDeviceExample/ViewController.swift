@@ -44,8 +44,8 @@ class ViewController: UIViewController {
     let kTextBottomPadding = CGFloat(4)
     let kMaxRemoteVideos = Int(2)
 
-    static let coreAudioDeviceText = "CoreAudio Stereo Playout"
-    static let engineAudioDeviceText = "AVAudioEngine Audio Mixing"
+    static let coreAudioDeviceText = "CoreAudio Device"
+    static let engineAudioDeviceText = "AudioEngine Device"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,12 +57,8 @@ class ViewController: UIViewController {
         connectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
         roomTextField.autocapitalizationType = .none
         roomTextField.delegate = self
-        if #available(iOS 11.0, *) {
-            audioDeviceButton.isHidden = false;
-            logMessage(messageText: ViewController.coreAudioDeviceText + " Device selected")
-        } else {
-            audioDeviceButton.isHidden = true;
-        }
+        logMessage(messageText: ViewController.coreAudioDeviceText + " Device selected")
+        audioDeviceButton.setTitle("CoreAudio Device", for: .normal)
     }
 
     override func didReceiveMemoryWarning() {
@@ -82,27 +78,42 @@ class ViewController: UIViewController {
                                               style: .default,
                                               handler: { (action) -> Void in
             self.audioDevice = ExampleCoreAudioDevice()
+            self.audioDeviceButton.setTitle("CoreAudio Device", for: .normal)
             self.logMessage(messageText: ViewController.coreAudioDeviceText + " Device Selected")
         })
         alertController.addAction(coreAudioDeviceButton!)
 
+        // EngineAudioDevice
+        var audioEngineDeviceTitle = ""
         if #available(iOS 11.0, *) {
-            // EngineAudioDevice
-            engineAudioDeviceButton = UIAlertAction(title: ViewController.engineAudioDeviceText,
-                                                    style: .default,
-                                                    handler: { (action) -> Void in
-                self.audioDevice = ExampleEngineAudioDevice()
-                self.logMessage(messageText: ViewController.engineAudioDeviceText + " Device Selected")
-            })
-            alertController.addAction(engineAudioDeviceButton!)
+            audioEngineDeviceTitle = "AVAudioEngine Device"
+        } else {
+            audioEngineDeviceTitle = "AVAudioEngine Device (iOS 11+ only)"
+        }
+        engineAudioDeviceButton = UIAlertAction(title: audioEngineDeviceTitle,
+                                                style: .default,
+                                                handler: { (action) -> Void in
+            self.audioDevice = ExampleAudioEngineDevice()
+            self.audioDeviceButton.setTitle("AudioEngine Device", for: .normal)
+            self.logMessage(messageText: ViewController.engineAudioDeviceText + " Device Selected")
+        })
 
-            if (self.audioDevice.isKind(of: ExampleCoreAudioDevice.self)) {
-                selectedButton = coreAudioDeviceButton
-            } else if (self.audioDevice.isKind(of: ExampleEngineAudioDevice.self)) {
-                selectedButton = engineAudioDeviceButton
+        if #available(iOS 11.0, *) {
+            if let deviceButton = engineAudioDeviceButton {
+                deviceButton.isEnabled = true
             }
         } else {
+            if let deviceButton = engineAudioDeviceButton {
+                deviceButton.isEnabled = false
+            }
+        }
+
+        alertController.addAction(engineAudioDeviceButton!)
+
+        if (self.audioDevice.isKind(of: ExampleCoreAudioDevice.self)) {
             selectedButton = coreAudioDeviceButton
+        } else if (self.audioDevice.isKind(of: ExampleAudioEngineDevice.self)) {
+            selectedButton = engineAudioDeviceButton
         }
 
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -185,7 +196,7 @@ class ViewController: UIViewController {
 
     @IBAction func playMusic(sender: UIButton) {
         if #available(iOS 11.0, *) {
-            if let audioDevie = self.audioDevice as? ExampleEngineAudioDevice {
+            if let audioDevie = self.audioDevice as? ExampleAudioEngineDevice {
                 audioDevie.playMusic()
             }
         }
@@ -239,7 +250,7 @@ class ViewController: UIViewController {
         UIApplication.shared.isIdleTimerDisabled = inRoom
 
         if #available(iOS 11.0, *) {
-            if ((self.audioDevice as? ExampleEngineAudioDevice) != nil) {
+            if ((self.audioDevice as? ExampleAudioEngineDevice) != nil) {
                 self.musicButton.isHidden = !inRoom
                 self.musicButton.isEnabled = inRoom
             }
@@ -300,8 +311,8 @@ class ViewController: UIViewController {
         TwilioVideo.audioDevice = self.audioDevice
 
         if #available(iOS 11.0, *) {
-            // Only the ExampleEngineAudioDevice supports local audio capturing.
-            if ((TwilioVideo.audioDevice as? ExampleEngineAudioDevice) != nil) {
+            // Only the ExampleAudioEngineDevice supports local audio capturing.
+            if ((TwilioVideo.audioDevice as? ExampleAudioEngineDevice) != nil) {
                 localAudioTrack = TVILocalAudioTrack()
             }
         }
