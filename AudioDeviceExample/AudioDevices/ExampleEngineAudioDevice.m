@@ -15,14 +15,18 @@ static size_t const kPreferredNumberOfChannels = 1;
 static size_t const kAudioSampleSize = 2;
 static uint32_t const kPreferredSampleRate = 48000;
 
-typedef struct ExampleEngineAudioContext {
+typedef struct RendererAudioContext {
     TVIAudioDeviceContext deviceContext;
-    size_t expectedFramesPerBuffer;
     size_t maxFramesPerBuffer;
-    void *renderBlock;
+    AudioBufferList *bufferList;
+    void *renderBlock; // AVAudioEngineManualRenderingBlock
+} RendererAudioContext;
+
+typedef struct CapturerAudioContext {
+    TVIAudioDeviceContext deviceContext;
     AudioBufferList *bufferList;
     AudioUnit audioUnit;
-} ExampleEngineAudioContext;
+} CapturerAudioContext;
 
 // The RemoteIO audio unit uses bus 0 for ouptut, and bus 1 for input.
 static int kOutputBus = 0;
@@ -36,13 +40,14 @@ static size_t kMaximumFramesPerBuffer = 1156;
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
 @property (nonatomic, assign) AudioUnit audioUnit;
 @property (nonatomic, assign) AudioBufferList audioBufferList;
+@property (nonatomic, assign, getter=isCapturerInitialized) BOOL capturerInitialized;
+@property (nonatomic, assign, getter=isRendererInitialized) BOOL rendererInitialized;
 
 @property (nonatomic, strong, nullable) TVIAudioFormat *renderingFormat;
 @property (nonatomic, strong, nullable) TVIAudioFormat *capturingFormat;
-@property (atomic, assign) ExampleEngineAudioContext *renderingContext;
-@property (nonatomic, assign) ExampleEngineAudioContext *capturingContext;
+@property (atomic, assign) RendererAudioContext *renderingContext;
+@property (nonatomic, assign) CapturerAudioContext *capturingContext;
 
-// AVAudioEngine
 @property (nonatomic, strong) AVAudioEngine *engine;
 @property (nonatomic, strong) AVAudioPlayerNode *player;
 @property (nonatomic, strong) AVAudioUnitReverb *reverb;
@@ -56,28 +61,18 @@ static size_t kMaximumFramesPerBuffer = 1156;
 - (id)init {
     if (@available(iOS 11.0, *)) {
         self = [super init];
+
         if (self) {
-
-            self.capturingFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
-                                                                 sampleRate:kPreferredSampleRate
-                                                            framesPerBuffer:kMaximumFramesPerBuffer];
-
-            self.renderingFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
-                                                                 sampleRate:kPreferredSampleRate
-                                                            framesPerBuffer:kMaximumFramesPerBuffer];
-
-            [self setupAVAudioSession];
         }
+
+        return self;
     } else {
         self = nil;
-
         NSException *exception = [NSException exceptionWithName:@"ExampleEngineAudioDeviceNotSupported"
                                                          reason:@"ExampleEngineAudioDevice requires iOS 11.0 or greater." userInfo:nil];
         [exception raise];
-
         return self;
     }
-    return self;
 }
 
 - (void)dealloc {
@@ -143,7 +138,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
         _renderingContext->renderBlock = (__bridge void *)(_engine.manualRenderingBlock);
 
-        ExampleEngineAudioContext *context = _renderingContext;
+        RendererAudioContext *context = _renderingContext;
         success = [_engine.inputNode setManualRenderingInputPCMFormat:format
                                                            inputBlock: ^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
 
@@ -209,13 +204,18 @@ static size_t kMaximumFramesPerBuffer = 1156;
 #pragma mark - TVIAudioDeviceRenderer
 
 - (nullable TVIAudioFormat *)renderFormat {
-
     if (!_renderingFormat) {
+
+        if (!self.isCapturerInitialized) {
+            [self setupAVAudioSession];
+            _rendererInitialized = YES;
+        }
+
         /*
          * Assume that the AVAudioSession has already been configured and started and that the values
          * for sampleRate and IOBufferDuration are final.
          */
-        _renderingFormat = [[self class] activeRenderingFormat];
+        _renderingFormat = [[self class] activeFormat];
     }
 
     return _renderingFormat;
@@ -233,19 +233,14 @@ static size_t kMaximumFramesPerBuffer = 1156;
     @synchronized(self) {
         NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
 
-        self.renderingContext = malloc(sizeof(ExampleEngineAudioContext));
-        memset(self.renderingContext, 0, sizeof(ExampleEngineAudioContext));
+        self.renderingContext = malloc(sizeof(RendererAudioContext));
+        memset(self.renderingContext, 0, sizeof(RendererAudioContext));
 
         self.renderingContext->deviceContext = context;
         self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
         if (@available(iOS 11.0, *)) {
             self.renderingContext->renderBlock = (__bridge void *)(_engine.manualRenderingBlock);
         }
-
-        const NSTimeInterval sessionBufferDuration = [AVAudioSession sharedInstance].IOBufferDuration;
-        const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
-        const size_t sessionFramesPerBuffer = (size_t)(sessionSampleRate * sessionBufferDuration + .5);
-        self.renderingContext->expectedFramesPerBuffer = sessionFramesPerBuffer;
 
         [self setupAudioEngine];
 
@@ -263,6 +258,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 }
 
 - (BOOL)stopRendering {
+    _rendererInitialized = NO;
     [self stopAudioUnit];
 
     @synchronized(self) {
@@ -284,22 +280,36 @@ static size_t kMaximumFramesPerBuffer = 1156;
 #pragma mark - TVIAudioDeviceCapturer
 
 - (nullable TVIAudioFormat *)captureFormat {
-    return self.capturingFormat;
+    if (!_capturingFormat) {
+
+        if (!self.isRendererInitialized) {
+            [self setupAVAudioSession];
+            _capturerInitialized = YES;
+        }
+
+        /*
+         * Assume that the AVAudioSession has already been configured and started and that the values
+         * for sampleRate and IOBufferDuration are final.
+         */
+        _capturingFormat = [[self class] activeFormat];
+    }
+
+    return _capturingFormat;
 }
 
 - (BOOL)initializeCapturer {
     _audioBufferList.mNumberBuffers = 1;
     _audioBufferList.mBuffers[0].mNumberChannels = kPreferredNumberOfChannels;
+
     return YES;
 }
 
 - (BOOL)startCapturing:(nonnull TVIAudioDeviceContext)context {
     @synchronized (self) {
-        self.capturingContext = malloc(sizeof(ExampleEngineAudioContext));
-        memset(self.capturingContext, 0, sizeof(ExampleEngineAudioContext));
+        self.capturingContext = malloc(sizeof(CapturerAudioContext));
+        memset(self.capturingContext, 0, sizeof(CapturerAudioContext));
 
         self.capturingContext->deviceContext = context;
-        self.capturingContext->maxFramesPerBuffer = _capturingFormat.framesPerBuffer;
         self.capturingContext->bufferList = &_audioBufferList;
 
         if (self.renderingContext) {
@@ -316,6 +326,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 }
 
 - (BOOL)stopCapturing {
+    _capturerInitialized = YES;
     return YES;
 }
 
@@ -331,7 +342,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     assert(bufferList->mBuffers[0].mNumberChannels <= 2);
     assert(bufferList->mBuffers[0].mNumberChannels > 0);
 
-    ExampleEngineAudioContext *context = (ExampleEngineAudioContext *)refCon;
+    RendererAudioContext *context = (RendererAudioContext *)refCon;
     context->bufferList = bufferList;
 
     int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
@@ -375,7 +386,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
         return noErr;
     }
 
-    ExampleEngineAudioContext *context = (ExampleEngineAudioContext *)refCon;
+    CapturerAudioContext *context = (CapturerAudioContext *)refCon;
     AudioBufferList *audioBufferList = context->bufferList;
     audioBufferList->mBuffers[0].mDataByteSize = numFrames * sizeof(UInt16) * kPreferredNumberOfChannels;
     audioBufferList->mBuffers[0].mData = NULL;
@@ -397,7 +408,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
 
 #pragma mark - Private (AVAudioSession and CoreAudio)
 
-+ (nullable TVIAudioFormat *)activeRenderingFormat {
++ (nullable TVIAudioFormat *)activeFormat {
     /*
      * Use the pre-determined maximum frame size. AudioUnit callbacks are variable, and in most sitations will be close
      * to the `AVAudioSession.preferredIOBufferDuration` that we've requested.
@@ -463,8 +474,8 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
     }
 }
 
-- (BOOL)setupAudioUnitWithRenderContext:(ExampleEngineAudioContext *)renderContext
-                         capturingContext:(ExampleEngineAudioContext *)capturingContext {
+- (BOOL)setupAudioUnitWithRenderContext:(RendererAudioContext *)renderContext
+                         capturingContext:(CapturerAudioContext *)capturingContext {
     assert(renderContext);
     assert(capturingContext);
 
@@ -688,7 +699,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
     NSLog(@"A route change ocurred while the AudioUnit was started. Checking the active audio format.");
 
     // Determine if the format actually changed. We only care about sample rate and number of channels.
-    TVIAudioFormat *activeFormat = [[self class] activeRenderingFormat];
+    TVIAudioFormat *activeFormat = [[self class] activeFormat];
 
     if (![activeFormat isEqual:_renderingFormat]) {
         NSLog(@"The rendering format changed. Restarting with %@", activeFormat);
