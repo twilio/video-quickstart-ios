@@ -19,7 +19,7 @@ typedef struct ExampleEngineAudioContext {
     TVIAudioDeviceContext deviceContext;
     size_t expectedFramesPerBuffer;
     size_t maxFramesPerBuffer;
-    __unsafe_unretained AVAudioEngineManualRenderingBlock renderBlock;
+    void *renderBlock;
     AudioBufferList *bufferList;
     AudioUnit audioUnit;
 } ExampleEngineAudioContext;
@@ -54,24 +54,38 @@ static size_t kMaximumFramesPerBuffer = 1156;
 #pragma mark - Init & Dealloc
 
 - (id)init {
-    self = [super init];
-    if (self) {
+    if (@available(iOS 11.0, *)) {
+        self = [super init];
+        if (self) {
 
-        self.capturingFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
-                                                             sampleRate:kPreferredSampleRate
-                                                        framesPerBuffer:kMaximumFramesPerBuffer];
+            self.capturingFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
+                                                                 sampleRate:kPreferredSampleRate
+                                                            framesPerBuffer:kMaximumFramesPerBuffer];
 
-        self.renderingFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
-                                                             sampleRate:kPreferredSampleRate
-                                                        framesPerBuffer:kMaximumFramesPerBuffer];
+            self.renderingFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
+                                                                 sampleRate:kPreferredSampleRate
+                                                            framesPerBuffer:kMaximumFramesPerBuffer];
 
-        [self setupAVAudioSession];
+            [self setupAVAudioSession];
+        }
+    } else {
+        self = nil;
+
+        NSException *exception = [NSException exceptionWithName:@"ExampleEngineAudioDeviceNotSupported"
+                                                         reason:@"ExampleEngineAudioDevice requires iOS 11.0 or greater." userInfo:nil];
+        [exception raise];
+
+        return self;
     }
     return self;
 }
 
 - (void)dealloc {
     [self unregisterAVAudioSessionObservers];
+}
+
++ (NSString *)description {
+    return @"AVAudioEngine Audio Mixing";
 }
 
 /*
@@ -115,43 +129,45 @@ static size_t kMaximumFramesPerBuffer = 1156;
     NSError *error = nil;
     const AudioStreamBasicDescription asbd = [self.renderingFormat streamDescription];
     AVAudioFormat *format = [[AVAudioFormat alloc] initWithStreamDescription:&asbd];
-    BOOL success = [_engine enableManualRenderingMode:AVAudioEngineManualRenderingModeRealtime
-                                               format:format
-                                    maximumFrameCount:(uint32_t)kMaximumFramesPerBuffer
-                                                error:&error];
-    if (!success) {
-        NSLog(@"Failed to setup manual rendering mode, error = %@", error);
-        return;
-    }
+    if (@available(iOS 11.0, *)) {
+        BOOL success = [_engine enableManualRenderingMode:AVAudioEngineManualRenderingModeRealtime
+                                                   format:format
+                                        maximumFrameCount:(uint32_t)kMaximumFramesPerBuffer
+                                                    error:&error];
+        if (!success) {
+            NSLog(@"Failed to setup manual rendering mode, error = %@", error);
+            return;
+        }
 
-    [_engine connect:_engine.inputNode to:_engine.mainMixerNode format:format];
+        [_engine connect:_engine.inputNode to:_engine.mainMixerNode format:format];
 
-    _renderingContext->renderBlock = _engine.manualRenderingBlock;
+        _renderingContext->renderBlock = (__bridge void *)(_engine.manualRenderingBlock);
 
-    ExampleEngineAudioContext *context = _renderingContext;
-    success = [_engine.inputNode setManualRenderingInputPCMFormat:format
-                                                       inputBlock: ^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
+        ExampleEngineAudioContext *context = _renderingContext;
+        success = [_engine.inputNode setManualRenderingInputPCMFormat:format
+                                                           inputBlock: ^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
 
-                                                           AudioBufferList *bufferList = context->bufferList;
-                                                           int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
-                                                           UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
+                                                               AudioBufferList *bufferList = context->bufferList;
+                                                               int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
+                                                               UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
 
-                                                           /*
-                                                            * Pull decoded the all remote Participant's mixed audio data from the media
-                                                            * engine into the AudioUnit's AudioBufferList.
-                                                            */
-                                                           TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
+                                                               /*
+                                                                * Pull decoded the all remote Participant's mixed audio data from the media
+                                                                * engine into the AudioUnit's AudioBufferList.
+                                                                */
+                                                               TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
 
-                                                           return bufferList;
-                                                       }];
-    if (!success) {
-        NSLog(@"Failed to set the manual rendering block");
-        return;
-    }
+                                                               return bufferList;
+                                                           }];
+        if (!success) {
+            NSLog(@"Failed to set the manual rendering block");
+            return;
+        }
 
-    success = [_engine startAndReturnError:&error];
-    if (!success) {
-        NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+        success = [_engine startAndReturnError:&error];
+        if (!success) {
+            NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+        }
     }
 }
 
@@ -222,7 +238,9 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
         self.renderingContext->deviceContext = context;
         self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
-        self.renderingContext->renderBlock = _engine.manualRenderingBlock;
+        if (@available(iOS 11.0, *)) {
+            self.renderingContext->renderBlock = (__bridge void *)(_engine.manualRenderingBlock);
+        }
 
         const NSTimeInterval sessionBufferDuration = [AVAudioSession sharedInstance].IOBufferDuration;
         const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
@@ -323,19 +341,23 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     assert(numFrames <= context->maxFramesPerBuffer);
     assert(audioBufferSizeInBytes == (bufferList->mBuffers[0].mNumberChannels * kAudioSampleSize * numFrames));
     OSStatus outputStatus = noErr;
-    const AVAudioEngineManualRenderingStatus status = context->renderBlock(numFrames, bufferList, &outputStatus);
 
-    /*
-     * Render silence if there are temporary mismatches between CoreAudio and our rendering format or AVAudioEngine
-     * could not render the audio samples.
-     */
-    if (numFrames > context->maxFramesPerBuffer ||
-        status != AVAudioEngineManualRenderingStatusSuccess) {
-        if (numFrames > context->maxFramesPerBuffer) {
-            NSLog(@"Can handle a max of %u frames but got %u.", (unsigned int)context->maxFramesPerBuffer, (unsigned int)numFrames);
+    if (@available(iOS 11.0, *)) {
+        AVAudioEngineManualRenderingBlock renderBlock = (__bridge AVAudioEngineManualRenderingBlock)(context->renderBlock);
+        const AVAudioEngineManualRenderingStatus status = renderBlock(numFrames, bufferList, &outputStatus);
+
+        /*
+         * Render silence if there are temporary mismatches between CoreAudio and our rendering format or AVAudioEngine
+         * could not render the audio samples.
+         */
+        if (numFrames > context->maxFramesPerBuffer ||
+            status != AVAudioEngineManualRenderingStatusSuccess) {
+            if (numFrames > context->maxFramesPerBuffer) {
+                NSLog(@"Can handle a max of %u frames but got %u.", (unsigned int)context->maxFramesPerBuffer, (unsigned int)numFrames);
+            }
+            *actionFlags |= kAudioUnitRenderAction_OutputIsSilence;
+            memset(audioBuffer, 0, audioBufferSizeInBytes);
         }
-        *actionFlags |= kAudioUnitRenderAction_OutputIsSilence;
-        memset(audioBuffer, 0, audioBufferSizeInBytes);
     }
 
     return noErr;

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14101" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="TlR-oo-oyD">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="TlR-oo-oyD">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14086"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -58,6 +58,20 @@
                                 </state>
                                 <connections>
                                     <action selector="connectWithSender:" destination="jSN-F6-Q4K" eventType="touchUpInside" id="oOq-Dv-oOH"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wnp-TE-ewu" userLabel="Select AudioDevice">
+                                <rect key="frame" x="16" y="381" width="343" height="44"/>
+                                <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="N3o-Nw-SRW"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <state key="normal" title="Select Audio Device">
+                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="selectAudioDevice" destination="jSN-F6-Q4K" eventType="touchUpInside" id="WCB-F7-ykw"/>
                                 </connections>
                             </button>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="EkL-i8-cDP" userLabel="Room Text Field">
@@ -119,13 +133,18 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="jgR-Qy-dC6" firstAttribute="top" secondItem="Zud-AS-DEE" secondAttribute="bottom" constant="21" id="0Am-2H-kE1"/>
+                            <constraint firstItem="Wnp-TE-ewu" firstAttribute="height" secondItem="jgR-Qy-dC6" secondAttribute="height" id="0at-qR-wnq"/>
                             <constraint firstItem="krA-sT-Z3g" firstAttribute="leading" secondItem="3Bh-pO-6uY" secondAttribute="leadingMargin" constant="-5" id="4jO-qh-yH2"/>
                             <constraint firstItem="7dZ-Ur-uSj" firstAttribute="top" secondItem="Zud-AS-DEE" secondAttribute="bottom" id="AaN-mH-AYD"/>
                             <constraint firstItem="jgR-Qy-dC6" firstAttribute="top" secondItem="EkL-i8-cDP" secondAttribute="bottom" constant="16" id="FAy-WH-Wvc"/>
+                            <constraint firstItem="Wnp-TE-ewu" firstAttribute="top" secondItem="jgR-Qy-dC6" secondAttribute="bottom" constant="12" id="HgY-vJ-Drz"/>
+                            <constraint firstItem="Wnp-TE-ewu" firstAttribute="centerX" secondItem="jgR-Qy-dC6" secondAttribute="centerX" id="NaC-sP-RM2"/>
                             <constraint firstAttribute="leadingMargin" secondItem="7dZ-Ur-uSj" secondAttribute="leading" id="OQz-Cn-mbU"/>
                             <constraint firstItem="ebq-ja-6iU" firstAttribute="leading" secondItem="3Bh-pO-6uY" secondAttribute="leading" constant="20" id="OWm-Gg-PVO"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="QzL-Qu-Vi9" secondAttribute="trailing" constant="20" symbolic="YES" id="PgV-Vc-ybn"/>
+                            <constraint firstItem="Wnp-TE-ewu" firstAttribute="centerX" secondItem="jgR-Qy-dC6" secondAttribute="centerX" id="SIA-Ak-Ht5"/>
                             <constraint firstItem="ebq-ja-6iU" firstAttribute="top" secondItem="8oD-ke-cGW" secondAttribute="bottom" constant="10" id="TRB-BK-jVi"/>
+                            <constraint firstItem="Wnp-TE-ewu" firstAttribute="centerX" secondItem="jgR-Qy-dC6" secondAttribute="centerX" id="TcT-k9-Ykp"/>
                             <constraint firstItem="Zud-AS-DEE" firstAttribute="centerY" secondItem="3Bh-pO-6uY" secondAttribute="centerY" constant="-40" id="W6X-SU-S4S"/>
                             <constraint firstItem="EkL-i8-cDP" firstAttribute="leading" secondItem="Zud-AS-DEE" secondAttribute="trailing" constant="21" id="Xef-61-OpD"/>
                             <constraint firstItem="QzL-Qu-Vi9" firstAttribute="width" secondItem="krA-sT-Z3g" secondAttribute="width" id="Z1S-0F-XCU"/>
@@ -143,6 +162,7 @@
                             <constraint firstAttribute="trailingMargin" secondItem="7dZ-Ur-uSj" secondAttribute="trailing" id="nNa-6o-3I1"/>
                             <constraint firstItem="2VU-s1-tUr" firstAttribute="leading" secondItem="3Bh-pO-6uY" secondAttribute="leading" id="pil-17-iJr"/>
                             <constraint firstAttribute="trailing" secondItem="2VU-s1-tUr" secondAttribute="trailing" id="tXe-fa-kD7"/>
+                            <constraint firstItem="Wnp-TE-ewu" firstAttribute="width" secondItem="jgR-Qy-dC6" secondAttribute="width" id="u7J-fx-iZy"/>
                             <constraint firstItem="EkL-i8-cDP" firstAttribute="baseline" secondItem="Zud-AS-DEE" secondAttribute="baseline" id="wcj-oJ-1M9"/>
                             <constraint firstAttribute="leadingMargin" secondItem="Zud-AS-DEE" secondAttribute="leading" id="zEL-TX-UbL"/>
                         </constraints>
@@ -156,6 +176,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="audioDeviceButton" destination="Wnp-TE-ewu" id="T3H-AL-cv1"/>
                         <outlet property="connectButton" destination="jgR-Qy-dC6" id="AHC-LZ-2fO"/>
                         <outlet property="disconnectButton" destination="krA-sT-Z3g" id="bY5-b1-Kgm"/>
                         <outlet property="messageLabel" destination="ebq-ja-6iU" id="yjH-dj-KgF"/>
