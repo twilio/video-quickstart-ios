@@ -1,11 +1,11 @@
 //
-//  ExampleAudioEngineDevice.m
+//  ExampleAVAudioEngineDevice.m
 //  AudioDeviceExample
 //
 //  Copyright © 2018 Twilio, Inc. All rights reserved.
 //
 
-#import "ExampleAudioEngineDevice.h"
+#import "ExampleAVAudioEngineDevice.h"
 
 // We want to get as close to 10 msec buffers as possible because this is what the media engine prefers.
 static double const kPreferredIOBufferDuration = 0.01;
@@ -35,7 +35,7 @@ static int kInputBus = 1;
 // This is the maximum slice size for RemoteIO (as observed in the field). We will double check at initialization time.
 static size_t kMaximumFramesPerBuffer = 1156;
 
-@interface ExampleAudioEngineDevice()
+@interface ExampleAVAudioEngineDevice()
 
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
 @property (nonatomic, assign) AudioUnit audioUnit;
@@ -54,7 +54,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 @end
 
-@implementation ExampleAudioEngineDevice
+@implementation ExampleAVAudioEngineDevice
 
 #pragma mark - Init & Dealloc
 
@@ -76,8 +76,8 @@ static size_t kMaximumFramesPerBuffer = 1156;
         return self;
     } else {
         self = nil;
-        NSException *exception = [NSException exceptionWithName:@"ExampleAudioEngineDeviceNotSupported"
-                                                         reason:@"ExampleAudioEngineDevice requires iOS 11.0 or greater." userInfo:nil];
+        NSException *exception = [NSException exceptionWithName:@"ExampleAVAudioEngineDeviceNotSupported"
+                                                         reason:@"ExampleAVAudioEngineDevice requires iOS 11.0 or greater." userInfo:nil];
         [exception raise];
         return self;
     }
