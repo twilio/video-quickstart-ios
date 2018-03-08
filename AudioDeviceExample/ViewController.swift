@@ -24,7 +24,7 @@ class ViewController: UIViewController {
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack!
     var localAudioTrack: TVILocalAudioTrack!
-    var audioDevice: TVIAudioDevice = ExampleAudioEngineDevice()
+    var audioDevice: TVIAudioDevice = ExampleAVAudioEngineDevice()
 
     // MARK: UI Element Outlets and handles
 
@@ -44,8 +44,8 @@ class ViewController: UIViewController {
     let kTextBottomPadding = CGFloat(4)
     let kMaxRemoteVideos = Int(2)
 
-    static let coreAudioDeviceText = "CoreAudio Device"
-    static let engineAudioDeviceText = "AudioEngine Device"
+    static let coreAudioDeviceText = "CoreAudioDevice"
+    static let engineAudioDeviceText = "AVAudioEngineDevice"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -86,7 +86,7 @@ class ViewController: UIViewController {
         // EngineAudioDevice
         var audioEngineDeviceTitle = ""
         if #available(iOS 11.0, *) {
-            audioEngineDeviceTitle = "AVAudioEngine Device"
+            audioEngineDeviceTitle = ViewController.engineAudioDeviceText
         } else {
             audioEngineDeviceTitle = "AVAudioEngine Device (iOS 11+ only)"
         }
@@ -110,7 +110,7 @@ class ViewController: UIViewController {
 
         if (self.audioDevice.isKind(of: ExampleCoreAudioDevice.self)) {
             selectedButton = coreAudioDeviceButton
-        } else if (self.audioDevice.isKind(of: ExampleAudioEngineDevice.self)) {
+        } else if (self.audioDevice.isKind(of: ExampleAVAudioEngineDevice.self)) {
             selectedButton = engineAudioDeviceButton
         }
 
@@ -135,8 +135,8 @@ class ViewController: UIViewController {
         self.unprepareLocalMedia()
 
         self.audioDevice = ExampleCoreAudioDevice()
-        self.audioDeviceButton.setTitle("CoreAudio Device", for: .normal)
-        self.logMessage(messageText: ViewController.coreAudioDeviceText + " Device Selected")
+        self.audioDeviceButton.setTitle(ViewController.coreAudioDeviceText, for: .normal)
+        self.logMessage(messageText: ViewController.coreAudioDeviceText + " Selected")
 
         self.prepareLocalMedia()
     }
@@ -148,9 +148,9 @@ class ViewController: UIViewController {
          */
         self.unprepareLocalMedia()
 
-        self.audioDevice = ExampleAudioEngineDevice()
-        self.audioDeviceButton.setTitle("AudioEngine Device", for: .normal)
-        self.logMessage(messageText: ViewController.coreAudioDeviceText + " Device Selected")
+        self.audioDevice = ExampleAVAudioEngineDevice()
+        self.audioDeviceButton.setTitle(ViewController.engineAudioDeviceText, for: .normal)
+        self.logMessage(messageText: ViewController.coreAudioDeviceText + " Selected")
 
         self.prepareLocalMedia()
     }
@@ -172,7 +172,6 @@ class ViewController: UIViewController {
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
 
-            // This example does not share audio since the ExampleCoreAudioDevice is playback only.
             if let videoTrack = self.localVideoTrack {
                 builder.videoTracks = [videoTrack]
             }
@@ -219,8 +218,8 @@ class ViewController: UIViewController {
 
     @IBAction func playMusic(sender: UIButton) {
         if #available(iOS 11.0, *) {
-            if let audioDevie = self.audioDevice as? ExampleAudioEngineDevice {
-                audioDevie.playMusic()
+            if let audioDevice = self.audioDevice as? ExampleAVAudioEngineDevice {
+                audioDevice.playMusic()
             }
         }
     }
@@ -271,17 +270,17 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = !inRoom
         self.disconnectButton.isEnabled = inRoom
         UIApplication.shared.isIdleTimerDisabled = inRoom
+        self.audioDeviceButton.isHidden = inRoom
+        self.audioDeviceButton.isEnabled = !inRoom
 
         if #available(iOS 11.0, *) {
-            if ((self.audioDevice as? ExampleAudioEngineDevice) != nil) {
+            if ((self.audioDevice as? ExampleAVAudioEngineDevice) != nil) {
                 self.musicButton.isHidden = !inRoom
                 self.musicButton.isEnabled = inRoom
             }
-            self.audioDeviceButton.isHidden = inRoom
-            self.audioDeviceButton.isEnabled = !inRoom
-
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         }
+
         self.setNeedsStatusBarAppearanceUpdate()
 
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
@@ -334,8 +333,8 @@ class ViewController: UIViewController {
         TwilioVideo.audioDevice = self.audioDevice
 
         if #available(iOS 11.0, *) {
-            // Only the ExampleAudioEngineDevice supports local audio capturing.
-            if ((TwilioVideo.audioDevice as? ExampleAudioEngineDevice) != nil) {
+            // Only the ExampleAVAudioEngineDevice supports local audio capturing.
+            if ((TwilioVideo.audioDevice as? ExampleAVAudioEngineDevice) != nil) {
                 localAudioTrack = TVILocalAudioTrack()
             }
         }

@@ -17,7 +17,7 @@ Please note, this example requires iOS 11.0 or above.
 
 Following example describes how audio device uses TwilioVideo, AVAudioEngine, and CoreAudio -
 
-<kbd><img width="600px" src="../images/quickstart/audio-engine-example.jpg"/></kbd>
+<img width="600px" src="../images/quickstart/audio-engine-example.jpg"/>
 
 ### Setup
 

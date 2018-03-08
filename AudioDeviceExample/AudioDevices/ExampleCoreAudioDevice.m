@@ -53,7 +53,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 }
 
 + (NSString *)description {
-    return @"CoreAudio Stereo Playout";
+    return @"ExampleCoreAudioDevice (stereo playback)";
 }
 
 /*
