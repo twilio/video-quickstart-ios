@@ -39,7 +39,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
 @property (nonatomic, assign) AudioUnit audioUnit;
-@property (nonatomic, assign) AudioBufferList audioBufferList;
+@property (nonatomic, assign) AudioBufferList captureBufferList;
 @property (nonatomic, assign, getter=isCapturerInitialized) BOOL capturerInitialized;
 @property (nonatomic, assign, getter=isRendererInitialized) BOOL rendererInitialized;
 
@@ -63,6 +63,14 @@ static size_t kMaximumFramesPerBuffer = 1156;
         self = [super init];
 
         if (self) {
+            self.renderingContext = malloc(sizeof(RendererAudioContext));
+            memset(self.renderingContext, 0, sizeof(RendererAudioContext));
+            [self setupAudioEngine];
+            self.renderingContext->renderBlock = (__bridge void *)(_engine.manualRenderingBlock);
+
+            self.capturingContext = malloc(sizeof(CapturerAudioContext));
+            memset(self.capturingContext, 0, sizeof(CapturerAudioContext));
+            self.capturingContext->bufferList = &_captureBufferList;
         }
 
         return self;
@@ -77,6 +85,11 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 - (void)dealloc {
     [self unregisterAVAudioSessionObservers];
+
+    [self teardownAudioEngine];
+
+    free(self.renderingContext);
+    self.renderingContext = NULL;
 }
 
 + (NSString *)description {
@@ -122,7 +135,8 @@ static size_t kMaximumFramesPerBuffer = 1156;
     [_engine stop];
 
     NSError *error = nil;
-    const AudioStreamBasicDescription asbd = [self.renderingFormat streamDescription];
+    const AudioStreamBasicDescription asbd = [[self renderFormat] streamDescription];
+    
     AVAudioFormat *format = [[AVAudioFormat alloc] initWithStreamDescription:&asbd];
     if (@available(iOS 11.0, *)) {
         BOOL success = [_engine enableManualRenderingMode:AVAudioEngineManualRenderingModeRealtime
@@ -146,11 +160,23 @@ static size_t kMaximumFramesPerBuffer = 1156;
                                                                int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
                                                                UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
 
-                                                               /*
-                                                                * Pull decoded the all remote Participant's mixed audio data from the media
-                                                                * engine into the AudioUnit's AudioBufferList.
-                                                                */
-                                                               TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
+                                                               if (context->deviceContext) {
+                                                                   /*
+                                                                    * Pull decoded the all remote Participant's mixed audio data from the media
+                                                                    * engine into the AudioUnit's AudioBufferList.
+                                                                    */
+                                                                   TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
+
+                                                               } else {
+
+                                                                   /*
+                                                                    * Return silence when we do not have the plaout device context. This is the
+                                                                    * case when the remote participant has not published an audio track yet.
+                                                                    * Since the audio graph and audio engine has been setup, we can still play
+                                                                    * the music file using the AVAudioEngine.
+                                                                    */
+                                                                   memset(audioBuffer, 0, audioBufferSizeInBytes);
+                                                               }
 
                                                                return bufferList;
                                                            }];
@@ -216,6 +242,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
          * for sampleRate and IOBufferDuration are final.
          */
         _renderingFormat = [[self class] activeFormat];
+        self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
     }
 
     return _renderingFormat;
@@ -231,47 +258,39 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 - (BOOL)startRendering:(nonnull TVIAudioDeviceContext)context {
     @synchronized(self) {
-        NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
+        /*
+         * Restart the audio unit if the audio graph is alreay setup and if remote participant deciceded to publish an
+         * audio track.
+         */
 
-        self.renderingContext = malloc(sizeof(RendererAudioContext));
-        memset(self.renderingContext, 0, sizeof(RendererAudioContext));
+        if (self.capturingContext->deviceContext) {
+            [self stopAudioUnit];
+            [self teardownAudioUnit];
+        }
 
         self.renderingContext->deviceContext = context;
-        self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
-        if (@available(iOS 11.0, *)) {
-            self.renderingContext->renderBlock = (__bridge void *)(_engine.manualRenderingBlock);
+
+        if (![self setupAudioUnitWithRenderContext:self.renderingContext
+                                  capturingContext:self.capturingContext]) {
+            return NO;
         }
 
-        [self setupAudioEngine];
-
-        if (self.capturingContext) {
-            if (![self setupAudioUnitWithRenderContext:self.renderingContext
-                                        capturingContext:self.capturingContext]) {
-                free(self.renderingContext);
-                self.renderingContext = NULL;
-                return NO;
-            }
-            return [self startAudioUnit];
-        }
+        return [self startAudioUnit];
     }
-    return YES;
 }
 
 - (BOOL)stopRendering {
     _rendererInitialized = NO;
-    [self stopAudioUnit];
 
     @synchronized(self) {
-        [self teardownAudioUnit];
-        [self teardownAudioEngine];
+        // If the capturer is runnning, we will not stop the audio unit.
+        if (!self.capturingContext->deviceContext) {
+            [self.player stop];
+            [self stopAudioUnit];
+            [self teardownAudioUnit];
+        }
 
-        NSAssert(self.renderingContext != NULL, @"Should have a rendering context.");
-        free(self.renderingContext);
-        self.renderingContext = NULL;
-
-        NSAssert(self.capturingContext != NULL, @"Should have a capture context.");
-        free(self.capturingContext);
-        self.capturingContext = NULL;
+        self.renderingContext->deviceContext = NULL;
     }
 
     return YES;
@@ -298,35 +317,47 @@ static size_t kMaximumFramesPerBuffer = 1156;
 }
 
 - (BOOL)initializeCapturer {
-    _audioBufferList.mNumberBuffers = 1;
-    _audioBufferList.mBuffers[0].mNumberChannels = kPreferredNumberOfChannels;
+    _captureBufferList.mNumberBuffers = 1;
+    _captureBufferList.mBuffers[0].mNumberChannels = kPreferredNumberOfChannels;
 
     return YES;
 }
 
 - (BOOL)startCapturing:(nonnull TVIAudioDeviceContext)context {
     @synchronized (self) {
-        self.capturingContext = malloc(sizeof(CapturerAudioContext));
-        memset(self.capturingContext, 0, sizeof(CapturerAudioContext));
+
+        // Restart the audio unit if the audio graph is alreay setup and if we publish an audio track.
+
+        if (self.renderingContext->deviceContext) {
+            [self stopAudioUnit];
+            [self teardownAudioUnit];
+        }
 
         self.capturingContext->deviceContext = context;
-        self.capturingContext->bufferList = &_audioBufferList;
 
-        if (self.renderingContext) {
-            if (![self setupAudioUnitWithRenderContext:self.renderingContext
-                                        capturingContext:self.capturingContext]) {
-                free(self.renderingContext);
-                self.renderingContext = NULL;
-                return NO;
-            }
-            return [self startAudioUnit];
+        if (![self setupAudioUnitWithRenderContext:self.renderingContext
+                                  capturingContext:self.capturingContext]) {
+            return NO;
         }
+
+        return [self startAudioUnit];
     }
-    return YES;
 }
 
 - (BOOL)stopCapturing {
-    _capturerInitialized = YES;
+    _capturerInitialized = NO;
+
+    @synchronized(self) {
+        // If the renderer is runnning, we will not stop the audio unit.
+        if (!self.renderingContext->deviceContext) {
+            [self.player stop];
+            [self stopAudioUnit];
+            [self teardownAudioUnit];
+        }
+
+        self.capturingContext->deviceContext = NULL;
+    }
+
     return YES;
 }
 
@@ -387,6 +418,11 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
     }
 
     CapturerAudioContext *context = (CapturerAudioContext *)refCon;
+
+    if (context->deviceContext == NULL) {
+        return noErr;
+    }
+
     AudioBufferList *audioBufferList = context->bufferList;
     audioBufferList->mBuffers[0].mDataByteSize = numFrames * sizeof(UInt16) * kPreferredNumberOfChannels;
     audioBufferList->mBuffers[0].mData = NULL;
@@ -402,7 +438,10 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
     int8_t *audioBuffer = (int8_t *)audioBufferList->mBuffers[0].mData;
     UInt32 audioBufferSizeInBytes = audioBufferList->mBuffers[0].mDataByteSize;
 
-    TVIAudioDeviceWriteCaptureData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
+    if (context->deviceContext) {
+        TVIAudioDeviceWriteCaptureData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
+    }
+
     return noErr;
 }
 
@@ -630,7 +669,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
     AVAudioSessionInterruptionType type = [notification.userInfo[AVAudioSessionInterruptionTypeKey] unsignedIntegerValue];
 
     @synchronized(self) {
-        if (self.renderingContext) {
+        if (self.renderingContext->deviceContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
                 if (type == AVAudioSessionInterruptionTypeBegan) {
                     NSLog(@"Interruption began.");
@@ -648,7 +687,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
 
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
     @synchronized(self) {
-        if (self.renderingContext) {
+        if (self.renderingContext->deviceContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
                 if (self.isInterrupted) {
                     NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
@@ -678,7 +717,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
             // With CallKit, AVAudioSession may change the sample rate during a configuration change.
             // If a valid route change occurs we may want to update our audio graph to reflect the new output device.
             @synchronized(self) {
-                if (self.renderingContext) {
+                if (self.renderingContext->deviceContext) {
                     TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
                         [self handleValidRouteChange];
                     });
@@ -707,7 +746,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
         _renderingFormat = nil;
 
         @synchronized(self) {
-            if (self.renderingContext) {
+            if (self.renderingContext->deviceContext) {
                 TVIAudioDeviceFormatChanged(self.renderingContext->deviceContext);
             }
         }
@@ -716,7 +755,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
 
 - (void)handleMediaServiceLost:(NSNotification *)notification {
     @synchronized(self) {
-        if (self.renderingContext) {
+        if (self.renderingContext->deviceContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
                 [self stopAudioUnit];
             });
@@ -726,7 +765,7 @@ static OSStatus ExampleCoreAudioDeviceCaptureCallback(void *refCon,
 
 - (void)handleMediaServiceRestored:(NSNotification *)notification {
     @synchronized(self) {
-        if (self.renderingContext) {
+        if (self.renderingContext->deviceContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
                 [self startAudioUnit];
             });
