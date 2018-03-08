@@ -24,7 +24,7 @@ class ViewController: UIViewController {
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack!
     var localAudioTrack: TVILocalAudioTrack!
-    var audioDevice: TVIAudioDevice = ExampleCoreAudioDevice()
+    var audioDevice: TVIAudioDevice = ExampleAudioEngineDevice()
 
     // MARK: UI Element Outlets and handles
 
@@ -59,6 +59,8 @@ class ViewController: UIViewController {
         roomTextField.delegate = self
         logMessage(messageText: ViewController.coreAudioDeviceText + " Device selected")
         audioDeviceButton.setTitle("CoreAudio Device", for: .normal)
+
+        prepareLocalMedia()
     }
 
     override func didReceiveMemoryWarning() {
@@ -77,9 +79,7 @@ class ViewController: UIViewController {
         coreAudioDeviceButton = UIAlertAction(title: ViewController.coreAudioDeviceText,
                                               style: .default,
                                               handler: { (action) -> Void in
-            self.audioDevice = ExampleCoreAudioDevice()
-            self.audioDeviceButton.setTitle("CoreAudio Device", for: .normal)
-            self.logMessage(messageText: ViewController.coreAudioDeviceText + " Device Selected")
+                                                self.coreAudioDeviceSelected()
         })
         alertController.addAction(coreAudioDeviceButton!)
 
@@ -93,9 +93,7 @@ class ViewController: UIViewController {
         engineAudioDeviceButton = UIAlertAction(title: audioEngineDeviceTitle,
                                                 style: .default,
                                                 handler: { (action) -> Void in
-            self.audioDevice = ExampleAudioEngineDevice()
-            self.audioDeviceButton.setTitle("AudioEngine Device", for: .normal)
-            self.logMessage(messageText: ViewController.engineAudioDeviceText + " Device Selected")
+                                                    self.avaudioEngineDeviceSelected()
         })
 
         if #available(iOS 11.0, *) {
@@ -129,6 +127,33 @@ class ViewController: UIViewController {
         self.navigationController!.present(alertController, animated: true, completion: nil)
     }
 
+    func coreAudioDeviceSelected() {
+        /*
+         * To set an audio device on Video SDK, it is necessary to destroyed the media engine first. By cleaning up the
+         * Room and Tracks the media engine gets destroyed.
+         */
+        self.unprepareLocalMedia()
+
+        self.audioDevice = ExampleCoreAudioDevice()
+        self.audioDeviceButton.setTitle("CoreAudio Device", for: .normal)
+        self.logMessage(messageText: ViewController.coreAudioDeviceText + " Device Selected")
+
+        self.prepareLocalMedia()
+    }
+
+    func avaudioEngineDeviceSelected() {
+        /*
+         * To set an audio device on Video SDK, it is necessary to destroyed the media engine first. By cleaning up the
+         * Room and Tracks the media engine gets destroyed.
+         */
+        self.unprepareLocalMedia()
+
+        self.audioDevice = ExampleAudioEngineDevice()
+        self.audioDeviceButton.setTitle("AudioEngine Device", for: .normal)
+        self.logMessage(messageText: ViewController.coreAudioDeviceText + " Device Selected")
+
+        self.prepareLocalMedia()
+    }
 
     // MARK: IBActions
     @IBAction func connect(sender: AnyObject) {
@@ -143,8 +168,6 @@ class ViewController: UIViewController {
                 return
             }
         }
-
-        prepareLocalMedia()
 
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
@@ -342,6 +365,14 @@ class ViewController: UIViewController {
         }
     }
 
+    func unprepareLocalMedia() {
+        self.room = nil
+        self.localAudioTrack = nil
+        self.localVideoTrack = nil
+        self.camera?.previewView .removeFromSuperview()
+        self.camera = nil;
+    }
+
     func setupRemoteVideoView(publication: TVIRemoteVideoTrackPublication) {
         // Create a `TVIVideoView` programmatically, and add to our `UIStackView`
         if let remoteView = TVIVideoView.init(frame: CGRect.zero, delegate:nil) {
@@ -416,10 +447,6 @@ extension ViewController : TVIRoomDelegate {
         }
 
         self.room = nil
-        self.localAudioTrack = nil
-        self.localVideoTrack = nil
-        self.camera?.previewView .removeFromSuperview()
-        self.camera = nil;
 
         self.showRoomUI(inRoom: false)
     }
@@ -428,10 +455,6 @@ extension ViewController : TVIRoomDelegate {
         logMessage(messageText: "Failed to connect to Room:\n\(error.localizedDescription)")
 
         self.room = nil
-        self.localAudioTrack = nil
-        self.localVideoTrack = nil
-        self.camera?.previewView .removeFromSuperview()
-        self.camera = nil;
 
         self.showRoomUI(inRoom: false)
     }
