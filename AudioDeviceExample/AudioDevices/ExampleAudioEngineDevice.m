@@ -227,6 +227,19 @@ static size_t kMaximumFramesPerBuffer = 1156;
     [_player play];
 }
 
+- (void)teardownPlayer {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.player) {
+            if (_player.isPlaying) {
+                [_player stop];
+            }
+            [self.engine detachNode:self.player];
+            [self.engine detachNode:_reverb];
+            self.player = nil;
+        }
+    });
+}
+
 #pragma mark - TVIAudioDeviceRenderer
 
 - (nullable TVIAudioFormat *)renderFormat {
@@ -258,24 +271,30 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 - (BOOL)startRendering:(nonnull TVIAudioDeviceContext)context {
     @synchronized(self) {
-        /*
-         * Restart the audio unit if the audio graph is alreay setup and if remote participant deciceded to publish an
-         * audio track.
-         */
 
-        if (self.capturingContext->deviceContext) {
+        /*
+         * In this example, the app always publishes an audio track. So we will start the audio unit from the capturer
+         * call backs. We will restart the audio unit if remote participant adds an audio track after the audio graph is
+         * established.
+         */
+        BOOL restartAudioUnit = (self.capturingContext->deviceContext != nil);
+
+        if (restartAudioUnit) {
             [self stopAudioUnit];
             [self teardownAudioUnit];
+
+            self.renderingContext->deviceContext = context;
+
+            if (![self setupAudioUnitWithRenderContext:self.renderingContext
+                                      capturingContext:self.capturingContext]) {
+                return NO;
+            }
+            return [self startAudioUnit];
+        } else {
+            self.renderingContext->deviceContext = context;
         }
 
-        self.renderingContext->deviceContext = context;
-
-        if (![self setupAudioUnitWithRenderContext:self.renderingContext
-                                  capturingContext:self.capturingContext]) {
-            return NO;
-        }
-
-        return [self startAudioUnit];
+        return YES;
     }
 }
 
@@ -285,7 +304,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
     @synchronized(self) {
         // If the capturer is runnning, we will not stop the audio unit.
         if (!self.capturingContext->deviceContext) {
-            [self.player stop];
+            [self teardownPlayer];
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
@@ -329,8 +348,15 @@ static size_t kMaximumFramesPerBuffer = 1156;
         // Restart the audio unit if the audio graph is alreay setup and if we publish an audio track.
 
         if (self.renderingContext->deviceContext) {
-            [self stopAudioUnit];
-            [self teardownAudioUnit];
+            if (_audioUnit) {
+                /*
+                 * You will never hit this code as the app alwyas publishes an audio track. In case if you decide to
+                 * to change this behavior, i.e. connect to a Room without an audio track and publish it after the audio
+                 * graph is established, stop the audio unit first.
+                 */
+                [self stopAudioUnit];
+                [self teardownAudioUnit];
+            }
         }
 
         self.capturingContext->deviceContext = context;
@@ -350,7 +376,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
     @synchronized(self) {
         // If the renderer is runnning, we will not stop the audio unit.
         if (!self.renderingContext->deviceContext) {
-            [self.player stop];
+            [self teardownPlayer];
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
