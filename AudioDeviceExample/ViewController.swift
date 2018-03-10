@@ -69,7 +69,7 @@ class ViewController: UIViewController {
 
     @IBAction func selectAudioDevice() {
         var coreAudioDeviceButton : UIAlertAction!
-        var engineAudioDeviceButton : UIAlertAction?
+        var audioEngineDeviceButton : UIAlertAction?
 
         var selectedButton : UIAlertAction!
 
@@ -90,28 +90,35 @@ class ViewController: UIViewController {
         } else {
             audioEngineDeviceTitle = "AVAudioEngine Device (iOS 11+ only)"
         }
-        engineAudioDeviceButton = UIAlertAction(title: audioEngineDeviceTitle,
+        audioEngineDeviceButton = UIAlertAction(title: audioEngineDeviceTitle,
                                                 style: .default,
                                                 handler: { (action) -> Void in
                                                     self.avaudioEngineDeviceSelected()
         })
 
+
+        // EXampleAVAudioEngineDevice is supported only on iOS 11+
         if #available(iOS 11.0, *) {
-            if let deviceButton = engineAudioDeviceButton {
+            if let deviceButton = audioEngineDeviceButton {
                 deviceButton.isEnabled = true
             }
         } else {
-            if let deviceButton = engineAudioDeviceButton {
+            if let deviceButton = audioEngineDeviceButton {
                 deviceButton.isEnabled = false
             }
         }
 
-        alertController.addAction(engineAudioDeviceButton!)
+        alertController.addAction(audioEngineDeviceButton!)
 
-        if (self.audioDevice.isKind(of: ExampleCoreAudioDevice.self)) {
-            selectedButton = coreAudioDeviceButton
-        } else if (self.audioDevice.isKind(of: ExampleAVAudioEngineDevice.self)) {
-            selectedButton = engineAudioDeviceButton
+        switch(self.audioDevice) {
+            case is ExampleCoreAudioDevice:
+                selectedButton = coreAudioDeviceButton
+
+            case is ExampleAVAudioEngineDevice:
+                selectedButton = audioEngineDeviceButton
+
+            default:
+                break
         }
 
         if UIDevice.current.userInterfaceIdiom == .pad {
