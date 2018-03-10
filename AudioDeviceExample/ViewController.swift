@@ -24,7 +24,7 @@ class ViewController: UIViewController {
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack!
     var localAudioTrack: TVILocalAudioTrack!
-    var audioDevice: TVIAudioDevice = ExampleAVAudioEngineDevice()
+    var audioDevice: TVIAudioDevice = ExampleCoreAudioDevice()
 
     // MARK: UI Element Outlets and handles
 
@@ -44,8 +44,8 @@ class ViewController: UIViewController {
     let kTextBottomPadding = CGFloat(4)
     let kMaxRemoteVideos = Int(2)
 
-    static let coreAudioDeviceText = "CoreAudioDevice"
-    static let engineAudioDeviceText = "AVAudioEngineDevice"
+    static let coreAudioDeviceText = "CoreAudio Device"
+    static let engineAudioDeviceText = "AVAudioEngine Device"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,7 +57,7 @@ class ViewController: UIViewController {
         connectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
         roomTextField.autocapitalizationType = .none
         roomTextField.delegate = self
-        logMessage(messageText: ViewController.coreAudioDeviceText + " Device selected")
+        logMessage(messageText: ViewController.coreAudioDeviceText + " selected")
         audioDeviceButton.setTitle("CoreAudio Device", for: .normal)
 
         prepareLocalMedia()
@@ -95,7 +95,6 @@ class ViewController: UIViewController {
                                                 handler: { (action) -> Void in
                                                     self.avaudioEngineDeviceSelected()
         })
-
 
         // EXampleAVAudioEngineDevice is supported only on iOS 11+
         if #available(iOS 11.0, *) {
@@ -183,6 +182,7 @@ class ViewController: UIViewController {
                 builder.videoTracks = [videoTrack]
             }
 
+            // We will share a local audio track only if ExampleAVAudioEngineDevice is selected.
             if let audioTrack = self.localAudioTrack {
                 builder.audioTracks = [audioTrack]
             }
@@ -341,7 +341,7 @@ class ViewController: UIViewController {
 
         if #available(iOS 11.0, *) {
             // Only the ExampleAVAudioEngineDevice supports local audio capturing.
-            if ((TwilioVideo.audioDevice as? ExampleAVAudioEngineDevice) != nil) {
+            if (TwilioVideo.audioDevice is ExampleAVAudioEngineDevice) {
                 localAudioTrack = TVILocalAudioTrack()
             }
         }

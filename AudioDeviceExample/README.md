@@ -2,7 +2,7 @@
 
 The project demonstrates how to use Twilio's Programmable Video SDK with audio playback and recording functionality provided by a custom `TVIAudioDevice`.
 
-The example demonstrates the following custom audio device(s):
+The example demonstrates the following custom audio devices:
 
 **ExampleCoreAudioDevice**
 
@@ -10,14 +10,14 @@ Uses a RemoteIO audio unit to playback stereo audio at up to 48 kHz. In contrast
 
 **ExampleAVAudioEngineDevice**
 
-Uses the CoreAudio's VoiceProcessingIO audio unit to record and playback at up to 48KHz. Since this example supports audio capturing, the audio device uses the built-in echo cancellation provided by CoreAudio's VoiceProcessingIO audio unit. The example uses AVAudioEngine in manual rendering mode for mixing the Remote Participant's audio and audio from a file. CoreAudio receives the mixed audio samples from the AVAudioUnit's 
+Uses CoreAudio's VoiceProcessingIO audio unit to playback and record audio at up to 48KHz with built-in echo cancellation. The example uses AVAudioEngine in manual rendering mode for mixing the Remote Participant's audio and audio from a file. CoreAudio receives the mixed audio samples from the AVAudioUnit's 
 output node.
 
-Please note, ExampleAVAudioEngineDevice requires iOS 11.0 or above.
-
-Following example describes how audio device uses TwilioVideo, AVAudioEngine, and CoreAudio -
+This diagram describes how ExampleAVAudioEngineDevice uses TwilioVideo, AVAudioEngine, and CoreAudio -
 
 <img width="600px" src="../images/quickstart/audio-engine-example.jpg"/>
+
+Please note, ExampleAVAudioEngineDevice requires iOS 11.0 or above.
 
 ### Setup
 

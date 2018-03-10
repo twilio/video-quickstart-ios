@@ -167,7 +167,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
     }
 
     NSLog(@"This device uses a maximum slice size of %d frames.", (unsigned int)framesPerSlice);
-    kMaximumFramesPerBuffer = 3072; //(size_t)framesPerSlice;
+    kMaximumFramesPerBuffer = (size_t)framesPerSlice;
     AudioComponentInstanceDispose(audioUnit);
 }
 
@@ -214,6 +214,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
         AudioRendererContext *context = _renderingContext;
         success = [_engine.inputNode setManualRenderingInputPCMFormat:format
                                                            inputBlock: ^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
+                                                               assert(inNumberOfFrames <= kMaximumFramesPerBuffer);
 
                                                                AudioBufferList *bufferList = context->bufferList;
                                                                int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
@@ -229,7 +230,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
                                                                } else {
 
                                                                    /*
-                                                                    * Return silence when we do not have the plaout device context. This is the
+                                                                    * Return silence when we do not have the playout device context. This is the
                                                                     * case when the remote participant has not published an audio track yet.
                                                                     * Since the audio graph and audio engine has been setup, we can still play
                                                                     * the music file using the AVAudioEngine.
@@ -458,7 +459,6 @@ static OSStatus ExampleAVAudioEngineDevicePlayoutCallback(void *refCon,
     UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
 
     // Pull decoded, mixed audio data from the media engine into the AudioUnit's AudioBufferList.
-    assert(numFrames <= context->maxFramesPerBuffer);
     assert(audioBufferSizeInBytes == (bufferList->mBuffers[0].mNumberChannels * kAudioSampleSize * numFrames));
     OSStatus outputStatus = noErr;
 
