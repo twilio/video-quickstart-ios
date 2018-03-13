@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4B7AD1F82049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B7AD1F72049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m */; };
+		4B7AD1FA204A0510002DDBA6 /* mixLoop.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4B7AD1F9204A0510002DDBA6 /* mixLoop.caf */; };
 		8A713C7E202A585C009E776A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A713C7D202A585C009E776A /* AppDelegate.swift */; };
 		8A713C80202A585C009E776A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A713C7F202A585C009E776A /* ViewController.swift */; };
 		8A713C83202A585C009E776A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A713C81202A585C009E776A /* Main.storyboard */; };
@@ -19,6 +21,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4B7AD1F62049CC81002DDBA6 /* ExampleAVAudioEngineDevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleAVAudioEngineDevice.h; sourceTree = "<group>"; };
+		4B7AD1F72049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleAVAudioEngineDevice.m; sourceTree = "<group>"; };
+		4B7AD1F9204A0510002DDBA6 /* mixLoop.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = mixLoop.caf; sourceTree = "<group>"; };
 		8A713C7A202A585B009E776A /* AudioDeviceExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioDeviceExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A713C7D202A585C009E776A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8A713C7F202A585C009E776A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -82,6 +87,9 @@
 				8A713C9A202A723A009E776A /* AudioDevices-Bridging-Header.h */,
 				8A713C90202A5C96009E776A /* ExampleCoreAudioDevice.h */,
 				8A713C91202A5C96009E776A /* ExampleCoreAudioDevice.m */,
+				4B7AD1F62049CC81002DDBA6 /* ExampleAVAudioEngineDevice.h */,
+				4B7AD1F72049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m */,
+				4B7AD1F9204A0510002DDBA6 /* mixLoop.caf */,
 			);
 			path = AudioDevices;
 			sourceTree = "<group>";
@@ -158,6 +166,7 @@
 				8A713C88202A585C009E776A /* LaunchScreen.storyboard in Resources */,
 				8A713C85202A585C009E776A /* Assets.xcassets in Resources */,
 				8A713C83202A585C009E776A /* Main.storyboard in Resources */,
+				4B7AD1FA204A0510002DDBA6 /* mixLoop.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,6 +177,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B7AD1F82049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m in Sources */,
 				8A713C80202A585C009E776A /* ViewController.swift in Sources */,
 				8A713C98202A7087009E776A /* SettingsTableViewController.swift in Sources */,
 				8A713C92202A5C96009E776A /* ExampleCoreAudioDevice.m in Sources */,

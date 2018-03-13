@@ -2,17 +2,22 @@
 
 The project demonstrates how to use Twilio's Programmable Video SDK with audio playback and recording functionality provided by a custom `TVIAudioDevice`.
 
-The example demonstrates the following custom audio device(s):
+The example demonstrates the following custom audio devices:
 
 **ExampleCoreAudioDevice**
 
 Uses a RemoteIO audio unit to playback stereo audio at up to 48 kHz. In contrast to `TVIDefaultAudioDevice`, this class does not record audio and is intended for high quality playback. Since recording is not needed this device does not use the built in echo cancellation provided by CoreAudio's VoiceProcessingIO audio unit nor does it require microphone permissions from the user.
 
-**ExampleAudioEngineDevice**
+**ExampleAVAudioEngineDevice**
 
-Coming soon.
+Uses CoreAudio's VoiceProcessingIO audio unit to playback and record audio at up to 48KHz with built-in echo cancellation. The example uses AVAudioEngine in manual rendering mode for mixing the Remote Participant's audio and audio from a file. CoreAudio receives the mixed audio samples from the AVAudioUnit's 
+output node.
 
-Use AVAudioEngine to play and record Room audio, while mixing in sound effects.
+This diagram describes how ExampleAVAudioEngineDevice uses TwilioVideo, AVAudioEngine, and CoreAudio -
+
+<img width="600px" src="../images/quickstart/audio-engine-example.jpg"/>
+
+Please note, ExampleAVAudioEngineDevice requires iOS 11.0 or above.
 
 ### Setup
 
@@ -26,14 +31,22 @@ Once you have configured your access token, build and run the example. You will 
 
 <kbd><img width="400px" src="../images/quickstart/audio-device-launched.jpg"/></kbd>
 
-Tap the "Connect" button to join a Room. Once you've joined you will be sharing video but not audio. In order to playback audio from a remote Participant you will need a Client which supports audio recording. The easiest way to do this is to build and run the normal QuickStart [example](https://github.com/twilio/video-quickstart-swift/tree/2.0.0-preview/VideoQuickStart) and join the same Room.
+Tap the audio device button to select an audio device: 
 
-After the remote Participant has joined you should be able to hear their audio. Watch out if both devices are in the same physical space, because `ExampleCoreAudioDevice` does not use echo cancellation.
+<kbd><img width="400px" src="../images/quickstart/select-audio-device.jpg"/></kbd>
+
+Once the audio device of your choice is selected, enter the room name.
+
+<kbd><img width="400px" src="../images/quickstart/enter-room-name.jpg"/></kbd>
+
+Tap the "Connect" button to join a Room. Once you've joined you will be sharing video and audio if `ExampleAVAudioEngineDevice` is used. However the audio will not be shared if `ExampleCoreAudioDevice` is used. In order to playback audio from a remote Participant you will need a Client which supports audio recording. The easiest way to do this is to build and run the normal QuickStart [example](https://github.com/twilio/video-quickstart-swift/tree/master/VideoQuickStart) and join the same Room.
+
+After the remote Participant has joined you should be able to hear their audio. If you are using the `ExampleCoreAudioDevice`, watch out if both devices are in the same physical space, because `ExampleCoreAudioDevice` does not use echo cancellation.
 
 ### Known Issues
 
-The AVAudioSession is configured and activated at playback initialization time. Ideally, it would be better to activate the AVAudioSession only when audio playback is needed. 
+The AVAudioSession is configured and activated at playback initialization time. Ideally, it would be better to activate the AVAudioSession only when audio playback is needed.
 
-You will also notice that backgrounding the application causes the signaling connection to die. 
+You will also notice that backgrounding the application causes the signaling connection to die.
 
-Both issues are limitations with custom `TVIAudioDevice`s in [2.0.0-beta1](https://www.twilio.com/docs/api/video/changelog-twilio-video-ios-version-2x#200-beta1-february-7-2018) and we expect to rectify them in future releases.
+Both issues are limitations with custom `TVIAudioDevice`s in [2.0.0-beta2](https://www.twilio.com/docs/api/video/changelog-twilio-video-ios-version-2x#200-beta2-february-27-2018) and we expect to rectify them in future releases.

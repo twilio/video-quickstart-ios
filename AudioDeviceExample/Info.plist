@@ -9,6 +9,8 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>${PRODUCT_NAME} uses your camera to capture video which is shared with other Room Participants.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>${PRODUCT_NAME} uses your microphone to capture audio which is shared with other Room Participants.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
