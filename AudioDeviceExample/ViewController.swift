@@ -93,7 +93,7 @@ class ViewController: UIViewController {
         audioEngineDeviceButton = UIAlertAction(title: audioEngineDeviceTitle,
                                                 style: .default,
                                                 handler: { (action) -> Void in
-                                                    self.avaudioEngineDeviceSelected()
+                                                    self.avAudioEngineDeviceSelected()
         })
 
         // EXampleAVAudioEngineDevice is supported only on iOS 11+
@@ -142,7 +142,7 @@ class ViewController: UIViewController {
         self.prepareLocalMedia()
     }
 
-    func avaudioEngineDeviceSelected() {
+    func avAudioEngineDeviceSelected() {
         if #available(iOS 11.0, *) {
             /*
              * To set an audio device on Video SDK, it is necessary to destroyed the media engine first. By cleaning up the

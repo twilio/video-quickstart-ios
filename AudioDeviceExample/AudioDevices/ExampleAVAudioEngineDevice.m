@@ -37,8 +37,8 @@ typedef struct AudioRendererContext {
     AudioBufferList *bufferList;
 
     /*
-     * Points to AVAudioEngine's manualRenderingBlock. This block is called by VoiceProcessingIO playout call back in
-     * to receive the mixed audio data from AVAudioEngine in real time.
+     * Points to AVAudioEngine's manualRenderingBlock. This block is called from within the VoiceProcessingIO playout
+     * callback in order to receive mixed audio data from AVAudioEngine in real time.
      */
     void *renderBlock;
 } AudioRendererContext;
@@ -169,8 +169,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
     NSAssert(_engine == nil, @"AVAudioEngine is already configured");
 
     /*
-     * By default engine will render to/from the audio device make connections, e.g. inputNode -> effectNode -> outputNode
-     * In this example we will use the manual rendering mode.
+     * By default AVAudioEngine will render to/from the audio device, and automatically establish connections between
+     * nodes, e.g. inputNode -> effectNode -> outputNode.
      */
     _engine = [AVAudioEngine new];
 
@@ -611,7 +611,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                                   kAudioUnitScope_Output, kInputBus,
                                   &streamDescription, sizeof(streamDescription));
     if (status != 0) {
-        NSLog(@"Could not set stream format on output bus!");
+        NSLog(@"Could not set stream format on input bus!");
         return NO;
     }
 
