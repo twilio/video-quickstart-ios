@@ -39,9 +39,9 @@ Once the audio device of your choice is selected, enter the room name.
 
 <kbd><img width="400px" src="../images/quickstart/enter-room-name.jpg"/></kbd>
 
-Tap the "Connect" button to join a Room. Once you've joined you will be sharing video but not audio. In order to playback audio from a remote Participant you will need a Client which supports audio recording. The easiest way to do this is to build and run the normal QuickStart [example](https://github.com/twilio/video-quickstart-swift/tree/2.0.0-preview/VideoQuickStart) and join the same Room.
+Tap the "Connect" button to join a Room. Once you've joined you will be sharing video and audio if `ExampleAVAudioEngineDevice` is used. However the audio will not be shared if `ExampleCoreAudioDevice` is used. In order to playback audio from a remote Participant you will need a Client which supports audio recording. The easiest way to do this is to build and run the normal QuickStart [example](https://github.com/twilio/video-quickstart-swift/tree/master/VideoQuickStart) and join the same Room.
 
-After the remote Participant has joined you should be able to hear their audio. Watch out if both devices are in the same physical space, because `ExampleCoreAudioDevice` does not use echo cancellation.
+After the remote Participant has joined you should be able to hear their audio. If you are using the `ExampleCoreAudioDevice`, watch out if both devices are in the same physical space, because `ExampleCoreAudioDevice` does not use echo cancellation.
 
 ### Known Issues
 

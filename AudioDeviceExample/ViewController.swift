@@ -97,27 +97,22 @@ class ViewController: UIViewController {
         })
 
         // EXampleAVAudioEngineDevice is supported only on iOS 11+
-        if #available(iOS 11.0, *) {
-            if let deviceButton = audioEngineDeviceButton {
+        if let deviceButton = audioEngineDeviceButton {
+            if #available(iOS 11.0, *) {
                 deviceButton.isEnabled = true
-            }
-        } else {
-            if let deviceButton = audioEngineDeviceButton {
+            } else {
                 deviceButton.isEnabled = false
             }
         }
 
         alertController.addAction(audioEngineDeviceButton!)
 
-        switch(self.audioDevice) {
-            case is ExampleCoreAudioDevice:
-                selectedButton = coreAudioDeviceButton
-
-            case is ExampleAVAudioEngineDevice:
+        if (self.audioDevice is ExampleCoreAudioDevice) {
+            selectedButton = coreAudioDeviceButton
+        } else if #available(iOS 11.0, *) {
+            if (self.audioDevice is ExampleAVAudioEngineDevice) {
                 selectedButton = audioEngineDeviceButton
-
-            default:
-                break
+            }
         }
 
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -148,17 +143,19 @@ class ViewController: UIViewController {
     }
 
     func avaudioEngineDeviceSelected() {
-        /*
-         * To set an audio device on Video SDK, it is necessary to destroyed the media engine first. By cleaning up the
-         * Room and Tracks the media engine gets destroyed.
-         */
-        self.unprepareLocalMedia()
+        if #available(iOS 11.0, *) {
+            /*
+             * To set an audio device on Video SDK, it is necessary to destroyed the media engine first. By cleaning up the
+             * Room and Tracks the media engine gets destroyed.
+             */
+            self.unprepareLocalMedia()
 
-        self.audioDevice = ExampleAVAudioEngineDevice()
-        self.audioDeviceButton.setTitle(ViewController.engineAudioDeviceText, for: .normal)
-        self.logMessage(messageText: ViewController.coreAudioDeviceText + " Selected")
+            self.audioDevice = ExampleAVAudioEngineDevice()
+            self.audioDeviceButton.setTitle(ViewController.engineAudioDeviceText, for: .normal)
+            self.logMessage(messageText: ViewController.coreAudioDeviceText + " Selected")
 
-        self.prepareLocalMedia()
+            self.prepareLocalMedia()
+        }
     }
 
     // MARK: IBActions
