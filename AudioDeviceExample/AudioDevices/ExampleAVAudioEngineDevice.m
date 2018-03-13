@@ -280,10 +280,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
     [_engine connect:_player to:_reverb format:file.processingFormat];
     [_engine connect:_reverb to:_engine.mainMixerNode format:file.processingFormat];
 
-    [_player scheduleFile:file atTime:nil completionHandler:^{
-        [self.engine detachNode:_player];
-        self.player = nil;
-    }];
+    [_player scheduleFile:file atTime:nil completionHandler:^{}];
     [_player play];
 }
 
