@@ -18,10 +18,9 @@ static size_t const kAudioSampleSize = 2;
 static uint32_t const kPreferredSampleRate = 48000;
 
 /*
- * Calls to AudioUnitInitialize() can fail if called back-to-back after format change or add remove tracks
- * audio deivce instances. A fall-back solution is to allow multiple sequential calls
- * with a small delay between each. This factor sets the max number of allowed
- * initialization attempts.
+ * Calls to AudioUnitInitialize() can fail if called back-to-back after a format change or adding and removing tracks.
+ * A fall-back solution is to allow multiple sequential calls with a small delay between each. This factor sets the max
+ * number of allowed initialization attempts.
  */
 static const int kMaxNumberOfAudioUnitInitializeAttempts = 5;
 
@@ -192,7 +191,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
     /*
      * In manual rendering mode, AVAudioEngine won't receive audio from the microhpone. Instead, it will receive the
-     * audio data from theVideo SDK and mix it in MainMixerNode. Here we connect the input node to the main mixer node.
+     * audio data from the Video SDK and mix it in MainMixerNode. Here we connect the input node to the main mixer node.
      * InputNode -> MainMixer -> OutputNode
      */
     [_engine connect:_engine.inputNode to:_engine.mainMixerNode format:format];
@@ -412,8 +411,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
         if (!self.renderingContext->deviceContext) {
 
             /*
-             * Teardown the audio player if along with the Core Audio's VoiceProcessingIO audio unit.
-             * We will make sure player is AVAudioPlayer is accessed on the main queue.
+             * Teardown the audio player along with the Core Audio's VoiceProcessingIO audio unit.
+             * We will make sure AVAudioPlayerNode is accessed on the main queue.
              */
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self teardownPlayer];
