@@ -336,6 +336,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
                                     captureContext:self.capturingContext]) {
             return NO;
         }
+        TVIAudioSessionActivated(context);
         return [self startAudioUnit];
     }
 }
@@ -344,7 +345,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
     @synchronized(self) {
         // If the capturer is runnning, we will not stop the audio unit.
         if (!self.capturingContext->deviceContext) {
-
+            TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
             /*
              * Teardown the audio player if along with the Core Audio's VoiceProcessingIO audio unit.
              * We will make sure player is AVAudioPlayer is accessed on the main queue.
@@ -401,6 +402,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
             return NO;
         }
 
+        TVIAudioSessionActivated(context);
+
         return [self startAudioUnit];
     }
 }
@@ -409,6 +412,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
     @synchronized(self) {
         // If the renderer is runnning, we will not stop the audio unit.
         if (!self.renderingContext->deviceContext) {
+            TVIAudioSessionDeactivated(self.capturingContext->deviceContext);
 
             /*
              * Teardown the audio player along with the Core Audio's VoiceProcessingIO audio unit.
@@ -742,10 +746,12 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
         if (self.renderingContext->deviceContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
                 if (type == AVAudioSessionInterruptionTypeBegan) {
+                    // TVIAudioSessionDeactivated(context);
                     NSLog(@"Interruption began.");
                     self.interrupted = YES;
                     [self stopAudioUnit];
                 } else {
+                    // TVIAudioSessionActivated(context);
                     NSLog(@"Interruption ended.");
                     self.interrupted = NO;
                     [self startAudioUnit];
@@ -763,6 +769,9 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                     NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
                     self.interrupted = NO;
                     [self startAudioUnit];
+                    if (context) {
+                        TVIAudioSessionActivated(context);
+                    }
                 }
             });
         }
@@ -822,18 +831,20 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
         _renderingFormat = nil;
         _capturingFormat = nil;
 
-        // Restart the AVAudioEngine with new format
-        TVIAudioFormat *activeFormat = [[self class] activeFormat];
-        if (![activeFormat isEqual:_renderingFormat]) {
-            [self teardownAudioEngine];
-            [self setupAudioEngine];
-        }
-
         @synchronized(self) {
             if (self.renderingContext->deviceContext || self.capturingContext->deviceContext) {
                 TVIAudioDeviceFormatChanged(self.renderingContext->deviceContext);
             }
         }
+
+        TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
+            // Restart the AVAudioEngine with new format
+            TVIAudioFormat *activeFormat = [[self class] activeFormat];
+            if (![activeFormat isEqual:_renderingFormat]) {
+                [self teardownAudioEngine];
+                [self setupAudioEngine];
+            }
+        });
     }
 }
 
@@ -843,7 +854,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     @synchronized(self) {
         if (self.renderingContext->deviceContext || self.capturingContext->deviceContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
-                [self stopAudioUnit];
+                [self teardownAudioUnit];
             });
         }
     }
@@ -866,3 +877,4 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 }
 
 @end
+
