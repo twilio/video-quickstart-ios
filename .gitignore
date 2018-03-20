@@ -45,6 +45,9 @@ VideoQuickStart.xcworkspace
 
 Carthage/Build
 
+# Manual Install
+TwilioVideo.framework/
+
 # fastlane
 #
 # It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the 
