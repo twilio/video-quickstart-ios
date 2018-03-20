@@ -364,7 +364,7 @@ class ViewController: UIViewController {
                 }
             }
         } else {
-            logMessage(messageText: "Front camera is not available, using audio playback only.")
+            logMessage(messageText: "Front camera is not available, using audio only.")
         }
     }
 

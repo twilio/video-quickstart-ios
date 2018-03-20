@@ -383,16 +383,21 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     AVAudioSessionInterruptionType type = [notification.userInfo[AVAudioSessionInterruptionTypeKey] unsignedIntegerValue];
 
     @synchronized(self) {
-        if (self.renderingContext) {
-            TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
+        // If the worker block is executed, then context is guaranteed to be valid.
+        TVIAudioDeviceContext context = self.renderingContext ? self.renderingContext->deviceContext : NULL;
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
                 if (type == AVAudioSessionInterruptionTypeBegan) {
                     NSLog(@"Interruption began.");
                     self.interrupted = YES;
                     [self stopAudioUnit];
+                    TVIAudioSessionDeactivated(context);
                 } else {
                     NSLog(@"Interruption ended.");
                     self.interrupted = NO;
-                    [self startAudioUnit];
+                    if ([self startAudioUnit]) {
+                        TVIAudioSessionActivated(context);
+                    }
                 }
             });
         }
@@ -401,12 +406,16 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
     @synchronized(self) {
-        if (self.renderingContext) {
-            TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
+        // If the worker block is executed, then context is guaranteed to be valid.
+        TVIAudioDeviceContext context = self.renderingContext ? self.renderingContext->deviceContext : NULL;
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
                 if (self.isInterrupted) {
                     NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
                     self.interrupted = NO;
-                    [self startAudioUnit];
+                    if ([self startAudioUnit]) {
+                        TVIAudioSessionActivated(context);
+                    }
                 }
             });
         }
@@ -472,6 +481,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
         if (self.renderingContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
                 [self stopAudioUnit];
+                TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
             });
         }
     }
@@ -479,9 +489,13 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
 - (void)handleMediaServiceRestored:(NSNotification *)notification {
     @synchronized(self) {
-        if (self.renderingContext) {
-            TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
-                [self startAudioUnit];
+        // If the worker block is executed, then context is guaranteed to be valid.
+        TVIAudioDeviceContext context = self.renderingContext ? self.renderingContext->deviceContext : NULL;
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
+                if ([self startAudioUnit]) {
+                    TVIAudioSessionActivated(context);
+                }
             });
         }
     }
