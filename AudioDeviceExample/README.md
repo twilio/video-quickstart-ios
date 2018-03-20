@@ -46,7 +46,3 @@ After the remote Participant has joined you should be able to hear their audio. 
 ### Known Issues
 
 The AVAudioSession is configured and activated at playback initialization time. Ideally, it would be better to activate the AVAudioSession only when audio playback is needed.
-
-You will also notice that backgrounding the application causes the signaling connection to die.
-
-Both issues are limitations with custom `TVIAudioDevice`s in [2.0.0-beta2](https://www.twilio.com/docs/api/video/changelog-twilio-video-ios-version-2x#200-beta2-february-27-2018) and we expect to rectify them in future releases.
