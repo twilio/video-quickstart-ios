@@ -337,8 +337,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
                                     captureContext:self.capturingContext]) {
             return NO;
         }
-        TVIAudioSessionActivated(context);
-        return [self startAudioUnit];
+        BOOL success = [self startAudioUnit];
+        if (success) {
+            TVIAudioSessionActivated(context);
+        }
+        return success;
     }
 }
 
@@ -346,7 +349,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
     @synchronized(self) {
         // If the capturer is runnning, we will not stop the audio unit.
         if (!self.capturingContext->deviceContext) {
-            TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
             /*
              * Teardown the audio player if along with the Core Audio's VoiceProcessingIO audio unit.
              * We will make sure player is AVAudioPlayer is accessed on the main queue.
@@ -356,6 +358,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
             });
 
             [self stopAudioUnit];
+            TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
             [self teardownAudioUnit];
         }
 
@@ -403,9 +406,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
             return NO;
         }
 
-        TVIAudioSessionActivated(context);
-
-        return [self startAudioUnit];
+        BOOL success = [self startAudioUnit];
+        if (success) {
+            TVIAudioSessionActivated(context);
+        }
+        return success;
     }
 }
 
@@ -413,7 +418,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
     @synchronized(self) {
         // If the renderer is runnning, we will not stop the audio unit.
         if (!self.renderingContext->deviceContext) {
-            TVIAudioSessionDeactivated(self.capturingContext->deviceContext);
 
             /*
              * Teardown the audio player along with the Core Audio's VoiceProcessingIO audio unit.
@@ -424,6 +428,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
             });
 
             [self stopAudioUnit];
+            TVIAudioSessionDeactivated(self.capturingContext->deviceContext);
             [self teardownAudioUnit];
         }
 
@@ -853,15 +858,6 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                 TVIAudioDeviceFormatChanged(context);
             }
         }
-
-        TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
-            // Restart the AVAudioEngine with the new format.
-            TVIAudioFormat *activeFormat = [[self class] activeFormat];
-            if (![activeFormat isEqual:_renderingFormat]) {
-                [self teardownAudioEngine];
-                [self setupAudioEngine];
-            }
-        });
     }
 }
 

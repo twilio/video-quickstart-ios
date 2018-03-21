@@ -127,16 +127,23 @@ static size_t kMaximumFramesPerBuffer = 1156;
             return NO;
         }
     }
-    return [self startAudioUnit];
+
+    BOOL success = [self startAudioUnit];
+    if (success) {
+        TVIAudioSessionActivated(context);
+    }
+    return success;
 }
 
 - (BOOL)stopRendering {
     [self stopAudioUnit];
 
     @synchronized(self) {
+        NSAssert(self.renderingContext != NULL, @"Should have a rendering context.");
+        TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
+
         [self teardownAudioUnit];
 
-        NSAssert(self.renderingContext != NULL, @"Should have a rendering context.");
         free(self.renderingContext);
         self.renderingContext = NULL;
     }
