@@ -239,7 +239,8 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
         NSLog(@"Error setting sample rate: %@", error);
     }
 
-    if (![session setPreferredOutputNumberOfChannels:kPreferredNumberOfChannels error:&error]) {
+    NSInteger preferredOutputChannels = session.outputNumberOfChannels >= kPreferredNumberOfChannels ? kPreferredNumberOfChannels : session.outputNumberOfChannels;
+    if (![session setPreferredOutputNumberOfChannels:preferredOutputChannels error:&error]) {
         NSLog(@"Error setting number of output channels: %@", error);
     }
 
