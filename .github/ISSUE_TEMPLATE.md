@@ -2,8 +2,7 @@
 > Before filing an issue please check that the issue is not already addressed by the following:
 >  * [Video Guides](https://www.twilio.com/docs/api/video)
 >  * [Changelog](https://www.twilio.com/docs/api/video/changelog-twilio-video-ios-version-2x).
-> Issues filed to this repo should be specific to the QuickStart apps, for SDK level inquiries please use: 
->  * [Video SDK - Github Issues](https://github.com/twilio/twilio-video-ios/issues) instead.
+> If this is an issue with the QuickStart itself, file it here. If this is an issue with the SDK or how to do something with the SDK please use [twilio-video-ios](https://github.com/twilio/twilio-video-ios/issues) instead.
 
 ### Description
 
