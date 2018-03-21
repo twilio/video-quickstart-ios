@@ -5,7 +5,6 @@
 > Issues filed to this repo should be specific to the QuickStart apps, for SDK level inquiries please use: 
 >  * [Video SDK - Github Issues](https://github.com/twilio/twilio-video-ios/issues) instead.
 
-
 ### Description
 
 [Description of the issue]
