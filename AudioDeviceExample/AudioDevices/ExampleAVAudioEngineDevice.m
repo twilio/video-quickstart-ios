@@ -162,7 +162,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
     AudioComponentInstanceDispose(audioUnit);
 }
 
-#pragma mark - AudioEngine
+#pragma mark - Private (AVAudioEngine)
 
 - (BOOL)setupAudioEngine {
     NSAssert(_engine == nil, @"AVAudioEngine is already configured");
@@ -200,34 +200,35 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
     // Set the block to provide input data to engine
     AudioRendererContext *context = _renderingContext;
-    success = [_engine.inputNode setManualRenderingInputPCMFormat:format
-                                                       inputBlock: ^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
-                                                           assert(inNumberOfFrames <= kMaximumFramesPerBuffer);
+    AVAudioInputNode *inputNode = _engine.inputNode;
+    success = [inputNode setManualRenderingInputPCMFormat:format
+                                               inputBlock: ^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
+                                                   assert(inNumberOfFrames <= kMaximumFramesPerBuffer);
 
-                                                           AudioBufferList *bufferList = context->bufferList;
-                                                           int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
-                                                           UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
+                                                   AudioBufferList *bufferList = context->bufferList;
+                                                   int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
+                                                   UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
 
-                                                           if (context->deviceContext) {
-                                                               /*
-                                                                * Pull decoded, mixed audio data from the media engine into the
-                                                                * AudioUnit's AudioBufferList.
-                                                                */
-                                                               TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
+                                                   if (context->deviceContext) {
+                                                       /*
+                                                        * Pull decoded, mixed audio data from the media engine into the
+                                                        * AudioUnit's AudioBufferList.
+                                                        */
+                                                       TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
 
-                                                           } else {
+                                                   } else {
 
-                                                               /*
-                                                                * Return silence when we do not have the playout device context. This is the
-                                                                * case when the remote participant has not published an audio track yet.
-                                                                * Since the audio graph and audio engine has been setup, we can still play
-                                                                * the music file using AVAudioEngine.
-                                                                */
-                                                               memset(audioBuffer, 0, audioBufferSizeInBytes);
-                                                           }
+                                                       /*
+                                                        * Return silence when we do not have the playout device context. This is the
+                                                        * case when the remote participant has not published an audio track yet.
+                                                        * Since the audio graph and audio engine has been setup, we can still play
+                                                        * the music file using AVAudioEngine.
+                                                        */
+                                                       memset(audioBuffer, 0, audioBufferSizeInBytes);
+                                                   }
 
-                                                           return bufferList;
-                                                       }];
+                                                   return bufferList;
+                                               }];
     if (!success) {
         NSLog(@"Failed to set the manual rendering block");
         return NO;
@@ -336,7 +337,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
                                     captureContext:self.capturingContext]) {
             return NO;
         }
-        return [self startAudioUnit];
+        BOOL success = [self startAudioUnit];
+        if (success) {
+            TVIAudioSessionActivated(context);
+        }
+        return success;
     }
 }
 
@@ -344,7 +349,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
     @synchronized(self) {
         // If the capturer is runnning, we will not stop the audio unit.
         if (!self.capturingContext->deviceContext) {
-
             /*
              * Teardown the audio player if along with the Core Audio's VoiceProcessingIO audio unit.
              * We will make sure player is AVAudioPlayer is accessed on the main queue.
@@ -354,6 +358,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
             });
 
             [self stopAudioUnit];
+            TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
             [self teardownAudioUnit];
         }
 
@@ -401,7 +406,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
             return NO;
         }
 
-        return [self startAudioUnit];
+        BOOL success = [self startAudioUnit];
+        if (success) {
+            TVIAudioSessionActivated(context);
+        }
+        return success;
     }
 }
 
@@ -419,6 +428,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
             });
 
             [self stopAudioUnit];
+            TVIAudioSessionDeactivated(self.capturingContext->deviceContext);
             [self teardownAudioUnit];
         }
 
@@ -716,6 +726,15 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 
 #pragma mark - NSNotification Observers
 
+- (TVIAudioDeviceContext)deviceContext {
+    if (self.renderingContext->deviceContext) {
+        return self.renderingContext->deviceContext;
+    } else if (self.capturingContext->deviceContext) {
+        return self.capturingContext->deviceContext;
+    }
+    return NULL;
+}
+
 - (void)registerAVAudioSessionObservers {
     // An audio device that interacts with AVAudioSession should handle events like interruptions and route changes.
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
@@ -739,16 +758,21 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     AVAudioSessionInterruptionType type = [notification.userInfo[AVAudioSessionInterruptionTypeKey] unsignedIntegerValue];
 
     @synchronized(self) {
-        if (self.renderingContext->deviceContext) {
-            TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
+        // If the worker block is executed, then context is guaranteed to be valid.
+        TVIAudioDeviceContext context = [self deviceContext];
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
                 if (type == AVAudioSessionInterruptionTypeBegan) {
                     NSLog(@"Interruption began.");
                     self.interrupted = YES;
                     [self stopAudioUnit];
+                    TVIAudioSessionDeactivated(context);
                 } else {
                     NSLog(@"Interruption ended.");
                     self.interrupted = NO;
-                    [self startAudioUnit];
+                    if ([self startAudioUnit]) {
+                        TVIAudioSessionActivated(context);
+                    }
                 }
             });
         }
@@ -757,12 +781,16 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
     @synchronized(self) {
-        if (self.renderingContext->deviceContext) {
-            TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
+        // If the worker block is executed, then context is guaranteed to be valid.
+        TVIAudioDeviceContext context = [self deviceContext];
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
                 if (self.isInterrupted) {
                     NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
                     self.interrupted = NO;
-                    [self startAudioUnit];
+                    if ([self startAudioUnit]) {
+                        TVIAudioSessionActivated(context);
+                    }
                 }
             });
         }
@@ -787,8 +815,10 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
             // With CallKit, AVAudioSession may change the sample rate during a configuration change.
             // If a valid route change occurs we may want to update our audio graph to reflect the new output device.
             @synchronized(self) {
-                if (self.renderingContext->deviceContext) {
-                    TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
+                // If the worker block is executed, then context is guaranteed to be valid.
+                TVIAudioDeviceContext context = [self deviceContext];
+                if (context) {
+                    TVIAudioDeviceExecuteWorkerBlock(context, ^{
                         [self handleValidRouteChange];
                     });
                 }
@@ -822,16 +852,19 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
         _renderingFormat = nil;
         _capturingFormat = nil;
 
-        // Restart the AVAudioEngine with new format
-        TVIAudioFormat *activeFormat = [[self class] activeFormat];
-        if (![activeFormat isEqual:_renderingFormat]) {
-            [self teardownAudioEngine];
-            [self setupAudioEngine];
-        }
-
         @synchronized(self) {
-            if (self.renderingContext->deviceContext || self.capturingContext->deviceContext) {
-                TVIAudioDeviceFormatChanged(self.renderingContext->deviceContext);
+            TVIAudioDeviceContext context = [self deviceContext];
+            if (context) {
+                TVIAudioDeviceFormatChanged(context);
+
+                TVIAudioDeviceExecuteWorkerBlock(context, ^{
+                    // Restart the AVAudioEngine with new format
+                    TVIAudioFormat *activeFormat = [[self class] activeFormat];
+                    if (![activeFormat isEqual:_renderingFormat]) {
+                        [self teardownAudioEngine];
+                        [self setupAudioEngine];
+                    }
+                });
             }
         }
     }
@@ -841,9 +874,12 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     [self teardownAudioEngine];
 
     @synchronized(self) {
-        if (self.renderingContext->deviceContext || self.capturingContext->deviceContext) {
-            TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
-                [self stopAudioUnit];
+        // If the worker block is executed, then context is guaranteed to be valid.
+        TVIAudioDeviceContext context = [self deviceContext];
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
+                [self teardownAudioUnit];
+                TVIAudioSessionDeactivated(context);
             });
         }
     }
@@ -853,9 +889,13 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     [self setupAudioEngine];
 
     @synchronized(self) {
-        if (self.renderingContext->deviceContext || self.capturingContext->deviceContext) {
-            TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
-                [self startAudioUnit];
+        // If the worker block is executed, then context is guaranteed to be valid.
+        TVIAudioDeviceContext context = [self deviceContext];
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
+                if ([self startAudioUnit]) {
+                    TVIAudioSessionActivated(context);
+                }
             });
         }
     }
@@ -866,3 +906,4 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 }
 
 @end
+
