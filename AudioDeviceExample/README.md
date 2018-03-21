@@ -45,4 +45,4 @@ After the remote Participant has joined you should be able to hear their audio. 
 
 ### Known Issues
 
-The AVAudioSession is configured and activated at playback initialization time. Ideally, it would be better to activate the AVAudioSession only when audio playback is needed.
+The AVAudioSession is configured and activated at device initialization time. Ideally, it would be better to activate the AVAudioSession only when audio playback or recording is needed.
