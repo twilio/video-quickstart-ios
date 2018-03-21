@@ -1,8 +1,10 @@
 <!-- Check the following before filing an issue -->
 > Before filing an issue please check that the issue is not already addressed by the following:
 >  * [Video Guides](https://www.twilio.com/docs/api/video)
->  * [Github Issues](https://github.com/twilio/video-quickstart-swift/issues)
->  * [Changelog](https://www.twilio.com/docs/api/video/changelogs/ios)
+>  * [Changelog](https://www.twilio.com/docs/api/video/changelog-twilio-video-ios-version-2x).
+> Issues filed to this repo should be specific to the QuickStart apps, for SDK level inquiries please use: 
+>  * [Video SDK - Github Issues](https://github.com/twilio/twilio-video-ios/issues) instead.
+
 
 ### Description
 
@@ -44,16 +46,16 @@ All relevant version information for the issue.
 
 #### Video iOS SDK
 
-[e.g. 1.2.0 via CocoaPods]
+[e.g. 1.3.12 via CocoaPods]
 
 #### Xcode
 
-[e.g. 8.3.3]
+[e.g. 9.2]
 
 #### iOS Version
 
-[e.g. 10.3.3]
+[e.g. 11.2.6]
 
 #### iOS Device
 
-[e.g. iPhone 6s Plus]
+[e.g. iPhone 8 Plus]
