@@ -1,6 +1,6 @@
 
 [ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/api/video/download-video-sdks#ios-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](http://twilio.github.io/twilio-video-ios/docs/latest/index.html)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 
 # Twilio Video Quickstart for Swift
 
@@ -118,7 +118,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/api/video/getting-started)
-* [Docs](ttp://twilio.github.io/twilio-video-ios/docs/latest)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest)
 
 ## Issues and Support
 
