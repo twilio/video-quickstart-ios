@@ -118,7 +118,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/api/video/getting-started)
-* [Docs](https://media.twiliocdn.com/sdk/ios/video/latest/docs)
+* [Docs](ttp://twilio.github.io/twilio-video-ios/docs/latest)
 
 ## Issues and Support
 
