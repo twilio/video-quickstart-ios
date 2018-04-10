@@ -186,10 +186,10 @@ class ViewController: UIViewController {
 
             // Use the preferred codecs
             if let preferredAudioCodec = Settings.shared.audioCodec {
-                builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
+                builder.preferredAudioCodecs = [preferredAudioCodec]
             }
             if let preferredVideoCodec = Settings.shared.videoCodec {
-                builder.preferredVideoCodecs = [preferredVideoCodec.rawValue]
+                builder.preferredVideoCodecs = [preferredVideoCodec]
             }
 
             // Use the preferred encoding parameters
