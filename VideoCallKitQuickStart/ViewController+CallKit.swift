@@ -207,12 +207,12 @@ extension ViewController {
 
             // Use the preferred audio codec
             if let preferredAudioCodec = Settings.shared.audioCodec {
-                builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
+                builder.preferredAudioCodecs = [preferredAudioCodec]
             }
             
             // Use the preferred video codec
             if let preferredVideoCodec = Settings.shared.videoCodec {
-                builder.preferredVideoCodecs = [preferredVideoCodec.rawValue]
+                builder.preferredVideoCodecs = [preferredVideoCodec]
             }
             
             // Use the preferred encoding parameters

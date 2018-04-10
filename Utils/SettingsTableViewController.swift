@@ -58,13 +58,13 @@ class SettingsTableViewController: UITableViewController {
         switch (label) {
             case SettingsTableViewController.audioCodecLabel:
                 if let codec = settings.audioCodec {
-                    detailText = codec.rawValue
+                    detailText = codec.name
                 }
                 break;
             
             case SettingsTableViewController.videoCodecLabel:
                 if let codec = settings.videoCodec {
-                    detailText = codec.rawValue
+                    detailText = codec.name
                 }
                 break;
             
@@ -136,7 +136,7 @@ class SettingsTableViewController: UITableViewController {
         let selectionArray = settings.supportedAudioCodecs
         
         for codec in selectionArray {
-            let selectionButton = UIAlertAction(title: codec.rawValue, style: .default, handler: { (action) -> Void in
+            let selectionButton = UIAlertAction(title: codec.name, style: .default, handler: { (action) -> Void in
                 self.settings.audioCodec = codec
                 self.tableView.reloadData()
             })
@@ -185,7 +185,7 @@ class SettingsTableViewController: UITableViewController {
         let selectionArray = settings.supportedVideoCodecs
         
         for codec in selectionArray {
-            let selectionButton = UIAlertAction(title: codec.rawValue, style: .default, handler: { (action) -> Void in
+            let selectionButton = UIAlertAction(title: codec.name, style: .default, handler: { (action) -> Void in
                 self.settings.videoCodec = codec
                 self.tableView.reloadData()
             })
