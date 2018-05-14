@@ -2,9 +2,13 @@
 [ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/api/video/download-video-sdks#ios-sdk)
 [![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 
+> NOTE: These sample applications use the Twilio Video 1.x APIs. For examples using our 2.0.0-beta APIs, please see the [master](https://github.com/twilio/video-quickstart-swift/tree/master) branch.
+
 # Twilio Video Quickstart for Swift
 
-> NOTE: These sample applications use the Twilio Video 1.x APIs. For examples using our 2.0.0-beta APIs, please see the [master](https://github.com/twilio/video-quickstart-swift/tree/master) branch.
+> **Deprecation Notice - Versions 1.0.0-beta9 and earlier**
+>
+> Please note that **older versions of the Programmable Video iOS SDK prior to 1.0.0-beta10 are deprecated and will stop working on September 13, 2018**. Please make sure you’re using the latest version of the library in your apps, and make sure your customers update their apps by that date. For more information please review the following knowledge base [article](https://support.twilio.com/hc/en-us/articles/360002897814-Legacy-Twilio-Programmable-Voice-SDKs-impacted-by-SSL-certificate-deprecation).
 
 Get started with Video on iOS:
 
