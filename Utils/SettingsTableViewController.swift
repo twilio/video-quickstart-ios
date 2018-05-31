@@ -15,7 +15,7 @@ class SettingsTableViewController: UITableViewController {
     static let maxAudioBitrate = "Max Audio Bitrate (bps)"
     static let maxVideoBitrate = "Max Video Bitrate (bps)"
     static let defaultStr = "Default"
-    static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported. VP8 Simulcast should only be enabled in a Group Room."
+    static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported in Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported. VP8 Simulcast should only be enabled in a Group Room."
     static let encodingParamsDisclaimerText = "Set sender bandwidth constraints. Zero represents the WebRTC default which varies by codec."
     
     let disclaimers = [codecDisclaimerText, encodingParamsDisclaimerText]
@@ -194,7 +194,7 @@ class SettingsTableViewController: UITableViewController {
             
             if (settings.videoCodec == codec) {
 
-                // workaround for https://github.com/twilio/twilio-video-ios/issues/12
+                // Workaround for https://github.com/twilio/twilio-video-ios/issues/12
                 if settings.videoCodec!.isKind(of: TVIVp8Codec.self) {
                     if codec.isKind(of: TVIVp8Codec.self) {
                         if ((codec as! TVIVp8Codec).isSimulcast == (settings.videoCodec as! TVIVp8Codec).isSimulcast) {
