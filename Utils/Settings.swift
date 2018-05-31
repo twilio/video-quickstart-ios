@@ -16,6 +16,7 @@ class Settings: NSObject {
                                                  TVIG722Codec()]
     
     let supportedVideoCodecs: [TVIVideoCodec] = [TVIVp8Codec(),
+                                                 TVIVp8Codec(simulcast: true),
                                                  TVIH264Codec(),
                                                  TVIVp9Codec()]
     
@@ -24,7 +25,7 @@ class Settings: NSObject {
 
     var maxAudioBitrate = UInt()
     var maxVideoBitrate = UInt()
-    
+
     func getEncodingParameters() -> TVIEncodingParameters?  {
         if maxAudioBitrate == 0 && maxVideoBitrate == 0 {
             return nil;
