@@ -49,7 +49,7 @@
 
     // The iOS audio device captures in mono.
     // In WebRTC 67 the channel count on the receiver side equals the sender side.
-     _numberOfChannels = 1;
+    _numberOfChannels = 1;
 
     // Assume that TVIAudioTrack will produce interleaved LPCM @ 16-bit / 48khz.
     // If the sample rate differs AVAssetWriterInput will upsample to 48 khz.
