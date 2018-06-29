@@ -1,5 +1,5 @@
 
-[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios-v2-getting-started)
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios-v2-getting-started#1-get-the-programmable-video-ios-sdk)
 [![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/2.3.0-preview1/index.html)
 
 # Twilio Video Quickstart for Swift
@@ -36,7 +36,7 @@ Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com
 
 ### Manual Integration
 
-You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/api/video/download-video-sdks#manual).
+You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/video/ios-v2-getting-started#manual).
 
 ## Quickstart
 
@@ -120,8 +120,8 @@ For this Quickstart, the Application transport security settings are set to allo
 
 You can find more documentation on getting started as well as our latest Docs below:
 
-* [Getting Started](https://www.twilio.com/docs/api/video/getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
+* [Getting Started](https://www.twilio.com/docs/video/ios-v2-getting-started)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/2.3.0-preview1/index.html)
 
 ## Issues and Support
 
