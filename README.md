@@ -1,10 +1,10 @@
 
-[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/api/video/download-video-sdks#ios-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios-v2-getting-started)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/2.3.0-preview1/index.html)
 
 # Twilio Video Quickstart for Swift
 
-> NOTE: These sample applications use the Twilio Video 2.x APIs. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
+> NOTE: These sample applications use the Twilio Video 2.3.0-preview APIs. For examples using our 2.2 APIs, please see the [master](https://github.com/twilio/video-quickstart-swift/tree/master) branch, and for our 1.x APIs see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
 
 Get started with Video on iOS:
 
