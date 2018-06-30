@@ -19,10 +19,15 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
     // Allows us to enqueue to the layer from a background thread without accessing self.layer directly.
     var cachedDisplayLayer : AVSampleBufferDisplayLayer?
 
-    // Register pixel formats that are known to work with AVSampleBufferDisplayLayer.
+    /*
+     * Register pixel formats that are known to work with AVSampleBufferDisplayLayer.
+     * At a minimum, the CVPixelBuffers are expected to be backed by an IOSurface so we will not support
+     * every possible input from CoreVideo.
+     */
     var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
                                             NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue)]
+                                            NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue),
+                                            NSNumber.init(value: TVIPixelFormat.format32ARGB.rawValue)]
 
     required init?(coder aDecoder: NSCoder) {
         // This example does not support storyboards.
@@ -107,7 +112,8 @@ extension ExampleSampleBufferRenderer {
     }
 
     func willResignActive(_: NSNotification) {
-        // TODO: - Should we stop rendering when resigning active?
+        // TODO: - Should we stop rendering when resigning active.
+        // AVSampleBufferDisplayLayer seems capable of handling this case.
     }
 }
 
@@ -181,11 +187,10 @@ extension ExampleSampleBufferRenderer {
             return
         }
 
-        // Represent TVIVideoFrame timestamps with microsecond timescale.
+        // Use the frame's timestamp as the presentation timestamp. We will display immediately.
         // Our uncompressed buffers do not need to be decoded.
         var sampleTiming = CMSampleTimingInfo.init(duration: kCMTimeInvalid,
-                                                   presentationTimeStamp: CMTime.init(value: frame.timestamp,
-                                                                                      timescale: CMTimeScale(1000000)),
+                                                   presentationTimeStamp: frame.timestamp,
                                                    decodeTimeStamp: kCMTimeInvalid)
 
         // Create a CMSampleBuffer
@@ -202,11 +207,10 @@ extension ExampleSampleBufferRenderer {
             print("Couldn't create a SampleBuffer. Status=\(status)")
             return
         } else if let sampleBuffer = sampleBuffer,
-                  let displayLayer = cachedDisplayLayer {
-
-            // Force immediate display of the Buffer.
-            let sampleAttachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, true) as NSArray!
-            let firstAttachment  = sampleAttachments?.firstObject as! NSMutableDictionary?
+                  let displayLayer = cachedDisplayLayer,
+                  let sampleAttachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, true) as NSArray? {
+            // Force immediate display of the buffer, since our renderer receives them just in time.
+            let firstAttachment  = sampleAttachments.firstObject as! NSMutableDictionary?
             firstAttachment?[kCMSampleAttachmentKey_DisplayImmediately] = true
 
             displayLayer.enqueue(sampleBuffer)

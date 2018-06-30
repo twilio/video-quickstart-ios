@@ -57,7 +57,7 @@ class ViewController: UIViewController {
         roomTextField.delegate = self
 
         // Prefer to work which H.264 where we can guarantee rendering of decoded video using ExampleSampleBufferView.
-        Settings.shared.videoCodec = TVIVideoCodec.H264
+        Settings.shared.videoCodec = TVIH264Codec.init()
         Settings.shared.maxAudioBitrate = 1024 * 64
         Settings.shared.maxVideoBitrate = 1024 * 850
 
@@ -94,10 +94,10 @@ class ViewController: UIViewController {
 
             // Use the preferred codecs
             if let preferredAudioCodec = Settings.shared.audioCodec {
-                builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
+                builder.preferredAudioCodecs = [preferredAudioCodec]
             }
             if let preferredVideoCodec = Settings.shared.videoCodec {
-                builder.preferredVideoCodecs = [preferredVideoCodec.rawValue]
+                builder.preferredVideoCodecs = [preferredVideoCodec]
             }
 
             // Use the preferred encoding parameters

@@ -107,8 +107,8 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
 
 extension ExampleVideoRecorder {
     func renderFrame(_ frame: TVIVideoFrame) {
-        // Represent TVIVideoFrame timestamps with microsecond timescale.
-        let timestamp = CMTime.init(value: frame.timestamp, timescale: Int32(1000000))
+        // Frames are delivered with presentation timestamps. We will make do with this for our recorder.
+        let timestamp = frame.timestamp
 
         if (CMTIME_IS_INVALID(recorderTimestamp)) {
             print("Received first video sample at: \(timestamp). Starting recording session.")
