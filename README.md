@@ -1,10 +1,10 @@
 
-[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/api/video/download-video-sdks#ios-sdk)
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
 [![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 
 # Twilio Video Quickstart for Objective-C
 
-> NOTE: These sample applications use the Twilio Video 2.x APIs. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-objc) branch.
+> NOTE: These sample applications use the Twilio Video 2.2 APIs. For examples using our 2.3.0-preview APIs, please see the [2.3.0-preview](https://github.com/twilio/video-quickstart-objc/tree/2.3.0-preview) branch, and for our 1.x APIs see the [1.x](https://github.com/twilio/video-quickstart-objc/tree/1.x) branch.
 
 Get started with Video on iOS:
 
@@ -115,7 +115,7 @@ For this Quickstart, the Application transport security settings are set to allo
 
 You can find more documentation on getting started as well as our latest Docs below:
 
-* [Getting Started](https://www.twilio.com/docs/api/video/getting-started)
+* [Getting Started](https://www.twilio.com/docs/video/ios-v2-getting-started)
 * [Docs](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 
 ## Issues and Support
