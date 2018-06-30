@@ -137,12 +137,12 @@ class ViewController: UIViewController {
             
             // Use the preferred audio codec
             if let preferredAudioCodec = Settings.shared.audioCodec {
-                builder.preferredAudioCodecs = [preferredAudioCodec.rawValue]
+                builder.preferredAudioCodecs = [preferredAudioCodec]
             }
             
             // Use the preferred video codec
             if let preferredVideoCodec = Settings.shared.videoCodec {
-                builder.preferredVideoCodecs = [preferredVideoCodec.rawValue]
+                builder.preferredVideoCodecs = [preferredVideoCodec]
             }
             
             // Use the preferred encoding parameters
@@ -425,6 +425,18 @@ extension ViewController : TVIRemoteParticipantDelegate {
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) disabled \(publication.trackName) audio track")
+    }
+
+    func failedToSubscribe(toAudioTrack publication: TVIRemoteAudioTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) audio track, error = \(String(describing: error))")
+    }
+
+    func failedToSubscribe(toVideoTrack publication: TVIRemoteVideoTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) video track, error = \(String(describing: error))")
     }
 }
 

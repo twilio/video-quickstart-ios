@@ -157,18 +157,16 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
                                                   nil,
                                                   &pixelBuffer)
 
-        if (status != kCVReturnSuccess) {
-            return;
+        if let buffer = pixelBuffer {
+            // Deliver a frame to the consumer. Images drawn by UIGraphics do not need any rotation tags.
+            let frame = TVIVideoFrame(timeInterval: timer.timestamp,
+                                      buffer: buffer,
+                                      orientation: TVIVideoOrientation.up)
+
+            // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
+            captureConsumer?.consumeCapturedFrame(frame!)
+        } else {
+            print("Capture failed with status code: \(status).")
         }
-
-        // Deliver a VideoFrame to the consumer. Images drawn by UIGraphics do not need any rotation tags.
-        // Express timestamps in microseconds
-        let timeStamp = Int64(timer.timestamp * Double( 1000000 ))
-        let frame = TVIVideoFrame(timestamp: timeStamp,
-                                  buffer: pixelBuffer!,
-                                  orientation: TVIVideoOrientation.up)
-
-        // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
-        captureConsumer?.consumeCapturedFrame(frame!)
     }
 }

@@ -2,8 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>voip</string>
+		<string>audio</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>${PRODUCT_NAME} uses your camera to capture video which is shared with other Room Participants.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>${PRODUCT_NAME} does not use your microphone, but requires permission to play audio due to issue #207.</string>
+	<string>${PRODUCT_NAME} uses your microphone to capture audio which is shared with other Room Participants.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

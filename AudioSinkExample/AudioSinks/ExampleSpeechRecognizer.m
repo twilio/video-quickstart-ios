@@ -10,7 +10,6 @@
 #import <AudioToolbox/AudioToolbox.h>
 
 static int kChannelCountMono = 1;
-static int kChannelCountStereo = 2;
 
 @interface ExampleSpeechRecognizer()
 
@@ -40,8 +39,8 @@ static int kChannelCountStereo = 2;
         _speechRequest.shouldReportPartialResults = YES;
 
         // The iOS audio device captures in mono.
-        // The mixer produces stereo audio for each remote Participant, even if they send mono audio.
-        _numberOfChannels = [audioTrack isKindOfClass:[TVILocalAudioTrack class]] ? kChannelCountMono : kChannelCountStereo;
+        // In WebRTC 67 the channel count on the receiver side equals the sender side.
+        _numberOfChannels = kChannelCountMono;
 
         __weak typeof(self) weakSelf = self;
         _speechTask = [_speechRecognizer recognitionTaskWithRequest:_speechRequest resultHandler:^(SFSpeechRecognitionResult * _Nullable result, NSError * _Nullable error) {

@@ -1,10 +1,10 @@
 
-[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/api/video/download-video-sdks#ios-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://media.twiliocdn.com/sdk/ios/video/releases/2.0.0-preview7/docs/index.html)
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios-v2-getting-started#1-get-the-programmable-video-ios-sdk)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/2.3.0-preview1/index.html)
 
 # Twilio Video Quickstart for Swift
 
-> NOTE: These sample applications use the Twilio Video 2.0.0-preview7 APIs. We will continue to update them throughout the preview and beta period. For examples using our Generally Available 1.x APIs, please see the [master](https://github.com/twilio/video-quickstart-swift) branch.
+> NOTE: These sample applications use the Twilio Video 2.3.0-preview APIs. For examples using our 2.2 APIs, please see the [master](https://github.com/twilio/video-quickstart-swift/tree/master) branch, and for our 1.x APIs see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
 
 Get started with Video on iOS:
 
@@ -36,7 +36,7 @@ Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com
 
 ### Manual Integration
 
-You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/api/video/download-video-sdks#manual).
+You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/video/ios-v2-getting-started#manual).
 
 ## Quickstart
 
@@ -78,6 +78,7 @@ Note: If you have an iOS device, you can now run apps from Xcode on your device 
 
 You will also find additional examples that provide more advanced use cases of the Video SDK. The currently included examples are as follows:
 
+- [AudioDevice](AudioDeviceExample) - Provide your own means to playback and record audio using a custom `TVIAudioDevice` and [CoreAudio](https://developer.apple.com/documentation/coreaudio).
 - [AudioSink](AudioSinkExample) - Access raw audio samples and record them to disk using [AVFoundation](https://developer.apple.com/documentation/avfoundation). Perform live voice recognition using Apple's [Speech](https://developer.apple.com/documentation/speech) framework.
 - [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `TVIRoom` via a custom `TVIVideoCapturer` source. This app requires Xcode 9 & iOS 11.
 - [CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit](https://developer.apple.com/reference/callkit) framework.
@@ -119,12 +120,15 @@ For this Quickstart, the Application transport security settings are set to allo
 
 You can find more documentation on getting started as well as our latest Docs below:
 
-* [Getting Started](https://www.twilio.com/docs/api/video/getting-started)
-* [Docs](https://media.twiliocdn.com/sdk/ios/video/releases/2.0.0-preview7/docs)
+* [Getting Started](https://www.twilio.com/docs/video/ios-v2-getting-started)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/2.3.0-preview1/index.html)
 
 ## Issues and Support
 
 Please file any issues you find here on Github.
+Please ensure that you are not sharing any
+[Personally Identifiable Information(PII)](https://www.twilio.com/docs/glossary/what-is-personally-identifiable-information-pii)
+or sensitive account information (API keys, credentials, etc.) when reporting an issue.
 
 For general inquiries related to the Video SDK you can file a [support ticket](https://support.twilio.com/hc/en-us/requests/new).
 

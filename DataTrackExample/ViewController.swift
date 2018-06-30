@@ -327,6 +327,12 @@ extension ViewController : TVIRemoteParticipantDelegate {
         self.removeDrawer(dataTrack)
         logMessage(messageText: "Unsubscribed from data track for Participant \(participant.identity)")
     }
+
+    func failedToSubscribe(toDataTrack publication: TVIRemoteDataTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) data track, error = \(String(describing: error))")
+    }
 }
 
 // MARK: TVIRemoteDataTrackDelegate
@@ -350,12 +356,12 @@ extension ViewController : TVIRemoteDataTrackDelegate {
             if let jsonDictionary = try JSONSerialization.jsonObject(with: message, options: []) as? [String: AnyObject] {
                 NSLog("processJsonData: \(jsonDictionary)" )
                 
-                if let touch = jsonDictionary[self.kTouchPoint] as? [String: AnyObject] {
-                    let pointX = touch[self.kXCoordinate] as! Float
-                    let pointY = touch[self.kYCoordinate] as! Float
+                if let touch = jsonDictionary[self.kTouchPoint] as? [String: AnyObject],
+                    let pointX = touch[self.kXCoordinate] as? NSNumber,
+                    let pointY = touch[self.kYCoordinate] as? NSNumber {
                     
-                    let theTouchPoint = CGPoint(x: CGFloat(pointX) * self.view.bounds.width,
-                                                y: CGFloat(pointY) * self.view.bounds.height)
+                    let theTouchPoint = CGPoint(x: CGFloat(pointX.floatValue) * self.view.bounds.width,
+                                                y: CGFloat(pointY.floatValue) * self.view.bounds.height)
                     
                     if let touchBegan = jsonDictionary[self.kTouchBegan] {
                         if (touchBegan).boolValue {
@@ -366,6 +372,8 @@ extension ViewController : TVIRemoteDataTrackDelegate {
                         }
                         success = true
                     }
+                } else {
+                    print("Unable to parse incoming JSON data. \(jsonDictionary)")
                 }
             }
             if success == false {

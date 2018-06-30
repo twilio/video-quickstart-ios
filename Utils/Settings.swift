@@ -9,22 +9,23 @@ import TwilioVideo
 
 class Settings: NSObject {
 
-    let supportedAudioCodecs = [TVIAudioCodec.ISAC,
-                                TVIAudioCodec.opus,
-                                TVIAudioCodec.PCMA,
-                                TVIAudioCodec.PCMU,
-                                TVIAudioCodec.G722]
+    let supportedAudioCodecs: [TVIAudioCodec] = [TVIIsacCodec(),
+                                                 TVIOpusCodec(),
+                                                 TVIPcmaCodec(),
+                                                 TVIPcmuCodec(),
+                                                 TVIG722Codec()]
     
-    let supportedVideoCodecs = [TVIVideoCodec.VP8,
-                                TVIVideoCodec.H264,
-                                TVIVideoCodec.VP9]
+    let supportedVideoCodecs: [TVIVideoCodec] = [TVIVp8Codec(),
+                                                 TVIVp8Codec(simulcast: true),
+                                                 TVIH264Codec(),
+                                                 TVIVp9Codec()]
     
     var audioCodec: TVIAudioCodec?
     var videoCodec: TVIVideoCodec?
 
     var maxAudioBitrate = UInt()
     var maxVideoBitrate = UInt()
-    
+
     func getEncodingParameters() -> TVIEncodingParameters?  {
         if maxAudioBitrate == 0 && maxVideoBitrate == 0 {
             return nil;

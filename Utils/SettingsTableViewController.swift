@@ -15,7 +15,7 @@ class SettingsTableViewController: UITableViewController {
     static let maxAudioBitrate = "Max Audio Bitrate (bps)"
     static let maxVideoBitrate = "Max Video Bitrate (bps)"
     static let defaultStr = "Default"
-    static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported with Group rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported."
+    static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported in Group Rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported. VP8 Simulcast should only be enabled in a Group Room."
     static let encodingParamsDisclaimerText = "Set sender bandwidth constraints. Zero represents the WebRTC default which varies by codec."
     
     let disclaimers = [codecDisclaimerText, encodingParamsDisclaimerText]
@@ -58,13 +58,13 @@ class SettingsTableViewController: UITableViewController {
         switch (label) {
             case SettingsTableViewController.audioCodecLabel:
                 if let codec = settings.audioCodec {
-                    detailText = codec.rawValue
+                    detailText = codec.name
                 }
                 break;
             
             case SettingsTableViewController.videoCodecLabel:
                 if let codec = settings.videoCodec {
-                    detailText = codec.rawValue
+                    detailText = self.getDisplayStrForVideoCodec(codec: codec)
                 }
                 break;
             
@@ -136,7 +136,7 @@ class SettingsTableViewController: UITableViewController {
         let selectionArray = settings.supportedAudioCodecs
         
         for codec in selectionArray {
-            let selectionButton = UIAlertAction(title: codec.rawValue, style: .default, handler: { (action) -> Void in
+            let selectionButton = UIAlertAction(title: codec.name, style: .default, handler: { (action) -> Void in
                 self.settings.audioCodec = codec
                 self.tableView.reloadData()
             })
@@ -185,13 +185,25 @@ class SettingsTableViewController: UITableViewController {
         let selectionArray = settings.supportedVideoCodecs
         
         for codec in selectionArray {
-            let selectionButton = UIAlertAction(title: codec.rawValue, style: .default, handler: { (action) -> Void in
+            let selectionButton = UIAlertAction(title: self.getDisplayStrForVideoCodec(codec: codec),
+                                                style: .default,
+                                                handler: { (action) -> Void in
                 self.settings.videoCodec = codec
                 self.tableView.reloadData()
             })
             
             if (settings.videoCodec == codec) {
-                selectedButton = selectionButton;
+
+                // Workaround for https://github.com/twilio/twilio-video-ios/issues/12
+                if settings.videoCodec!.isKind(of: TVIVp8Codec.self) {
+                    if codec.isKind(of: TVIVp8Codec.self) {
+                        if ((codec as! TVIVp8Codec).isSimulcast == (settings.videoCodec as! TVIVp8Codec).isSimulcast) {
+                            selectedButton = selectionButton;
+                        }
+                    }
+                } else {
+                    selectedButton = selectionButton;
+                }
             }
             
             alertController.addAction(selectionButton)
@@ -270,5 +282,14 @@ class SettingsTableViewController: UITableViewController {
             alertController.popoverPresentationController?.sourceRect = (tableView.cellForRow(at: indexPath)?.bounds)!
         }
         self.navigationController!.present(alertController, animated: true, completion: nil)
+    }
+
+    func getDisplayStrForVideoCodec(codec: TVIVideoCodec) -> String {
+        var str = codec.name
+        if codec.isKind(of: TVIVp8Codec.self) {
+            let vp8Codec = codec as! TVIVp8Codec
+            str += vp8Codec.isSimulcast ? " Simulcast" : ""
+        }
+        return str;
     }
 }

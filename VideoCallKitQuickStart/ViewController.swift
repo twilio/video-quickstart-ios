@@ -23,6 +23,10 @@ class ViewController: UIViewController {
     
     // Video SDK components
     var room: TVIRoom?
+    /**
+     * We will create an audio device and manage it's lifecycle in response to CallKit events.
+     */
+    var audioDevice: TVIDefaultAudioDevice = TVIDefaultAudioDevice()
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
@@ -30,8 +34,8 @@ class ViewController: UIViewController {
     var remoteView: TVIVideoView?
 
     // CallKit components
-    let callKitProvider:CXProvider
-    let callKitCallController:CXCallController
+    let callKitProvider: CXProvider
+    let callKitCallController: CXCallController
     var callKitCompletionHandler: ((Bool)->Swift.Void?)? = nil
 
     // MARK: UI Element Outlets and handles
@@ -73,6 +77,13 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "QuickStart"
+
+        /*
+         * The important thing to remember when providing a TVIAudioDevice is that the device must be set
+         * before performing any other actions with the SDK (such as creating Tracks, or connecting to a Room).
+         * In this case we've already initialized our own `TVIDefaultAudioDevice` instance which we will now set.
+         */
+        TwilioVideo.audioDevice = self.audioDevice;
         
         if PlatformUtils.isSimulator {
             self.previewView.removeFromSuperview()
@@ -194,7 +205,6 @@ class ViewController: UIViewController {
     }
 
     func prepareLocalMedia() {
-
         // We will share local audio and video when we connect to the Room.
 
         // Create an audio track.
@@ -425,6 +435,18 @@ extension ViewController : TVIRemoteParticipantDelegate {
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) disabled audio track")
+    }
+
+    func failedToSubscribe(toAudioTrack publication: TVIRemoteAudioTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) audio track, error = \(String(describing: error))")
+    }
+
+    func failedToSubscribe(toVideoTrack publication: TVIRemoteVideoTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) video track, error = \(String(describing: error))")
     }
 }
 
