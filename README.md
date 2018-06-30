@@ -40,7 +40,7 @@ Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com
 
 ### Manual Integration
 
-You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/api/video/download-video-sdks#manual).
+You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/video/ios-v1-getting-started#manual).
 
 ## Quickstart
 
