@@ -294,6 +294,9 @@ class ViewController: UIViewController {
         } else {
             remoteView.contentMode = .scaleAspectFit
         }
+        // Workaround for UIViewContentMode not taking effect until another layout is done.
+        remoteView.bounds = remoteView.bounds.insetBy(dx: 1, dy: 1)
+        remoteView.bounds = remoteView.bounds.insetBy(dx: -1, dy: -1)
     }
 }
 
