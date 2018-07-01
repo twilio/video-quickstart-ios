@@ -112,7 +112,7 @@ extension ExampleSampleBufferRenderer {
     }
 
     func willResignActive(_: NSNotification) {
-        // TODO: - Should we stop rendering when resigning active.
+        // TODO: - Should we stop rendering when resigning active?
         // AVSampleBufferDisplayLayer seems capable of handling this case.
     }
 }

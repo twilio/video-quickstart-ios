@@ -16,7 +16,8 @@ class ExampleSnapshotRecorder : NSObject, TVIVideoRenderer {
     // Register pixel formats that we can convert to a UIImage.
     var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
                                             NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue)]
+                                            NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue),
+                                            NSNumber.init(value: TVIPixelFormat.format32ARGB.rawValue)]
 
     func captureSnapshot() -> UIImage? {
         // TODO: Maybe we don't want to wait forever for the smaphore?

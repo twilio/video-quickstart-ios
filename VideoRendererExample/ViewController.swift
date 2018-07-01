@@ -43,7 +43,7 @@ class ViewController: UIViewController {
     // How many remote videos to display.
     let kMaxRemoteVideos = Int(2)
 
-    // Use the ExampleSampleBufferView instead of TVIVideoView to render remote Participant video.
+    // Use ExampleSampleBufferView instead of TVIVideoView to render remote Participant video.
     let kUseExampleSampleBufferView = true
 
     override func viewDidLoad() {
@@ -58,8 +58,8 @@ class ViewController: UIViewController {
 
         // Prefer to work which H.264 where we can guarantee rendering of decoded video using ExampleSampleBufferView.
         Settings.shared.videoCodec = TVIH264Codec.init()
-        Settings.shared.maxAudioBitrate = 1024 * 64
-        Settings.shared.maxVideoBitrate = 1024 * 850
+        // Use a reasonable video bandwidth limit of 1100 kbps.
+        Settings.shared.maxVideoBitrate = 1024 * 1100
 
         prepareLocalMedia()
     }
@@ -132,17 +132,26 @@ class ViewController: UIViewController {
 
         // Layout the preview view.
         if let previewView = self.camera?.previewView {
+            var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
+            if #available(iOS 11.0, *) {
+                // Ensure the preview fits in the safe area.
+                let safeAreaGuide = self.view.safeAreaLayoutGuide
+                let layoutFrame = safeAreaGuide.layoutFrame
+                bottomRight.x = layoutFrame.origin.x + layoutFrame.width
+                bottomRight.y = layoutFrame.origin.y + layoutFrame.height
+            }
             let dimensions = previewView.videoDimensions
             var previewBounds = CGRect.init(origin: CGPoint.zero, size: CGSize.init(width: 160, height: 160))
 
-            previewBounds = AVMakeRect(aspectRatio: CGSize.init(width: CGFloat(dimensions.width), height: CGFloat(dimensions.height)),
+            previewBounds = AVMakeRect(aspectRatio: CGSize.init(width: CGFloat(dimensions.width),
+                                                                height: CGFloat(dimensions.height)),
                                        insideRect: previewBounds)
 
             previewBounds = previewBounds.integral
             previewView.bounds = previewBounds
 
-            previewView.center = CGPoint.init(x: view.bounds.width - previewBounds.width / 2 - kPreviewPadding,
-                                              y: view.bounds.height - previewBounds.height / 2 - kPreviewPadding)
+            previewView.center = CGPoint.init(x: bottomRight.x - previewBounds.width / 2 - kPreviewPadding,
+                                              y: bottomRight.y - previewBounds.height / 2 - kPreviewPadding)
         }
     }
 
