@@ -10,9 +10,16 @@ import Foundation
 import UIKit
 import TwilioVideo
 
-class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
+protocol ExampleSampleBufferRendererDelegate {
+    func bufferViewVideoChanged(view: ExampleSampleBufferView,
+                                dimensions: CMVideoDimensions,
+                                orientation: TVIVideoOrientation)
+}
+
+class ExampleSampleBufferView : UIView, TVIVideoRenderer {
 
     public var videoDimensions: CMVideoDimensions
+    public var videoOrientation: TVIVideoOrientation
 
     var isRendering = UIApplication.shared.applicationState != .background
     var outputFormatDescription: CMFormatDescription?
@@ -37,17 +44,18 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
 
     override init(frame: CGRect) {
         videoDimensions = CMVideoDimensions(width: 0, height: 0)
+        videoOrientation = TVIVideoOrientation.up
 
         super.init(frame: frame)
 
         cachedDisplayLayer = super.layer as? AVSampleBufferDisplayLayer
         let center = NotificationCenter.default
 
-        center.addObserver(self, selector: #selector(ExampleSampleBufferRenderer.willEnterForeground),
+        center.addObserver(self, selector: #selector(ExampleSampleBufferView.willEnterForeground),
                            name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
-        center.addObserver(self, selector: #selector(ExampleSampleBufferRenderer.didEnterBackground),
+        center.addObserver(self, selector: #selector(ExampleSampleBufferView.didEnterBackground),
                            name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
-        center.addObserver(self, selector: #selector(ExampleSampleBufferRenderer.willResignActive),
+        center.addObserver(self, selector: #selector(ExampleSampleBufferView.willResignActive),
                            name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
 
 //        [_sampleView addObserver:self forKeyPath:@"layer.status" options:NSKeyValueObservingOptionNew context:NULL];
@@ -96,7 +104,7 @@ class ExampleSampleBufferRenderer : UIView, TVIVideoRenderer {
     }
 }
 
-extension ExampleSampleBufferRenderer {
+extension ExampleSampleBufferView {
     func willEnterForeground(_: NSNotification) {
 
         if (displayLayer.status == AVQueuedSampleBufferRenderingStatus.failed) {
@@ -117,7 +125,7 @@ extension ExampleSampleBufferRenderer {
     }
 }
 
-extension ExampleSampleBufferRenderer {
+extension ExampleSampleBufferView {
 
     func renderFrame(_ frame: TVIVideoFrame) {
         let pixelFormat = CVPixelBufferGetPixelFormatType(frame.imageBuffer)
@@ -146,9 +154,36 @@ extension ExampleSampleBufferRenderer {
     }
 
     func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: TVIVideoOrientation) {
-        // Update size property to help with View layout.
         DispatchQueue.main.async {
+            // Update properties to help with View layout.
+            let orientationChanged = orientation != self.videoOrientation
+            let animate = orientationChanged && (videoSize.width == self.videoDimensions.width && videoSize.height == self.videoDimensions.height)
             self.videoDimensions = videoSize
+            self.videoOrientation = orientation
+
+            // TODO: Should we be doing this here, or delegating to a view controller?
+//            [UIView .animate(withDuration: animate ? 0.3 : 0, animations: {
+//                let size = videoSize
+//                let scaleFactor = size.height > size.width ? CGFloat(size.height) / CGFloat(size.width) : CGFloat(size.width) / CGFloat(size.height)
+//                switch (orientation) {
+//                case TVIVideoOrientation.up:
+//                    self.transform = CGAffineTransform.identity;
+//                    break
+//                case TVIVideoOrientation.left:
+//                    let scale = CGAffineTransform.init(scaleX: scaleFactor,
+//                                                       y: scaleFactor)
+//                    self.transform = CGAffineTransform(rotationAngle: CGFloat.pi / 2).concatenating(scale)
+//                    break
+//                case TVIVideoOrientation.down:
+//                    self.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
+//                    break
+//                case TVIVideoOrientation.right:
+//                    let scale = CGAffineTransform.init(scaleX: scaleFactor,
+//                                                       y: scaleFactor)
+//                    self.transform = CGAffineTransform(rotationAngle: CGFloat.pi * 3 / 2).concatenating(scale)
+//                    break
+//                }
+//            })];
         }
     }
 

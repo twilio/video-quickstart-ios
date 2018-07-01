@@ -255,7 +255,7 @@ class ViewController: UIViewController {
     func setupRemoteVideoView(publication: TVIRemoteVideoTrackPublication) {
         // Create `ExampleSampleBufferRenderer`, and add it to our `UIStackView`.
         let remoteView = kUseExampleSampleBufferView ?
-            ExampleSampleBufferRenderer(frame: CGRect.zero) : TVIVideoView(frame: CGRect.zero)
+            ExampleSampleBufferView(frame: CGRect.zero) : TVIVideoView(frame: CGRect.zero)
 
         // We will bet that a hash collision between two unique SIDs is very rare.
         remoteView.tag = publication.trackSid.hashValue
