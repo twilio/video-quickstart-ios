@@ -4,6 +4,7 @@
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14252.5"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -18,17 +19,30 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="yXC-tS-vkj">
-                                <rect key="frame" x="169" y="315" width="37" height="37"/>
+                                <rect key="frame" x="169" y="231.5" width="37" height="37"/>
                                 <color key="color" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                             </activityIndicatorView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xrv-9v-TZ3">
+                                <rect key="frame" x="133.5" y="318.5" width="108" height="30"/>
+                                <state key="normal" title="Start Broadcast"/>
+                                <connections>
+                                    <action selector="startBroadcast:" destination="BYZ-38-t0r" eventType="touchUpInside" id="a2a-i2-aKK"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="yXC-tS-vkj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="IWu-cC-WGd"/>
-                            <constraint firstItem="yXC-tS-vkj" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="P7c-U1-R5h"/>
+                            <constraint firstItem="yXC-tS-vkj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QEo-WS-bAc"/>
+                            <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="gaf-ZE-A5V"/>
+                            <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="gnC-Ke-gmX"/>
+                            <constraint firstItem="Xrv-9v-TZ3" firstAttribute="top" secondItem="yXC-tS-vkj" secondAttribute="bottom" constant="50" id="xm7-xN-ZGu"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
+                    <connections>
+                        <outlet property="broadcastButton" destination="Xrv-9v-TZ3" id="CgJ-7b-QxG"/>
+                        <outlet property="spinner" destination="yXC-tS-vkj" id="zx9-hU-wfA"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
