@@ -28,6 +28,10 @@
 	<array>
 		<string>armv7</string>
 	</array>
+    <key>NSCameraUsageDescription</key>
+    <string>Use camera to broadcast.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Use microphone to broadcast.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

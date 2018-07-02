@@ -10,6 +10,12 @@ import ReplayKit
 
 class BroadcastSetupViewController: UIViewController {
 
+    @IBOutlet weak var broadcastButton: UIButton!
+
+    @IBAction func broadcast(_ sender: Any) {
+        userDidFinishSetup()
+    }
+
     // Call this method when the user has finished interacting with the view controller and a broadcast stream can start
     func userDidFinishSetup() {
         // URL of the resource where broadcast can be viewed that will be returned to the application

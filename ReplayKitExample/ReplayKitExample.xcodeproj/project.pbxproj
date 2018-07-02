@@ -12,6 +12,7 @@
 		4B20000A20E9CB9C00FE9F2C /* BroadcastSetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B20000920E9CB9C00FE9F2C /* BroadcastSetupViewController.swift */; };
 		4B20000E20E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4B20000420E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4B20001120E9CB9C00FE9F2C /* BroadcastExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4B20FFF820E9CB9C00FE9F2C /* BroadcastExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4B20001C20E9D3F300FE9F2C /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B20001B20E9D3F300FE9F2C /* MainInterface.storyboard */; };
 		4B20FFE320E9CB8500FE9F2C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B20FFE220E9CB8500FE9F2C /* AppDelegate.swift */; };
 		4B20FFE520E9CB8500FE9F2C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B20FFE420E9CB8500FE9F2C /* ViewController.swift */; };
 		4B20FFE820E9CB8500FE9F2C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B20FFE620E9CB8500FE9F2C /* Main.storyboard */; };
@@ -58,6 +59,7 @@
 		4B20000620E9CB9C00FE9F2C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		4B20000920E9CB9C00FE9F2C /* BroadcastSetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastSetupViewController.swift; sourceTree = "<group>"; };
 		4B20000B20E9CB9C00FE9F2C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4B20001B20E9D3F300FE9F2C /* MainInterface.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainInterface.storyboard; sourceTree = "<group>"; };
 		4B20FFDF20E9CB8500FE9F2C /* ReplayKitExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplayKitExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B20FFE220E9CB8500FE9F2C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4B20FFE420E9CB8500FE9F2C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				4B20000920E9CB9C00FE9F2C /* BroadcastSetupViewController.swift */,
+				4B20001B20E9D3F300FE9F2C /* MainInterface.storyboard */,
 				4B20000B20E9CB9C00FE9F2C /* Info.plist */,
 			);
 			path = BroadcastExtensionSetupUI;
@@ -263,6 +266,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B20001C20E9D3F300FE9F2C /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,6 +356,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = BroadcastExtensionSetupUI/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -371,6 +376,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = BroadcastExtensionSetupUI/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -390,6 +396,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = BroadcastExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -409,6 +416,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = BroadcastExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -544,6 +552,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = ReplayKitExample/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -563,6 +572,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = ReplayKitExample/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

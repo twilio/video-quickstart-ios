@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14269.12" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ObA-dk-sSI">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14252.5"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Broadcast Setup View Controller-->
+        <scene sceneID="7MM-of-jgj">
+            <objects>
+                <viewController id="ObA-dk-sSI" customClass="BroadcastSetupViewController" customModule="BroadcastExtensionSetupUI" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="qkL-Od-lgU"/>
+                        <viewControllerLayoutGuide type="bottom" id="n38-gi-rB5"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="zMn-AG-sqS">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="150"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Username" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="RTB-8o-uhA">
+                                <rect key="frame" x="16" y="30" width="288" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6Wn-NY-scb">
+                                <rect key="frame" x="16" y="90" width="288" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="hm0-sX-b78"/>
+                                </constraints>
+                                <state key="normal" title="Broadcast"/>
+                                <connections>
+                                    <action selector="broadcast:" destination="ObA-dk-sSI" eventType="touchUpInside" id="G2z-hp-SJC"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="RTB-8o-uhA" firstAttribute="leading" secondItem="zMn-AG-sqS" secondAttribute="leadingMargin" id="3Sx-8A-T5M"/>
+                            <constraint firstItem="6Wn-NY-scb" firstAttribute="leading" secondItem="zMn-AG-sqS" secondAttribute="leadingMargin" id="fPO-Ih-RIg"/>
+                            <constraint firstItem="6Wn-NY-scb" firstAttribute="top" secondItem="RTB-8o-uhA" secondAttribute="bottom" constant="30" id="lyK-Mw-ePn"/>
+                            <constraint firstItem="6Wn-NY-scb" firstAttribute="trailing" secondItem="zMn-AG-sqS" secondAttribute="trailingMargin" id="rFh-ge-yqq"/>
+                            <constraint firstItem="RTB-8o-uhA" firstAttribute="trailing" secondItem="zMn-AG-sqS" secondAttribute="trailingMargin" id="wPa-Iu-Rkf"/>
+                            <constraint firstItem="RTB-8o-uhA" firstAttribute="top" secondItem="qkL-Od-lgU" secondAttribute="bottom" constant="30" id="yTL-Ri-j1J"/>
+                        </constraints>
+                    </view>
+                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+                    <size key="freeformSize" width="320" height="150"/>
+                    <connections>
+                        <outlet property="broadcastButton" destination="6Wn-NY-scb" id="6Jw-gf-6aj"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="X47-rx-isc" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="116.8" y="111.54422788605699"/>
+        </scene>
+    </scenes>
+</document>
