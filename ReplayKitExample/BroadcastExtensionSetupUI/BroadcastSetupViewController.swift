@@ -23,7 +23,7 @@ class BroadcastSetupViewController: UIViewController {
         let broadcastURL = URL(string:"http://apple.com/broadcast/streamID")
         
         // Dictionary with setup information that will be provided to broadcast extension when broadcast is started
-        let setupInfo: [String : NSCoding & NSObjectProtocol] = ["broadcastName": "example" as NSCoding & NSObjectProtocol]
+        let setupInfo: [String : NSCoding & NSObjectProtocol] = ["RoomName": roomTextField.text! as NSCoding & NSObjectProtocol]
         
         // Tell ReplayKit that the extension is finished setting up and can begin broadcasting
         self.extensionContext?.completeRequest(withBroadcast: broadcastURL!, setupInfo: setupInfo)
