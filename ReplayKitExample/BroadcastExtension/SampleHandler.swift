@@ -55,7 +55,11 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
 
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
-            builder.roomName = setupInfo?["RoomName"] as? String
+            if #available(iOS 12.0, *) {
+                builder.roomName = "test"
+            } else {
+                builder.roomName = setupInfo?["RoomName"] as? String
+            }
         }
 
         // Connect to the Room using the options we provided.

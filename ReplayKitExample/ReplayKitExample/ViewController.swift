@@ -24,6 +24,13 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     override func viewDidLoad() {
         super.viewDidLoad()
         broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
+        if #available(iOS 12.0, *) {
+            let broadcastPickerView = RPBroadcastPickerView(frame: broadcastButton.frame)
+            broadcastPickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
+            view.addSubview(broadcastPickerView)
+            broadcastPickerView.backgroundColor = UIColor.red
+            broadcastButton.isHidden = true
+        }
     }
 
     @IBAction func startBroadcast(_ sender: Any) {
