@@ -11,6 +11,7 @@ import ReplayKit
 class BroadcastSetupViewController: UIViewController {
 
     @IBOutlet weak var broadcastButton: UIButton!
+    @IBOutlet weak var roomTextField: UITextField!
 
     @IBAction func broadcast(_ sender: Any) {
         userDidFinishSetup()
