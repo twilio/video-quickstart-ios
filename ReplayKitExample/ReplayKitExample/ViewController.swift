@@ -44,6 +44,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             broadcastButton.isHidden = true
             self.spinner.isHidden = true
         }
+        RPScreenRecorder.shared().isMicrophoneEnabled = true
     }
 
     @IBAction func startBroadcast(_ sender: Any) {

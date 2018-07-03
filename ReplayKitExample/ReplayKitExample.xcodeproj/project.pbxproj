@@ -19,6 +19,10 @@
 		4B20FFED20E9CB8600FE9F2C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B20FFEB20E9CB8600FE9F2C /* LaunchScreen.storyboard */; };
 		4B20FFFB20E9CB9C00FE9F2C /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B20FFFA20E9CB9C00FE9F2C /* ReplayKit.framework */; };
 		4B20FFFE20E9CB9C00FE9F2C /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B20FFFD20E9CB9C00FE9F2C /* SampleHandler.swift */; };
+		4BB0385920EB45950095CDA8 /* ExampleCoreAudioDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BB0385820EB45940095CDA8 /* ExampleCoreAudioDevice.m */; };
+		4BB0385C20EB45F50095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
+		4BB0385E20EB45FB0095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
+		4BB0386020EB46040095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
 		4BEA5E0820E9DB5900643AF1 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */; };
 /* End PBXBuildFile section */
 
@@ -70,6 +74,12 @@
 		4B20FFFA20E9CB9C00FE9F2C /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		4B20FFFD20E9CB9C00FE9F2C /* SampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
 		4B20FFFF20E9CB9C00FE9F2C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4BB0385720EB45940095CDA8 /* ExampleCoreAudioDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExampleCoreAudioDevice.h; sourceTree = "<group>"; };
+		4BB0385820EB45940095CDA8 /* ExampleCoreAudioDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExampleCoreAudioDevice.m; sourceTree = "<group>"; };
+		4BB0385A20EB45F50095CDA8 /* BroadcastExtensionSetupUI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BroadcastExtensionSetupUI.entitlements; sourceTree = "<group>"; };
+		4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		4BB0385D20EB45FB0095CDA8 /* BroadcastExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BroadcastExtension.entitlements; sourceTree = "<group>"; };
+		4BB0385F20EB46040095CDA8 /* ReplayKitExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ReplayKitExample.entitlements; sourceTree = "<group>"; };
 		4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainInterface.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -80,6 +90,7 @@
 			files = (
 				4B20000520E9CB9C00FE9F2C /* ReplayKit.framework in Frameworks */,
 				4B20000720E9CB9C00FE9F2C /* UIKit.framework in Frameworks */,
+				4BB0385C20EB45F50095CDA8 /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,6 +98,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4BB0386020EB46040095CDA8 /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,6 +107,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4B20FFFB20E9CB9C00FE9F2C /* ReplayKit.framework in Frameworks */,
+				4BB0385E20EB45FB0095CDA8 /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +161,7 @@
 		4B20FFF920E9CB9C00FE9F2C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */,
 				4B20FFFA20E9CB9C00FE9F2C /* ReplayKit.framework */,
 				4B20000620E9CB9C00FE9F2C /* UIKit.framework */,
 			);
@@ -157,7 +171,10 @@
 		4B20FFFC20E9CB9C00FE9F2C /* BroadcastExtension */ = {
 			isa = PBXGroup;
 			children = (
+				4BB0385D20EB45FB0095CDA8 /* BroadcastExtension.entitlements */,
 				4B20FFFD20E9CB9C00FE9F2C /* SampleHandler.swift */,
+				4BB0385720EB45940095CDA8 /* ExampleCoreAudioDevice.h */,
+				4BB0385820EB45940095CDA8 /* ExampleCoreAudioDevice.m */,
 				4B20FFFF20E9CB9C00FE9F2C /* Info.plist */,
 			);
 			path = BroadcastExtension;
@@ -232,12 +249,27 @@
 				TargetAttributes = {
 					4B20000320E9CB9C00FE9F2C = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.InterAppAudio = {
+								enabled = 1;
+							};
+						};
 					};
 					4B20FFDE20E9CB8500FE9F2C = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.InterAppAudio = {
+								enabled = 1;
+							};
+						};
 					};
 					4B20FFF720E9CB9C00FE9F2C = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.InterAppAudio = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -311,6 +343,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4BB0385920EB45950095CDA8 /* ExampleCoreAudioDevice.m in Sources */,
 				4B20FFFE20E9CB9C00FE9F2C /* SampleHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -353,6 +386,7 @@
 		4B20001320E9CB9C00FE9F2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BroadcastExtensionSetupUI/BroadcastExtensionSetupUI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = BroadcastExtensionSetupUI/Info.plist;
@@ -373,6 +407,7 @@
 		4B20001420E9CB9C00FE9F2C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BroadcastExtensionSetupUI/BroadcastExtensionSetupUI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = BroadcastExtensionSetupUI/Info.plist;
@@ -405,6 +440,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "BroadcastExtension/BroadcastExtension-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -425,6 +462,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "BroadcastExtension/BroadcastExtension-Bridging-Header.h";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

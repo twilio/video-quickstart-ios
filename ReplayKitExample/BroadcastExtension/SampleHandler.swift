@@ -10,18 +10,19 @@ import Accelerate
 import TwilioVideo
 import ReplayKit
 
-
 class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer {
 
     public var isScreencast: Bool = true
 
     // Video SDK components
-    var room: TVIRoom?
+    public var room: TVIRoom?
     weak var captureConsumer: TVIVideoCaptureConsumer?
 
     static let kDesiredFrameRate = 30
     static let kDownScaledFrameWidth = 540
     static let kDownScaledFrameHeight = 960
+
+    let audioDevice = ExampleCoreAudioDevice()
 
     public var supportedFormats: [TVIVideoFormat] {
         get {
@@ -39,15 +40,19 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
     }
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
+
+        TwilioVideo.audioDevice = ExampleCoreAudioDevice(audioCapturer: self)
+
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
-        let accessToken = "TWILIO-ACCESS-TOKEN";
+        let accessToken = "TWILIO_ACCESS_TOKEN";
 
         let localScreenTrack = TVILocalVideoTrack(capturer: self)
         let h264VideoCodec = TVIH264Codec()
+        let localAudioTrack = TVILocalAudioTrack()
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
 
             // Use the local media that we prepared earlier.
-            //builder.audioTracks = [TVILocalAudioTrack]()
+            builder.audioTracks = [localAudioTrack!]
             builder.videoTracks = [localScreenTrack!]
 
             // Use the preferred video codec
@@ -82,6 +87,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
     }
 
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
+        RPScreenRecorder.shared().isMicrophoneEnabled = true
         switch sampleBufferType {
         case RPSampleBufferType.video:
             if ((captureConsumer != nil) && room?.state == .connected) {
@@ -89,10 +95,14 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
             }
             break
         case RPSampleBufferType.audioApp:
-            // Handle audio sample buffer for app audio
+            if (room?.state == .connected) {
+                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+            }
             break
         case RPSampleBufferType.audioMic:
-            // Handle audio sample buffer for mic audio
+            if (room?.state == .connected) {
+                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+            }
             break
         }
     }
