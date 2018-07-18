@@ -124,7 +124,7 @@
 
     // Check for silence. This technique is not efficient, it might be better to sum the values of the vector instead.
     BOOL silence = YES;
-    for (int i = 0; i < inputBytes; i+=2) {
+    for (size_t i = 0; i < inputBytes; i+=2) {
         int16_t *sample = (int16_t *)(inputSamples + i);
         if (*sample != 0) {
             silence = NO;
