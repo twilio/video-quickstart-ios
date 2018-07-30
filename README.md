@@ -10,6 +10,10 @@
 >
 > Please note that **older versions of the Programmable Video iOS SDK prior to 1.0.0-beta10 are deprecated and will stop working on September 13, 2018**. Please make sure you’re using the latest version of the library in your apps, and make sure your customers update their apps by that date. For more information please review the following knowledge base [article](https://support.twilio.com/hc/en-us/articles/360002897814-Legacy-Twilio-Programmable-Voice-SDKs-impacted-by-SSL-certificate-deprecation).
 
+> **Notice - iOS 12.0 compatibility**
+>
+> Please note that **1.0 versions of the Programmable Video iOS SDK may have compatibility issues with iOS 12.0, due in September 2018**. To find out more information, and determine if you are impacted please review the following [knowledge base article](https://support.twilio.com/hc/en-us/articles/360002897814-Legacy-Twilio-Programmable-Voice-SDKs-impacted-by-SSL-certificate-deprecation).
+
 Get started with Video on iOS:
 
 - [Setup](#setup) - Get setup
