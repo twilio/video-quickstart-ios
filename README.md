@@ -6,6 +6,10 @@
 
 > NOTE: These sample applications use the Twilio Video 2.3.0-preview APIs. For examples using our 2.2 APIs, please see the [master](https://github.com/twilio/video-quickstart-swift/tree/master) branch, and for our 1.x APIs see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
 
+|Notice - iOS 12.0 compatibility|
+|---|
+|Please note that **2.3.0-preview1 and earlier versions of the Programmable Video iOS SDK may have compatibility issues with iOS 12.0, due in September 2018**. To find out more information, and determine if you are impacted please review the following [knowledge base article](https://support.twilio.com/hc/en-us/articles/360002897814-Legacy-Twilio-Programmable-Voice-SDKs-impacted-by-SSL-certificate-deprecation).|
+
 Get started with Video on iOS:
 
 - [Setup](#setup) - Get setup
