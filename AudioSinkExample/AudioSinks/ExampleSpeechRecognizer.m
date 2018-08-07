@@ -9,8 +9,7 @@
 
 #import <AudioToolbox/AudioToolbox.h>
 
-static int kChannelCountMono = 1;
-static int kChannelCountStereo = 2;
+static UInt32 kChannelCountMono = 1;
 
 @interface ExampleSpeechRecognizer()
 
@@ -18,7 +17,6 @@ static int kChannelCountStereo = 2;
 @property (nonatomic, strong) SFSpeechAudioBufferRecognitionRequest *speechRequest;
 @property (nonatomic, strong) SFSpeechRecognitionTask *speechTask;
 @property (nonatomic, assign) AudioConverterRef speechConverter;
-@property (nonatomic, assign) int numberOfChannels;
 
 @property (nonatomic, copy) NSString *speechResult;
 @property (nonatomic, weak) TVIAudioTrack *audioTrack;
@@ -38,10 +36,6 @@ static int kChannelCountStereo = 2;
 
         _speechRequest = [[SFSpeechAudioBufferRecognitionRequest alloc] init];
         _speechRequest.shouldReportPartialResults = YES;
-
-        // The iOS audio device captures in mono.
-        // The mixer produces stereo audio for each remote Participant, even if they send mono audio.
-        _numberOfChannels = [audioTrack isKindOfClass:[TVILocalAudioTrack class]] ? kChannelCountMono : kChannelCountStereo;
 
         __weak typeof(self) weakSelf = self;
         _speechTask = [_speechRecognizer recognitionTaskWithRequest:_speechRequest resultHandler:^(SFSpeechRecognitionResult * _Nullable result, NSError * _Nullable error) {
@@ -85,21 +79,16 @@ static int kChannelCountStereo = 2;
 - (void)renderSample:(CMSampleBufferRef)audioSample {
     CMAudioFormatDescriptionRef coreMediaFormat = (CMAudioFormatDescriptionRef)CMSampleBufferGetFormatDescription(audioSample);
     const AudioStreamBasicDescription *basicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(coreMediaFormat);
-
-    // Detect and discard the initial invalid samples...
-    // Waits for the track to start producing the expected audio channels.
-    if (basicDescription->mChannelsPerFrame != _numberOfChannels) {
-        return;
-    }
-
     AVAudioFrameCount frameCount = (AVAudioFrameCount)CMSampleBufferGetNumSamples(audioSample);
+
+    // SFSpeechAudioBufferRecognitionRequest does not handle stereo PCM inputs correctly, so always deliver mono.
     AVAudioFormat *avAudioFormat = [[AVAudioFormat alloc] initWithCommonFormat:AVAudioPCMFormatInt16
                                                                     sampleRate:basicDescription->mSampleRate
                                                                       channels:kChannelCountMono
                                                                    interleaved:YES];
 
     // Allocate an AudioConverter to perform mono downmixing for us.
-    if (self.speechConverter == NULL && _numberOfChannels != 1) {
+    if (self.speechConverter == NULL && basicDescription->mChannelsPerFrame != kChannelCountMono) {
         OSStatus status = AudioConverterNew(basicDescription, avAudioFormat.streamDescription, &_speechConverter);
         if (status != 0) {
             NSLog(@"Failed to create AudioConverter: %d", (int)status);
@@ -107,8 +96,8 @@ static int kChannelCountStereo = 2;
         }
     }
 
-    // SFSpeechAudioBufferRecognitionRequest will only handle mono input correctly.
-    if (_numberOfChannels == kChannelCountMono) {
+    // Perform downmixing if needed, otherwise deliver the original CMSampleBuffer.
+    if (basicDescription->mChannelsPerFrame == kChannelCountMono) {
         [self.speechRequest appendAudioSampleBuffer:audioSample];
     } else {
         AVAudioPCMBuffer *pcmBuffer = [[AVAudioPCMBuffer alloc] initWithPCMFormat:avAudioFormat frameCapacity:frameCount];

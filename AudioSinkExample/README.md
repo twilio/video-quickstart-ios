@@ -24,4 +24,5 @@ Audio is automatically recorded when you join a Room. After disconnecting, tap "
 
 ### Known Issues
 
-Local audio samples are not raised until at least one underlying WebRTC PeerConnection is negotiated. In a Peer-to-Peer Room it is not possible to record or recognize audio until at least one other Participant joins. The same limitation does not apply to Group Rooms where there is a persistent PeerConnection with Twilio's media servers.
+1. Local audio samples are not raised until at least one underlying WebRTC PeerConnection is negotiated. In a Peer-to-Peer Room it is not possible to record or recognize audio until at least one other Participant joins. The same limitation does not apply to Group Rooms where there is a persistent PeerConnection with Twilio's media servers.
+2. When a `TVIAudioSink` is added to a `TVIRemoteAudioTrack` and encoded audio has not been received yet, the media engine outputs (1-channel / 16 kHz) silence. In order for `ExampleAudioRecorder` to determine the correct recording format it detects and discards initial silence and waits for the first decoded samples.
