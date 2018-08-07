@@ -4,7 +4,7 @@
 
 # Twilio Video Quickstart for Objective-C
 
-> NOTE: These sample applications use the Twilio Video 2.2 APIs. For examples using our 2.3.0-preview APIs, please see the [2.3.0-preview](https://github.com/twilio/video-quickstart-objc/tree/2.3.0-preview) branch, and for our 1.x APIs see the [1.x](https://github.com/twilio/video-quickstart-objc/tree/1.x) branch.
+> NOTE: These sample applications use the Twilio Video 2.x APIs. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
 
 Get started with Video on iOS:
 
@@ -34,7 +34,7 @@ Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com
 
 ### Manual Integration
 
-You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/api/video/download-video-sdks#manual).
+You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/video/ios-v2-getting-started#manual).
 
 ## Quickstart
 
