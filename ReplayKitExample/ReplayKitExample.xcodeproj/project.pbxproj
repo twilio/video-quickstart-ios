@@ -76,10 +76,8 @@
 		4B20FFFF20E9CB9C00FE9F2C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4BB0385720EB45940095CDA8 /* ExampleCoreAudioDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExampleCoreAudioDevice.h; sourceTree = "<group>"; };
 		4BB0385820EB45940095CDA8 /* ExampleCoreAudioDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExampleCoreAudioDevice.m; sourceTree = "<group>"; };
-		4BB0385A20EB45F50095CDA8 /* BroadcastExtensionSetupUI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BroadcastExtensionSetupUI.entitlements; sourceTree = "<group>"; };
 		4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		4BB0385D20EB45FB0095CDA8 /* BroadcastExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BroadcastExtension.entitlements; sourceTree = "<group>"; };
-		4BB0385F20EB46040095CDA8 /* ReplayKitExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ReplayKitExample.entitlements; sourceTree = "<group>"; };
 		4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainInterface.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -399,7 +397,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -420,7 +418,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
