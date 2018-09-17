@@ -19,8 +19,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
     weak var captureConsumer: TVIVideoCaptureConsumer?
 
     static let kDesiredFrameRate = 30
-    static let kDownScaledFrameWidth = 540
-    static let kDownScaledFrameHeight = 960
+    static let kDownScaledMaxWidthOrHeight = 640
 
     let audioDevice = ExampleCoreAudioDevice()
 
@@ -135,9 +134,22 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
             assertionFailure("Extension assumes the incoming frames are of type NV12")
         }
 
+        let srcWidth = CVPixelBufferGetWidth(pixelBuffer)
+        let srcHeight = CVPixelBufferGetHeight(pixelBuffer)
+
+        var height = 0
+        var width = 0
+        if srcWidth > srcHeight {
+            width = SampleHandler.kDownScaledMaxWidthOrHeight
+            height = SampleHandler.kDownScaledMaxWidthOrHeight * srcHeight / srcWidth
+        } else {
+            height = SampleHandler.kDownScaledMaxWidthOrHeight
+            width = SampleHandler.kDownScaledMaxWidthOrHeight * srcWidth / srcHeight
+        }
+
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
-                                         SampleHandler.kDownScaledFrameWidth,
-                                         SampleHandler.kDownScaledFrameHeight,
+                                         width,
+                                         height,
                                          pixelFormat,
                                          nil,
                                          &outPixelBuffer);

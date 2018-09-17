@@ -25,10 +25,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         super.viewDidLoad()
         broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
         if #available(iOS 12.0, *) {
-            let broadcastPickerView = RPBroadcastPickerView(frame: CGRect(x: view.center.x-40,
-                                                                          y: view.center.y-40,
-                                                                          width: 80,
-                                                                          height: 80))
+            let broadcastPickerView = RPSystemBroadcastPickerView(frame: CGRect(x: view.center.x-40,
+                                                                                y: view.center.y-40,
+                                                                                width: 80,
+                                                                                height: 80))
             broadcastPickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
             view.addSubview(broadcastPickerView)
             broadcastPickerView.backgroundColor = UIColor.red
