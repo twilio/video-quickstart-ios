@@ -44,7 +44,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
         TwilioVideo.audioDevice = ExampleCoreAudioDevice(audioCapturer: self)
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
-        let accessToken = "TWILIO_ACCESS_TOKEN";
+        let accessToken = "TWILIO-ACCESS-TOKEN";
 
         let localScreenTrack = TVILocalVideoTrack(capturer: self)
         let h264VideoCodec = TVIH264Codec()
@@ -90,35 +90,32 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
         RPScreenRecorder.shared().isMicrophoneEnabled = true
         switch sampleBufferType {
         case RPSampleBufferType.video:
-            if ((captureConsumer != nil) && room?.state == .connected) {
+            if (captureConsumer != nil) {
                 processVideoSampleBuffer(sampleBuffer)
             }
             break
+
         case RPSampleBufferType.audioApp:
-            if (room?.state == .connected) {
-                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
-            }
+            // TODO: Mix app's audio and microphone audio at audioDevice's capturing sample rate and supply it.
+
+            /*
+             * TODO: For now, since we are providing app's audio to the audio device here, add an assertion if the
+             * sample rate does not match with audioDevice's audio captureing sample rate.
+             */
+            ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
             break
+
         case RPSampleBufferType.audioMic:
-            if (room?.state == .connected) {
-                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
-            }
+            ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
             break
         }
     }
-
-    var tempPixelBuffer : CVPixelBuffer?;
 
     func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
         captureConsumer = consumer
         captureConsumer!.captureDidStart(true)
 
-        CVPixelBufferCreate(kCFAllocatorDefault,
-                            480,//self.width,
-            640, //self.height,
-            kCVPixelFormatType_420YpCbCr8BiPlanarFullRange,
-            nil,
-            &tempPixelBuffer)
+        print("Start capturing.")
     }
 
     func stopCapture() {
@@ -127,8 +124,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
 
     // MARK:- Private
     func processVideoSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
-        //        let  imageBuffer = sampleBuffer.imageBuffer!
-        let pixelBuffer = sampleBuffer.imageBuffer!
+        let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
         var outPixelBuffer : CVPixelBuffer? = nil
 
         CVPixelBufferLockBaseAddress(pixelBuffer, []);
@@ -174,19 +170,13 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
                                        rowBytes: CVPixelBufferGetBytesPerRowOfPlane(outPixelBuffer!, 1))
 
 
-        var error = vImageScale_Planar8(&sourceImageY,
-                                        &outImageY,
-                                        nil,
-                                        vImage_Flags(0));
+        var error = vImageScale_Planar8(&sourceImageY, &outImageY, nil, vImage_Flags(0));
         if (error != kvImageNoError) {
             print("Failed to down scale luma plane ")
             return;
         }
 
-        error = vImageScale_CbCr8(&sourceImageUV,
-                                      &outImageUV,
-                                      nil,
-                                      vImage_Flags(0));
+        error = vImageScale_CbCr8(&sourceImageUV, &outImageUV, nil, vImage_Flags(0));
         if (error != kvImageNoError) {
             print("Failed to down scale chroma plane")
             return;
@@ -195,7 +185,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
         CVPixelBufferUnlockBaseAddress(outPixelBuffer!, []);
         CVPixelBufferUnlockBaseAddress(pixelBuffer, []);
 
-        let time = sampleBuffer.presentationTimeStamp;
+        let time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
         let frame = TVIVideoFrame(timestamp: time,
                                   buffer: outPixelBuffer!,
                                   orientation: TVIVideoOrientation.up)

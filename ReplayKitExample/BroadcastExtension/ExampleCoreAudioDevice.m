@@ -259,33 +259,20 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
 OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
     if (!capturingContext || !capturingContext->deviceContext) {
-        NSLog(@"Twilio audio consumer is not ready yet.");
         return noErr;
     }
-
-//    CMBlockBufferRef blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
-//    size_t audioBufferSizeInBytes = 0;
-//    char *audioBuffer = NULL;
-//    OSStatus status = CMBlockBufferGetDataPointer(blockBuffer, 0, NULL, &audioBufferSizeInBytes, &audioBuffer);
-//
-//    if (status != kCMBlockBufferNoErr) {
-//        NSLog(@"Failed to get data pointer: %d", (int)status);
-//        return noErr;
-//    }
 
     CMBlockBufferRef blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
 
     AudioBufferList bufferList;
-    CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(
-                                                            sampleBuffer,
+    CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer,
                                                             NULL,
                                                             &bufferList,
                                                             sizeof(bufferList),
                                                             NULL,
                                                             NULL,
                                                             kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment,
-                                                            &blockBuffer
-                                                            );
+                                                            &blockBuffer);
 
     int8_t *audioBuffer = (int8_t *)bufferList.mBuffers[0].mData;
     UInt32 audioBufferSizeInBytes = bufferList.mBuffers[0].mDataByteSize;
@@ -297,16 +284,13 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
             break;
         }
     }
-    if (nonNullFound) {
-        NSLog(@"non-null found, size = %d", audioBufferSizeInBytes);
-    } else {
-        NSLog(@"non-null not found, size = %d", audioBufferSizeInBytes);
+    if (!nonNullFound) {
         return noErr;
     }
 
     TVIAudioDeviceWriteCaptureData(capturingContext->deviceContext, (int8_t *)audioBuffer, audioBufferSizeInBytes);
 
-    //CFRelease(sampleBuffer);
+    CFRelease(blockBuffer);
     return noErr;
 }
 
@@ -332,10 +316,9 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
      * Use the pre-determined maximum frame size. AudioUnit callbacks are variable, and in most sitations will be close
      * to the `AVAudioSession.preferredIOBufferDuration` that we've requested.
      */
-    const size_t sessionFramesPerBuffer = 44100; //kMaximumFramesPerBuffer;
-    const double sessionSampleRate = 44100; //[AVAudioSession sharedInstance].sampleRate;
-    const NSInteger sessionOutputChannels = [AVAudioSession sharedInstance].inputNumberOfChannels;
-    size_t rendererChannels = 1;//sessionOutputChannels >= TVIAudioChannelsStereo ? TVIAudioChannelsStereo : TVIAudioChannelsMono;
+    const size_t sessionFramesPerBuffer = 44100;
+    const double sessionSampleRate = 44100;
+    size_t rendererChannels = 1;
 
     return [[TVIAudioFormat alloc] initWithChannels:rendererChannels
                                          sampleRate:sessionSampleRate
@@ -364,10 +347,6 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
     if (![session setPreferredOutputNumberOfChannels:preferredOutputChannels error:&error]) {
         NSLog(@"Error setting number of output channels: %@", error);
     }
-
-//    if (![session setPreferredInputNumberOfChannels:2 error:&error]) {
-//        NSLog(@"Error setting number of output channels: %@", error);
-//    }
 
     /*
      * We want to be as close as possible to the 10 millisecond buffer size that the media engine needs. If there is
