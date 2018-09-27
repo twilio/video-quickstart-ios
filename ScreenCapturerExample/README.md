@@ -6,4 +6,4 @@ This project demonstrates how to use `TVIScreenCapturer`, or a custom class (`Ex
 
 ### Setup
 
-This example does not connect to a Room, and thus does not require any access tokens or other configuration. Any device or simulator which supports iOS 9.0 or later may be used.
+This example does not connect to a Room, and thus does not require any access tokens or other configuration. Internet connectivity is required to load the contents of the `WKWebView`. Any device or simulator with iOS 9.0 or later may be used.
