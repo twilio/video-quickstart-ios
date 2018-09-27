@@ -6,6 +6,4 @@ This project demonstrates how to use `TVIScreenCapturer`, or a custom class (`Ex
 
 ### Setup
 
-See the master [README](https://github.com/twilio/video-quickstart-swift/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
-
-This example requires a device running iOS 9.0 or above.
+This example does not connect to a Room, and thus does not require any access tokens or other configuration. Any device or simulator which supports iOS 9.0 or later may be used.
