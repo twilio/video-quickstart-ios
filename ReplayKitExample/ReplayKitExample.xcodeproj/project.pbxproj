@@ -24,6 +24,13 @@
 		4BB0385E20EB45FB0095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
 		4BB0386020EB46040095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
 		4BEA5E0820E9DB5900643AF1 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */; };
+		8A50FEFE215DDC6100297C7A /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */; };
+		8A50FF00215DDC6100297C7A /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
+		8A50FF03215DDC6100297C7A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
+		8ADE7A71215DE2D40092D17F /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */; };
+		8ADE7A72215DE2D70092D17F /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
+		8ADE7A74215DE3070092D17F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
+		8ADE7A75215DE3220092D17F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +86,9 @@
 		4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		4BB0385D20EB45FB0095CDA8 /* BroadcastExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BroadcastExtension.entitlements; sourceTree = "<group>"; };
 		4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainInterface.storyboard; sourceTree = "<group>"; };
+		8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		8A50FEFC215DDC6100297C7A /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		8A50FEFD215DDC6100297C7A /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +135,7 @@
 		4B20FFD620E9CB8500FE9F2C = {
 			isa = PBXGroup;
 			children = (
+				8A50FEFA215DDC6100297C7A /* Utils */,
 				4B20FFE120E9CB8500FE9F2C /* ReplayKitExample */,
 				4B20FFFC20E9CB9C00FE9F2C /* BroadcastExtension */,
 				4B20000820E9CB9C00FE9F2C /* BroadcastExtensionSetupUI */,
@@ -176,6 +187,17 @@
 				4B20FFFF20E9CB9C00FE9F2C /* Info.plist */,
 			);
 			path = BroadcastExtension;
+			sourceTree = "<group>";
+		};
+		8A50FEFA215DDC6100297C7A /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */,
+				8A50FEFC215DDC6100297C7A /* Settings.swift */,
+				8A50FEFD215DDC6100297C7A /* Utils.swift */,
+			);
+			name = Utils;
+			path = ../Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -325,6 +347,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4B20000A20E9CB9C00FE9F2C /* BroadcastSetupViewController.swift in Sources */,
+				8A50FF03215DDC6100297C7A /* Utils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,8 +355,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8ADE7A75215DE3220092D17F /* Utils.swift in Sources */,
 				4B20FFE520E9CB8500FE9F2C /* ViewController.swift in Sources */,
 				4B20FFE320E9CB8500FE9F2C /* AppDelegate.swift in Sources */,
+				8A50FF00215DDC6100297C7A /* Settings.swift in Sources */,
+				8A50FEFE215DDC6100297C7A /* SettingsTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -341,8 +367,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8ADE7A74215DE3070092D17F /* Utils.swift in Sources */,
 				4BB0385920EB45950095CDA8 /* ExampleCoreAudioDevice.m in Sources */,
 				4B20FFFE20E9CB9C00FE9F2C /* SampleHandler.swift in Sources */,
+				8ADE7A72215DE2D70092D17F /* Settings.swift in Sources */,
+				8ADE7A71215DE2D40092D17F /* SettingsTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -397,7 +426,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -418,7 +446,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -440,7 +467,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "BroadcastExtension/BroadcastExtension-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -461,7 +487,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "BroadcastExtension/BroadcastExtension-Bridging-Header.h";
-				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -523,6 +548,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -576,6 +602,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 3.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -595,7 +622,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -615,7 +641,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
