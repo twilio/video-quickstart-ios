@@ -2,7 +2,6 @@
 //  BroadcastSetupViewController.swift
 //  BroadcastExtensionSetupUI
 //
-//  Created by Piyush Tank on 7/1/18.
 //  Copyright © 2018 Twilio. All rights reserved.
 //
 
