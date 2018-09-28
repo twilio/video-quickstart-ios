@@ -212,7 +212,6 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
 
     func didConnect(to room: TVIRoom) {
         print("didConnectToRoom: ", room)
-        RPScreenRecorder.shared().isMicrophoneEnabled = true
     }
 
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
