@@ -73,17 +73,19 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     //MARK: RPBroadcastActivityViewControllerDelegate
     func broadcastActivityViewController(_ broadcastActivityViewController: RPBroadcastActivityViewController, didFinishWith broadcastController: RPBroadcastController?, error: Error?) {
 
-        self.broadcastController = broadcastController
-        self.broadcastController?.delegate = self
+        DispatchQueue.main.async {
+            self.broadcastController = broadcastController
+            self.broadcastController?.delegate = self
 
-        broadcastActivityViewController.dismiss(animated: true) {
-            self.broadcastController?.startBroadcast { [unowned self] error in
-                // broadcast started
-                print("broadcast started with error: \(String(describing: error))")
-                self.broadcasting = true
-                DispatchQueue.main.async {
-                    self.spinner.startAnimating()
-                    self.broadcastButton.setTitle(ViewController.kStopBroadcastButtonTitle, for: .normal)
+            broadcastActivityViewController.dismiss(animated: true) {
+                self.broadcastController?.startBroadcast { [unowned self] error in
+                    // broadcast started
+                    print("Broadcast controller started with error: \(String(describing: error))")
+                    DispatchQueue.main.async {
+                        self.broadcasting = true
+                        self.spinner.startAnimating()
+                        self.broadcastButton.setTitle(ViewController.kStopBroadcastButtonTitle, for: .normal)
+                    }
                 }
             }
         }
