@@ -93,6 +93,8 @@ static ExampleCoreAudioContext *capturingContext;
  * appear to impact the maximum size so we prefer to read this value once at initialization time.
  */
 + (void)initialize {
+    // TODO: Investigate if playback via VoiceProcessingIO is possible.
+    return;
     AudioComponentDescription audioUnitDescription = [self audioUnitDescription];
     AudioComponent audioComponent = AudioComponentFindNext(NULL, &audioUnitDescription);
     AudioUnit audioUnit;
@@ -121,6 +123,8 @@ static ExampleCoreAudioContext *capturingContext;
 #pragma mark - TVIAudioDeviceRenderer
 
 - (nullable TVIAudioFormat *)renderFormat {
+    // TODO: Investigate if playback via VoiceProcessingIO is possible.
+    return nil;
     if (!_renderingFormat) {
         // Setup the AVAudioSession early. You could also defer to `startRendering:` and `stopRendering:`.
         [self setupAVAudioSession];
@@ -136,6 +140,8 @@ static ExampleCoreAudioContext *capturingContext;
      * In this example we don't need any fixed size buffers or other pre-allocated resources. We will simply write
      * directly to the AudioBufferList provided in the AudioUnit's rendering callback.
      */
+    return NO;
+    // TODO: Investigate if playback via VoiceProcessingIO is possible.
     return YES;
 }
 
