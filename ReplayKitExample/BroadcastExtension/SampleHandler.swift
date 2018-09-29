@@ -16,11 +16,14 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
     // Video SDK components
     public var room: TVIRoom?
     weak var captureConsumer: TVIVideoCaptureConsumer?
+    var screenTrack: TVILocalVideoTrack?
 
     static let kDesiredFrameRate = 30
+
+    // Our capturer attempts to downscale the source to fit in a smaller square, in order to save memory.
     static let kDownScaledMaxWidthOrHeight = 640
 
-    // ReplayKit provides planar NV12 buffers.
+    // ReplayKit provides planar NV12 CVPixelBuffers consisting of luma (Y) and chroma (UV) planes.
     static let kYPlane = 0
     static let kUVPlane = 1
 
@@ -48,13 +51,13 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
         let accessToken = "TWILIO-ACCESS-TOKEN";
 
-        let localScreenTrack = TVILocalVideoTrack(capturer: self)
+        screenTrack = TVILocalVideoTrack(capturer: self)
         let localAudioTrack = TVILocalAudioTrack()
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
 
             // Use the local media that we prepared earlier.
             builder.audioTracks = [localAudioTrack!]
-            builder.videoTracks = [localScreenTrack!]
+            builder.videoTracks = [self.screenTrack!]
 
             // Use the preferred video codec
             builder.preferredVideoCodecs = [TVIH264Codec()]
@@ -72,19 +75,25 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
         room = TwilioVideo.connect(with: connectOptions, delegate: self)
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
-        print("broadcastStarted")
+        print("broadcastStartedWithSetupInfo: ", setupInfo as Any)
     }
 
     override func broadcastPaused() {
         // User has requested to pause the broadcast. Samples will stop being delivered.
+        // TODO: Signal audio as well.
+        self.screenTrack?.isEnabled = false
     }
 
     override func broadcastResumed() {
         // User has requested to resume the broadcast. Samples delivery will resume.
+        // TODO: Signal audio as well
+        self.screenTrack?.isEnabled = true
     }
 
     override func broadcastFinished() {
         // User has requested to finish the broadcast.
+        self.room?.disconnect()
+        self.screenTrack = nil
     }
 
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
@@ -94,7 +103,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
             break
         case RPSampleBufferType.audioApp:
             /*
-             * TODO: We do not capture app audio at the moment. For some use cases it may make sense to capture both the
+             * TODO: We do not capture app audio at the moment. For some broadcast use cases it may make sense to capture both the
              * application and microphone audio. Doing this requires down-mixing the resulting streams.
              */
             break
@@ -183,7 +192,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
                                                width: vImagePixelCount( CVPixelBufferGetWidthOfPlane(destinationPixelBuffer, SampleHandler.kUVPlane)),
                                                rowBytes: CVPixelBufferGetBytesPerRowOfPlane(destinationPixelBuffer, SampleHandler.kUVPlane))
 
-        // Scale the Y, and UV planes into the destination buffer.
+        // Scale the Y and UV planes into the destination buffer.
         var error = vImageScale_Planar8(&sourceImageY, &destinationImageY, nil, vImage_Flags(0));
         if (error != kvImageNoError) {
             print("Failed to down scale luma plane.")
@@ -196,8 +205,8 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
             return;
         }
 
-        status = CVPixelBufferUnlockBaseAddress(outPixelBuffer!, []);
-        status = CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, []);
+        status = CVPixelBufferUnlockBaseAddress(outPixelBuffer!, [])
+        status = CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, [])
 
         guard let frame = TVIVideoFrame(timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
                                         buffer: outPixelBuffer!,
