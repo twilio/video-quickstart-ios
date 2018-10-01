@@ -7,14 +7,23 @@
 
 import UIKit
 import ReplayKit
+import TwilioVideo
 
 class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegate, RPBroadcastControllerDelegate {
 
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     @IBOutlet weak var broadcastButton: UIButton!
+    @IBOutlet weak var conferenceButton: UIButton?
+
+    // Conference state.
+    var screenTrack: TVILocalVideoTrack?
+    var videoSource: ReplayKitVideoSource?
+    var conferenceRoom: TVIRoom?
 
     static let kStartBroadcastButtonTitle = "Start Broadcast"
     static let kStopBroadcastButtonTitle = "Stop Broadcast"
+    static let kStartConferenceButtonTitle = "Start Conference"
+    static let kStopConferenceButtonTitle = "Stop Conference"
 
     var broadcasting:Bool = false
 
@@ -43,7 +52,6 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             broadcastButton.isHidden = true
             self.spinner.isHidden = true
         }
-        RPScreenRecorder.shared().isMicrophoneEnabled = true
     }
 
     @IBAction func startBroadcast(_ sender: Any) {
@@ -57,6 +65,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                 }
             }
         } else {
+            RPScreenRecorder.shared().isMicrophoneEnabled = true
             // This extension should be the broadcast upload extension UI, not boradcast update extension
             RPBroadcastActivityViewController.load(withPreferredExtension:
             "com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI") {
@@ -65,6 +74,78 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                     broadcastActivityViewController.delegate = self
                     broadcastActivityViewController.modalPresentationStyle = .popover
                     self.present(broadcastActivityViewController, animated: true)
+                }
+            }
+        }
+    }
+
+    @IBAction func startConference( sender: UIButton) {
+        let recorder = RPScreenRecorder.shared()
+        sender.isEnabled = false
+        if self.screenTrack != nil {
+            recorder.stopCapture { (error) in
+                if let error = error {
+                    print("Screen capture stop error: ", error as Any)
+                } else {
+                    print("Screen capture stopped.")
+                    DispatchQueue.main.async {
+                        sender.isEnabled = true
+                        self.broadcastButton.isEnabled = true
+                        self.spinner.stopAnimating()
+                        self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
+
+                        self.videoSource = nil
+                        self.screenTrack = nil
+                    }
+                }
+            }
+        } else {
+            self.broadcastButton.isEnabled = false
+
+            // Start recording the screen.
+            recorder.isMicrophoneEnabled = false
+            recorder.isCameraEnabled = false
+            videoSource = ReplayKitVideoSource()
+            let constraints = TVIVideoConstraints.init { (builder) in
+                builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
+            }
+            screenTrack = TVILocalVideoTrack(capturer: videoSource!,
+                                             enabled: true,
+                                             constraints: constraints,
+                                             name: "Screen")
+
+            recorder.startCapture(handler: { (sampleBuffer, type, error) in
+                print("Process SampleBuffer: ", sampleBuffer)
+
+                if error != nil {
+                    print("Capture error: ", error as Any)
+                    return
+                }
+
+                switch type {
+                case RPSampleBufferType.video:
+                    self.videoSource?.processVideoSampleBuffer(sampleBuffer)
+                    break
+                case RPSampleBufferType.audioApp:
+                    break
+                case RPSampleBufferType.audioMic:
+                    break
+                }
+
+            }) { (error) in
+                if error != nil {
+                    print("Screen capture error: ", error as Any)
+                } else {
+                    print("Screen capture started.")
+                }
+                DispatchQueue.main.async {
+                    sender.isEnabled = true
+                    if error != nil {
+                        self.broadcastButton.isEnabled = true
+                    } else {
+                        self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
+                        self.spinner.startAnimating()
+                    }
                 }
             }
         }

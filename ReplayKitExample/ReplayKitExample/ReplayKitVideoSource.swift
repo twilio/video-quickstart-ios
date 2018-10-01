@@ -29,15 +29,24 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     public var supportedFormats: [TVIVideoFormat] {
         get {
             /*
-             * Describe the supported format.
-             * For this example we cheat and assume that we will be capturing the entire screen.
+             * Describe the supported formats.
+             * In this example we can deliver either original, or downscaled buffers.
              */
-            let screenSize = UIScreen.main.bounds.size
+            var screenSize = UIScreen.main.bounds.size
+            screenSize.width *= UIScreen.main.nativeScale
+            screenSize.height *= UIScreen.main.nativeScale
             let format = TVIVideoFormat()
             format.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
             format.frameRate = UInt(ReplayKitVideoSource.kDesiredFrameRate)
             format.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
-            return [format]
+
+            // We will downscale buffers to a 640x640 box, if requested.
+            let downscaledFormat = TVIVideoFormat()
+            downscaledFormat.frameRate = UInt(ReplayKitVideoSource.kDesiredFrameRate)
+            downscaledFormat.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
+            downscaledFormat.dimensions = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
+
+            return [format, downscaledFormat]
         }
     }
 
@@ -52,8 +61,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         print("Stop capturing.")
     }
 
-    // MARK:- Private
-    func processVideoSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
+    public func processVideoSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
         guard let consumer = self.captureConsumer else {
             return
         }
