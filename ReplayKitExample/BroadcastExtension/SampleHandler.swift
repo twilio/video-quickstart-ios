@@ -53,7 +53,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
 
         screenTrack = TVILocalVideoTrack(capturer: self)
         let localAudioTrack = TVILocalAudioTrack()
-        let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
+        let connectOptions = TVIConnectOptions(token: accessToken) { (builder) in
 
             // Use the local media that we prepared earlier.
             builder.audioTracks = [localAudioTrack!]
