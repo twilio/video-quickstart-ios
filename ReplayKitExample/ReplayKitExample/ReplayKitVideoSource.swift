@@ -9,6 +9,7 @@
 import Accelerate
 import CoreMedia
 import CoreVideo
+import ReplayKit
 import TwilioVideo
 
 class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
@@ -16,6 +17,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     static let kDesiredFrameRate = 30
 
     public var isScreencast: Bool = false
+
+    var lastTimestamp: CMTime?
 
     // Our capturer attempts to downscale the source to fit in a smaller square, in order to save memory.
     static let kDownScaledMaxWidthOrHeight = 640
@@ -76,6 +79,24 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
             return
         }
 
+        // Frame dropping logic.
+        if let timestamp = lastTimestamp {
+            let currentTimestmap = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+            let delta = CMTimeSubtract(currentTimestmap, timestamp).seconds
+
+            if (delta <= Double(1 / ReplayKitVideoSource.kDesiredFrameRate)) {
+                print("Dropping frame with delta. ", delta as Any)
+                return
+            } else {
+//                print("Keeping frame with delta. ", delta as Any)
+            }
+        }
+
+        // Perhaps these rotation tags are not used any more?
+        if let orientation = CMGetAttachment(sampleBuffer, RPVideoSampleOrientationKey as CFString, nil) {
+            print("Orientation was: ", orientation as Any)
+        }
+
         // Compute the downscaled rect for our destination buffer (in whole pixels).
         // TODO: Do we want to round to even width/height only?
         let rect = AVMakeRect(aspectRatio: CGSize(width: CVPixelBufferGetWidth(sourcePixelBuffer),
@@ -132,6 +153,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                                                rowBytes: CVPixelBufferGetBytesPerRowOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kUVPlane))
 
         // Scale the Y and UV planes into the destination buffer.
+        // TODO: Consider providing a temporary buffer for scaling.
         var error = vImageScale_Planar8(&sourceImageY, &destinationImageY, nil, vImage_Flags(kvImageEdgeExtend));
         if (error != kvImageNoError) {
             print("Failed to down scale luma plane.")
@@ -154,6 +176,6 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                                             return
         }
         consumer.consumeCapturedFrame(frame)
+        lastTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
     }
-
 }
