@@ -2,11 +2,11 @@
 
 The project demonstrates how to integrate Twilio's Programmable Video SDK with `ReplayKit.framework`.
 
-The example demonstrates two distinct use cases:
+Two distinct use cases are covered:
 
 **Conferencing (In-App)**
 
-Use `RPScreenRecorder` to capture the screen and play/record audio using `TVIDefaultAudioDevice`. After joining a Room you will be able to hear other Participants, and they will be able to see the contents of your screen.
+Use `RPScreenRecorder` to capture the screen and play/record audio using `TVIDefaultAudioDevice`. After joining a Room you will be able to hear other Participants, and they will be able to hear you, and see the contents of your screen.
 
 When using the "in-process" `RPScreenRecorder` APIs, you may only capture content from your own application. Screen capture is suspended upon entering the backround.
 
@@ -14,7 +14,11 @@ When using the "in-process" `RPScreenRecorder` APIs, you may only capture conten
 
 Use an `RPBroadcastSampleHandler` to capture the screen, and microphone audio.
 
-An extension is not limited to capturing the screen of a single application. Instead, it is possible to capture any application, and the home screen. While audio capture is possible, playback is not allowed.
+An extension is not limited to capturing the screen of a single application. Instead, it is possible to capture any application including the home screen. While audio capture is possible (using `ExampleCoreAudioDevice`), playback is not allowed.
+
+**ReplayKitVideoSource**
+
+This `TVIVideoCapturer` produces `TVIVideoFrame`s from `CMSampleBuffer`s captured by ReplayKit. In order to reduce memory usage, this class may be configured (via `TVIVideoConstraints`) to downscale the captured content.
 
 ### Setup
 
