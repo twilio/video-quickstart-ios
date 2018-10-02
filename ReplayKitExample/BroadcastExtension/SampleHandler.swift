@@ -15,19 +15,31 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     public var room: TVIRoom?
     var videoSource: ReplayKitVideoSource?
     var screenTrack: TVILocalVideoTrack?
-
     let audioDevice = ExampleCoreAudioDevice()
+
+    var accessToken: String = "TWILIO_ACCESS_TOKEN"
+    let accessTokenUrl = "http://127.0.0.1:5000/?identity=chris.ios&room=chris"
+
+    static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
         TwilioVideo.audioDevice = ExampleCoreAudioDevice(audioCapturer: self)
 
-        // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
-        let accessToken = "TWILIO_ACCESS_TOKEN"
+        // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
+        if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
+            do {
+                accessToken = try TokenUtils.fetchToken(url: self.accessTokenUrl)
+            } catch {
+                let message = "Failed to fetch access token."
+                print(message)
+            }
+        }
 
         videoSource = ReplayKitVideoSource()
         let constraints = TVIVideoConstraints.init { (builder) in
-            builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
+            builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),
+                                                height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
         }
         screenTrack = TVILocalVideoTrack(capturer: videoSource!,
                                          enabled: true,
@@ -47,16 +59,16 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             if #available(iOS 12.0, *) {
-                builder.roomName = "test"
+                builder.roomName = "Broadcast"
             } else {
-                builder.roomName = setupInfo?["RoomName"] as? String
+                builder.roomName = setupInfo?[SampleHandler.kBroadcastSetupInfoRoomNameKey] as! String
             }
         }
 
         // Connect to the Room using the options we provided.
         room = TwilioVideo.connect(with: connectOptions, delegate: self)
 
-        // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
+        // The user has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         print("broadcastStartedWithSetupInfo: ", setupInfo as Any)
     }
 

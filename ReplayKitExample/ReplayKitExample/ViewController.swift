@@ -21,8 +21,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     var videoSource: ReplayKitVideoSource?
     var conferenceRoom: TVIRoom?
 
-    // Broadcast state. Our extension will deal with ReplayKit, and connect to a Room.
-    var broadcasting: Bool = false
+    // Broadcast state. Our extension will capture samples from ReplayKit, and publish them in a Room.
     var broadcastController: RPBroadcastController?
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
@@ -39,6 +38,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         super.viewDidLoad()
         broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
         conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for: .normal)
+        // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
 
@@ -62,11 +62,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     }
 
     @IBAction func startBroadcast(_ sender: Any) {
-        if (broadcasting) {
-            broadcastController?.finishBroadcast { [unowned self] error in
+        if let controller = self.broadcastController {
+            controller.finishBroadcast { [unowned self] error in
                 DispatchQueue.main.async {
                     self.spinner.stopAnimating()
-                    self.broadcasting = false
                     self.broadcastController = nil
                     self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
                 }
@@ -95,6 +94,16 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         }
     }
 
+    @IBAction func pauseOrResumeBroadcast( sender: UIButton) {
+        if let controller = broadcastController {
+            if (controller.isPaused) {
+                controller.resumeBroadcast()
+            } else {
+                controller.pauseBroadcast()
+            }
+        }
+    }
+
     //MARK: RPBroadcastActivityViewControllerDelegate
     func broadcastActivityViewController(_ broadcastActivityViewController: RPBroadcastActivityViewController, didFinishWith broadcastController: RPBroadcastController?, error: Error?) {
 
@@ -107,7 +116,6 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                     // broadcast started
                     print("Broadcast controller started with error: \(String(describing: error))")
                     DispatchQueue.main.async {
-                        self.broadcasting = true
                         self.spinner.startAnimating()
                         self.broadcastButton.setTitle(ViewController.kStopBroadcastButtonTitle, for: .normal)
                     }
@@ -118,15 +126,19 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     //MARK: RPBroadcastControllerDelegate
     func broadcastController(_ broadcastController: RPBroadcastController, didFinishWithError error: Error?) {
-        print("broadcast did finish with error: \(String(describing: error))")
+        if let error = error {
+            print("Broadcast did finish with error:", error)
+        } else {
+            print("Broadcast did finish.")
+        }
     }
 
     func broadcastController(_ broadcastController: RPBroadcastController, didUpdateServiceInfo serviceInfo: [String : NSCoding & NSObjectProtocol]) {
-        print("broadcast did update service info: \(serviceInfo)")
+        print("Broadcast did update service info: \(serviceInfo)")
     }
 
     func broadcastController(_ broadcastController: RPBroadcastController, didUpdateBroadcast broadcastURL: URL) {
-        print("broadcast did update URL: \(broadcastURL)")
+        print("Broadcast did update URL: \(broadcastURL)")
     }
 
     //MARK: TVIRoomDelegate
@@ -149,7 +161,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     //MARK: RPScreenRecorderDelegate
     func screenRecorderDidChangeAvailability(_ screenRecorder: RPScreenRecorder) {
         // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
-        if (!broadcasting && screenTrack == nil) {
+        if (self.broadcastController == nil && screenTrack == nil) {
             checkRecordingAvailability()
         }
     }
@@ -196,7 +208,8 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         recorder.isCameraEnabled = false
         videoSource = ReplayKitVideoSource()
         let constraints = TVIVideoConstraints.init { (builder) in
-            builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
+            builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),
+                                                height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
         }
         screenTrack = TVILocalVideoTrack(capturer: videoSource!,
                                          enabled: true,
