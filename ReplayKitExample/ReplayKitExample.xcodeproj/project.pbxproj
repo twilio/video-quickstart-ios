@@ -25,6 +25,7 @@
 		4BB0386020EB46040095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
 		4BEA5E0820E9DB5900643AF1 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */; };
 		8A390D932161D4430013D6E5 /* ReplayKitVideoSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */; };
+		8A437271216350CA00436765 /* ReplayKitVideoSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */; };
 		8A50FEFE215DDC6100297C7A /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */; };
 		8A50FF00215DDC6100297C7A /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
 		8A50FF03215DDC6100297C7A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
@@ -371,6 +372,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8A437271216350CA00436765 /* ReplayKitVideoSource.swift in Sources */,
 				8ADE7A74215DE3070092D17F /* Utils.swift in Sources */,
 				4BB0385920EB45950095CDA8 /* ExampleCoreAudioDevice.m in Sources */,
 				4B20FFFE20E9CB9C00FE9F2C /* SampleHandler.swift in Sources */,

@@ -9,49 +9,31 @@ import Accelerate
 import TwilioVideo
 import ReplayKit
 
-class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer {
-
-    public var isScreencast: Bool = true
+class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     // Video SDK components
     public var room: TVIRoom?
-    weak var captureConsumer: TVIVideoCaptureConsumer?
+    var videoSource: ReplayKitVideoSource?
     var screenTrack: TVILocalVideoTrack?
 
-    static let kDesiredFrameRate = 30
-
-    // Our capturer attempts to downscale the source to fit in a smaller square, in order to save memory.
-    static let kDownScaledMaxWidthOrHeight = 640
-
-    // ReplayKit provides planar NV12 CVPixelBuffers consisting of luma (Y) and chroma (UV) planes.
-    static let kYPlane = 0
-    static let kUVPlane = 1
-
     let audioDevice = ExampleCoreAudioDevice()
-
-    public var supportedFormats: [TVIVideoFormat] {
-        get {
-            /*
-             * Describe the supported format.
-             * For this example we cheat and assume that we will be capturing the entire screen.
-             */
-            let screenSize = UIScreen.main.bounds.size
-            let format = TVIVideoFormat()
-            format.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
-            format.frameRate = UInt(SampleHandler.kDesiredFrameRate)
-            format.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
-            return [format]
-        }
-    }
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
         TwilioVideo.audioDevice = ExampleCoreAudioDevice(audioCapturer: self)
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
-        let accessToken = "TWILIO-ACCESS-TOKEN";
+        let accessToken = "TWILIO_ACCESS_TOKEN"
 
-        screenTrack = TVILocalVideoTrack(capturer: self)
+        videoSource = ReplayKitVideoSource()
+        let constraints = TVIVideoConstraints.init { (builder) in
+            builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
+        }
+        screenTrack = TVILocalVideoTrack(capturer: videoSource!,
+                                         enabled: true,
+                                         constraints: constraints,
+                                         name: "Screen")
+
         let localAudioTrack = TVILocalAudioTrack()
         let connectOptions = TVIConnectOptions(token: accessToken) { (builder) in
 
@@ -93,13 +75,14 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
     override func broadcastFinished() {
         // User has requested to finish the broadcast.
         self.room?.disconnect()
+        self.videoSource = nil
         self.screenTrack = nil
     }
 
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
         switch sampleBufferType {
         case RPSampleBufferType.video:
-            processVideoSampleBuffer(sampleBuffer)
+            videoSource?.processVideoSampleBuffer(sampleBuffer)
             break
         case RPSampleBufferType.audioApp:
             /*
@@ -113,112 +96,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate, TVIVideoCapturer
         }
     }
 
-    func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
-        captureConsumer = consumer
-        consumer.captureDidStart(true)
-
-        print("Start capturing.")
-    }
-
-    func stopCapture() {
-        print("Stop capturing.")
-    }
-
-    // MARK:- Private
-    func processVideoSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
-        guard let consumer = self.captureConsumer else {
-            return
-        }
-        guard let sourcePixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            assertionFailure("SampleBuffer did not have an ImageBuffer")
-            return
-        }
-
-        // We only support NV12 (full-range) buffers.
-        let pixelFormat = CVPixelBufferGetPixelFormatType(sourcePixelBuffer);
-        if (pixelFormat != kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) {
-            assertionFailure("Extension assumes the incoming frames are of type NV12")
-            return
-        }
-
-        // Compute the downscaled rect for our destination buffer (in whole pixels).
-        // TODO: Do we want to round to even width/height only?
-        let rect = AVMakeRect(aspectRatio: CGSize(width: CVPixelBufferGetWidth(sourcePixelBuffer),
-                                                  height: CVPixelBufferGetHeight(sourcePixelBuffer)),
-                              insideRect: CGRect(x: 0,
-                                                 y: 0,
-                                                 width: SampleHandler.kDownScaledMaxWidthOrHeight,
-                                                 height: SampleHandler.kDownScaledMaxWidthOrHeight))
-        let size = rect.integral.size
-
-        // We will allocate a CVPixelBuffer to hold the downscaled contents.
-        // TODO: Consider copying the pixelBufferAttributes to maintain color information. Investigate the color space of the buffers.
-        var outPixelBuffer: CVPixelBuffer? = nil
-        var status = CVPixelBufferCreate(kCFAllocatorDefault,
-                                         Int(size.width),
-                                         Int(size.height),
-                                         pixelFormat,
-                                         nil,
-                                         &outPixelBuffer);
-        if (status != kCVReturnSuccess) {
-            print("Failed to create pixel buffer");
-            return
-        }
-
-        let destinationPixelBuffer = outPixelBuffer!
-
-        status = CVPixelBufferLockBaseAddress(sourcePixelBuffer, CVPixelBufferLockFlags.readOnly);
-        status = CVPixelBufferLockBaseAddress(destinationPixelBuffer, []);
-
-        // Prepare source pointers.
-        var sourceImageY = vImage_Buffer(data: CVPixelBufferGetBaseAddressOfPlane(sourcePixelBuffer, SampleHandler.kYPlane),
-                                         height: vImagePixelCount(CVPixelBufferGetHeightOfPlane(sourcePixelBuffer, SampleHandler.kYPlane)),
-                                         width: vImagePixelCount(CVPixelBufferGetWidthOfPlane(sourcePixelBuffer, SampleHandler.kYPlane)),
-                                         rowBytes: CVPixelBufferGetBytesPerRowOfPlane(sourcePixelBuffer, SampleHandler.kYPlane))
-
-        var sourceImageUV = vImage_Buffer(data: CVPixelBufferGetBaseAddressOfPlane(sourcePixelBuffer, SampleHandler.kUVPlane),
-                                          height: vImagePixelCount(CVPixelBufferGetHeightOfPlane(sourcePixelBuffer, SampleHandler.kUVPlane)),
-                                          width:vImagePixelCount(CVPixelBufferGetWidthOfPlane(sourcePixelBuffer, SampleHandler.kUVPlane)),
-                                          rowBytes: CVPixelBufferGetBytesPerRowOfPlane(sourcePixelBuffer, SampleHandler.kUVPlane))
-
-        // Prepare destination pointers.
-        var destinationImageY = vImage_Buffer(data: CVPixelBufferGetBaseAddressOfPlane(destinationPixelBuffer, SampleHandler.kYPlane),
-                                              height: vImagePixelCount(CVPixelBufferGetHeightOfPlane(destinationPixelBuffer, SampleHandler.kYPlane)),
-                                              width: vImagePixelCount(CVPixelBufferGetWidthOfPlane(destinationPixelBuffer, SampleHandler.kYPlane)),
-                                              rowBytes: CVPixelBufferGetBytesPerRowOfPlane(destinationPixelBuffer, SampleHandler.kYPlane))
-
-        var destinationImageUV = vImage_Buffer(data: CVPixelBufferGetBaseAddressOfPlane(destinationPixelBuffer, SampleHandler.kUVPlane),
-                                               height: vImagePixelCount(CVPixelBufferGetHeightOfPlane(destinationPixelBuffer, SampleHandler.kUVPlane)),
-                                               width: vImagePixelCount( CVPixelBufferGetWidthOfPlane(destinationPixelBuffer, SampleHandler.kUVPlane)),
-                                               rowBytes: CVPixelBufferGetBytesPerRowOfPlane(destinationPixelBuffer, SampleHandler.kUVPlane))
-
-        // Scale the Y and UV planes into the destination buffer.
-        var error = vImageScale_Planar8(&sourceImageY, &destinationImageY, nil, vImage_Flags(0));
-        if (error != kvImageNoError) {
-            print("Failed to down scale luma plane.")
-            return;
-        }
-
-        error = vImageScale_CbCr8(&sourceImageUV, &destinationImageUV, nil, vImage_Flags(0));
-        if (error != kvImageNoError) {
-            print("Failed to down scale chroma plane.")
-            return;
-        }
-
-        status = CVPixelBufferUnlockBaseAddress(outPixelBuffer!, [])
-        status = CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, [])
-
-        guard let frame = TVIVideoFrame(timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
-                                        buffer: outPixelBuffer!,
-                                        orientation: TVIVideoOrientation.up) else {
-            assertionFailure("We couldn't create a TVIVideoFrame with a valid CVPixelBuffer.")
-            return
-        }
-        consumer.consumeCapturedFrame(frame)
-    }
-
     // MARK:- TVIRoomDelegate
-
     func didConnect(to room: TVIRoom) {
         print("didConnectToRoom: ", room)
     }
