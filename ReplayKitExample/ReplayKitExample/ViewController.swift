@@ -9,48 +9,54 @@ import UIKit
 import ReplayKit
 import TwilioVideo
 
-class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegate, RPBroadcastControllerDelegate {
+class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegate, RPBroadcastControllerDelegate, RPScreenRecorderDelegate, TVIRoomDelegate {
 
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     @IBOutlet weak var broadcastButton: UIButton!
     @IBOutlet weak var conferenceButton: UIButton?
+    @IBOutlet weak var infoLabel: UILabel?
 
     // Conference state.
     var screenTrack: TVILocalVideoTrack?
     var videoSource: ReplayKitVideoSource?
     var conferenceRoom: TVIRoom?
 
+    // Broadcast state. Our extension will deal with ReplayKit, and connect to a Room.
+    var broadcasting: Bool = false
+    var broadcastController: RPBroadcastController?
+
+    var accessToken: String = "TWILIO_ACCESS_TOKEN"
+    let accessTokenUrl = "http://127.0.0.1:5000/?identity=chris.ios&room=chris"
+
     static let kStartBroadcastButtonTitle = "Start Broadcast"
     static let kStopBroadcastButtonTitle = "Stop Broadcast"
     static let kStartConferenceButtonTitle = "Start Conference"
     static let kStopConferenceButtonTitle = "Stop Conference"
-
-    var broadcasting:Bool = false
-
-    var broadcastController: RPBroadcastController?
+    static let kRecordingAvailableInfo = "Ready to share the screen in a Broadcast (extension), or Conference (in-app)."
+    static let kRecordingNotAvailableInfo = "ReplayKit is not available at the moment. Another app might be recording, or AirPlay may be in use."
 
     override func viewDidLoad() {
         super.viewDidLoad()
         broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
-        if #available(iOS 12.0, *) {
-            let broadcastPickerView = RPSystemBroadcastPickerView(frame: CGRect(x: view.center.x-40,
-                                                                                y: view.center.y-40,
-                                                                                width: 80,
-                                                                                height: 80))
-            broadcastPickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
-            view.addSubview(broadcastPickerView)
-            broadcastPickerView.backgroundColor = UIColor.red
+        conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for: .normal)
+        RPScreenRecorder.shared().delegate = self
+        checkRecordingAvailability()
 
-            //TODO: get background image for picker view
+        if TARGET_OS_SIMULATOR == 0 {
+            if #available(iOS 12.0, *) {
+                // Swap the button for an RPSystemBroadcastPickerView.
+                let broadcastPickerView = RPSystemBroadcastPickerView(frame: CGRect(x: view.center.x-40,
+                                                                                    y: view.center.y-40,
+                                                                                    width: 80,
+                                                                                    height: 80))
+                broadcastPickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
+                view.addSubview(broadcastPickerView)
+                broadcastPickerView.backgroundColor = UIColor.red
 
-            let label = UILabel(frame: CGRect(x: 0, y: 0,  width: 400, height: 80))
-            label.textAlignment = .center
-            label.text = "Click on the red square above to share screen."
-            view.addSubview(label)
-            label.center = CGPoint(x: broadcastPickerView.center.x, y: broadcastPickerView.center.y+80)
-
-            broadcastButton.isHidden = true
-            self.spinner.isHidden = true
+                //TODO: get background image for picker view
+                broadcastButton.isHidden = true
+                self.spinner.isHidden = true
+            }
         }
     }
 
@@ -80,74 +86,11 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     }
 
     @IBAction func startConference( sender: UIButton) {
-        let recorder = RPScreenRecorder.shared()
         sender.isEnabled = false
         if self.screenTrack != nil {
-            recorder.stopCapture { (error) in
-                if let error = error {
-                    print("Screen capture stop error: ", error as Any)
-                } else {
-                    print("Screen capture stopped.")
-                    DispatchQueue.main.async {
-                        sender.isEnabled = true
-                        self.broadcastButton.isEnabled = true
-                        self.spinner.stopAnimating()
-                        self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
-
-                        self.videoSource = nil
-                        self.screenTrack = nil
-                    }
-                }
-            }
+            stopConference()
         } else {
-            self.broadcastButton.isEnabled = false
-
-            // Start recording the screen.
-            recorder.isMicrophoneEnabled = false
-            recorder.isCameraEnabled = false
-            videoSource = ReplayKitVideoSource()
-            let constraints = TVIVideoConstraints.init { (builder) in
-                builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
-            }
-            screenTrack = TVILocalVideoTrack(capturer: videoSource!,
-                                             enabled: true,
-                                             constraints: constraints,
-                                             name: "Screen")
-
-            recorder.startCapture(handler: { (sampleBuffer, type, error) in
-                print("Process SampleBuffer: ", sampleBuffer)
-
-                if error != nil {
-                    print("Capture error: ", error as Any)
-                    return
-                }
-
-                switch type {
-                case RPSampleBufferType.video:
-                    self.videoSource?.processVideoSampleBuffer(sampleBuffer)
-                    break
-                case RPSampleBufferType.audioApp:
-                    break
-                case RPSampleBufferType.audioMic:
-                    break
-                }
-
-            }) { (error) in
-                if error != nil {
-                    print("Screen capture error: ", error as Any)
-                } else {
-                    print("Screen capture started.")
-                }
-                DispatchQueue.main.async {
-                    sender.isEnabled = true
-                    if error != nil {
-                        self.broadcastButton.isEnabled = true
-                    } else {
-                        self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
-                        self.spinner.startAnimating()
-                    }
-                }
-            }
+            startConference()
         }
     }
 
@@ -183,5 +126,160 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     func broadcastController(_ broadcastController: RPBroadcastController, didUpdateBroadcast broadcastURL: URL) {
         print("broadcast did update URL: \(broadcastURL)")
+    }
+
+    //MARK: TVIRoomDelegate
+    func didConnect(to room: TVIRoom) {
+        print("Connected to Room: ", room)
+    }
+
+    func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
+        // TODO: Stop the conference.
+        print("Failed to connect with error: ", error)
+    }
+
+    func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
+        if let error = error {
+            print("Disconnected with error: ", error)
+        }
+        // TODO: Stop the conference.
+    }
+
+    //MARK: RPScreenRecorderDelegate
+    func screenRecorderDidChangeAvailability(_ screenRecorder: RPScreenRecorder) {
+        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
+        if (!broadcasting && screenTrack == nil) {
+            checkRecordingAvailability()
+        }
+    }
+
+    //MARK: Private
+    func checkRecordingAvailability() {
+        let isScreenRecordingAvailable = RPScreenRecorder.shared().isAvailable
+            broadcastButton.isHidden = !isScreenRecordingAvailable
+        conferenceButton?.isHidden = !isScreenRecordingAvailable
+        infoLabel?.text = isScreenRecordingAvailable ? ViewController.kRecordingAvailableInfo : ViewController.kRecordingNotAvailableInfo
+    }
+
+    func stopConference() {
+        // Stop recording the screen.
+        let recorder = RPScreenRecorder.shared()
+        recorder.stopCapture { (error) in
+            if let error = error {
+                print("Screen capture stop error: ", error as Any)
+            } else {
+                print("Screen capture stopped.")
+                DispatchQueue.main.async {
+                    self.conferenceButton?.isEnabled = true
+                    self.infoLabel?.isHidden = false
+                    self.broadcastButton.isEnabled = true
+                    self.spinner.stopAnimating()
+                    self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
+
+                    self.videoSource = nil
+                    self.screenTrack = nil
+                }
+            }
+        }
+
+        conferenceRoom?.disconnect()
+    }
+
+    func startConference() {
+        self.broadcastButton.isEnabled = false
+        self.infoLabel?.isHidden = true
+
+        // Start recording the screen.
+        let recorder = RPScreenRecorder.shared()
+        recorder.isMicrophoneEnabled = false
+        recorder.isCameraEnabled = false
+        videoSource = ReplayKitVideoSource()
+        let constraints = TVIVideoConstraints.init { (builder) in
+            builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
+        }
+        screenTrack = TVILocalVideoTrack(capturer: videoSource!,
+                                         enabled: true,
+                                         constraints: constraints,
+                                         name: "Screen")
+
+        recorder.startCapture(handler: { (sampleBuffer, type, error) in
+            if error != nil {
+                print("Capture error: ", error as Any)
+                return
+            }
+
+            switch type {
+            case RPSampleBufferType.video:
+                self.videoSource?.processVideoSampleBuffer(sampleBuffer)
+                break
+            case RPSampleBufferType.audioApp:
+                break
+            case RPSampleBufferType.audioMic:
+                break
+            }
+
+        }) { (error) in
+            if error != nil {
+                print("Screen capture error: ", error as Any)
+            } else {
+                print("Screen capture started.")
+            }
+            DispatchQueue.main.async {
+                self.conferenceButton?.isEnabled = true
+                if error != nil {
+                    self.broadcastButton.isEnabled = true
+                    self.infoLabel?.isHidden = false
+                } else {
+                    self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
+                    self.spinner.startAnimating()
+                    self.infoLabel?.isHidden = true
+                    self.connectToRoom(name: "")
+                }
+            }
+        }
+    }
+
+    func connectToRoom(name: String) {
+        // Configure access token either from server or manually.
+        // If the default wasn't changed, try fetching from server.
+        if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
+            do {
+                accessToken = try TokenUtils.fetchToken(url: accessTokenUrl)
+            } catch {
+                let message = "Failed to fetch access token"
+//                logMessage(messageText: message)
+                return
+            }
+        }
+
+        // Preparing the connect options with the access token that we fetched (or hardcoded).
+        let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
+
+            builder.audioTracks = [TVILocalAudioTrack()!]
+
+            if let videoTrack = self.screenTrack {
+                builder.videoTracks = [videoTrack]
+            }
+
+            // Use the preferred codecs
+            if let preferredAudioCodec = Settings.shared.audioCodec {
+                builder.preferredAudioCodecs = [preferredAudioCodec]
+            }
+            if let preferredVideoCodec = Settings.shared.videoCodec {
+                builder.preferredVideoCodecs = [preferredVideoCodec]
+            }
+
+            // Use the preferred encoding parameters
+            if let encodingParameters = Settings.shared.getEncodingParameters() {
+                builder.encodingParameters = encodingParameters
+            }
+
+            if (!name.isEmpty) {
+                builder.roomName = name
+            }
+        }
+
+        // Connect to the Room using the options we provided.
+        conferenceRoom = TwilioVideo.connect(with: connectOptions, delegate: self)
     }
 }

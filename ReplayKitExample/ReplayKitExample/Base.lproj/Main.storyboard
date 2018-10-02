@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14269.12" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14252.5"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -19,33 +19,58 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="yXC-tS-vkj">
-                                <rect key="frame" x="169" y="231.5" width="37" height="37"/>
+                                <rect key="frame" x="169" y="230.5" width="37" height="37"/>
                                 <color key="color" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                             </activityIndicatorView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xrv-9v-TZ3">
-                                <rect key="frame" x="133.5" y="318.5" width="108" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xrv-9v-TZ3">
+                                <rect key="frame" x="130.5" y="317.5" width="114" height="33"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <state key="normal" title="Start Broadcast"/>
                                 <connections>
                                     <action selector="startBroadcast:" destination="BYZ-38-t0r" eventType="touchUpInside" id="a2a-i2-aKK"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="B5H-o5-cmu">
+                                <rect key="frame" x="125.5" y="373.5" width="124" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="124" id="uEF-W7-Nui"/>
+                                    <constraint firstAttribute="height" constant="44" id="uYh-Gn-Zel"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <state key="normal" title="Start Conference"/>
+                                <connections>
+                                    <action selector="startConferenceWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="EHD-St-xQ8"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eIC-rO-cxm">
+                                <rect key="frame" x="16" y="567" width="343" height="80"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="B5H-o5-cmu" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="9wS-sD-9LP"/>
                             <constraint firstItem="yXC-tS-vkj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QEo-WS-bAc"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="gaf-ZE-A5V"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="gnC-Ke-gmX"/>
+                            <constraint firstItem="B5H-o5-cmu" firstAttribute="top" secondItem="Xrv-9v-TZ3" secondAttribute="bottom" constant="24" id="tV4-lN-brn"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="top" secondItem="yXC-tS-vkj" secondAttribute="bottom" constant="50" id="xm7-xN-ZGu"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
                         <outlet property="broadcastButton" destination="Xrv-9v-TZ3" id="CgJ-7b-QxG"/>
+                        <outlet property="conferenceButton" destination="B5H-o5-cmu" id="DlO-e0-V1w"/>
+                        <outlet property="infoLabel" destination="eIC-rO-cxm" id="52g-bM-6Mj"/>
                         <outlet property="spinner" destination="yXC-tS-vkj" id="zx9-hU-wfA"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="140" y="132.68365817091455"/>
         </scene>
     </scenes>
 </document>
