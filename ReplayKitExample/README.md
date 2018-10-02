@@ -49,6 +49,10 @@ Once you have setup your access token, install and run the example. You will be 
 
 Memory usage in a ReplayKit Broadcast Extension is limited to 50 MB (as of iOS 12.0). There are cases where Twilio Video can use more than this amount, especially when capturing larger 2x and 3x retina screens. This example uses downscaling to reduce the amount of memory needed by our process.
 
+<kbd><img width="400px" src="../images/quickstart/replaykit-extension-memory.png"/></kbd>
+
+Using the H.264 video codec, and a Group Room incurs the lowest memory cost.
+
 **2. RPScreenRecorder debugging**
 
 It is possible to get ReplayKit into an inconsistent state when setting breakpoints in `RPScreenRecorder` callbacks. If you notice that capture is starting but no audio/video samples are being produced, then you should consider resetting Media Services on your device.
@@ -65,4 +69,4 @@ It is possible to get ReplayKit into an inconsistent state when debugging `RPBro
 
 > Broadcast did finish with error: Error Domain=com.apple.ReplayKit.RPRecordingErrorDomain Code=-5808 "Attempted to start an invalid broadcast session" UserInfo={NSLocalizedDescription=Attempted to start an invalid broadcast session}
 
-This problem may be solved by deleting, and re-installing the example app.
+This problem may be solved by deleting and re-installing the example app.
