@@ -157,7 +157,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     //MARK: Private
     func checkRecordingAvailability() {
         let isScreenRecordingAvailable = RPScreenRecorder.shared().isAvailable
-            broadcastButton.isHidden = !isScreenRecordingAvailable
+        broadcastButton.isHidden = !isScreenRecordingAvailable
         conferenceButton?.isHidden = !isScreenRecordingAvailable
         infoLabel?.text = isScreenRecordingAvailable ? ViewController.kRecordingAvailableInfo : ViewController.kRecordingNotAvailableInfo
     }
