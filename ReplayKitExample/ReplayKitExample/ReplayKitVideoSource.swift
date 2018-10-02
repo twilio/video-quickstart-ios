@@ -69,7 +69,6 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
             assertionFailure("SampleBuffer did not have an ImageBuffer")
             return
         }
-
         // We only support NV12 (full-range) buffers.
         let pixelFormat = CVPixelBufferGetPixelFormatType(sourcePixelBuffer);
         if (pixelFormat != kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) {
@@ -88,13 +87,17 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         let size = rect.integral.size
 
         // We will allocate a CVPixelBuffer to hold the downscaled contents.
-        // TODO: Consider copying the pixelBufferAttributes to maintain color information. Investigate the color space of the buffers.
+        // TODO: Consider copying attributes such as CVImageBufferTransferFunction, CVImageBufferYCbCrMatrix and CVImageBufferColorPrimaries.
+        // On an iPhone X running iOS 12.0 these buffers are tagged with ITU_R_709_2 primaries and a ITU_R_601_4 matrix.
         var outPixelBuffer: CVPixelBuffer? = nil
+        let key = NSString(string: kCVPixelBufferBytesPerRowAlignmentKey)
+        let attributes = NSDictionary(object: 64, forKey: key)
+
         var status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          Int(size.width),
                                          Int(size.height),
                                          pixelFormat,
-                                         nil,
+                                         attributes,
                                          &outPixelBuffer);
         if (status != kCVReturnSuccess) {
             print("Failed to create pixel buffer");
@@ -129,20 +132,20 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                                                rowBytes: CVPixelBufferGetBytesPerRowOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kUVPlane))
 
         // Scale the Y and UV planes into the destination buffer.
-        var error = vImageScale_Planar8(&sourceImageY, &destinationImageY, nil, vImage_Flags(0));
+        var error = vImageScale_Planar8(&sourceImageY, &destinationImageY, nil, vImage_Flags(kvImageEdgeExtend));
         if (error != kvImageNoError) {
             print("Failed to down scale luma plane.")
             return;
         }
 
-        error = vImageScale_CbCr8(&sourceImageUV, &destinationImageUV, nil, vImage_Flags(0));
+        error = vImageScale_CbCr8(&sourceImageUV, &destinationImageUV, nil, vImage_Flags(kvImageEdgeExtend));
         if (error != kvImageNoError) {
             print("Failed to down scale chroma plane.")
             return;
         }
 
         status = CVPixelBufferUnlockBaseAddress(outPixelBuffer!, [])
-        status = CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, [])
+        status = CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, CVPixelBufferLockFlags.readOnly)
 
         guard let frame = TVIVideoFrame(timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
                                         buffer: outPixelBuffer!,
