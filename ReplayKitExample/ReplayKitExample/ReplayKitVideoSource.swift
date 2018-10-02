@@ -16,10 +16,6 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     static let kDesiredFrameRate = 30
 
-    public var isScreencast: Bool = false
-
-    var lastTimestamp: CMTime?
-
     // Our capturer attempts to downscale the source to fit in a smaller square, in order to save memory.
     static let kDownScaledMaxWidthOrHeight = 640
 
@@ -27,7 +23,11 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     static let kYPlane = 0
     static let kUVPlane = 1
 
+    var lastTimestamp: CMTime?
+    var downscaleBuffers: Bool = false
     weak var captureConsumer: TVIVideoCaptureConsumer?
+
+    public var isScreencast: Bool = false
 
     public var supportedFormats: [TVIVideoFormat] {
         get {
@@ -55,9 +55,14 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
         captureConsumer = consumer
-        consumer.captureDidStart(true)
 
-        print("Start capturing.")
+        if (format.dimensions.width == ReplayKitVideoSource.kDownScaledMaxWidthOrHeight &&
+            format.dimensions.height == ReplayKitVideoSource.kDownScaledMaxWidthOrHeight) {
+            downscaleBuffers = true
+        }
+
+        consumer.captureDidStart(true)
+        print("Start capturing with format:", format)
     }
 
     func stopCapture() {
@@ -97,8 +102,17 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
             print("Orientation was: ", orientation as Any)
         }
 
-        // Compute the downscaled rect for our destination buffer (in whole pixels).
-        // TODO: Do we want to round to even width/height only?
+        // Return the original pixel buffer without downscaling.
+        if (!downscaleBuffers) {
+            // TODO: Video handle orientation flags.
+            deliverFrame(to: consumer,
+                         timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
+                         buffer: sourcePixelBuffer,
+                         orientation: TVIVideoOrientation.up)
+            return
+        }
+
+        // Compute the downscaled rect for our destination (in whole pixels). Note, it might be better to round to even width/height.
         let rect = AVMakeRect(aspectRatio: CGSize(width: CVPixelBufferGetWidth(sourcePixelBuffer),
                                                   height: CVPixelBufferGetHeight(sourcePixelBuffer)),
                               insideRect: CGRect(x: 0,
@@ -169,13 +183,21 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         status = CVPixelBufferUnlockBaseAddress(outPixelBuffer!, [])
         status = CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, CVPixelBufferLockFlags.readOnly)
 
-        guard let frame = TVIVideoFrame(timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
-                                        buffer: outPixelBuffer!,
-                                        orientation: TVIVideoOrientation.up) else {
+        // TODO: Video handle orientation flags.
+        deliverFrame(to: consumer,
+                     timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
+                     buffer: outPixelBuffer!,
+                     orientation: TVIVideoOrientation.up)
+    }
+
+    func deliverFrame(to: TVIVideoCaptureConsumer, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation) {
+        guard let frame = TVIVideoFrame(timestamp: timestamp,
+                                        buffer: buffer,
+                                        orientation: orientation) else {
                                             assertionFailure("We couldn't create a TVIVideoFrame with a valid CVPixelBuffer.")
                                             return
         }
-        consumer.consumeCapturedFrame(frame)
-        lastTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+        to.consumeCapturedFrame(frame)
+        lastTimestamp = timestamp
     }
 }
