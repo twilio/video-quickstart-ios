@@ -42,22 +42,23 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
 
-        if TARGET_OS_SIMULATOR == 0 {
-            if #available(iOS 12.0, *) {
-                // Swap the button for an RPSystemBroadcastPickerView.
-                let broadcastPickerView = RPSystemBroadcastPickerView(frame: CGRect(x: view.center.x-40,
-                                                                                    y: view.center.y-40,
-                                                                                    width: 80,
-                                                                                    height: 80))
-                broadcastPickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
-                view.addSubview(broadcastPickerView)
-                broadcastPickerView.backgroundColor = UIColor.red
+        // Use RPSystemBroadcastPickerView when available (iOS 12+ devices).
+        #if arch(arm64)
+        if #available(iOS 12.0, *) {
+            // Swap the button for an RPSystemBroadcastPickerView.
+            let broadcastPickerView = RPSystemBroadcastPickerView(frame: CGRect(x: view.center.x-40,
+                                                                                y: view.center.y-40,
+                                                                                width: 80,
+                                                                                height: 80))
+            broadcastPickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
+            view.addSubview(broadcastPickerView)
+            broadcastPickerView.backgroundColor = UIColor.red
 
-                //TODO: get background image for picker view
-                broadcastButton.isHidden = true
-                self.spinner.isHidden = true
-            }
+            //TODO: get background image for picker view
+            broadcastButton.isHidden = true
+            self.spinner.isHidden = true
         }
+        #endif
     }
 
     @IBAction func startBroadcast(_ sender: Any) {
