@@ -1,12 +1,26 @@
 # Twilio Video ReplayKit Example
 
-The project demonstrates how to use Twilio's Programmable Video SDK with `ReplayKit.framework` in a Broadcast Extension.
+The project demonstrates how to integrate Twilio's Programmable Video SDK with `ReplayKit.framework`.
+
+The example demonstrates two distinct use cases:
+
+**Conferencing (In-App)**
+
+Use `RPScreenRecorder` to capture the screen and play/record audio using `TVIDefaultAudioDevice`. After joining a Room you will be able to hear other Participants, and they will be able to see the contents of your screen.
+
+When using the "in-process" `RPScreenRecorder` APIs, you may only capture content from your own application. Screen capture is suspended upon entering the backround.
+
+**Broadcast (Extension)**
+
+Use an `RPBroadcastSampleHandler` to capture the screen, and microphone audio.
+
+An extension is not limited to capturing the screen of a single application. Instead, it is possible to capture any application, and the home screen. While audio capture is possible, playback is not allowed.
 
 ### Setup
 
 See the master [README](https://github.com/twilio/video-quickstart-swift/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
 
-This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device running iOS 10.0 or above.
+This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device running iOS 11.0 or above.
 
 ### Running
 
