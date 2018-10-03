@@ -15,7 +15,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     public var room: TVIRoom?
     var videoSource: ReplayKitVideoSource?
     var screenTrack: TVILocalVideoTrack?
-    let audioDevice = ExampleCoreAudioDevice()
+    let audioDevice = ExampleReplayKitAudioCapturer()
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
     let accessTokenUrl = "http://127.0.0.1:5000/?identity=chris.ios&room=chris"
@@ -24,7 +24,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
-        TwilioVideo.audioDevice = ExampleCoreAudioDevice(audioCapturer: self)
+        TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer(audioCapturer: self)
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
@@ -126,10 +126,10 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     }
 
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
-        print("participant: ", participant, " didConnect")
+        print("participant: ", participant.identity, " didConnect")
     }
 
     func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
-        print("participant: ", participant, " didDisconnect")
+        print("participant: ", participant.identity, " didDisconnect")
     }
 }

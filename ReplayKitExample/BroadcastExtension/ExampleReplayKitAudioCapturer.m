@@ -1,0 +1,174 @@
+//
+//  ExampleReplayKitAudioCapturer.m
+//  ReplayKitExample
+//
+//  Copyright © 2018 Twilio, Inc. All rights reserved.
+//
+
+#import "ExampleReplayKitAudioCapturer.h"
+#import "BroadcastExtension-Swift.h"
+
+// Our guess at the maximum slice size used by ReplayKit. We have observed 1024 in the field.
+static size_t kMaximumFramesPerBuffer = 2048;
+
+static ExampleAudioContext *capturingContext;
+
+@interface ExampleReplayKitAudioCapturer()
+
+@property (nonatomic, strong, nullable) TVIAudioFormat *capturingFormat;
+@property (nonatomic, weak) SampleHandler *audioCapturer;
+
+@end
+
+@implementation ExampleReplayKitAudioCapturer
+
+#pragma mark - Init & Dealloc
+
+- (instancetype)initWithAudioCapturer:(SampleHandler *)sampleHandler {
+    self = [super init];
+    if (self) {
+        _audioCapturer = sampleHandler;
+        //[self printAVAudioSession];
+    }
+    return self;
+}
+
+- (void)dealloc {
+}
+
+- (void)printAVAudioSession {
+        NSString *format =
+        @"AVAudioSession: {\n"
+        "  category: %@\n"
+        "  categoryOptions: %ld\n"
+        "  mode: %@\n"
+        "  sampleRate: %.2f\n"
+        "  IOBufferDuration: %f\n"
+        "  outputNumberOfChannels: %ld\n"
+        "  inputNumberOfChannels: %ld\n"
+        "  outputLatency: %f\n"
+        "  inputLatency: %f\n"
+        "  outputVolume: %f\n"
+        "}";
+        AVAudioSession *session = [AVAudioSession sharedInstance];
+        NSString *description = [NSString stringWithFormat:format,
+                                 session.category , (long)session.categoryOptions, session.mode,
+                                 session.sampleRate, session.IOBufferDuration,
+                                 session.outputNumberOfChannels, session.inputNumberOfChannels,
+                                 session.outputLatency, session.inputLatency, session.outputVolume];
+    NSLog(@"%@", description);
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,(int64_t)(1 * NSEC_PER_SEC)),
+                   dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0),
+                   ^{
+                       [self printAVAudioSession];
+                   }
+    );
+}
+
++ (NSString *)description {
+    return @"ExampleReplayKitAudioCapturer";
+}
+
+#pragma mark - TVIAudioDeviceRenderer
+
+- (nullable TVIAudioFormat *)renderFormat {
+    return nil;
+}
+
+- (BOOL)initializeRenderer {
+    return NO;
+}
+
+- (BOOL)startRendering:(nonnull TVIAudioDeviceContext)context {
+    return NO;
+}
+
+- (BOOL)stopRendering {
+    return NO;
+}
+
+#pragma mark - TVIAudioDeviceCapturer
+
+- (nullable TVIAudioFormat *)captureFormat {
+    if (!_capturingFormat) {
+        /*
+         * Assume that the AVAudioSession has already been configured and started and that the values
+         * for sampleRate and IOBufferDuration are final.
+         */
+        _capturingFormat = [[self class] activeCapturingFormat];
+    }
+
+    return _capturingFormat;
+}
+
+- (BOOL)initializeCapturer {
+    return YES;
+}
+
+- (BOOL)startCapturing:(nonnull TVIAudioDeviceContext)context {
+    @synchronized (self) {
+        NSAssert(capturingContext == NULL, @"Should not have any capturing context.");
+        capturingContext = malloc(sizeof(ExampleAudioContext));
+        capturingContext->deviceContext = context;
+        capturingContext->maxFramesPerBuffer = _capturingFormat.framesPerBuffer;
+
+        const NSTimeInterval sessionBufferDuration = [AVAudioSession sharedInstance].IOBufferDuration;
+        const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
+        const size_t sessionFramesPerBuffer = (size_t)(sessionSampleRate * sessionBufferDuration + .5);
+        capturingContext->expectedFramesPerBuffer = sessionFramesPerBuffer;
+
+        capturingContext->deviceContext = context;
+    }
+    return YES;
+}
+
+- (BOOL)stopCapturing {
+    @synchronized(self) {
+        capturingContext->deviceContext = NULL;
+    }
+
+    return YES;
+}
+
+#pragma mark - Private (AudioUnit callbacks)
+
+OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
+    if (!capturingContext || !capturingContext->deviceContext) {
+        return noErr;
+    }
+
+    CMBlockBufferRef blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
+    AudioBufferList bufferList;
+    CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer,
+                                                            NULL,
+                                                            &bufferList,
+                                                            sizeof(bufferList),
+                                                            NULL,
+                                                            NULL,
+                                                            kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment,
+                                                            &blockBuffer);
+
+    int8_t *audioBuffer = (int8_t *)bufferList.mBuffers[0].mData;
+    UInt32 audioBufferSizeInBytes = bufferList.mBuffers[0].mDataByteSize;
+
+    TVIAudioDeviceWriteCaptureData(capturingContext->deviceContext, (int8_t *)audioBuffer, audioBufferSizeInBytes);
+
+    CFRelease(blockBuffer);
+    return noErr;
+}
+
+#pragma mark - Private (AVAudioSession and CoreAudio)
+
++ (nullable TVIAudioFormat *)activeCapturingFormat {
+    // We are making some assumptions about the format received from ReplayKit.
+    const size_t sessionFramesPerBuffer = kMaximumFramesPerBuffer;
+    const double sessionSampleRate = 44100;
+    size_t rendererChannels = 1;
+
+    return [[TVIAudioFormat alloc] initWithChannels:rendererChannels
+                                         sampleRate:sessionSampleRate
+                                    framesPerBuffer:sessionFramesPerBuffer];
+}
+
+@end
