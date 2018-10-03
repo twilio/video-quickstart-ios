@@ -92,23 +92,26 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
             if (delta <= Double(1 / ReplayKitVideoSource.kDesiredFrameRate)) {
                 print("Dropping frame with delta. ", delta as Any)
                 return
-            } else {
-//                print("Keeping frame with delta. ", delta as Any)
             }
         }
 
-        // Perhaps these rotation tags are not used any more?
-        if let orientation = CMGetAttachment(sampleBuffer, RPVideoSampleOrientationKey as CFString, nil) {
-            print("Orientation was: ", orientation as Any)
+        /*
+         * Check rotation tags. Extensions see these tags, but `RPScreenRecorder` does not appear to set them.
+         * On iOS 12.0, rotation tags which are non-zero are set by extensions.
+         */
+        var videoOrientation = TVIVideoOrientation.up
+        if let sampleOrientation = CMGetAttachment(sampleBuffer, RPVideoSampleOrientationKey as CFString, nil),
+            let coreSampleOrientation = sampleOrientation.uint32Value {
+            videoOrientation
+                = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation(rawValue: coreSampleOrientation)!)
         }
 
         // Return the original pixel buffer without downscaling.
         if (!downscaleBuffers) {
-            // TODO: Video handle orientation flags.
             deliverFrame(to: consumer,
                          timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
                          buffer: sourcePixelBuffer,
-                         orientation: TVIVideoOrientation.up)
+                         orientation: videoOrientation)
             return
         }
 
@@ -183,11 +186,10 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         status = CVPixelBufferUnlockBaseAddress(outPixelBuffer!, [])
         status = CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, CVPixelBufferLockFlags.readOnly)
 
-        // TODO: Video handle orientation flags.
         deliverFrame(to: consumer,
                      timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
-                     buffer: outPixelBuffer!,
-                     orientation: TVIVideoOrientation.up)
+                     buffer: destinationPixelBuffer,
+                     orientation: videoOrientation)
     }
 
     func deliverFrame(to: TVIVideoCaptureConsumer, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation) {
@@ -199,5 +201,31 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
         to.consumeCapturedFrame(frame)
         lastTimestamp = timestamp
+    }
+
+    static func imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation) -> TVIVideoOrientation {
+        let videoOrientation: TVIVideoOrientation
+
+        // Note: We do not attempt to "undo" mirroring. So far I have not encountered these tags from
+        switch imageOrientation {
+        case .up:
+            videoOrientation = TVIVideoOrientation.up
+        case .upMirrored:
+            videoOrientation = TVIVideoOrientation.up
+        case .left:
+            videoOrientation = TVIVideoOrientation.left
+        case .leftMirrored:
+            videoOrientation = TVIVideoOrientation.left
+        case .right:
+            videoOrientation = TVIVideoOrientation.right
+        case .rightMirrored:
+            videoOrientation = TVIVideoOrientation.right
+        case .down:
+            videoOrientation = TVIVideoOrientation.down
+        case .downMirrored:
+            videoOrientation = TVIVideoOrientation.down
+        }
+
+        return videoOrientation
     }
 }

@@ -40,7 +40,7 @@ Once you have setup your access token, install and run the example. You will be 
 2. Pre-allocate resizing filter, and call `vImageVerticalShear_Planar8` etc. directly.
 3. Pre-allocate temporary buffers needed for resizing.
 4. Use a `CVPixelBufferPool` to constrain memory usage and to improve buffer reuse (fewer `CVPixelBuffer` allocations).
-5. Presrve color tags when downscaling `CVPixelBuffer`s.
+5. Preserve color tags when downscaling `CVPixelBuffer`s.
 6. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
 
 ### Known Issues

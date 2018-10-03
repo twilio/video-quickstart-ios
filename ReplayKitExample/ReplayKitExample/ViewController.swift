@@ -126,6 +126,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     //MARK: RPBroadcastControllerDelegate
     func broadcastController(_ broadcastController: RPBroadcastController, didFinishWithError error: Error?) {
+        // TODO: Update button UI.
         if let error = error {
             print("Broadcast did finish with error:", error)
         } else {
