@@ -206,7 +206,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     static func imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation) -> TVIVideoOrientation {
         let videoOrientation: TVIVideoOrientation
 
-        // Note: We do not attempt to "undo" mirroring. So far I have not encountered these tags from
+        // Note: We do not attempt to "undo" mirroring. So far I have not encountered mirrored tags from ReplayKit sources.
         switch imageOrientation {
         case .up:
             videoOrientation = TVIVideoOrientation.up
