@@ -13,6 +13,8 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     @IBOutlet weak var broadcastButton: UIButton!
+    // Treat this view as generic, since RPSystemBroadcastPickerView is only available on iOS 12.0 and above.
+    @IBOutlet weak var broadcastPickerView: UIView?
     @IBOutlet weak var conferenceButton: UIButton?
     @IBOutlet weak var infoLabel: UILabel?
     @IBOutlet weak var settingsButton: UIBarButtonItem?
@@ -43,22 +45,38 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
 
+        self.broadcastButton.layer.cornerRadius = 4
+        self.conferenceButton?.layer.cornerRadius = 4
+
         // Use RPSystemBroadcastPickerView when available (iOS 12+ devices).
+        // TODO: Use #if targetEnvironment(simulator) after upgrading the examples to Swift 4.2.
         #if arch(arm64)
         if #available(iOS 12.0, *) {
             // Swap the button for an RPSystemBroadcastPickerView.
-            let broadcastPickerView = RPSystemBroadcastPickerView(frame: CGRect(x: view.center.x-40,
-                                                                                y: view.center.y-40,
-                                                                                width: 80,
-                                                                                height: 80))
-            broadcastPickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
-            view.addSubview(broadcastPickerView)
+            let pickerView = RPSystemBroadcastPickerView(frame: CGRect(x: 0,
+                                                                       y: 0,
+                                                                   width: view.bounds.width,
+                                                                  height: 80))
+            pickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
+            view.addSubview(pickerView)
 
-            // TODO: get background image for picker view
-            broadcastPickerView.backgroundColor = UIColor.red
+            self.broadcastPickerView = pickerView
+            broadcastButton.isEnabled = false
             broadcastButton.isHidden = true
         }
         #endif
+    }
+
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+
+        // Our picker will be the same size as the hidden button it replaces.
+        self.broadcastPickerView?.frame = self.broadcastButton.frame
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        print("View will disappear.")
     }
 
     @IBAction func startBroadcast(_ sender: Any) {
@@ -71,8 +89,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                 }
             }
         } else {
-            RPScreenRecorder.shared().isMicrophoneEnabled = true
-            // This extension should be the broadcast upload extension UI, not boradcast update extension
+            // This extension should be the broadcast upload extension UI, not broadcast update extension
             RPBroadcastActivityViewController.load(withPreferredExtension:
             "com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI") {
                 (broadcastActivityViewController, error) in
@@ -111,16 +128,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             self.broadcastController = broadcastController
             self.broadcastController?.delegate = self
             self.conferenceButton?.isEnabled = false
+            self.infoLabel?.text = ""
 
             broadcastActivityViewController.dismiss(animated: true) {
-                self.broadcastController?.startBroadcast { [unowned self] error in
-                    // broadcast started
-                    print("Broadcast controller started with error: \(String(describing: error))")
-                    DispatchQueue.main.async {
-                        self.spinner.startAnimating()
-                        self.broadcastButton.setTitle(ViewController.kStopBroadcastButtonTitle, for: .normal)
-                    }
-                }
+                self.startBroadcast()
             }
         }
     }
@@ -132,8 +143,12 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             self.broadcastController = nil
             self.conferenceButton?.isEnabled = true
             self.infoLabel?.isHidden = false
-            self.broadcastButton.isEnabled = true
-            self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
+            if let picker = self.broadcastPickerView {
+                picker.isHidden = false
+            } else {
+                self.broadcastButton.isEnabled = true
+                self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
+            }
             self.spinner?.stopAnimating()
 
             if let theError = error {
@@ -189,6 +204,20 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         infoLabel?.text = isScreenRecordingAvailable ? ViewController.kRecordingAvailableInfo : ViewController.kRecordingNotAvailableInfo
     }
 
+    func startBroadcast() {
+        self.broadcastController?.startBroadcast { [unowned self] error in
+            DispatchQueue.main.async {
+                if let theError = error {
+                    print("Broadcast controller failed to start with error:", theError as Any)
+                } else {
+                    print("Broadcast controller started.")
+                    self.spinner.startAnimating()
+                    self.broadcastButton.setTitle(ViewController.kStopBroadcastButtonTitle, for: .normal)
+                }
+            }
+        }
+    }
+
     func stopConference(error: Error?) {
         // Stop recording the screen.
         let recorder = RPScreenRecorder.shared()
@@ -200,7 +229,11 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                 DispatchQueue.main.async {
                     self.conferenceButton?.isEnabled = true
                     self.infoLabel?.isHidden = false
-                    self.broadcastButton.isEnabled = true
+                    if let picker = self.broadcastPickerView {
+                        picker.isHidden = false
+                    } else {
+                        self.broadcastButton.isEnabled = true
+                    }
                     self.spinner.stopAnimating()
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
 
@@ -224,7 +257,9 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     func startConference() {
         self.broadcastButton.isEnabled = false
+        self.broadcastPickerView?.isHidden = true
         self.infoLabel?.isHidden = true
+        self.infoLabel?.text = ""
 
         // Start recording the screen.
         let recorder = RPScreenRecorder.shared()
@@ -266,6 +301,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                 self.conferenceButton?.isEnabled = true
                 if error != nil {
                     self.broadcastButton.isEnabled = true
+                    self.broadcastPickerView?.isHidden = false
                     self.infoLabel?.isHidden = false
                 } else {
                     self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
