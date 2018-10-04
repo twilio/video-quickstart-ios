@@ -61,7 +61,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
             if #available(iOS 12.0, *) {
                 builder.roomName = "Broadcast"
             } else {
-                builder.roomName = setupInfo?[SampleHandler.kBroadcastSetupInfoRoomNameKey] as! String
+                builder.roomName = setupInfo?[SampleHandler.kBroadcastSetupInfoRoomNameKey] as? String
             }
         }
 

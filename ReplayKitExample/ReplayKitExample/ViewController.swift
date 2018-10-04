@@ -88,7 +88,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     @IBAction func startConference( sender: UIButton) {
         sender.isEnabled = false
         if self.screenTrack != nil {
-            stopConference()
+            stopConference(error: nil)
         } else {
             startConference()
         }
@@ -110,6 +110,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         DispatchQueue.main.async {
             self.broadcastController = broadcastController
             self.broadcastController?.delegate = self
+            self.conferenceButton?.isEnabled = false
 
             broadcastActivityViewController.dismiss(animated: true) {
                 self.broadcastController?.startBroadcast { [unowned self] error in
@@ -126,11 +127,21 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     //MARK: RPBroadcastControllerDelegate
     func broadcastController(_ broadcastController: RPBroadcastController, didFinishWithError error: Error?) {
-        // TODO: Update button UI.
-        if let error = error {
-            print("Broadcast did finish with error:", error)
-        } else {
-            print("Broadcast did finish.")
+        // Update the button UI.
+        DispatchQueue.main.async {
+            self.broadcastController = nil
+            self.conferenceButton?.isEnabled = true
+            self.infoLabel?.isHidden = false
+            self.broadcastButton.isEnabled = true
+            self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
+            self.spinner?.stopAnimating()
+
+            if let theError = error {
+                print("Broadcast did finish with error:", error as Any)
+                self.infoLabel?.text = theError.localizedDescription
+            } else {
+                print("Broadcast did finish.")
+            }
         }
     }
 
@@ -148,7 +159,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     }
 
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
-        // TODO: Stop the conference.
+        stopConference(error: error)
         print("Failed to connect with error: ", error)
     }
 
@@ -156,7 +167,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         if let error = error {
             print("Disconnected with error: ", error)
         }
-        // TODO: Stop the conference.
+
+        if self.screenTrack != nil {
+            stopConference(error: error)
+        }
     }
 
     //MARK: RPScreenRecorderDelegate
@@ -175,11 +189,11 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         infoLabel?.text = isScreenRecordingAvailable ? ViewController.kRecordingAvailableInfo : ViewController.kRecordingNotAvailableInfo
     }
 
-    func stopConference() {
+    func stopConference(error: Error?) {
         // Stop recording the screen.
         let recorder = RPScreenRecorder.shared()
-        recorder.stopCapture { (error) in
-            if let error = error {
+        recorder.stopCapture { (captureError) in
+            if let error = captureError {
                 print("Screen capture stop error: ", error as Any)
             } else {
                 print("Screen capture stopped.")
@@ -192,11 +206,20 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
                     self.videoSource = nil
                     self.screenTrack = nil
+
+                    if let userError = error {
+                        self.infoLabel?.text = userError.localizedDescription
+                    }
                 }
             }
         }
 
-        conferenceRoom?.disconnect()
+        if let room = conferenceRoom,
+            room.state == TVIRoomState.connected {
+            room.disconnect()
+        } else {
+            conferenceRoom = nil
+        }
     }
 
     func startConference() {
@@ -261,8 +284,8 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             do {
                 accessToken = try TokenUtils.fetchToken(url: accessTokenUrl)
             } catch {
-                let message = "Failed to fetch access token"
-//                logMessage(messageText: message)
+                let message = "Failed to fetch access token."
+                print(message)
                 return
             }
         }
