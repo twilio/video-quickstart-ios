@@ -14,7 +14,7 @@ import TwilioVideo
 
 class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
-    static let kDesiredFrameRate = 30
+    static let kDesiredFrameRate = 120
 
     // In order to save memory, our capturer may downscale the source to fit in a smaller rect.
     static let kDownScaledMaxWidthOrHeight = 640
@@ -85,11 +85,12 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
 
         // Frame dropping logic.
-        if let timestamp = lastTimestamp {
+        if let lastTimestamp = lastTimestamp {
             let currentTimestmap = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-            let delta = CMTimeSubtract(currentTimestmap, timestamp).seconds
+            let delta = CMTimeSubtract(currentTimestmap, lastTimestamp).seconds
+            let threshold = Double(1.0 / Double(ReplayKitVideoSource.kDesiredFrameRate))
 
-            if (delta <= Double(1 / ReplayKitVideoSource.kDesiredFrameRate)) {
+            if (delta < threshold) {
                 print("Dropping frame with delta. ", delta as Any)
                 return
             }
