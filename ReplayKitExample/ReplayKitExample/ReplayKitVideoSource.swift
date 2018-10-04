@@ -16,7 +16,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     static let kDesiredFrameRate = 30
 
-    // Our capturer attempts to downscale the source to fit in a smaller square, in order to save memory.
+    // In order to save memory, our capturer may downscale the source to fit in a smaller rect.
     static let kDownScaledMaxWidthOrHeight = 640
 
     // ReplayKit provides planar NV12 CVPixelBuffers consisting of luma (Y) and chroma (UV) planes.
@@ -97,7 +97,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
         /*
          * Check rotation tags. Extensions see these tags, but `RPScreenRecorder` does not appear to set them.
-         * On iOS 12.0, rotation tags which are non-zero are set by extensions.
+         * On iOS 12.0, rotation tags other than up are set by extensions.
          */
         var videoOrientation = TVIVideoOrientation.up
         if let sampleOrientation = CMGetAttachment(sampleBuffer, RPVideoSampleOrientationKey as CFString, nil),
@@ -115,7 +115,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
             return
         }
 
-        // Compute the downscaled rect for our destination (in whole pixels). Note, it might be better to round to even width/height.
+        // Compute the downscaled rect for our destination (in whole pixels). Note: it would be better to round to even values.
         let rect = AVMakeRect(aspectRatio: CGSize(width: CVPixelBufferGetWidth(sourcePixelBuffer),
                                                   height: CVPixelBufferGetHeight(sourcePixelBuffer)),
                               insideRect: CGRect(x: 0,
