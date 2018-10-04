@@ -15,6 +15,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     @IBOutlet weak var broadcastButton: UIButton!
     @IBOutlet weak var conferenceButton: UIButton?
     @IBOutlet weak var infoLabel: UILabel?
+    @IBOutlet weak var settingsButton: UIBarButtonItem?
 
     // Conference state.
     var screenTrack: TVILocalVideoTrack?
@@ -52,11 +53,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                                                                                 height: 80))
             broadcastPickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
             view.addSubview(broadcastPickerView)
-            broadcastPickerView.backgroundColor = UIColor.red
 
-            //TODO: get background image for picker view
+            // TODO: get background image for picker view
+            broadcastPickerView.backgroundColor = UIColor.red
             broadcastButton.isHidden = true
-            self.spinner.isHidden = true
         }
         #endif
     }
