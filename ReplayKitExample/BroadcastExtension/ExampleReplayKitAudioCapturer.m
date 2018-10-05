@@ -28,42 +28,8 @@ static ExampleAudioContext *capturingContext;
     self = [super init];
     if (self) {
         _audioCapturer = sampleHandler;
-        //[self printAVAudioSession];
     }
     return self;
-}
-
-- (void)dealloc {
-}
-
-- (void)printAVAudioSession {
-        NSString *format =
-        @"AVAudioSession: {\n"
-        "  category: %@\n"
-        "  categoryOptions: %ld\n"
-        "  mode: %@\n"
-        "  sampleRate: %.2f\n"
-        "  IOBufferDuration: %f\n"
-        "  outputNumberOfChannels: %ld\n"
-        "  inputNumberOfChannels: %ld\n"
-        "  outputLatency: %f\n"
-        "  inputLatency: %f\n"
-        "  outputVolume: %f\n"
-        "}";
-        AVAudioSession *session = [AVAudioSession sharedInstance];
-        NSString *description = [NSString stringWithFormat:format,
-                                 session.category , (long)session.categoryOptions, session.mode,
-                                 session.sampleRate, session.IOBufferDuration,
-                                 session.outputNumberOfChannels, session.inputNumberOfChannels,
-                                 session.outputLatency, session.inputLatency, session.outputVolume];
-    NSLog(@"%@", description);
-
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,(int64_t)(1 * NSEC_PER_SEC)),
-                   dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0),
-                   ^{
-                       [self printAVAudioSession];
-                   }
-    );
 }
 
 + (NSString *)description {
