@@ -28,7 +28,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     var broadcastController: RPBroadcastController?
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
-    let accessTokenUrl = "http://127.0.0.1:5000/?identity=chris.ios&room=chris"
+    let accessTokenUrl = "http://127.0.0.1:5000/"
 
     static let kStartBroadcastButtonTitle = "Start Broadcast"
     static let kInProgressBroadcastButtonTitle = "Broadcasting"
@@ -92,6 +92,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         }
     }
 
+    // This action is only invoked on iOS 11.x. On iOS 12.0 this is handled by RPSystemBroadcastPickerView.
     @IBAction func startBroadcast(_ sender: Any) {
         if let controller = self.broadcastController {
             controller.finishBroadcast { [unowned self] error in

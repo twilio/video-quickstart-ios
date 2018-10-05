@@ -18,7 +18,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     let audioDevice = ExampleReplayKitAudioCapturer()
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
-    let accessTokenUrl = "http://127.0.0.1:5000/?identity=chris.ios&room=chris"
+    let accessTokenUrl = "http://127.0.0.1:5000/"
 
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
