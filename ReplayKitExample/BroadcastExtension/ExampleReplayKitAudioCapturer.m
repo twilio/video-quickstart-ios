@@ -125,7 +125,9 @@ static ExampleAudioContext *capturingContext;
 
 - (BOOL)stopCapturing {
     @synchronized(self) {
-        capturingContext->deviceContext = NULL;
+        NSAssert(capturingContext != NULL, @"Should have a capturing context.");
+        free(capturingContext);
+        capturingContext = NULL;
     }
 
     return YES;
