@@ -60,6 +60,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             if self.broadcastPickerView != nil && self.screenTrack == nil {
                 let title = UIScreen.main.isCaptured ? ViewController.kInProgressBroadcastButtonTitle : ViewController.kStartBroadcastButtonTitle
                 self.broadcastButton.setTitle(title, for: .normal)
+                self.conferenceButton?.isEnabled = !UIScreen.main.isCaptured
             }
         }
 
@@ -157,6 +158,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             self.infoLabel?.isHidden = false
             if let picker = self.broadcastPickerView {
                 picker.isHidden = false
+                self.broadcastButton.isHidden = false
             } else {
                 self.broadcastButton.isEnabled = true
             }
@@ -243,6 +245,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                     self.infoLabel?.isHidden = false
                     if let picker = self.broadcastPickerView {
                         picker.isHidden = false
+                        self.broadcastButton.isHidden = false
                     } else {
                         self.broadcastButton.isEnabled = true
                     }
@@ -273,6 +276,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         if let picker = self.broadcastPickerView {
             picker.isHidden = true
             broadcastButton.setTitle("", for: .normal)
+            broadcastButton.isHidden = true
         }
         self.broadcastPickerView?.isHidden = true
         self.infoLabel?.isHidden = true
@@ -332,6 +336,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                     self.broadcastButton.isEnabled = true
                     self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControlState.normal)
                     self.broadcastPickerView?.isHidden = false
+                    self.broadcastButton.isHidden = false
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
                     self.infoLabel?.isHidden = false
                     self.infoLabel?.text = error!.localizedDescription
