@@ -37,6 +37,9 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     static let kRecordingAvailableInfo = "Ready to share the screen in a Broadcast (extension), or Conference (in-app)."
     static let kRecordingNotAvailableInfo = "ReplayKit is not available at the moment. Another app might be recording, or AirPlay may be in use."
 
+    // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
+    static let kDownscaleBuffers = true
+
     override func viewDidLoad() {
         super.viewDidLoad()
         broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
@@ -62,7 +65,6 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
             self.broadcastPickerView = pickerView
             broadcastButton.isEnabled = false
-            broadcastButton.isHidden = true
         }
         #endif
     }
@@ -71,7 +73,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         super.viewWillLayoutSubviews()
 
         // Our picker will be the same size as the hidden button it replaces.
-        self.broadcastPickerView?.frame = self.broadcastButton.frame
+        if let picker = self.broadcastPickerView {
+            picker.frame = self.broadcastButton.frame.offsetBy(dx: 0, dy: -10)
+            self.broadcastButton.titleEdgeInsets = UIEdgeInsets(top: 34, left: 0, bottom: 0, right: 0)
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -147,8 +152,8 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                 picker.isHidden = false
             } else {
                 self.broadcastButton.isEnabled = true
-                self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
             }
+            self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
             self.spinner?.stopAnimating()
 
             if let theError = error {
@@ -235,6 +240,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                         self.broadcastButton.isEnabled = true
                     }
                     self.spinner.stopAnimating()
+                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControlState.normal)
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
 
                     self.videoSource = nil
@@ -257,6 +263,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     func startConference() {
         self.broadcastButton.isEnabled = false
+        if let picker = self.broadcastPickerView {
+            picker.isHidden = true
+            broadcastButton.setTitle("", for: .normal)
+        }
         self.broadcastPickerView?.isHidden = true
         self.infoLabel?.isHidden = true
         self.infoLabel?.text = ""
@@ -267,8 +277,18 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         recorder.isCameraEnabled = false
         videoSource = ReplayKitVideoSource()
         let constraints = TVIVideoConstraints.init { (builder) in
-            builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),
-                                                height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
+            if (ViewController.kDownscaleBuffers) {
+                builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),
+                                                    height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
+            } else {
+                builder.minSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight + 1),
+                                                    height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight + 1))
+                var screenSize = UIScreen.main.bounds.size
+                screenSize.width *= UIScreen.main.nativeScale
+                screenSize.height *= UIScreen.main.nativeScale
+                builder.maxSize = CMVideoDimensions(width: Int32(screenSize.width),
+                                                    height: Int32(screenSize.height))
+            }
         }
         screenTrack = TVILocalVideoTrack(capturer: videoSource!,
                                          enabled: true,
@@ -301,8 +321,13 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                 self.conferenceButton?.isEnabled = true
                 if error != nil {
                     self.broadcastButton.isEnabled = true
+                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControlState.normal)
                     self.broadcastPickerView?.isHidden = false
+                    self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
                     self.infoLabel?.isHidden = false
+                    self.infoLabel?.text = error!.localizedDescription
+                    self.videoSource = nil
+                    self.screenTrack = nil
                 } else {
                     self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
                     self.spinner.startAnimating()
