@@ -58,9 +58,11 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name.UIScreenCapturedDidChange, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
             if self.broadcastPickerView != nil && self.screenTrack == nil {
-                let title = UIScreen.main.isCaptured ? ViewController.kInProgressBroadcastButtonTitle : ViewController.kStartBroadcastButtonTitle
+                let isCaptured = UIScreen.main.isCaptured
+                let title = isCaptured ? ViewController.kInProgressBroadcastButtonTitle : ViewController.kStartBroadcastButtonTitle
                 self.broadcastButton.setTitle(title, for: .normal)
-                self.conferenceButton?.isEnabled = !UIScreen.main.isCaptured
+                self.conferenceButton?.isEnabled = !isCaptured
+                isCaptured ? self.spinner.startAnimating() : self.spinner.stopAnimating()
             }
         }
 
