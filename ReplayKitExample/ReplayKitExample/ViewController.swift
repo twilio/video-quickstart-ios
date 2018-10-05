@@ -31,6 +31,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     let accessTokenUrl = "http://127.0.0.1:5000/?identity=chris.ios&room=chris"
 
     static let kStartBroadcastButtonTitle = "Start Broadcast"
+    static let kInProgressBroadcastButtonTitle = "Broadcasting"
     static let kStopBroadcastButtonTitle = "Stop Broadcast"
     static let kStartConferenceButtonTitle = "Start Conference"
     static let kStopConferenceButtonTitle = "Stop Conference"
@@ -40,16 +41,27 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
     static let kDownscaleBuffers = false
 
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
         conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for: .normal)
+        broadcastButton.layer.cornerRadius = 4
+        conferenceButton?.layer.cornerRadius = 4
+
         // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
 
-        self.broadcastButton.layer.cornerRadius = 4
-        self.conferenceButton?.layer.cornerRadius = 4
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.UIScreenCapturedDidChange, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
+            if self.broadcastPickerView != nil && self.screenTrack == nil {
+                let title = UIScreen.main.isCaptured ? ViewController.kInProgressBroadcastButtonTitle : ViewController.kStartBroadcastButtonTitle
+                self.broadcastButton.setTitle(title, for: .normal)
+            }
+        }
 
         // Use RPSystemBroadcastPickerView when available (iOS 12+ devices).
         // TODO: Use #if targetEnvironment(simulator) after upgrading the examples to Swift 4.2.
@@ -77,11 +89,6 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             picker.frame = self.broadcastButton.frame.offsetBy(dx: 0, dy: -10)
             self.broadcastButton.titleEdgeInsets = UIEdgeInsets(top: 34, left: 0, bottom: 0, right: 0)
         }
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        print("View will disappear.")
     }
 
     @IBAction func startBroadcast(_ sender: Any) {
@@ -325,7 +332,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                     self.broadcastButton.isEnabled = true
                     self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControlState.normal)
                     self.broadcastPickerView?.isHidden = false
-                    self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
+                    self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
                     self.infoLabel?.isHidden = false
                     self.infoLabel?.text = error!.localizedDescription
                     self.videoSource = nil
