@@ -38,7 +38,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     static let kRecordingNotAvailableInfo = "ReplayKit is not available at the moment. Another app might be recording, or AirPlay may be in use."
 
     // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
-    static let kDownscaleBuffers = true
+    static let kDownscaleBuffers = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -275,7 +275,9 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         let recorder = RPScreenRecorder.shared()
         recorder.isMicrophoneEnabled = false
         recorder.isCameraEnabled = false
-        videoSource = ReplayKitVideoSource()
+
+        // Our source produces either downscaled buffers with smoother motion, or an HD screen recording.
+        videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers)
         let constraints = TVIVideoConstraints.init { (builder) in
             if (ViewController.kDownscaleBuffers) {
                 builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),

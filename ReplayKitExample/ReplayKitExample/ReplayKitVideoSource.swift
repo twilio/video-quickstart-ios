@@ -25,9 +25,18 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     var lastTimestamp: CMTime?
     var downscaleBuffers: Bool = false
+    var screencastUsage: Bool = false
     weak var captureConsumer: TVIVideoCaptureConsumer?
 
-    public var isScreencast: Bool = false
+    init(isScreencast: Bool) {
+        screencastUsage = isScreencast
+    }
+
+    public var isScreencast: Bool {
+        get {
+            return screencastUsage
+        }
+    }
 
     public var supportedFormats: [TVIVideoFormat] {
         get {

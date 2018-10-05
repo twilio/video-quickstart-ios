@@ -36,7 +36,8 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
             }
         }
 
-        videoSource = ReplayKitVideoSource()
+        // This source will attempt to produce smaller buffers with fluid motion.
+        videoSource = ReplayKitVideoSource(isScreencast: false)
         let constraints = TVIVideoConstraints.init { (builder) in
             builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),
                                                 height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
