@@ -92,6 +92,7 @@
 		8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
 		8A50FEFC215DDC6100297C7A /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		8A50FEFD215DDC6100297C7A /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		8A92FE2F2168006000DDD912 /* BroadcastExtension-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BroadcastExtension-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,7 +133,8 @@
 				4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */,
 				4B20000B20E9CB9C00FE9F2C /* Info.plist */,
 			);
-			path = BroadcastExtensionSetupUI;
+			name = BroadcastExtensionSetupUI;
+			path = ReplayKitExample/BroadcastExtensionSetupUI;
 			sourceTree = "<group>";
 		};
 		4B20FFD620E9CB8500FE9F2C = {
@@ -168,7 +170,8 @@
 				4B20FFEB20E9CB8600FE9F2C /* LaunchScreen.storyboard */,
 				4B20FFEE20E9CB8600FE9F2C /* Info.plist */,
 			);
-			path = ReplayKitExample;
+			name = ReplayKitExample;
+			path = ReplayKitExample/ReplayKitExample;
 			sourceTree = "<group>";
 		};
 		4B20FFF920E9CB9C00FE9F2C /* Frameworks */ = {
@@ -184,13 +187,15 @@
 		4B20FFFC20E9CB9C00FE9F2C /* BroadcastExtension */ = {
 			isa = PBXGroup;
 			children = (
+				8A92FE2F2168006000DDD912 /* BroadcastExtension-Bridging-Header.h */,
 				4BB0385D20EB45FB0095CDA8 /* BroadcastExtension.entitlements */,
 				4B20FFFD20E9CB9C00FE9F2C /* SampleHandler.swift */,
 				4BB0385720EB45940095CDA8 /* ExampleReplayKitAudioCapturer.h */,
 				4BB0385820EB45940095CDA8 /* ExampleReplayKitAudioCapturer.m */,
 				4B20FFFF20E9CB9C00FE9F2C /* Info.plist */,
 			);
-			path = BroadcastExtension;
+			name = BroadcastExtension;
+			path = ReplayKitExample/BroadcastExtension;
 			sourceTree = "<group>";
 		};
 		8A50FEFA215DDC6100297C7A /* Utils */ = {
@@ -200,8 +205,7 @@
 				8A50FEFC215DDC6100297C7A /* Settings.swift */,
 				8A50FEFD215DDC6100297C7A /* Utils.swift */,
 			);
-			name = Utils;
-			path = ../Utils;
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -419,10 +423,10 @@
 		4B20001320E9CB9C00FE9F2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = BroadcastExtensionSetupUI/BroadcastExtensionSetupUI.entitlements;
+				CODE_SIGN_ENTITLEMENTS = ReplayKitExample/BroadcastExtensionSetupUI/BroadcastExtensionSetupUI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
-				INFOPLIST_FILE = BroadcastExtensionSetupUI/Info.plist;
+				INFOPLIST_FILE = ReplayKitExample/BroadcastExtensionSetupUI/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -439,10 +443,10 @@
 		4B20001420E9CB9C00FE9F2C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = BroadcastExtensionSetupUI/BroadcastExtensionSetupUI.entitlements;
+				CODE_SIGN_ENTITLEMENTS = ReplayKitExample/BroadcastExtensionSetupUI/BroadcastExtensionSetupUI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
-				INFOPLIST_FILE = BroadcastExtensionSetupUI/Info.plist;
+				INFOPLIST_FILE = ReplayKitExample/BroadcastExtensionSetupUI/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -461,7 +465,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
-				INFOPLIST_FILE = BroadcastExtension/Info.plist;
+				INFOPLIST_FILE = ReplayKitExample/BroadcastExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -471,7 +475,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "BroadcastExtension/BroadcastExtension-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -482,7 +486,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
-				INFOPLIST_FILE = BroadcastExtension/Info.plist;
+				INFOPLIST_FILE = ReplayKitExample/BroadcastExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -492,7 +496,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "BroadcastExtension/BroadcastExtension-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -620,7 +624,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
-				INFOPLIST_FILE = ReplayKitExample/Info.plist;
+				INFOPLIST_FILE = ReplayKitExample/ReplayKitExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -639,7 +643,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
-				INFOPLIST_FILE = ReplayKitExample/Info.plist;
+				INFOPLIST_FILE = ReplayKitExample/ReplayKitExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

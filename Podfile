@@ -32,12 +32,12 @@ abstract_target 'TwilioVideo' do
 
   target 'ReplayKitExample' do
     platform :ios, '11.0'
-    project 'ReplayKitExample/ReplayKitExample.xcodeproj'
+    project 'ReplayKitExample.xcodeproj'
   end
 
   target 'BroadcastExtension' do
     platform :ios, '11.0'
-    project 'ReplayKitExample/ReplayKitExample.xcodeproj'
+    project 'ReplayKitExample.xcodeproj'
   end
 
   target 'ScreenCapturerExample' do
