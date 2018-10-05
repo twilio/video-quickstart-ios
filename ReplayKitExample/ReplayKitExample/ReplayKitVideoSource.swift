@@ -14,6 +14,12 @@ import TwilioVideo
 
 class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
+    /*
+     * Streaming video content at 30 fps or lower is ideal. ReplayKit may produce buffers at up to 120 Hz on an iPad Pro.
+     * This logic attempts to drop frames based upon timestamps. However, the approach is not ideal because timestamps
+     * from ReplayKit do not seem to represent exact vSyncs that are measurable 1/60 second or 1/120 second increments.
+     * For now we've increased the constant so that we will not drop frames (except for repeats) on an iPhone.
+     */
     static let kDesiredFrameRate = 120
 
     // In order to save memory, our capturer may downscale the source to fit in a smaller rect.
