@@ -70,17 +70,16 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         }
 
         // Use RPSystemBroadcastPickerView when available (iOS 12+ devices).
-        // TODO: Use #if targetEnvironment(simulator) after upgrading the examples to Swift 4.2.
-        #if arch(arm64)
         if #available(iOS 12.0, *) {
             setupPickerView()
         }
-        #endif
     }
 
     @available(iOS 12.0, *)
     func setupPickerView() {
         // Swap the button for an RPSystemBroadcastPickerView.
+        // TODO: Use #if targetEnvironment(simulator) after upgrading the examples to Swift 4.2.
+        #if arch(arm64)
         let pickerView = RPSystemBroadcastPickerView(frame: CGRect(x: 0,
                                                                    y: 0,
                                                                    width: view.bounds.width,
@@ -125,6 +124,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                                         multiplier: 1,
                                         constant: 0);
         self.view.addConstraint(height)
+        #endif
     }
 
     // This action is only invoked on iOS 11.x. On iOS 12.0 this is handled by RPSystemBroadcastPickerView.
