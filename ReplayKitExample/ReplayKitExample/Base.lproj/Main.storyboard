@@ -43,6 +43,7 @@
                                 <color key="backgroundColor" red="0.094117647058823528" green="0.5607843137254902" blue="0.98431372549019602" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="Rrp-RO-kUW"/>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="wNZ-nb-4Ir"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
                                 <state key="normal" title="Start Broadcast">
@@ -57,6 +58,7 @@
                                 <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="P7e-Sn-l6U"/>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="hPC-gS-41H"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
                                 <state key="normal" title="Start Conference">
@@ -78,14 +80,14 @@
                         <constraints>
                             <constraint firstItem="B5H-o5-cmu" firstAttribute="top" secondItem="Xrv-9v-TZ3" secondAttribute="bottom" constant="16" id="23N-hn-jpv"/>
                             <constraint firstItem="B5H-o5-cmu" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="9wS-sD-9LP"/>
-                            <constraint firstItem="B5H-o5-cmu" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="40" id="Eeb-y9-c9b"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="B5H-o5-cmu" secondAttribute="trailing" constant="40" id="KTG-MI-HBC"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Xrv-9v-TZ3" secondAttribute="trailing" constant="40" id="NY2-nf-BbP"/>
+                            <constraint firstItem="B5H-o5-cmu" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="900" constant="40" id="Eeb-y9-c9b"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="B5H-o5-cmu" secondAttribute="trailing" priority="900" constant="40" id="KTG-MI-HBC"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Xrv-9v-TZ3" secondAttribute="trailing" priority="900" constant="40" id="NY2-nf-BbP"/>
                             <constraint firstItem="yXC-tS-vkj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QEo-WS-bAc"/>
                             <constraint firstItem="yXC-tS-vkj" firstAttribute="top" secondItem="B5H-o5-cmu" secondAttribute="bottom" constant="28" id="dg4-0Q-IpO"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" constant="-20" id="gaf-ZE-A5V"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="gnC-Ke-gmX"/>
-                            <constraint firstItem="Xrv-9v-TZ3" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="40" id="or7-d7-g3p"/>
+                            <constraint firstItem="Xrv-9v-TZ3" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="900" constant="40" id="or7-d7-g3p"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
@@ -111,7 +113,7 @@
         <!--Settings Table View Controller-->
         <scene sceneID="TOM-me-ejy">
             <objects>
-                <tableViewController id="MO8-oc-R6f" customClass="SettingsTableViewController" customModule="VideoQuickStart" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="MO8-oc-R6f" customClass="SettingsTableViewController" customModule="ReplayKitExample" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="KGX-UJ-BQ5">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
