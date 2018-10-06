@@ -362,8 +362,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             do {
                 accessToken = try TokenUtils.fetchToken(url: accessTokenUrl)
             } catch {
-                let message = "Failed to fetch access token."
-                print(message)
+                stopConference(error: error)
                 return
             }
         }
