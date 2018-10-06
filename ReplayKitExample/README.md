@@ -6,7 +6,7 @@ The project demonstrates how to integrate Twilio's Programmable Video SDK with `
 
 Use `RPScreenRecorder` to capture the screen and play/record audio using `TVIDefaultAudioDevice`. After joining a Room you will be able to hear other Participants, and they will be able to hear you, and see the contents of your screen.
 
-When using the "in-process" `RPScreenRecorder` APIs, you may only capture content from your own application. Screen capture is suspended upon entering the backround.
+When using the in-process `RPScreenRecorder` APIs, you may only capture content from your own application. Screen capture is suspended upon entering the backround. Once you being capturing, your application is locked to its current interface orientation.
 
 **Broadcast (Extension)**
 
@@ -26,24 +26,36 @@ Audio capture in an extension is handled by `ExampleReplayKitAudioCapturer`, whi
 
 See the master [README](https://github.com/twilio/video-quickstart-swift/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
 
-This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device running iOS 11.0 or above.
+You will need to provide a hardcoded token, or token server URL in [ViewController.swift](ReplayKitExample/ViewController) for conferencing and in [SampleHandler.swift](BroadcastExtension/SampleHandler.swift) for the broadcast extension.
+
+This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device running iOS 11.0 or above. While the app launches on an iPhone Simulator, ReplayKit is non-functional.
 
 ### Running
 
 Once you have setup your access token, install and run the example. You will be presented with the following screen:
 
-< TODO, update image >
+**iOS 12**
 
-<kbd><img width="400px" src="../images/quickstart/audio-sink-launched.jpg"/></kbd>
+<kbd><img width="360px" src="../images/quickstart/replaykit-launch-ios12.png"/></kbd>
+
+**iOS 11**
+
+<kbd><img width="360px" src="../images/quickstart/replaykit-launch-ios11.png"/></kbd>
+
+From here you can tap "Start Broadcast" to begin using the broadcast extension. The extension will automatically join a room called "Broadcast", unless a Room is specified in your access token grants. Other participants can join using the QuickStart example, or any other example app which can display remote video.
+
+<kbd><img width="360px" src="../images/quickstart/replaykit-picker-ios12.png"/></kbd>
+
+Tapping "Start Conference" begins capturing and sharing the screen from within the main application. Please note that backgrounding the app will cause capture to be suspended.
 
 ### Betterments
 
 1. Use a faster resizing filter than Lancoz3. We spend a lot of CPU cycles resizing buffers from ReplayKit.
-2. Pre-allocate resizing filter, and call `vImageVerticalShear_Planar8` etc. directly.
-3. Pre-allocate temporary buffers needed for `vImageScale` methods.
-4. Use a `CVPixelBufferPool` to constrain memory usage and to improve buffer reuse (fewer `CVPixelBuffer` allocations).
-5. Preserve color tags when downscaling `CVPixelBuffer`s.
-6. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
+2. Pre-allocate temporary buffers needed for `vImageScale` methods, or use `vImageVerticalShear` methods directly.
+3. Use a `CVPixelBufferPool` to constrain memory usage and to improve buffer reuse (fewer `CVPixelBuffer` allocations).
+4. Preserve color tags when downscaling `CVPixelBuffer`s.
+5. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
+6. Share the camera using ReplayKit (extension), or `TVIVideoCapturer` (in-process).
 
 ### Known Issues
 
