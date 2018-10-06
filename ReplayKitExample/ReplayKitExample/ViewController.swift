@@ -127,16 +127,6 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         }
     }
 
-    @IBAction func pauseOrResumeBroadcast( sender: UIButton) {
-        if let controller = broadcastController {
-            if (controller.isPaused) {
-                controller.resumeBroadcast()
-            } else {
-                controller.pauseBroadcast()
-            }
-        }
-    }
-
     //MARK: RPBroadcastActivityViewControllerDelegate
     func broadcastActivityViewController(_ broadcastActivityViewController: RPBroadcastActivityViewController, didFinishWith broadcastController: RPBroadcastController?, error: Error?) {
 
