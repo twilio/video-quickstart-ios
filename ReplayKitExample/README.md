@@ -46,7 +46,7 @@ From here you can tap "Start Broadcast" to begin using the broadcast extension. 
 
 <kbd><img width="360px" src="../images/quickstart/replaykit-picker-ios12.png"/></kbd>
 
-Tapping "Start Conference" begins capturing and sharing the screen from within the main application. Please note that backgrounding the app will cause capture to be suspended.
+Tapping "Start Conference" begins capturing and sharing the screen from within the main application. Please note that backgrounding the app during a conference will cause in-app capture to be suspended.
 
 ### Betterments
 
