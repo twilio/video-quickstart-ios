@@ -30,6 +30,9 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
     let accessTokenUrl = "http://127.0.0.1:5000/"
 
+    static let kBroadcastExtensionBundleId = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
+    static let kBroadcastExtensionSetupUiBundleId = "com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI"
+
     static let kStartBroadcastButtonTitle = "Start Broadcast"
     static let kInProgressBroadcastButtonTitle = "Broadcasting"
     static let kStopBroadcastButtonTitle = "Stop Broadcast"
@@ -75,7 +78,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                                                                        y: 0,
                                                                    width: view.bounds.width,
                                                                   height: 80))
-            pickerView.preferredExtension = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
+            pickerView.preferredExtension = ViewController.kBroadcastExtensionBundleId
             view.addSubview(pickerView)
 
             self.broadcastPickerView = pickerView
@@ -106,8 +109,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             }
         } else {
             // This extension should be the broadcast upload extension UI, not broadcast update extension
-            RPBroadcastActivityViewController.load(withPreferredExtension:
-            "com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI") {
+            RPBroadcastActivityViewController.load(withPreferredExtension:ViewController.kBroadcastExtensionSetupUiBundleId) {
                 (broadcastActivityViewController, error) in
                 if let broadcastActivityViewController = broadcastActivityViewController {
                     broadcastActivityViewController.delegate = self

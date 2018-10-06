@@ -26,7 +26,7 @@ Audio capture in an extension is handled by `ExampleReplayKitAudioCapturer`, whi
 
 See the master [README](https://github.com/twilio/video-quickstart-swift/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
 
-You will need to provide a hardcoded token, or token server URL in [ViewController.swift](ReplayKitExample/ViewController) for conferencing and in [SampleHandler.swift](BroadcastExtension/SampleHandler.swift) for the broadcast extension.
+You will need to provide a hardcoded token, or token server URL in [ViewController.swift](ReplayKitExample/ViewController.swift) for conferencing and in [SampleHandler.swift](BroadcastExtension/SampleHandler.swift) for the broadcast extension.
 
 This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device running iOS 11.0 or above. While the app launches on an iPhone Simulator, ReplayKit is non-functional.
 
