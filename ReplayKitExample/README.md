@@ -10,7 +10,7 @@ When using the in-process `RPScreenRecorder` APIs, you may only capture content 
 
 **Broadcast (Extension)**
 
-Use an `RPBroadcastSampleHandler` to receive audio and video samples. Video samples are routed to `ReplayKitVideoSource`, while `ExampleReplayKitAudioCapturer` handles audio.
+Use an `RPBroadcastSampleHandler` to receive audio and video samples. Video samples are routed to `ReplayKitVideoSource`, while `ExampleReplayKitAudioCapturer` handles audio. In order to reduce memory usage, the extension configures the capturer to downscsale the incoming video frames and prefers the use of the H.264 codec.
 
 An iOS 12.0 extension is not limited to capturing the screen of a single application. In fact, it is possible to capture video from any application including the home screen.
 
