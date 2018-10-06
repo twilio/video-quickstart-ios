@@ -1,6 +1,6 @@
 //
 //  ExampleReplayKitAudioCapturer.h
-//  AudioDeviceExample
+//  ReplayKitExample
 //
 //  Copyright © 2018 Twilio, Inc. All rights reserved.
 //
@@ -18,7 +18,7 @@ typedef struct ExampleAudioContext {
 } ExampleAudioContext;
 
 /*
- *  ExampleReplayKitAudioDevice consumes audio samples recorded by ReplayKit. Due to limitations of extensions, this
+ *  ExampleReplayKitAudioCapturer consumes audio samples recorded by ReplayKit. Due to limitations of extensions, this
  *  device can't playback remote audio.
  */
 @interface ExampleReplayKitAudioCapturer : NSObject <TVIAudioDevice>

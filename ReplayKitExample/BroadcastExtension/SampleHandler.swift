@@ -54,7 +54,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
             builder.audioTracks = [localAudioTrack!]
             builder.videoTracks = [self.screenTrack!]
 
-            // Use the preferred video codec
+            // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
             builder.preferredVideoCodecs = [TVIH264Codec()]
 
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty

@@ -2,7 +2,6 @@
 //  ReplayKitVideoSource.swift
 //  ReplayKitExample
 //
-//  Created by Chris Eagleston on 9/30/18.
 //  Copyright © 2018 Twilio. All rights reserved.
 //
 
@@ -24,6 +23,9 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     // In order to save memory, our capturer may downscale the source to fit in a smaller rect.
     static let kDownScaledMaxWidthOrHeight = 640
+
+    // Ensure that we have reasonable row alignment, especially if the downscaled width is not 640.
+    static let kPixelBufferBytesPerRowAlignment = 64
 
     // ReplayKit provides planar NV12 CVPixelBuffers consisting of luma (Y) and chroma (UV) planes.
     static let kYPlane = 0
@@ -144,8 +146,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         // TODO: Consider copying attributes such as CVImageBufferTransferFunction, CVImageBufferYCbCrMatrix and CVImageBufferColorPrimaries.
         // On an iPhone X running iOS 12.0 these buffers are tagged with ITU_R_709_2 primaries and a ITU_R_601_4 matrix.
         var outPixelBuffer: CVPixelBuffer? = nil
-        let key = NSString(string: kCVPixelBufferBytesPerRowAlignmentKey)
-        let attributes = NSDictionary(object: 64, forKey: key)
+        let attributes = NSDictionary(object: ReplayKitVideoSource.kPixelBufferBytesPerRowAlignment,
+                                      forKey: NSString(string: kCVPixelBufferBytesPerRowAlignmentKey))
 
         var status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          Int(size.width),

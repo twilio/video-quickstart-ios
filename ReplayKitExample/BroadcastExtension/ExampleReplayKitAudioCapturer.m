@@ -99,7 +99,7 @@ static ExampleAudioContext *capturingContext;
     return YES;
 }
 
-#pragma mark - Private (AudioUnit callbacks)
+#pragma mark - Public
 
 OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
     if (!capturingContext || !capturingContext->deviceContext) {
@@ -126,7 +126,7 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
     return noErr;
 }
 
-#pragma mark - Private (AVAudioSession and CoreAudio)
+#pragma mark - Private
 
 + (nullable TVIAudioFormat *)activeCapturingFormat {
     // We are making some assumptions about the format received from ReplayKit.

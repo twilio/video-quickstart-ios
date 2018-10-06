@@ -314,6 +314,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
             case RPSampleBufferType.audioApp:
                 break
             case RPSampleBufferType.audioMic:
+                // We use `TVIDefaultAudioDevice` to capture and playback audio for conferencing.
                 break
             }
 
