@@ -73,28 +73,58 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         // TODO: Use #if targetEnvironment(simulator) after upgrading the examples to Swift 4.2.
         #if arch(arm64)
         if #available(iOS 12.0, *) {
-            // Swap the button for an RPSystemBroadcastPickerView.
-            let pickerView = RPSystemBroadcastPickerView(frame: CGRect(x: 0,
-                                                                       y: 0,
-                                                                   width: view.bounds.width,
-                                                                  height: 80))
-            pickerView.preferredExtension = ViewController.kBroadcastExtensionBundleId
-            view.addSubview(pickerView)
-
-            self.broadcastPickerView = pickerView
-            broadcastButton.isEnabled = false
+            setupPickerView()
         }
         #endif
     }
 
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
+    @available(iOS 12.0, *)
+    func setupPickerView() {
+        // Swap the button for an RPSystemBroadcastPickerView.
+        let pickerView = RPSystemBroadcastPickerView(frame: CGRect(x: 0,
+                                                                   y: 0,
+                                                                   width: view.bounds.width,
+                                                                   height: 80))
+        pickerView.translatesAutoresizingMaskIntoConstraints = false
+        pickerView.preferredExtension = ViewController.kBroadcastExtensionBundleId
+        view.addSubview(pickerView)
 
-        // Our picker will be the same size as the hidden button it replaces.
-        if let picker = self.broadcastPickerView {
-            picker.frame = self.broadcastButton.frame.offsetBy(dx: 0, dy: -10)
-            self.broadcastButton.titleEdgeInsets = UIEdgeInsets(top: 34, left: 0, bottom: 0, right: 0)
-        }
+        self.broadcastPickerView = pickerView
+        broadcastButton.isEnabled = false
+        broadcastButton.titleEdgeInsets = UIEdgeInsets(top: 34, left: 0, bottom: 0, right: 0)
+
+        let centerX = NSLayoutConstraint(item:pickerView,
+                                         attribute: NSLayoutAttribute.centerX,
+                                         relatedBy: NSLayoutRelation.equal,
+                                         toItem: broadcastButton,
+                                         attribute: NSLayoutAttribute.centerX,
+                                         multiplier: 1,
+                                         constant: 0);
+        self.view.addConstraint(centerX)
+        let centerY = NSLayoutConstraint(item: pickerView,
+                                         attribute: NSLayoutAttribute.centerY,
+                                         relatedBy: NSLayoutRelation.equal,
+                                         toItem: broadcastButton,
+                                         attribute: NSLayoutAttribute.centerY,
+                                         multiplier: 1,
+                                         constant: -10);
+        self.view.addConstraint(centerY)
+        let width = NSLayoutConstraint(item: pickerView,
+                                       attribute: NSLayoutAttribute.width,
+                                       relatedBy: NSLayoutRelation.equal,
+                                       toItem: self.broadcastButton,
+                                       attribute: NSLayoutAttribute.width,
+                                       multiplier: 1,
+                                       constant: 0);
+        self.view.addConstraint(width)
+        let height = NSLayoutConstraint(item: pickerView,
+                                        attribute: NSLayoutAttribute.height,
+                                        relatedBy: NSLayoutRelation.equal,
+                                        toItem: self.broadcastButton,
+                                        attribute: NSLayoutAttribute.height,
+                                        multiplier: 1,
+                                        constant: 0);
+        self.view.addConstraint(height)
     }
 
     // This action is only invoked on iOS 11.x. On iOS 12.0 this is handled by RPSystemBroadcastPickerView.
