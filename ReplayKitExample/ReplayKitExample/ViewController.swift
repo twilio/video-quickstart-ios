@@ -224,6 +224,8 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
         if self.screenTrack != nil {
             stopConference(error: error)
+        } else {
+            conferenceRoom = nil
         }
     }
 
