@@ -22,6 +22,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
      */
     static let kDesiredFrameRate = 120
 
+    static let kFormatFrameRate = UIScreen.main.maximumFramesPerSecond
+
     // In order to save memory, our capturer may downscale the source to fit in a smaller rect.
     static let kDownScaledMaxWidthOrHeight = 640
 
@@ -85,12 +87,12 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
             screenSize.height *= UIScreen.main.nativeScale
             let format = TVIVideoFormat()
             format.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
-            format.frameRate = UInt(ReplayKitVideoSource.kDesiredFrameRate)
+            format.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
             format.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
 
             // We will downscale buffers to a 640x640 box, if requested.
             let downscaledFormat = TVIVideoFormat()
-            downscaledFormat.frameRate = UInt(ReplayKitVideoSource.kDesiredFrameRate)
+            downscaledFormat.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
             downscaledFormat.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
             downscaledFormat.dimensions = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
 
