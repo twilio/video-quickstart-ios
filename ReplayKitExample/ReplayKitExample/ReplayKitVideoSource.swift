@@ -302,7 +302,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         if timerSource == nil {
             source = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags.strict,
                                                     queue: currentQueue)
-            // Event handler.
+
+            // Generally, this timer is invoked in kFrameRetransmitDispatchInterval when no frames are sent.
             source?.setEventHandler(handler: {
                 if let frame = self.lastFrameStorage,
                     let consumer = self.captureConsumer,
@@ -324,6 +325,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                 }
             })
 
+            // Thread safe cleanup of temporary storage, in case of cancellation. Normally, we reschedule.
             source?.setCancelHandler(handler: {
                 self.lastFrameStorage = nil
             })
