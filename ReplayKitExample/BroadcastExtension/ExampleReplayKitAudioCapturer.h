@@ -7,7 +7,7 @@
 
 #import <TwilioVideo/TwilioVideo.h>
 
-@class SampleHandler;
+dispatch_queue_t ExampleCoreAudioDeviceGetCurrentQueue(void);
 
 OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef audioSample);
 
@@ -23,6 +23,6 @@ typedef struct ExampleAudioContext {
  */
 @interface ExampleReplayKitAudioCapturer : NSObject <TVIAudioDevice>
 
-- (instancetype)initWithAudioCapturer:(SampleHandler *)sampleHandler;
+- (instancetype)init;
 
 @end

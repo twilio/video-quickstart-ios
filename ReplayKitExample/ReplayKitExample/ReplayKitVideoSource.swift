@@ -8,6 +8,7 @@
 import Accelerate
 import CoreMedia
 import CoreVideo
+import Dispatch
 import ReplayKit
 import TwilioVideo
 
@@ -31,10 +32,37 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     static let kYPlane = 0
     static let kUVPlane = 1
 
-    var lastTimestamp: CMTime?
     var downscaleBuffers: Bool = false
     var screencastUsage: Bool = false
     weak var captureConsumer: TVIVideoCaptureConsumer?
+
+    var lastTimestamp: CMTime?
+    var timerSource: DispatchSourceTimer?
+    var lastTransmitTimestamp: CMTime?
+    var retransmitTimer: Timer?
+    var retransmitLock = os_unfair_lock()
+
+    private var lastFrameStorage: TVIVideoFrame?
+
+    var lastFrame: TVIVideoFrame? {
+        get {
+            os_unfair_lock_lock(&retransmitLock)
+            let frame = lastFrameStorage
+            os_unfair_lock_unlock(&retransmitLock)
+            return frame
+        }
+        set {
+            os_unfair_lock_lock(&retransmitLock)
+            lastFrameStorage = lastFrame
+            os_unfair_lock_unlock(&retransmitLock)
+        }
+    }
+
+    static let kFrameRetransmitInterval = Double(0.25)
+    static let kFrameRetransmitDispatchInterval = DispatchTimeInterval.milliseconds(250)
+    static let kFrameRetransmitDispatchLeeway = DispatchTimeInterval.milliseconds(20)
+    static let retransmitLastFrame = true
+    static let useDispatchQueue = true
 
     init(isScreencast: Bool) {
         screencastUsage = isScreencast
@@ -83,6 +111,12 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     }
 
     func stopCapture() {
+        // TODO: This should be synchronized with the main thread?
+        retransmitTimer?.invalidate()
+        retransmitTimer = nil
+        // TODO: Should reading/writing/cancellation be synchronized with the source's dispatch queue?
+        timerSource?.cancel()
+        timerSource = nil
         print("Stop capturing.")
     }
 
@@ -219,6 +253,85 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
         to.consumeCapturedFrame(frame)
         lastTimestamp = timestamp
+
+        // Frame retransmission logic.
+        if (ReplayKitVideoSource.retransmitLastFrame) {
+            if ReplayKitVideoSource.useDispatchQueue {
+                lastFrameStorage = frame
+                lastTransmitTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
+                dispatchRetransmissions()
+            } else {
+                lastFrame = frame
+                if retransmitTimer == nil {
+                    scheduleRetransmissions()
+                }
+            }
+        }
+    }
+
+    func scheduleRetransmissions() {
+        retransmitTimer?.invalidate()
+        let timer = Timer(timeInterval: ReplayKitVideoSource.kFrameRetransmitInterval,
+                                repeats: true,
+                                block: { (timer) in
+                                    if let frame = self.lastFrame,
+                                        let consumer = self.captureConsumer {
+                                        let currentTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
+                                        let delta = CMTimeSubtract(currentTimestamp, frame.timestamp).seconds
+                                        let threshold = Double(4.0 / 60.0)
+
+                                        if delta >= threshold {
+                                            self.deliverFrame(to: consumer,
+                                                              timestamp: currentTimestamp,
+                                                              buffer: frame.imageBuffer,
+                                                              orientation:
+                                                frame.orientation)
+                                        }
+                                    }})
+        retransmitTimer = timer
+        RunLoop.main.add(timer, forMode: RunLoopMode.commonModes)
+    }
+
+    func dispatchRetransmissions() {
+        // This is a workaround for the fact that we can't provide our own serial queue to ReplayKit.
+        let currentQueue = ExampleCoreAudioDeviceGetCurrentQueue()
+
+        var source: DispatchSourceTimer?
+        if timerSource == nil {
+            source = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags.strict,
+                                                    queue: currentQueue)
+            // Event handler.
+            source?.setEventHandler(handler: {
+                if let frame = self.lastFrameStorage,
+                    let consumer = self.captureConsumer,
+                    let lastHostTimestamp = self.lastTransmitTimestamp {
+                    let currentTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
+                    let delta = CMTimeSubtract(currentTimestamp, lastHostTimestamp)
+                    let threshold = Double(4.0 / 60.0)
+
+                    if delta.seconds >= threshold {
+                        print("Delivering frame since send-delta is greather than threshold. delta=", delta.seconds)
+                        // Reconstruct a new timestamp, advancing by our relative read of host time.
+                        self.deliverFrame(to: consumer,
+                                          timestamp: CMTimeAdd(frame.timestamp, delta),
+                                          buffer: frame.imageBuffer,
+                                          orientation: frame.orientation)
+                    } else {
+                        self.dispatchRetransmissions()
+                    }
+                }
+            })
+
+            source?.setCancelHandler(handler: {
+                self.lastFrameStorage = nil
+            })
+
+            timerSource = source
+        }
+
+        let deadline = DispatchTime.now() + ReplayKitVideoSource.kFrameRetransmitDispatchInterval
+        timerSource?.scheduleOneshot(deadline: deadline, leeway: ReplayKitVideoSource.kFrameRetransmitDispatchLeeway)
+        source?.resume()
     }
 
     static func imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation) -> TVIVideoOrientation {

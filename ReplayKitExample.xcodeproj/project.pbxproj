@@ -29,6 +29,7 @@
 		8A50FEFE215DDC6100297C7A /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */; };
 		8A50FF00215DDC6100297C7A /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
 		8A50FF03215DDC6100297C7A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
+		8A59F6A3216B08F8003CA9A4 /* ExampleReplayKitAudioCapturer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BB0385820EB45940095CDA8 /* ExampleReplayKitAudioCapturer.m */; };
 		8ADE7A71215DE2D40092D17F /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */; };
 		8ADE7A72215DE2D70092D17F /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
 		8ADE7A74215DE3070092D17F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
@@ -363,6 +364,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8A59F6A3216B08F8003CA9A4 /* ExampleReplayKitAudioCapturer.m in Sources */,
 				8A390D932161D4430013D6E5 /* ReplayKitVideoSource.swift in Sources */,
 				8ADE7A75215DE3220092D17F /* Utils.swift in Sources */,
 				4B20FFE520E9CB8500FE9F2C /* ViewController.swift in Sources */,
@@ -632,6 +634,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -651,6 +654,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

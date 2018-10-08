@@ -6,7 +6,6 @@
 //
 
 #import "ExampleReplayKitAudioCapturer.h"
-#import "BroadcastExtension-Swift.h"
 
 // Our guess at the maximum slice size used by ReplayKit. We have observed 1024 in the field.
 static size_t kMaximumFramesPerBuffer = 2048;
@@ -16,7 +15,6 @@ static ExampleAudioContext *capturingContext;
 @interface ExampleReplayKitAudioCapturer()
 
 @property (nonatomic, strong, nullable) TVIAudioFormat *capturingFormat;
-@property (nonatomic, weak) SampleHandler *audioCapturer;
 
 @end
 
@@ -24,10 +22,9 @@ static ExampleAudioContext *capturingContext;
 
 #pragma mark - Init & Dealloc
 
-- (instancetype)initWithAudioCapturer:(SampleHandler *)sampleHandler {
+- (instancetype)init {
     self = [super init];
     if (self) {
-        _audioCapturer = sampleHandler;
     }
     return self;
 }
@@ -100,6 +97,10 @@ static ExampleAudioContext *capturingContext;
 }
 
 #pragma mark - Public
+
+dispatch_queue_t ExampleCoreAudioDeviceGetCurrentQueue() {
+    return dispatch_get_current_queue();
+}
 
 OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
     if (!capturingContext || !capturingContext->deviceContext) {
