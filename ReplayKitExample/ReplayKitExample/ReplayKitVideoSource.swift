@@ -74,6 +74,19 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
     }
 
+    deinit {
+        if let yBuffer = downscaleYPlaneBuffer {
+            free(yBuffer)
+            downscaleYPlaneBuffer = nil
+            downscaleYPlaneSize = 0
+        }
+        if let uvBuffer = downscaleUVPlaneBuffer {
+            free(uvBuffer)
+            downscaleUVPlaneBuffer = nil
+            downscaleUVPlaneSize = 0
+        }
+    }
+
     func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
         captureConsumer = consumer
 
@@ -87,16 +100,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     }
 
     func stopCapture() {
-        if let yBuffer = downscaleYPlaneBuffer {
-            free(yBuffer)
-            downscaleYPlaneBuffer = nil
-            downscaleYPlaneSize = 0
-        }
-        if let uvBuffer = downscaleUVPlaneBuffer {
-            free(uvBuffer)
-            downscaleUVPlaneBuffer = nil
-            downscaleUVPlaneSize = 0
-        }
+        captureConsumer = nil
         print("Stop capturing.")
     }
 
