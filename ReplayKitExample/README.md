@@ -51,11 +51,13 @@ Tapping "Start Conference" begins capturing and sharing the screen from within t
 ### Betterments
 
 1. Use a faster resizing filter than Lancoz3. We spend a lot of CPU cycles resizing buffers from ReplayKit.
-2. Pre-allocate temporary buffers needed for `vImageScale` methods, or use `vImageVerticalShear` methods directly.
-3. Use a `CVPixelBufferPool` to constrain memory usage and to improve buffer reuse (fewer `CVPixelBuffer` allocations).
-4. Preserve color tags when downscaling `CVPixelBuffer`s.
-5. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
-6. Share the camera using ReplayKit (extension), or `TVIVideoCapturer` (in-process).
+2. Use a `CVPixelBufferPool` to constrain memory usage and to improve buffer reuse (fewer `CVPixelBuffer` allocations).
+3. Preserve color tags when downscaling `CVPixelBuffer`s.
+4. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
+5. Share the camera using ReplayKit (extension), or `TVIVideoCapturer` (in-process).
+6. Resolve tearing issues when scrolling vertically.
+7. Retransmit the last frame periodically when no more frames are coming from ReplayKit.
+8. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
 
 ### Known Issues
 
