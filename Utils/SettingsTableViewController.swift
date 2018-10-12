@@ -35,7 +35,7 @@ class SettingsTableViewController: UITableViewController {
         return disclaimerString.boundingRect(with: CGSize(width: self.tableView.frame.width-20,
                                                           height: CGFloat.greatestFiniteMagnitude),
                                              options: NSStringDrawingOptions.usesLineFragmentOrigin,
-                                             attributes: convertToOptionalNSAttributedStringKeyDictionary([convertFromNSAttributedStringKey(NSAttributedString.Key.font): disclaimerFont]),
+                                             attributes: [ NSAttributedString.Key.font: disclaimerFont ],
                                              context: nil).size
     }
     
@@ -292,15 +292,4 @@ class SettingsTableViewController: UITableViewController {
         }
         return str;
     }
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertToOptionalNSAttributedStringKeyDictionary(_ input: [String: Any]?) -> [NSAttributedString.Key: Any]? {
-	guard let input = input else { return nil }
-	return Dictionary(uniqueKeysWithValues: input.map { key, value in (NSAttributedString.Key(rawValue: key), value)})
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertFromNSAttributedStringKey(_ input: NSAttributedString.Key) -> String {
-	return input.rawValue
 }
