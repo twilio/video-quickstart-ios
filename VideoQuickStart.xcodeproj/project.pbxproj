@@ -18,8 +18,6 @@
 		4B63DD331F73032D00F0737E /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B63DD321F73032D00F0737E /* SettingsTableViewController.swift */; };
 		4B63DD381F730C1A00F0737E /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B63DD371F730C1A00F0737E /* Settings.swift */; };
 		4BAA74EB1D8B5CBE00239F19 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BAA74EA1D8B5CBE00239F19 /* Utils.swift */; };
-		8ADC81002170195100F6B1BC /* TwilioVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8ADC80FE2170194A00F6B1BC /* TwilioVideo.framework */; };
-		8ADC81012170195100F6B1BC /* TwilioVideo.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8ADC80FE2170194A00F6B1BC /* TwilioVideo.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		8B79D46A1C2252A100489AA5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B79D4691C2252A100489AA5 /* AppDelegate.swift */; };
 		8B79D46C1C2252A100489AA5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B79D46B1C2252A100489AA5 /* ViewController.swift */; };
 		8B79D46F1C2252A100489AA5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8B79D46D1C2252A100489AA5 /* Main.storyboard */; };
@@ -34,7 +32,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				8ADC81012170195100F6B1BC /* TwilioVideo.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -53,7 +50,6 @@
 		4B63DD321F73032D00F0737E /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
 		4B63DD371F730C1A00F0737E /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		4BAA74EA1D8B5CBE00239F19 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
-		8ADC80FE2170194A00F6B1BC /* TwilioVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TwilioVideo.framework; sourceTree = "<group>"; };
 		8B79D4661C2252A100489AA5 /* VideoQuickStart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoQuickStart.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B79D4691C2252A100489AA5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8B79D46B1C2252A100489AA5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -75,7 +71,6 @@
 				304A80C71C23351000CB8C03 /* AVFoundation.framework in Frameworks */,
 				304A80C51C23350A00CB8C03 /* VideoToolbox.framework in Frameworks */,
 				304A80C31C23350500CB8C03 /* AudioToolbox.framework in Frameworks */,
-				8ADC81002170195100F6B1BC /* TwilioVideo.framework in Frameworks */,
 				304A80C11C23350000CB8C03 /* libc++.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -96,7 +91,6 @@
 		5A82245B3CA8AD8931FA33E9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				8ADC80FE2170194A00F6B1BC /* TwilioVideo.framework */,
 				304A80CE1C23352700CB8C03 /* SystemConfiguration.framework */,
 				304A80CC1C23352100CB8C03 /* CoreMedia.framework */,
 				304A80CA1C23351B00CB8C03 /* GLKit.framework */,
@@ -373,7 +367,6 @@
 				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoQuickStart1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
 				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
@@ -393,7 +386,6 @@
 				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoQuickStart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
 				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
