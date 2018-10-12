@@ -59,7 +59,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.UIScreenCapturedDidChange, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
+        NotificationCenter.default.addObserver(forName: UIScreen.capturedDidChangeNotification, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
             if self.broadcastPickerView != nil && self.screenTrack == nil {
                 let isCaptured = UIScreen.main.isCaptured
                 let title = isCaptured ? ViewController.kInProgressBroadcastButtonTitle : ViewController.kStartBroadcastButtonTitle
@@ -277,7 +277,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                         self.broadcastButton.isEnabled = true
                     }
                     self.spinner.stopAnimating()
-                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControlState.normal)
+                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
 
                     self.videoSource = nil
@@ -362,7 +362,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                 self.conferenceButton?.isEnabled = true
                 if error != nil {
                     self.broadcastButton.isEnabled = true
-                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControlState.normal)
+                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
                     self.broadcastPickerView?.isHidden = false
                     self.broadcastButton.isHidden = false
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)

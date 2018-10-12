@@ -136,7 +136,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
          * On iOS 12.0, rotation tags other than up are set by extensions.
          */
         var videoOrientation = TVIVideoOrientation.up
-        if let sampleOrientation = CMGetAttachment(sampleBuffer, RPVideoSampleOrientationKey as CFString, nil),
+        if let sampleOrientation = CMGetAttachment(sampleBuffer, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil),
             let coreSampleOrientation = sampleOrientation.uint32Value {
             videoOrientation
                 = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation(rawValue: coreSampleOrientation)!)
