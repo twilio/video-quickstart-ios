@@ -78,8 +78,8 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
             displayTimer?.frameInterval = displayLinkFrameRate / desiredFrameRate
         };
 
-        displayTimer?.add(to: RunLoop.main, forMode: RunLoopMode.commonModes)
-        displayTimer?.isPaused = UIApplication.shared.applicationState == UIApplicationState.background
+        displayTimer?.add(to: RunLoop.main, forMode: RunLoop.Mode.common)
+        displayTimer?.isPaused = UIApplication.shared.applicationState == UIApplication.State.background
     }
 
     func invalidateTimer() {
@@ -90,14 +90,14 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
     func registerNotificationObservers() {
         let notificationCenter = NotificationCenter.default;
 
-        willEnterForegroundObserver = notificationCenter.addObserver(forName: NSNotification.Name.UIApplicationWillEnterForeground,
+        willEnterForegroundObserver = notificationCenter.addObserver(forName: UIApplication.willEnterForegroundNotification,
                                                                      object: nil,
                                                                      queue: OperationQueue.main,
                                                                      using: { (Notification) in
                                                                         self.displayTimer?.isPaused = false;
         })
 
-        didEnterBackgroundObserver = notificationCenter.addObserver(forName: NSNotification.Name.UIApplicationDidEnterBackground,
+        didEnterBackgroundObserver = notificationCenter.addObserver(forName: UIApplication.didEnterBackgroundNotification,
                                                                      object: nil,
                                                                      queue: OperationQueue.main,
                                                                      using: { (Notification) in
@@ -115,7 +115,7 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
         didEnterBackgroundObserver = nil
     }
 
-    func captureView( timer: CADisplayLink ) {
+    @objc func captureView( timer: CADisplayLink ) {
 
         // This is our main drawing loop. Start by using the UIGraphics APIs to draw the UIView we want to capture.
         var contextImage: UIImage? = nil
