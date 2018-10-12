@@ -42,7 +42,7 @@ class ViewController: UIViewController {
         // Show feature points, and statistics such as fps and timing information
         sceneView.showsStatistics = true
         sceneView.debugOptions =
-            [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+            [SCNDebugOptions.showFeaturePoints, SCNDebugOptions.showWorldOrigin]
 
         // Create a new scene, and bind it to the view.
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
@@ -162,9 +162,9 @@ extension ViewController: TVIRoomDelegate {
 
         let alertController = UIAlertController.init(title: "Connection Failed",
                                                      message: "Couldn't connect to Room \(room.name). code:\(error._code) \(error.localizedDescription)",
-                                                     preferredStyle: UIAlertControllerStyle.alert)
+                                                     preferredStyle: UIAlertController.Style.alert)
 
-        let cancelAction = UIAlertAction.init(title: "Okay", style: UIAlertActionStyle.default, handler: nil)
+        let cancelAction = UIAlertAction.init(title: "Okay", style: UIAlertAction.Style.default, handler: nil)
         alertController.addAction(cancelAction)
 
         self.present(alertController, animated: true, completion: nil)
@@ -205,7 +205,7 @@ extension ViewController: TVIVideoCapturer {
         self.displayLink = CADisplayLink(target: self, selector: #selector(self.displayLinkDidFire))
         self.displayLink?.preferredFramesPerSecond = self.sceneView.preferredFramesPerSecond
 
-        displayLink?.add(to: RunLoop.main, forMode: RunLoopMode.commonModes)
+        displayLink?.add(to: RunLoop.main, forMode: RunLoop.Mode.common)
         consumer.captureDidStart(true)
     }
 

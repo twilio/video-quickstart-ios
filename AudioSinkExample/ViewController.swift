@@ -170,7 +170,7 @@ class ViewController: UIViewController {
         }
     }
 
-    override func prefersHomeIndicatorAutoHidden() -> Bool {
+    override var prefersHomeIndicatorAutoHidden: Bool {
         return self.room != nil
     }
 
@@ -303,7 +303,7 @@ class ViewController: UIViewController {
         }
 
         self.messageTimer = timer
-        RunLoop.main.add(timer, forMode: .commonModes)
+        RunLoop.main.add(timer, forMode: RunLoop.Mode.common)
     }
 
     // MARK: Speech Recognition
@@ -318,7 +318,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func recognizeRemoteAudio(gestureRecognizer: UIGestureRecognizer) {
+    @objc func recognizeRemoteAudio(gestureRecognizer: UIGestureRecognizer) {
         guard let remoteView = gestureRecognizer.view else {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;
@@ -354,7 +354,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func recognizeLocalAudio() {
+    @objc func recognizeLocalAudio() {
         if (self.speechRecognizer != nil) {
             stopRecognizingAudio()
         } else if let audioTrack = self.localAudioTrack {
@@ -455,7 +455,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
+    @objc func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
         guard let remoteView = gestureRecognizer.view else {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;

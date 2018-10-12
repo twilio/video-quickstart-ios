@@ -20,7 +20,7 @@ class SettingsTableViewController: UITableViewController {
     
     let disclaimers = [codecDisclaimerText, encodingParamsDisclaimerText]
     let settings = Settings.shared
-    let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)
+    let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.footnote)
     var labels: [[String]] = [[SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
                              [SettingsTableViewController.maxAudioBitrate, SettingsTableViewController.maxVideoBitrate]]
 
@@ -35,7 +35,7 @@ class SettingsTableViewController: UITableViewController {
         return disclaimerString.boundingRect(with: CGSize(width: self.tableView.frame.width-20,
                                                           height: CGFloat.greatestFiniteMagnitude),
                                              options: NSStringDrawingOptions.usesLineFragmentOrigin,
-                                             attributes: [NSFontAttributeName: disclaimerFont],
+                                             attributes: [ NSAttributedString.Key.font: disclaimerFont ],
                                              context: nil).size
     }
     
