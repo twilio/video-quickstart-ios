@@ -93,34 +93,34 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         broadcastButton.titleEdgeInsets = UIEdgeInsets(top: 34, left: 0, bottom: 0, right: 0)
 
         let centerX = NSLayoutConstraint(item:pickerView,
-                                         attribute: NSLayoutAttribute.centerX,
-                                         relatedBy: NSLayoutRelation.equal,
+                                         attribute: NSLayoutConstraint.Attribute.centerX,
+                                         relatedBy: NSLayoutConstraint.Relation.equal,
                                          toItem: broadcastButton,
-                                         attribute: NSLayoutAttribute.centerX,
+                                         attribute: NSLayoutConstraint.Attribute.centerX,
                                          multiplier: 1,
                                          constant: 0);
         self.view.addConstraint(centerX)
         let centerY = NSLayoutConstraint(item: pickerView,
-                                         attribute: NSLayoutAttribute.centerY,
-                                         relatedBy: NSLayoutRelation.equal,
+                                         attribute: NSLayoutConstraint.Attribute.centerY,
+                                         relatedBy: NSLayoutConstraint.Relation.equal,
                                          toItem: broadcastButton,
-                                         attribute: NSLayoutAttribute.centerY,
+                                         attribute: NSLayoutConstraint.Attribute.centerY,
                                          multiplier: 1,
                                          constant: -10);
         self.view.addConstraint(centerY)
         let width = NSLayoutConstraint(item: pickerView,
-                                       attribute: NSLayoutAttribute.width,
-                                       relatedBy: NSLayoutRelation.equal,
+                                       attribute: NSLayoutConstraint.Attribute.width,
+                                       relatedBy: NSLayoutConstraint.Relation.equal,
                                        toItem: self.broadcastButton,
-                                       attribute: NSLayoutAttribute.width,
+                                       attribute: NSLayoutConstraint.Attribute.width,
                                        multiplier: 1,
                                        constant: 0);
         self.view.addConstraint(width)
         let height = NSLayoutConstraint(item: pickerView,
-                                        attribute: NSLayoutAttribute.height,
-                                        relatedBy: NSLayoutRelation.equal,
+                                        attribute: NSLayoutConstraint.Attribute.height,
+                                        relatedBy: NSLayoutConstraint.Relation.equal,
                                         toItem: self.broadcastButton,
-                                        attribute: NSLayoutAttribute.height,
+                                        attribute: NSLayoutConstraint.Attribute.height,
                                         multiplier: 1,
                                         constant: 0);
         self.view.addConstraint(height)
