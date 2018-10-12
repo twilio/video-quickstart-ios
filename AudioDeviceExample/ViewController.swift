@@ -247,7 +247,7 @@ class ViewController: UIViewController {
         }
     }
 
-    override func prefersHomeIndicatorAutoHidden() -> Bool {
+    override var prefersHomeIndicatorAutoHidden: Bool {
         return self.room != nil
     }
 
@@ -314,7 +314,7 @@ class ViewController: UIViewController {
                                        selector: #selector(hideMessageLabel),
                                        userInfo: nil,
                                        repeats: false)
-        RunLoop.main.add(self.messageTimer, forMode: .commonModes)
+        RunLoop.main.add(self.messageTimer, forMode: RunLoop.Mode.common)
     }
 
     @objc func hideMessageLabel() {
@@ -407,7 +407,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
+    @objc func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
         guard let remoteView = gestureRecognizer.view else {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;

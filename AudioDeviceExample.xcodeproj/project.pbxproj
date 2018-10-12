@@ -136,6 +136,7 @@
 				TargetAttributes = {
 					8A713C79202A585B009E776A = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -326,7 +327,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AudioDeviceExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudioDeviceExample/AudioDevices/AudioDevices-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -343,7 +344,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AudioDeviceExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudioDeviceExample/AudioDevices/AudioDevices-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
