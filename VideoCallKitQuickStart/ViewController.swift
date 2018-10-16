@@ -102,6 +102,10 @@ class ViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
         self.view.addGestureRecognizer(tap)
     }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return self.room != nil
+    }
     
     func setupRemoteVideoView() {
         // Creating `TVIVideoView` programmatically
@@ -233,6 +237,11 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = !inRoom
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
         UIApplication.shared.isIdleTimerDisabled = inRoom
+
+        // Show / hide the automatic home indicator on modern iPhones.
+        if #available(iOS 11.0, *) {
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
     }
     
     @objc func dismissKeyboard() {
