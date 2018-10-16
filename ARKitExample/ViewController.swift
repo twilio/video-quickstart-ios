@@ -77,6 +77,10 @@ class ViewController: UIViewController {
         // Release any cached data, images, etc that aren't in use.
     }
 
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return self.room != nil
+    }
+
     @objc func displayLinkDidFire(timer: CADisplayLink) {
         // Our capturer polls the ARSCNView's snapshot for processed AR video content, and then copies the result into a CVPixelBuffer.
         // This process is not ideal, but it is the most straightforward way to capture the output of SceneKit.
@@ -167,7 +171,20 @@ extension ViewController: TVIRoomDelegate {
         let cancelAction = UIAlertAction.init(title: "Okay", style: UIAlertAction.Style.default, handler: nil)
         alertController.addAction(cancelAction)
 
-        self.present(alertController, animated: true, completion: nil)
+        self.present(alertController, animated: true) {
+            self.room = nil
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
+    }
+
+    func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
+        if let error = error {
+            print("Disconnected from the Room with an error:", error)
+        } else {
+            print("Disconnected from the Room.")
+        }
+        self.room = nil
+        self.setNeedsUpdateOfHomeIndicatorAutoHidden()
     }
 
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {

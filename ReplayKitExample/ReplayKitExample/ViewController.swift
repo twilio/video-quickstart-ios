@@ -55,6 +55,13 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         broadcastButton.layer.cornerRadius = 4
         conferenceButton?.layer.cornerRadius = 4
 
+        self.navigationController?.navigationBar.barTintColor = UIColor.init(red: 226.0/255.0,
+                                                                             green: 29.0/255.0,
+                                                                             blue: 37.0/255.0,
+                                                                             alpha: 1.0)
+        self.navigationController?.navigationBar.tintColor = UIColor.white
+        self.navigationController?.navigationBar.barStyle = UIBarStyle.black
+
         // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
@@ -78,14 +85,19 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     @available(iOS 12.0, *)
     func setupPickerView() {
         // Swap the button for an RPSystemBroadcastPickerView.
-        // TODO: Use #if targetEnvironment(simulator) after upgrading the examples to Swift 4.2.
-        #if arch(arm64)
+        #if !targetEnvironment(simulator)
         let pickerView = RPSystemBroadcastPickerView(frame: CGRect(x: 0,
                                                                    y: 0,
                                                                    width: view.bounds.width,
                                                                    height: 80))
         pickerView.translatesAutoresizingMaskIntoConstraints = false
         pickerView.preferredExtension = ViewController.kBroadcastExtensionBundleId
+
+        // Theme the picker view to match the white that we want.
+        if let button = pickerView.subviews.first as? UIButton {
+            button.imageView?.tintColor = UIColor.white
+        }
+
         view.addSubview(pickerView)
 
         self.broadcastPickerView = pickerView
