@@ -115,6 +115,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     }
 
     func stopCapture() {
+        // TODO: Perform these steps, and free memory on the ReplayKit dispatch queue.
         captureConsumer = nil
         // TODO: Should reading/writing/cancellation be synchronized with the source's dispatch queue?
         timerSource?.cancel()

@@ -56,8 +56,7 @@ Tapping "Start Conference" begins capturing and sharing the screen from within t
 4. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
 5. Share the camera using ReplayKit (extension), or `TVIVideoCapturer` (in-process).
 6. Resolve tearing issues when scrolling vertically.
-7. Retransmit the last frame periodically when no more frames are coming from ReplayKit.
-8. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
+7. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
 
 ### Known Issues
 
