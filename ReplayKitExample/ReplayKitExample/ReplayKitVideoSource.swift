@@ -49,11 +49,9 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     private var lastFrameStorage: TVIVideoFrame?
 
-    static let kFrameRetransmitInterval = Double(0.25)
     static let kFrameRetransmitDispatchInterval = DispatchTimeInterval.milliseconds(250)
     static let kFrameRetransmitDispatchLeeway = DispatchTimeInterval.milliseconds(20)
     static let retransmitLastFrame = true
-    static let useDispatchQueue = true
 
     init(isScreencast: Bool) {
         screencastUsage = isScreencast
@@ -297,11 +295,9 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
         // Frame retransmission logic.
         if (ReplayKitVideoSource.retransmitLastFrame) {
-            if ReplayKitVideoSource.useDispatchQueue {
-                lastFrameStorage = frame
-                lastTransmitTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
-                dispatchRetransmissions()
-            }
+            lastFrameStorage = frame
+            lastTransmitTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
+            dispatchRetransmissions()
         }
     }
 
