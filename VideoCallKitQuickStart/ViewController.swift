@@ -57,7 +57,7 @@ class ViewController: UIViewController {
         configuration.maximumCallsPerCallGroup = 1
         configuration.supportsVideo = true
         if let callKitIcon = UIImage(named: "iconMask80") {
-            configuration.iconTemplateImageData = UIImagePNGRepresentation(callKitIcon)
+            configuration.iconTemplateImageData = callKitIcon.pngData()
         }
 
         callKitProvider = CXProvider(configuration: configuration)
@@ -102,6 +102,10 @@ class ViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
         self.view.addGestureRecognizer(tap)
     }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return self.room != nil
+    }
     
     func setupRemoteVideoView() {
         // Creating `TVIVideoView` programmatically
@@ -114,34 +118,34 @@ class ViewController: UIViewController {
         self.remoteView!.contentMode = .scaleAspectFit;
         
         let centerX = NSLayoutConstraint(item: self.remoteView!,
-                                         attribute: NSLayoutAttribute.centerX,
-                                         relatedBy: NSLayoutRelation.equal,
+                                         attribute: NSLayoutConstraint.Attribute.centerX,
+                                         relatedBy: NSLayoutConstraint.Relation.equal,
                                          toItem: self.view,
-                                         attribute: NSLayoutAttribute.centerX,
+                                         attribute: NSLayoutConstraint.Attribute.centerX,
                                          multiplier: 1,
                                          constant: 0);
         self.view.addConstraint(centerX)
         let centerY = NSLayoutConstraint(item: self.remoteView!,
-                                         attribute: NSLayoutAttribute.centerY,
-                                         relatedBy: NSLayoutRelation.equal,
+                                         attribute: NSLayoutConstraint.Attribute.centerY,
+                                         relatedBy: NSLayoutConstraint.Relation.equal,
                                          toItem: self.view,
-                                         attribute: NSLayoutAttribute.centerY,
+                                         attribute: NSLayoutConstraint.Attribute.centerY,
                                          multiplier: 1,
                                          constant: 0);
         self.view.addConstraint(centerY)
         let width = NSLayoutConstraint(item: self.remoteView!,
-                                       attribute: NSLayoutAttribute.width,
-                                       relatedBy: NSLayoutRelation.equal,
+                                       attribute: NSLayoutConstraint.Attribute.width,
+                                       relatedBy: NSLayoutConstraint.Relation.equal,
                                        toItem: self.view,
-                                       attribute: NSLayoutAttribute.width,
+                                       attribute: NSLayoutConstraint.Attribute.width,
                                        multiplier: 1,
                                        constant: 0);
         self.view.addConstraint(width)
         let height = NSLayoutConstraint(item: self.remoteView!,
-                                        attribute: NSLayoutAttribute.height,
-                                        relatedBy: NSLayoutRelation.equal,
+                                        attribute: NSLayoutConstraint.Attribute.height,
+                                        relatedBy: NSLayoutConstraint.Relation.equal,
                                         toItem: self.view,
-                                        attribute: NSLayoutAttribute.height,
+                                        attribute: NSLayoutConstraint.Attribute.height,
                                         multiplier: 1,
                                         constant: 0);
         self.view.addConstraint(height)
@@ -196,7 +200,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func flipCamera() {
+    @objc func flipCamera() {
         if (self.camera?.source == .frontCamera) {
             self.camera?.selectSource(.backCameraWide)
         } else {
@@ -233,9 +237,14 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = !inRoom
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
         UIApplication.shared.isIdleTimerDisabled = inRoom
+
+        // Show / hide the automatic home indicator on modern iPhones.
+        if #available(iOS 11.0, *) {
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
     }
     
-    func dismissKeyboard() {
+    @objc func dismissKeyboard() {
         if (self.roomTextField.isFirstResponder) {
             self.roomTextField.resignFirstResponder()
         }

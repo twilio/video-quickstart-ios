@@ -233,21 +233,29 @@ class ViewController: UIViewController {
 
         // Layout the preview view.
         if let previewView = self.camera?.previewView {
+            var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
+            if #available(iOS 11.0, *) {
+                // Ensure the preview fits in the safe area.
+                let safeAreaGuide = self.view.safeAreaLayoutGuide
+                let layoutFrame = safeAreaGuide.layoutFrame
+                bottomRight.x = layoutFrame.origin.x + layoutFrame.width
+                bottomRight.y = layoutFrame.origin.y + layoutFrame.height
+            }
+
             let dimensions = previewView.videoDimensions
             var previewBounds = CGRect.init(origin: CGPoint.zero, size: CGSize.init(width: 160, height: 160))
-
-            previewBounds = AVMakeRect(aspectRatio: CGSize.init(width: CGFloat(dimensions.width), height: CGFloat(dimensions.height)),
+            previewBounds = AVMakeRect(aspectRatio: CGSize.init(width: CGFloat(dimensions.width),
+                                                                height: CGFloat(dimensions.height)),
                                        insideRect: previewBounds)
 
             previewBounds = previewBounds.integral
             previewView.bounds = previewBounds
-
-            previewView.center = CGPoint.init(x: view.bounds.width - previewBounds.width / 2 - kPreviewPadding,
-                                              y: view.bounds.height - previewBounds.height / 2 - kPreviewPadding)
+            previewView.center = CGPoint.init(x: bottomRight.x - previewBounds.width / 2 - kPreviewPadding,
+                                              y: bottomRight.y - previewBounds.height / 2 - kPreviewPadding)
         }
     }
 
-    override func prefersHomeIndicatorAutoHidden() -> Bool {
+    override var prefersHomeIndicatorAutoHidden: Bool {
         return self.room != nil
     }
 
@@ -314,7 +322,7 @@ class ViewController: UIViewController {
                                        selector: #selector(hideMessageLabel),
                                        userInfo: nil,
                                        repeats: false)
-        RunLoop.main.add(self.messageTimer, forMode: .commonModes)
+        RunLoop.main.add(self.messageTimer, forMode: RunLoop.Mode.common)
     }
 
     @objc func hideMessageLabel() {
@@ -407,7 +415,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
+    @objc func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
         guard let remoteView = gestureRecognizer.view else {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;

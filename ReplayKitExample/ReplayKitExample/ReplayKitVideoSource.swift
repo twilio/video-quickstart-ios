@@ -38,6 +38,11 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     var screencastUsage: Bool = false
     weak var captureConsumer: TVIVideoCaptureConsumer?
 
+    var downscaleYPlaneBuffer: UnsafeMutableRawPointer?
+    var downscaleYPlaneSize: Int = 0
+    var downscaleUVPlaneBuffer: UnsafeMutableRawPointer?
+    var downscaleUVPlaneSize: Int = 0
+
     var lastTimestamp: CMTime?
     var timerSource: DispatchSourceTimer?
     var lastTransmitTimestamp: CMTime?
@@ -100,6 +105,19 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
     }
 
+    deinit {
+        if let yBuffer = downscaleYPlaneBuffer {
+            free(yBuffer)
+            downscaleYPlaneBuffer = nil
+            downscaleYPlaneSize = 0
+        }
+        if let uvBuffer = downscaleUVPlaneBuffer {
+            free(uvBuffer)
+            downscaleUVPlaneBuffer = nil
+            downscaleUVPlaneSize = 0
+        }
+    }
+
     func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
         captureConsumer = consumer
 
@@ -113,6 +131,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     }
 
     func stopCapture() {
+        captureConsumer = nil
         // TODO: This should be synchronized with the main thread?
         retransmitTimer?.invalidate()
         retransmitTimer = nil
@@ -154,7 +173,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
          * On iOS 12.0, rotation tags other than up are set by extensions.
          */
         var videoOrientation = TVIVideoOrientation.up
-        if let sampleOrientation = CMGetAttachment(sampleBuffer, RPVideoSampleOrientationKey as CFString, nil),
+        if let sampleOrientation = CMGetAttachment(sampleBuffer, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil),
             let coreSampleOrientation = sampleOrientation.uint32Value {
             videoOrientation
                 = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation(rawValue: coreSampleOrientation)!)
@@ -223,15 +242,19 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                                                width: vImagePixelCount( CVPixelBufferGetWidthOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kUVPlane)),
                                                rowBytes: CVPixelBufferGetBytesPerRowOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kUVPlane))
 
-        // Scale the Y and UV planes into the destination buffer.
-        // TODO: Consider providing a temporary buffer for scaling.
-        var error = vImageScale_Planar8(&sourceImageY, &destinationImageY, nil, vImage_Flags(kvImageEdgeExtend));
+        // Scale the Y and UV planes into the destination buffers, providing the intermediate scaling buffers to vImage.
+        preallocateScalingBuffers(sourceY: &sourceImageY,
+                                  sourceUV: &sourceImageUV,
+                                  destinationY: &destinationImageY,
+                                  destinationUV: &destinationImageUV)
+
+        var error = vImageScale_Planar8(&sourceImageY, &destinationImageY, downscaleYPlaneBuffer, vImage_Flags(kvImageEdgeExtend));
         if (error != kvImageNoError) {
             print("Failed to down scale luma plane.")
             return;
         }
 
-        error = vImageScale_CbCr8(&sourceImageUV, &destinationImageUV, nil, vImage_Flags(kvImageEdgeExtend));
+        error = vImageScale_CbCr8(&sourceImageUV, &destinationImageUV, downscaleUVPlaneBuffer, vImage_Flags(kvImageEdgeExtend));
         if (error != kvImageNoError) {
             print("Failed to down scale chroma plane.")
             return;
@@ -244,6 +267,40 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                      timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
                      buffer: destinationPixelBuffer,
                      orientation: videoOrientation)
+    }
+
+    func preallocateScalingBuffers(sourceY: UnsafePointer<vImage_Buffer>,
+                                   sourceUV: UnsafePointer<vImage_Buffer>,
+                                   destinationY: UnsafePointer<vImage_Buffer>,
+                                   destinationUV: UnsafePointer<vImage_Buffer>) {
+        // Size the buffers required for vImage scaling. As source requirements change, we might need to reallocate them.
+        let yBufferSize = vImageScale_Planar8(sourceY, destinationY, nil, vImage_Flags(kvImageGetTempBufferSize))
+        assert(yBufferSize > 0)
+
+        if (downscaleYPlaneBuffer == nil) {
+            downscaleYPlaneBuffer = malloc(yBufferSize)
+            downscaleYPlaneSize = yBufferSize
+        } else if (downscaleYPlaneBuffer != nil && yBufferSize > downscaleYPlaneSize) {
+            free(downscaleYPlaneBuffer)
+            downscaleYPlaneBuffer = malloc(yBufferSize)
+            downscaleYPlaneSize = yBufferSize
+        } else {
+            assert(downscaleYPlaneBuffer != nil)
+            assert(downscaleYPlaneSize > 0)
+        }
+
+        let uvBufferSize = vImageScale_CbCr8(sourceUV, destinationUV, nil, vImage_Flags(kvImageGetTempBufferSize))
+        if (downscaleUVPlaneBuffer == nil) {
+            downscaleUVPlaneBuffer = malloc(uvBufferSize)
+            downscaleUVPlaneSize = uvBufferSize
+        } else if (downscaleUVPlaneBuffer != nil && uvBufferSize > downscaleUVPlaneSize) {
+            free(downscaleUVPlaneBuffer)
+            downscaleUVPlaneBuffer = malloc(uvBufferSize)
+            downscaleUVPlaneSize = uvBufferSize
+        } else {
+            assert(downscaleUVPlaneBuffer != nil)
+            assert(downscaleUVPlaneSize > 0)
+        }
     }
 
     func deliverFrame(to: TVIVideoCaptureConsumer, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation) {

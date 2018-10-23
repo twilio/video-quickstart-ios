@@ -18,7 +18,7 @@ Get started with Video on iOS:
 
 ## Setup 
 
-This project uses Apple's Swift 3.2 programming language for iOS. 
+This project uses Apple's Swift 4.2 programming language for iOS. 
 
 If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 

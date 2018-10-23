@@ -55,11 +55,18 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         broadcastButton.layer.cornerRadius = 4
         conferenceButton?.layer.cornerRadius = 4
 
+        self.navigationController?.navigationBar.barTintColor = UIColor.init(red: 226.0/255.0,
+                                                                             green: 29.0/255.0,
+                                                                             blue: 37.0/255.0,
+                                                                             alpha: 1.0)
+        self.navigationController?.navigationBar.tintColor = UIColor.white
+        self.navigationController?.navigationBar.barStyle = UIBarStyle.black
+
         // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.UIScreenCapturedDidChange, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
+        NotificationCenter.default.addObserver(forName: UIScreen.capturedDidChangeNotification, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
             if self.broadcastPickerView != nil && self.screenTrack == nil {
                 let isCaptured = UIScreen.main.isCaptured
                 let title = isCaptured ? ViewController.kInProgressBroadcastButtonTitle : ViewController.kStartBroadcastButtonTitle
@@ -78,14 +85,19 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     @available(iOS 12.0, *)
     func setupPickerView() {
         // Swap the button for an RPSystemBroadcastPickerView.
-        // TODO: Use #if targetEnvironment(simulator) after upgrading the examples to Swift 4.2.
-        #if arch(arm64)
+        #if !targetEnvironment(simulator)
         let pickerView = RPSystemBroadcastPickerView(frame: CGRect(x: 0,
                                                                    y: 0,
                                                                    width: view.bounds.width,
                                                                    height: 80))
         pickerView.translatesAutoresizingMaskIntoConstraints = false
         pickerView.preferredExtension = ViewController.kBroadcastExtensionBundleId
+
+        // Theme the picker view to match the white that we want.
+        if let button = pickerView.subviews.first as? UIButton {
+            button.imageView?.tintColor = UIColor.white
+        }
+
         view.addSubview(pickerView)
 
         self.broadcastPickerView = pickerView
@@ -93,34 +105,34 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         broadcastButton.titleEdgeInsets = UIEdgeInsets(top: 34, left: 0, bottom: 0, right: 0)
 
         let centerX = NSLayoutConstraint(item:pickerView,
-                                         attribute: NSLayoutAttribute.centerX,
-                                         relatedBy: NSLayoutRelation.equal,
+                                         attribute: NSLayoutConstraint.Attribute.centerX,
+                                         relatedBy: NSLayoutConstraint.Relation.equal,
                                          toItem: broadcastButton,
-                                         attribute: NSLayoutAttribute.centerX,
+                                         attribute: NSLayoutConstraint.Attribute.centerX,
                                          multiplier: 1,
                                          constant: 0);
         self.view.addConstraint(centerX)
         let centerY = NSLayoutConstraint(item: pickerView,
-                                         attribute: NSLayoutAttribute.centerY,
-                                         relatedBy: NSLayoutRelation.equal,
+                                         attribute: NSLayoutConstraint.Attribute.centerY,
+                                         relatedBy: NSLayoutConstraint.Relation.equal,
                                          toItem: broadcastButton,
-                                         attribute: NSLayoutAttribute.centerY,
+                                         attribute: NSLayoutConstraint.Attribute.centerY,
                                          multiplier: 1,
                                          constant: -10);
         self.view.addConstraint(centerY)
         let width = NSLayoutConstraint(item: pickerView,
-                                       attribute: NSLayoutAttribute.width,
-                                       relatedBy: NSLayoutRelation.equal,
+                                       attribute: NSLayoutConstraint.Attribute.width,
+                                       relatedBy: NSLayoutConstraint.Relation.equal,
                                        toItem: self.broadcastButton,
-                                       attribute: NSLayoutAttribute.width,
+                                       attribute: NSLayoutConstraint.Attribute.width,
                                        multiplier: 1,
                                        constant: 0);
         self.view.addConstraint(width)
         let height = NSLayoutConstraint(item: pickerView,
-                                        attribute: NSLayoutAttribute.height,
-                                        relatedBy: NSLayoutRelation.equal,
+                                        attribute: NSLayoutConstraint.Attribute.height,
+                                        relatedBy: NSLayoutConstraint.Relation.equal,
                                         toItem: self.broadcastButton,
-                                        attribute: NSLayoutAttribute.height,
+                                        attribute: NSLayoutConstraint.Attribute.height,
                                         multiplier: 1,
                                         constant: 0);
         self.view.addConstraint(height)
@@ -224,6 +236,8 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
         if self.screenTrack != nil {
             stopConference(error: error)
+        } else {
+            conferenceRoom = nil
         }
     }
 
@@ -275,7 +289,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                         self.broadcastButton.isEnabled = true
                     }
                     self.spinner.stopAnimating()
-                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControlState.normal)
+                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
 
                     self.videoSource = nil
@@ -360,7 +374,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                 self.conferenceButton?.isEnabled = true
                 if error != nil {
                     self.broadcastButton.isEnabled = true
-                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControlState.normal)
+                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
                     self.broadcastPickerView?.isHidden = false
                     self.broadcastButton.isHidden = false
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)

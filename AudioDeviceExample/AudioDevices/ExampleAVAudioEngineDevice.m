@@ -860,7 +860,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                 TVIAudioDeviceExecuteWorkerBlock(context, ^{
                     // Restart the AVAudioEngine with new format
                     TVIAudioFormat *activeFormat = [[self class] activeFormat];
-                    if (![activeFormat isEqual:_renderingFormat]) {
+                    if (![activeFormat isEqual:self->_renderingFormat]) {
                         [self teardownAudioEngine];
                         [self setupAudioEngine];
                     }

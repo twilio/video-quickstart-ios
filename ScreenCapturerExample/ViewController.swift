@@ -51,19 +51,29 @@ class ViewController : UIViewController {
 
         webView?.frame = self.view.bounds
 
-        // Layout the remote video using frame based techniques. It's also possible to do this using autolayout
-        if ((remoteView?.hasVideoData)!) {
-            let dimensions = remoteView?.videoDimensions
-            let remoteRect = remoteViewSize()
-            let aspect = CGSize(width: CGFloat((dimensions?.width)!), height: CGFloat((dimensions?.height)!))
-            let padding : CGFloat = 10.0
-            let boundedRect = AVMakeRect(aspectRatio: aspect, insideRect: remoteRect).integral
-            remoteView?.frame = CGRect(x: self.view.bounds.width - boundedRect.width - padding,
-                                       y: self.view.bounds.height - boundedRect.height - padding,
-                                       width: boundedRect.width,
-                                       height: boundedRect.height)
-        } else {
-            remoteView?.frame = CGRect.zero
+        // Layout the remote video using frame based techniques. It's also possible to do this using autolayout.
+        if let remoteView = self.remoteView {
+            if remoteView.hasVideoData {
+                var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
+                if #available(iOS 11.0, *) {
+                    // Ensure the preview fits in the safe area.
+                    let safeAreaGuide = self.view.safeAreaLayoutGuide
+                    let layoutFrame = safeAreaGuide.layoutFrame
+                    bottomRight.x = layoutFrame.origin.x + layoutFrame.width
+                    bottomRight.y = layoutFrame.origin.y + layoutFrame.height
+                }
+                let dimensions = remoteView.videoDimensions
+                let remoteRect = remoteViewSize()
+                let aspect = CGSize(width: CGFloat(dimensions.width), height: CGFloat(dimensions.height))
+                let padding : CGFloat = 10.0
+                let boundedRect = AVMakeRect(aspectRatio: aspect, insideRect: remoteRect).integral
+                remoteView.frame = CGRect(x: bottomRight.x - boundedRect.width - padding,
+                                          y: bottomRight.y - boundedRect.height - padding,
+                                          width: boundedRect.width,
+                                          height: boundedRect.height)
+            } else {
+                remoteView.frame = CGRect.zero
+            }
         }
     }
 

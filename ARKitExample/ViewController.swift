@@ -42,7 +42,7 @@ class ViewController: UIViewController {
         // Show feature points, and statistics such as fps and timing information
         sceneView.showsStatistics = true
         sceneView.debugOptions =
-            [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+            [SCNDebugOptions.showFeaturePoints, SCNDebugOptions.showWorldOrigin]
 
         // Create a new scene, and bind it to the view.
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
@@ -75,6 +75,10 @@ class ViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Release any cached data, images, etc that aren't in use.
+    }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return self.room != nil
     }
 
     @objc func displayLinkDidFire(timer: CADisplayLink) {
@@ -162,12 +166,25 @@ extension ViewController: TVIRoomDelegate {
 
         let alertController = UIAlertController.init(title: "Connection Failed",
                                                      message: "Couldn't connect to Room \(room.name). code:\(error._code) \(error.localizedDescription)",
-                                                     preferredStyle: UIAlertControllerStyle.alert)
+                                                     preferredStyle: UIAlertController.Style.alert)
 
-        let cancelAction = UIAlertAction.init(title: "Okay", style: UIAlertActionStyle.default, handler: nil)
+        let cancelAction = UIAlertAction.init(title: "Okay", style: UIAlertAction.Style.default, handler: nil)
         alertController.addAction(cancelAction)
 
-        self.present(alertController, animated: true, completion: nil)
+        self.present(alertController, animated: true) {
+            self.room = nil
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
+    }
+
+    func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
+        if let error = error {
+            print("Disconnected from the Room with an error:", error)
+        } else {
+            print("Disconnected from the Room.")
+        }
+        self.room = nil
+        self.setNeedsUpdateOfHomeIndicatorAutoHidden()
     }
 
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
@@ -205,7 +222,7 @@ extension ViewController: TVIVideoCapturer {
         self.displayLink = CADisplayLink(target: self, selector: #selector(self.displayLinkDidFire))
         self.displayLink?.preferredFramesPerSecond = self.sceneView.preferredFramesPerSecond
 
-        displayLink?.add(to: RunLoop.main, forMode: RunLoopMode.commonModes)
+        displayLink?.add(to: RunLoop.main, forMode: RunLoop.Mode.common)
         consumer.captureDidStart(true)
     }
 

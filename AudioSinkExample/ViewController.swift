@@ -137,16 +137,28 @@ class ViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
+        var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
+        var layoutWidth = view.bounds.width
+        if #available(iOS 11.0, *) {
+            // Ensure the preview fits in the safe area.
+            let safeAreaGuide = self.view.safeAreaLayoutGuide
+            let layoutFrame = safeAreaGuide.layoutFrame
+            bottomRight.x = layoutFrame.origin.x + layoutFrame.width
+            bottomRight.y = layoutFrame.origin.y + layoutFrame.height
+            layoutWidth = layoutFrame.width
+        }
+
         // Layout the speech label.
         if let speechLabel = self.speechLabel {
-            speechLabel.preferredMaxLayoutWidth = view.bounds.width - (kPreviewPadding * 2)
+            speechLabel.preferredMaxLayoutWidth = layoutWidth - (kPreviewPadding * 2)
 
             let constrainedSize = CGSize(width: view.bounds.width,
                                          height: view.bounds.height)
             let fittingSize = speechLabel.sizeThatFits(constrainedSize)
             let speechFrame = CGRect(x: 0,
-                                     y: view.bounds.height - fittingSize.height - kTextBottomPadding,
-                                     width: view.bounds.width, height: fittingSize.height + kTextBottomPadding)
+                                     y: bottomRight.y - fittingSize.height - kTextBottomPadding,
+                                     width: view.bounds.width,
+                                     height: (view.bounds.height - bottomRight.y) + fittingSize.height + kTextBottomPadding)
             speechLabel.frame = speechFrame.integral
         }
 
@@ -154,23 +166,22 @@ class ViewController: UIViewController {
         if let previewView = self.camera?.previewView {
             let dimensions = previewView.videoDimensions
             var previewBounds = CGRect.init(origin: CGPoint.zero, size: CGSize.init(width: 160, height: 160))
-
-            previewBounds = AVMakeRect(aspectRatio: CGSize.init(width: CGFloat(dimensions.width), height: CGFloat(dimensions.height)),
+            previewBounds = AVMakeRect(aspectRatio: CGSize.init(width: CGFloat(dimensions.width),
+                                                                height: CGFloat(dimensions.height)),
                                        insideRect: previewBounds)
 
             previewBounds = previewBounds.integral
             previewView.bounds = previewBounds
-
-            previewView.center = CGPoint.init(x: view.bounds.width - previewBounds.width / 2 - kPreviewPadding,
-                                              y: view.bounds.height - previewBounds.height / 2 - kPreviewPadding)
+            previewView.center = CGPoint.init(x: bottomRight.x - previewBounds.width / 2 - kPreviewPadding,
+                                              y: bottomRight.y - previewBounds.height / 2 - kPreviewPadding)
 
             if let speechLabel = self.speechLabel {
-                previewView.center.y -= speechLabel.bounds.height + kPreviewPadding;
+                previewView.center.y = speechLabel.frame.minY - (2.0 * kPreviewPadding) - (previewBounds.height / 2.0);
             }
         }
     }
 
-    override func prefersHomeIndicatorAutoHidden() -> Bool {
+    override var prefersHomeIndicatorAutoHidden: Bool {
         return self.room != nil
     }
 
@@ -303,7 +314,7 @@ class ViewController: UIViewController {
         }
 
         self.messageTimer = timer
-        RunLoop.main.add(timer, forMode: .commonModes)
+        RunLoop.main.add(timer, forMode: RunLoop.Mode.common)
     }
 
     // MARK: Speech Recognition
@@ -318,7 +329,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func recognizeRemoteAudio(gestureRecognizer: UIGestureRecognizer) {
+    @objc func recognizeRemoteAudio(gestureRecognizer: UIGestureRecognizer) {
         guard let remoteView = gestureRecognizer.view else {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;
@@ -354,7 +365,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func recognizeLocalAudio() {
+    @objc func recognizeLocalAudio() {
         if (self.speechRecognizer != nil) {
             stopRecognizingAudio()
         } else if let audioTrack = self.localAudioTrack {
@@ -455,7 +466,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
+    @objc func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
         guard let remoteView = gestureRecognizer.view else {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;

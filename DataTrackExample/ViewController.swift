@@ -216,7 +216,7 @@ class ViewController: UIViewController {
         if (self.view.layer.sublayers?.contains(drawer.shapeLayer!) == false) {
             drawer.shapeLayer.strokeColor = drawer.color
             self.view.layer.addSublayer(drawer.shapeLayer!)
-            self.view.bringSubview(toFront: disconnectButton)
+            self.view.bringSubviewToFront(disconnectButton)
         }
     }
     
