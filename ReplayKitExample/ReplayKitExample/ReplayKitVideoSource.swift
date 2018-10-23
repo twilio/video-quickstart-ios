@@ -46,24 +46,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     var lastTimestamp: CMTime?
     var timerSource: DispatchSourceTimer?
     var lastTransmitTimestamp: CMTime?
-    var retransmitTimer: Timer?
-    var retransmitLock = os_unfair_lock()
 
     private var lastFrameStorage: TVIVideoFrame?
-
-    var lastFrame: TVIVideoFrame? {
-        get {
-            os_unfair_lock_lock(&retransmitLock)
-            let frame = lastFrameStorage
-            os_unfair_lock_unlock(&retransmitLock)
-            return frame
-        }
-        set {
-            os_unfair_lock_lock(&retransmitLock)
-            lastFrameStorage = lastFrame
-            os_unfair_lock_unlock(&retransmitLock)
-        }
-    }
 
     static let kFrameRetransmitInterval = Double(0.25)
     static let kFrameRetransmitDispatchInterval = DispatchTimeInterval.milliseconds(250)
@@ -132,9 +116,6 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     func stopCapture() {
         captureConsumer = nil
-        // TODO: This should be synchronized with the main thread?
-        retransmitTimer?.invalidate()
-        retransmitTimer = nil
         // TODO: Should reading/writing/cancellation be synchronized with the source's dispatch queue?
         timerSource?.cancel()
         timerSource = nil
@@ -319,36 +300,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                 lastFrameStorage = frame
                 lastTransmitTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
                 dispatchRetransmissions()
-            } else {
-                lastFrame = frame
-                if retransmitTimer == nil {
-                    scheduleRetransmissions()
-                }
             }
         }
-    }
-
-    func scheduleRetransmissions() {
-        retransmitTimer?.invalidate()
-        let timer = Timer(timeInterval: ReplayKitVideoSource.kFrameRetransmitInterval,
-                                repeats: true,
-                                block: { (timer) in
-                                    if let frame = self.lastFrame,
-                                        let consumer = self.captureConsumer {
-                                        let currentTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
-                                        let delta = CMTimeSubtract(currentTimestamp, frame.timestamp).seconds
-                                        let threshold = Double(4.0 / 60.0)
-
-                                        if delta >= threshold {
-                                            self.deliverFrame(to: consumer,
-                                                              timestamp: currentTimestamp,
-                                                              buffer: frame.imageBuffer,
-                                                              orientation:
-                                                frame.orientation)
-                                        }
-                                    }})
-        retransmitTimer = timer
-        RunLoop.main.add(timer, forMode: RunLoopMode.commonModes)
     }
 
     func dispatchRetransmissions() {
@@ -391,7 +344,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
 
         let deadline = DispatchTime.now() + ReplayKitVideoSource.kFrameRetransmitDispatchInterval
-        timerSource?.scheduleOneshot(deadline: deadline, leeway: ReplayKitVideoSource.kFrameRetransmitDispatchLeeway)
+        timerSource?.schedule(deadline: deadline, leeway: ReplayKitVideoSource.kFrameRetransmitDispatchLeeway)
         source?.resume()
     }
 
