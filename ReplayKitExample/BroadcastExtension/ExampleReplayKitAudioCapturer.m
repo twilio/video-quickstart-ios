@@ -99,7 +99,15 @@ static ExampleAudioContext *capturingContext;
 #pragma mark - Public
 
 dispatch_queue_t ExampleCoreAudioDeviceGetCurrentQueue() {
+    /*
+     * The current dispatch queue is needed in order to synchronize with samples delivered by ReplayKit. Ideally, the
+     * ReplayKit APIs would support this use case, but since they do not we use a deprecated API to discover the queue.
+     * The dispatch queue is used for both resource teardown, and to schedule retransmissions (when enabled).
+     */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
     return dispatch_get_current_queue();
+#pragma clang diagnostic pop
 }
 
 OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {

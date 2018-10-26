@@ -51,8 +51,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     /*
      * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
-     * that your most recent frame eventually reaches subscribers, and that we have a reasonable bandwidth estimate for
-     * the next time a new frame is captured.
+     * that your most recent frame eventually reaches subscribers, and that the publisher has a reasonable bandwidth estimate
+     * for the next time a new frame is captured.
      */
     static let retransmitLastFrame = false
     static let kFrameRetransmitIntervalMs = Int(250)
