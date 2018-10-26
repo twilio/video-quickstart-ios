@@ -49,12 +49,17 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     var lastTransmitTimestamp: CMTime?
     private var lastFrameStorage: TVIVideoFrame?
 
+    /*
+     * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
+     * that your most recent frame eventually reaches subscribers, and that we have a reasonable bandwidth estimate for
+     * the next time a new frame is captured.
+     */
+    static let retransmitLastFrame = false
     static let kFrameRetransmitIntervalMs = Int(250)
     static let kFrameRetransmitTimeInterval = CMTime(value: CMTimeValue(kFrameRetransmitIntervalMs),
                                                      timescale: CMTimeScale(1000))
     static let kFrameRetransmitDispatchInterval = DispatchTimeInterval.milliseconds(kFrameRetransmitIntervalMs)
     static let kFrameRetransmitDispatchLeeway = DispatchTimeInterval.milliseconds(20)
-    static let retransmitLastFrame = true
 
     init(isScreencast: Bool) {
         screencastUsage = isScreencast
