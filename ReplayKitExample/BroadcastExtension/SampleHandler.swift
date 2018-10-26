@@ -15,7 +15,6 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     public var room: TVIRoom?
     var videoSource: ReplayKitVideoSource?
     var screenTrack: TVILocalVideoTrack?
-    let audioDevice = ExampleReplayKitAudioCapturer()
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
     let accessTokenUrl = "http://127.0.0.1:5000/"
