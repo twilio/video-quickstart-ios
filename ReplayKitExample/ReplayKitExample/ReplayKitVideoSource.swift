@@ -8,6 +8,7 @@
 import Accelerate
 import CoreMedia
 import CoreVideo
+import Dispatch
 import ReplayKit
 import TwilioVideo
 
@@ -21,6 +22,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
      */
     static let kDesiredFrameRate = 120
 
+    static let kFormatFrameRate = UIScreen.main.maximumFramesPerSecond
+
     // In order to save memory, our capturer may downscale the source to fit in a smaller rect.
     static let kDownScaledMaxWidthOrHeight = 640
 
@@ -31,7 +34,6 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     static let kYPlane = 0
     static let kUVPlane = 1
 
-    var lastTimestamp: CMTime?
     var downscaleBuffers: Bool = false
     var screencastUsage: Bool = false
     weak var captureConsumer: TVIVideoCaptureConsumer?
@@ -40,6 +42,25 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     var downscaleYPlaneSize: Int = 0
     var downscaleUVPlaneBuffer: UnsafeMutableRawPointer?
     var downscaleUVPlaneSize: Int = 0
+
+    var lastTimestamp: CMTime?
+    var videoQueue: DispatchQueue?
+    var timerSource: DispatchSourceTimer?
+    var lastTransmitTimestamp: CMTime?
+    private var lastFrameStorage: TVIVideoFrame?
+
+    /*
+     * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
+     * that your most recent frame eventually reaches subscribers, and that the publisher has a reasonable bandwidth estimate
+     * for the next time a new frame is captured.
+     */
+    static let retransmitLastFrame = false
+    static let kFrameRetransmitIntervalMs = Int(250)
+    static let kFrameRetransmitTimeInterval = CMTime(value: CMTimeValue(kFrameRetransmitIntervalMs),
+                                                     timescale: CMTimeScale(1000))
+    static let kFrameRetransmitDispatchInterval = DispatchTimeInterval.milliseconds(kFrameRetransmitIntervalMs)
+    static let kFrameRetransmitDispatchLeeway = DispatchTimeInterval.milliseconds(20)
+
     init(isScreencast: Bool) {
         screencastUsage = isScreencast
     }
@@ -61,12 +82,12 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
             screenSize.height *= UIScreen.main.nativeScale
             let format = TVIVideoFormat()
             format.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
-            format.frameRate = UInt(ReplayKitVideoSource.kDesiredFrameRate)
+            format.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
             format.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
 
             // We will downscale buffers to a 640x640 box, if requested.
             let downscaledFormat = TVIVideoFormat()
-            downscaledFormat.frameRate = UInt(ReplayKitVideoSource.kDesiredFrameRate)
+            downscaledFormat.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
             downscaledFormat.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
             downscaledFormat.dimensions = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
 
@@ -75,16 +96,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
     }
 
     deinit {
-        if let yBuffer = downscaleYPlaneBuffer {
-            free(yBuffer)
-            downscaleYPlaneBuffer = nil
-            downscaleYPlaneSize = 0
-        }
-        if let uvBuffer = downscaleUVPlaneBuffer {
-            free(uvBuffer)
-            downscaleUVPlaneBuffer = nil
-            downscaleUVPlaneSize = 0
-        }
+        freeScalingBuffers()
     }
 
     func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
@@ -95,13 +107,24 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
             downscaleBuffers = true
         }
 
-        consumer.captureDidStart(true)
         print("Start capturing with format:", format)
     }
 
     func stopCapture() {
-        captureConsumer = nil
         print("Stop capturing.")
+
+        // Perform teardown and free memory on the video queue to ensure that the resources will not be resurrected.
+        if let captureQueue = self.videoQueue {
+            captureQueue.sync {
+                self.captureConsumer = nil
+                self.timerSource?.cancel()
+                self.timerSource = nil
+                self.freeScalingBuffers()
+            }
+        } else {
+            // Fallback in case we never captured any frames yet.
+            captureConsumer = nil
+        }
     }
 
     public func processVideoSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
@@ -117,6 +140,12 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         if (pixelFormat != kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) {
             assertionFailure("Extension assumes the incoming frames are of type NV12")
             return
+        }
+
+        // Discover the dispatch queue that we are operating on.
+        if videoQueue == nil {
+            videoQueue = ExampleCoreAudioDeviceGetCurrentQueue()
+            consumer.captureDidStart(true)
         }
 
         // Frame dropping logic.
@@ -147,7 +176,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
             deliverFrame(to: consumer,
                          timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
                          buffer: sourcePixelBuffer,
-                         orientation: videoOrientation)
+                         orientation: videoOrientation,
+                         forceReschedule: false)
             return
         }
 
@@ -160,9 +190,11 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                                                  height: ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
         let size = rect.integral.size
 
-        // We will allocate a CVPixelBuffer to hold the downscaled contents.
-        // TODO: Consider copying attributes such as CVImageBufferTransferFunction, CVImageBufferYCbCrMatrix and CVImageBufferColorPrimaries.
-        // On an iPhone X running iOS 12.0 these buffers are tagged with ITU_R_709_2 primaries and a ITU_R_601_4 matrix.
+        /*
+         * We will allocate a CVPixelBuffer to hold the downscaled contents.
+         * TODO: Consider copying attributes such as CVImageBufferTransferFunction, CVImageBufferYCbCrMatrix and CVImageBufferColorPrimaries.
+         * On an iPhone X running iOS 12.0 these buffers are tagged with ITU_R_709_2 primaries and a ITU_R_601_4 matrix.
+         */
         var outPixelBuffer: CVPixelBuffer? = nil
         let attributes = NSDictionary(object: ReplayKitVideoSource.kPixelBufferBytesPerRowAlignment,
                                       forKey: NSString(string: kCVPixelBufferBytesPerRowAlignmentKey))
@@ -229,7 +261,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         deliverFrame(to: consumer,
                      timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
                      buffer: destinationPixelBuffer,
-                     orientation: videoOrientation)
+                     orientation: videoOrientation,
+                     forceReschedule: false)
     }
 
     func preallocateScalingBuffers(sourceY: UnsafePointer<vImage_Buffer>,
@@ -266,7 +299,20 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
     }
 
-    func deliverFrame(to: TVIVideoCaptureConsumer, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation) {
+    func freeScalingBuffers() {
+        if let yBuffer = downscaleYPlaneBuffer {
+            free(yBuffer)
+            downscaleYPlaneBuffer = nil
+            downscaleYPlaneSize = 0
+        }
+        if let uvBuffer = downscaleUVPlaneBuffer {
+            free(uvBuffer)
+            downscaleUVPlaneBuffer = nil
+            downscaleUVPlaneSize = 0
+        }
+    }
+
+    func deliverFrame(to: TVIVideoCaptureConsumer, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation, forceReschedule: Bool) {
         guard let frame = TVIVideoFrame(timestamp: timestamp,
                                         buffer: buffer,
                                         orientation: orientation) else {
@@ -275,6 +321,65 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
         to.consumeCapturedFrame(frame)
         lastTimestamp = timestamp
+
+        // Frame retransmission logic.
+        if (ReplayKitVideoSource.retransmitLastFrame) {
+            lastFrameStorage = frame
+            lastTransmitTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
+            dispatchRetransmissions(forceReschedule: forceReschedule)
+        }
+    }
+
+    func dispatchRetransmissions(forceReschedule: Bool) {
+        if let source = timerSource,
+            source.isCancelled == false,
+            forceReschedule == false {
+            // No work to do, wait for the next timer to fire and re-evaluate.
+            return
+        }
+        // We require a queue to create a timer source.
+        guard let currentQueue = videoQueue else {
+            return
+        }
+
+        let source = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags.strict,
+                                                    queue: currentQueue)
+        timerSource = source
+
+        // Generally, this timer is invoked in kFrameRetransmitDispatchInterval when no frames are sent.
+        source.setEventHandler(handler: {
+            if let frame = self.lastFrameStorage,
+                let consumer = self.captureConsumer,
+                let lastHostTimestamp = self.lastTransmitTimestamp {
+                let currentTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
+                let delta = CMTimeSubtract(currentTimestamp, lastHostTimestamp)
+
+                if delta >= ReplayKitVideoSource.kFrameRetransmitTimeInterval {
+                    print("Delivering frame since send-delta is greather than threshold. delta=", delta.seconds)
+                    // Reconstruct a new timestamp, advancing by our relative read of host time.
+                    self.deliverFrame(to: consumer,
+                                      timestamp: CMTimeAdd(frame.timestamp, delta),
+                                      buffer: frame.imageBuffer,
+                                      orientation: frame.orientation,
+                                      forceReschedule: true)
+                } else {
+                    // Reschedule for when the next retransmission might be required.
+                    let remaining = ReplayKitVideoSource.kFrameRetransmitTimeInterval.seconds - delta.seconds
+                    let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(Int(remaining * 1000.0))
+                    self.timerSource?.schedule(deadline: deadline, leeway: ReplayKitVideoSource.kFrameRetransmitDispatchLeeway)
+                }
+            }
+        })
+
+        // Thread safe cleanup of temporary storage, in case of cancellation. Normally, we reschedule.
+        source.setCancelHandler(handler: {
+            self.lastFrameStorage = nil
+        })
+
+        // Schedule a first time source for the full interval.
+        let deadline = DispatchTime.now() + ReplayKitVideoSource.kFrameRetransmitDispatchInterval
+        source.schedule(deadline: deadline, leeway: ReplayKitVideoSource.kFrameRetransmitDispatchLeeway)
+        source.activate()
     }
 
     static func imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation) -> TVIVideoOrientation {

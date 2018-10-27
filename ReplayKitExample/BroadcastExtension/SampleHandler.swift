@@ -15,7 +15,6 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     public var room: TVIRoom?
     var videoSource: ReplayKitVideoSource?
     var screenTrack: TVILocalVideoTrack?
-    let audioDevice = ExampleReplayKitAudioCapturer()
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
     let accessTokenUrl = "http://127.0.0.1:5000/"
@@ -24,7 +23,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
-        TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer(audioCapturer: self)
+        TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer()
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
