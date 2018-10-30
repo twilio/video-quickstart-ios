@@ -51,6 +51,8 @@ class ViewController: UIViewController {
         // We will rely on frame based layout to size and position `self.videoPlayerView`.
         self.view.insertSubview(playerView, at: 0)
         self.view.setNeedsLayout()
+
+        player.play()
     }
 
     func stopVideoPlayer() {
