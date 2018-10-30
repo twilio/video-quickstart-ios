@@ -12,6 +12,7 @@
 		8A395E482187D2B200437980 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A395E462187D2B200437980 /* Main.storyboard */; };
 		8A395E4A2187D2B300437980 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A395E492187D2B300437980 /* Assets.xcassets */; };
 		8A395E4D2187D2B300437980 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A395E4B2187D2B300437980 /* LaunchScreen.storyboard */; };
+		8A395E552187D52400437980 /* ExampleAVPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A395E542187D52400437980 /* ExampleAVPlayerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		8A395E492187D2B300437980 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8A395E4C2187D2B300437980 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8A395E4E2187D2B300437980 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8A395E542187D52400437980 /* ExampleAVPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAVPlayerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +57,7 @@
 			isa = PBXGroup;
 			children = (
 				8A395E422187D2B200437980 /* AppDelegate.swift */,
+				8A395E542187D52400437980 /* ExampleAVPlayerView.swift */,
 				8A395E442187D2B200437980 /* ViewController.swift */,
 				8A395E462187D2B200437980 /* Main.storyboard */,
 				8A395E492187D2B300437980 /* Assets.xcassets */,
@@ -137,6 +140,7 @@
 			files = (
 				8A395E452187D2B200437980 /* ViewController.swift in Sources */,
 				8A395E432187D2B200437980 /* AppDelegate.swift in Sources */,
+				8A395E552187D52400437980 /* ExampleAVPlayerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
