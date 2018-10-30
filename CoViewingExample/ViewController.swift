@@ -12,6 +12,7 @@ class ViewController: UIViewController {
 
     var videoPlayer: AVPlayer? = nil
     var videoPlayerView: ExampleAVPlayerView? = nil
+    var videoPlayerSource: ExampleAVPlayerSource? = nil
 
     static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
 
@@ -42,7 +43,8 @@ class ViewController: UIViewController {
         }
 
         // TODO: Add KVO observer?
-        let player = AVPlayer(url: ViewController.kRemoteContentURL)
+        let playerItem = AVPlayerItem(url: ViewController.kRemoteContentURL)
+        let player = AVPlayer(playerItem: playerItem)
         videoPlayer = player
 
         let playerView = ExampleAVPlayerView(frame: CGRect.zero, player: player)
@@ -53,6 +55,9 @@ class ViewController: UIViewController {
         self.view.setNeedsLayout()
 
         player.play()
+
+        // Configure our capturer to receive output from the AVPlayerItem.
+        videoPlayerSource = ExampleAVPlayerSource(item: playerItem)
     }
 
     func stopVideoPlayer() {
