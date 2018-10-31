@@ -29,9 +29,9 @@ class ExampleAVPlayerSource: NSObject {
         timer.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
         outputTimer = timer
 
-        // Note: It appears that we don't get an IOSurface backed buffer even after requesting it.
+        // Note: It appears requesting IOSurface backing causes a crash on iPhone X / iOS 12.0.1?
         let attributes = [
-            kCVPixelBufferIOSurfacePropertiesKey as String : [],
+//            kCVPixelBufferIOSurfacePropertiesKey as String : [],
             kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
             ] as [String : Any]
 
