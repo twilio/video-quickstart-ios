@@ -11,8 +11,9 @@ import UIKit
 class ViewController: UIViewController {
 
     var videoPlayer: AVPlayer? = nil
-    var videoPlayerView: ExampleAVPlayerView? = nil
+    var videoPlayerAudioTap: ExampleAVPlayerAudioTap? = nil
     var videoPlayerSource: ExampleAVPlayerSource? = nil
+    var videoPlayerView: ExampleAVPlayerView? = nil
 
     static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
 
@@ -66,7 +67,11 @@ class ViewController: UIViewController {
 
         if let assetAudioTrack = itemAsset.tracks(withMediaType: AVMediaType.audio).first {
             let inputParameters = AVMutableAudioMixInputParameters(track: assetAudioTrack)
-//            inputParameters.audioTapProcessor = self
+            let processor = ExampleAVPlayerAudioTap()
+            videoPlayerAudioTap = processor
+
+            // TODO: Memory management of the MTAudioProcessingTap.
+            inputParameters.audioTapProcessor = ExampleAVPlayerAudioTap.mediaToolboxAudioProcessingTapCreate(audioTap: processor)
             audioMix.inputParameters = [inputParameters]
             playerItem.audioMix = audioMix
         } else {

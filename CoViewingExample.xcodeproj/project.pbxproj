@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8A34C1D52189333400F22BE9 /* ExampleAVPlayerAudioTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A34C1D42189333400F22BE9 /* ExampleAVPlayerAudioTap.swift */; };
 		8A395E432187D2B200437980 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A395E422187D2B200437980 /* AppDelegate.swift */; };
 		8A395E452187D2B200437980 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A395E442187D2B200437980 /* ViewController.swift */; };
 		8A395E482187D2B200437980 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A395E462187D2B200437980 /* Main.storyboard */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8A34C1D42189333400F22BE9 /* ExampleAVPlayerAudioTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAVPlayerAudioTap.swift; sourceTree = "<group>"; };
 		8A395E3F2187D2B200437980 /* CoViewingExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoViewingExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A395E422187D2B200437980 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8A395E442187D2B200437980 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -59,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				8A395E422187D2B200437980 /* AppDelegate.swift */,
+				8A34C1D42189333400F22BE9 /* ExampleAVPlayerAudioTap.swift */,
 				8A395E562187F04C00437980 /* ExampleAVPlayerSource.swift */,
 				8A395E542187D52400437980 /* ExampleAVPlayerView.swift */,
 				8A395E442187D2B200437980 /* ViewController.swift */,
@@ -144,6 +147,7 @@
 				8A395E452187D2B200437980 /* ViewController.swift in Sources */,
 				8A395E432187D2B200437980 /* AppDelegate.swift in Sources */,
 				8A395E552187D52400437980 /* ExampleAVPlayerView.swift in Sources */,
+				8A34C1D52189333400F22BE9 /* ExampleAVPlayerAudioTap.swift in Sources */,
 				8A395E572187F04C00437980 /* ExampleAVPlayerSource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
