@@ -42,7 +42,6 @@ class ViewController: UIViewController {
             return
         }
 
-        // TODO: Add KVO observer?
         let playerItem = AVPlayerItem(url: ViewController.kRemoteContentURL)
         let player = AVPlayer(playerItem: playerItem)
         videoPlayer = player
@@ -54,10 +53,25 @@ class ViewController: UIViewController {
         self.view.insertSubview(playerView, at: 0)
         self.view.setNeedsLayout()
 
+        // TODO: Add KVO observer instead?
         player.play()
 
-        // Configure our capturer to receive output from the AVPlayerItem.
+        // Configure our video capturer to receive video samples from the AVPlayerItem.
         videoPlayerSource = ExampleAVPlayerSource(item: playerItem)
+
+        // Configure our audio capturer to receive audio samples from the AVPlayerItem.
+        let audioMix = AVMutableAudioMix()
+        let itemAsset = playerItem.asset
+        print("Created asset with tracks: ", itemAsset.tracks as Any)
+
+        if let assetAudioTrack = itemAsset.tracks(withMediaType: AVMediaType.audio).first {
+            let inputParameters = AVMutableAudioMixInputParameters(track: assetAudioTrack)
+//            inputParameters.audioTapProcessor = self
+            audioMix.inputParameters = [inputParameters]
+            playerItem.audioMix = audioMix
+        } else {
+            // Abort, retry, fail?
+        }
     }
 
     func stopVideoPlayer() {

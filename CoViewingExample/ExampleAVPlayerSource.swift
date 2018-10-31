@@ -2,7 +2,6 @@
 //  ExampleAVPlayerSource.swift
 //  CoViewingExample
 //
-//  Created by Chris Eagleston on 10/29/18.
 //  Copyright © 2018 Twilio Inc. All rights reserved.
 //
 
