@@ -20,6 +20,13 @@ abstract_target 'TwilioVideo' do
     project 'AudioSinkExample.xcproject'
   end
 
+  target 'CoViewingExample' do
+    platform :ios, '12.0'
+    project 'CoViewingExample.xcproject'
+
+    pod 'TPCircularBuffer', '~> 1.6'
+  end
+
   target 'VideoQuickStart' do
     platform :ios, '9.0'
     project 'VideoQuickStart.xcproject'
