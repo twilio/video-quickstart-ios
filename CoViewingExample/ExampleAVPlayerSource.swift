@@ -29,7 +29,12 @@ class ExampleAVPlayerSource: NSObject {
         timer.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
         outputTimer = timer
 
-        let attributes = [kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange]
+        // Note: It appears that we don't get an IOSurface backed buffer even after requesting it.
+        let attributes = [
+            kCVPixelBufferIOSurfacePropertiesKey as String : [],
+            kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+            ] as [String : Any]
+
         videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: attributes)
         videoOutput?.setDelegate(self, queue: sampleQueue)
         videoOutput?.requestNotificationOfMediaDataChange(withAdvanceInterval: 0.1)
