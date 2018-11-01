@@ -42,13 +42,19 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 #pragma mark - MTAudioProcessingTap
 
+// TODO: Bad robot.
+static const AudioStreamBasicDescription *audioFormat = NULL;
+
 void init(MTAudioProcessingTapRef tap, void *clientInfo, void **tapStorageOut) {
     // Provide access to our device in the Callbacks.
     *tapStorageOut = clientInfo;
 }
 
 void finalize(MTAudioProcessingTapRef tap) {
-    // TODO
+    ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
+    TPCircularBuffer *buffer = NULL;
+
+    TPCircularBufferCleanup(buffer);
 }
 
 void prepare(MTAudioProcessingTapRef tap,
@@ -58,11 +64,26 @@ void prepare(MTAudioProcessingTapRef tap,
 
     // Defer creation of the ring buffer until we understand the processing format.
     ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
+    TPCircularBuffer *buffer = NULL;
 
+    size_t bufferSize = processingFormat->mBytesPerFrame * maxFrames;
+    // We need to add some overhead for the AudioBufferList data structures.
+    bufferSize += 2048;
+    // TODO: Size the buffer appropriately, as we may need to accumulate more than maxFrames.
+    bufferSize *= 12;
+
+    // TODO: If we are re-allocating then check the size?
+    TPCircularBufferInit(buffer, bufferSize);
+    audioFormat = processingFormat;
 }
 
 void unprepare(MTAudioProcessingTapRef tap) {
-    // TODO: Destroy the ring buffer?
+    // Prevent any more frames from being consumed. Note that this might end audio playback early.
+    ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
+    TPCircularBuffer *buffer = NULL;
+
+    TPCircularBufferClear(buffer);
+    audioFormat = NULL;
 }
 
 void process(MTAudioProcessingTapRef tap,
@@ -72,6 +93,7 @@ void process(MTAudioProcessingTapRef tap,
              CMItemCount *numberFramesOut,
              MTAudioProcessingTapFlags *flagsOut) {
     ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
+    TPCircularBuffer *buffer = NULL;
 
     OSStatus status = MTAudioProcessingTapGetSourceAudio(tap,
                                                          numberFrames,
@@ -85,7 +107,15 @@ void process(MTAudioProcessingTapRef tap,
         return;
     }
 
-    // Fill the ring buffer with content.
+    UInt32 framesToCopy = (UInt32)*numberFramesOut;
+    bool success = TPCircularBufferCopyAudioBufferList(buffer,
+                                                       bufferListInOut,
+                                                       NULL,
+                                                       framesToCopy,
+                                                       audioFormat);
+    if (!success) {
+        // TODO
+    }
 }
 
 @implementation ExampleAVPlayerAudioDevice
@@ -95,13 +125,18 @@ void process(MTAudioProcessingTapRef tap,
 - (id)init {
     self = [super init];
     if (self) {
-        _audioTapBuffer = NULL;
+        _audioTapBuffer = malloc(sizeof(TPCircularBuffer));
     }
     return self;
 }
 
 - (void)dealloc {
     [self unregisterAVAudioSessionObservers];
+
+    if (_audioTapBuffer != NULL) {
+        free(_audioTapBuffer);
+        _audioTapBuffer = NULL;
+    }
 }
 
 + (NSString *)description {
