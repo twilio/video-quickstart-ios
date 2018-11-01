@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     var videoPlayerSource: ExampleAVPlayerSource? = nil
     var videoPlayerView: ExampleAVPlayerView? = nil
 
-    static var useAudioDevice = false
+    static var useAudioDevice = true
     static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
 
     override func viewDidLoad() {

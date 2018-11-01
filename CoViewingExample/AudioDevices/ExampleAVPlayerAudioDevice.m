@@ -45,6 +45,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 // TODO: Bad robot.
 static AudioStreamBasicDescription *audioFormat = NULL;
+static AudioConverterRef formatConverter = NULL;
 
 void init(MTAudioProcessingTapRef tap, void *clientInfo, void **tapStorageOut) {
     // Provide access to our device in the Callbacks.
@@ -59,8 +60,9 @@ void finalize(MTAudioProcessingTapRef tap) {
 void prepare(MTAudioProcessingTapRef tap,
              CMItemCount maxFrames,
              const AudioStreamBasicDescription *processingFormat) {
-    NSLog(@"Preparing with frames: %d, channels: %d, sample rate: %0.1f",
-          (int)maxFrames, processingFormat->mChannelsPerFrame, processingFormat->mSampleRate);
+    NSLog(@"Preparing with frames: %d, channels: %d, bits/channel: %d, sample rate: %0.1f",
+          (int)maxFrames, processingFormat->mChannelsPerFrame, processingFormat->mBitsPerChannel, processingFormat->mSampleRate);
+    assert(processingFormat->mFormatID == kAudioFormatLinearPCM);
 
     // Defer init of the ring buffer memory until we understand the processing format.
     TPCircularBuffer *buffer = (TPCircularBuffer *)MTAudioProcessingTapGetStorage(tap);
@@ -75,6 +77,20 @@ void prepare(MTAudioProcessingTapRef tap,
     TPCircularBufferInit(buffer, bufferSize);
     audioFormat = malloc(sizeof(AudioStreamBasicDescription));
     memcpy(audioFormat, processingFormat, sizeof(AudioStreamBasicDescription));
+
+    TVIAudioFormat *preferredFormat = [[TVIAudioFormat alloc] initWithChannels:processingFormat->mChannelsPerFrame
+                                                                    sampleRate:processingFormat->mSampleRate
+                                                               framesPerBuffer:maxFrames];
+    AudioStreamBasicDescription preferredDescription = [preferredFormat streamDescription];
+    BOOL requiresFormatConversion = preferredDescription.mFormatFlags != processingFormat->mFormatFlags;
+
+    if (requiresFormatConversion) {
+        OSStatus status = AudioConverterNew(processingFormat, &preferredDescription, &formatConverter);
+        if (status != 0) {
+            NSLog(@"Failed to create AudioConverter: %d", (int)status);
+            return;
+        }
+    }
 }
 
 void unprepare(MTAudioProcessingTapRef tap) {
@@ -84,6 +100,11 @@ void unprepare(MTAudioProcessingTapRef tap) {
     TPCircularBufferClear(buffer);
     free(audioFormat);
     audioFormat = NULL;
+
+    if (formatConverter != NULL) {
+        AudioConverterDispose(formatConverter);
+        formatConverter = NULL;
+    }
 }
 
 void process(MTAudioProcessingTapRef tap,
@@ -108,14 +129,21 @@ void process(MTAudioProcessingTapRef tap,
     }
 
     UInt32 framesToCopy = (UInt32)*numberFramesOut;
-    bool success = TPCircularBufferCopyAudioBufferList(buffer,
-                                                       bufferListInOut,
-                                                       NULL,
-                                                       framesToCopy,
-                                                       audioFormat);
-    if (!success) {
-        // TODO
+    // TODO: Assumptions about our producer's format.
+    UInt32 bytesToCopy = framesToCopy * 4;
+    AudioBufferList *producerBufferList = TPCircularBufferPrepareEmptyAudioBufferList(buffer, 1, bytesToCopy, NULL);
+    if (producerBufferList == NULL) {
+        // TODO:
+        return;
     }
+
+    status = AudioConverterConvertComplexBuffer(formatConverter, framesToCopy, bufferListInOut, producerBufferList);
+    if (status != kCVReturnSuccess) {
+        // TODO: Do we still produce the buffer list?
+        return;
+    }
+
+    TPCircularBufferProduceAudioBufferList(buffer, NULL);
 
     // TODO: Silence the audio returned to AVPlayer just in case?
 //    memset(NULL, 0, numberFramesOut * )
