@@ -260,6 +260,7 @@ void process(MTAudioProcessingTapRef tap,
 
         // TODO: Do we need to synchronize with the tap being started at this point?
         self.renderingContext->playoutBuffer = _audioTapBuffer;
+        [NSThread sleepForTimeInterval:0.2];
 
         const NSTimeInterval sessionBufferDuration = [AVAudioSession sharedInstance].IOBufferDuration;
         const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
