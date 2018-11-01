@@ -14,4 +14,12 @@
  */
 @interface ExampleAVPlayerAudioDevice : NSObject <TVIAudioDevice>
 
+/*
+ * Creates a processing tap bound to the device instance.
+ *
+ * @return An `MTAudioProcessingTap` which is bound to the device, or NULL if there is an error. The caller
+ * assumes all ownership of the tap, and should call CFRelease when they are finished with it.
+ */
+- (MTAudioProcessingTapRef)createProcessingTap;
+
 @end

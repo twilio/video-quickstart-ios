@@ -178,6 +178,31 @@ void process(MTAudioProcessingTapRef tap,
     AudioComponentInstanceDispose(audioUnit);
 }
 
+#pragma mark - Public
+
+- (MTAudioProcessingTapRef)createProcessingTap {
+    MTAudioProcessingTapRef processingTap;
+
+    MTAudioProcessingTapCallbacks callbacks;
+    callbacks.version = kMTAudioProcessingTapCallbacksVersion_0;
+    callbacks.clientInfo = (__bridge void *)(self);
+    callbacks.init = init;
+    callbacks.prepare = prepare;
+    callbacks.process = process;
+    callbacks.unprepare = unprepare;
+    callbacks.finalize = finalize;
+
+    OSStatus status = MTAudioProcessingTapCreate(kCFAllocatorDefault,
+                                                 &callbacks,
+                                                 kMTAudioProcessingTapCreationFlag_PostEffects,
+                                                 &processingTap);
+    if (status == kCVReturnSuccess) {
+        return processingTap;
+    } else {
+        return NULL;
+    }
+}
+
 #pragma mark - TVIAudioDeviceRenderer
 
 - (nullable TVIAudioFormat *)renderFormat {
