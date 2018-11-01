@@ -324,7 +324,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     AudioStreamBasicDescription format;
     format.mBitsPerChannel = 16;
     format.mChannelsPerFrame = bufferList->mBuffers[0].mNumberChannels;
-    format.mBytesPerFrame = format.mChannelsPerFrame * format.mBitsPerChannel;
+    format.mBytesPerFrame = format.mChannelsPerFrame * format.mBitsPerChannel / 8;
     format.mFormatID = kAudioFormatLinearPCM;
     format.mFormatFlags = kAudioFormatFlagIsPacked | kAudioFormatFlagIsSignedInteger;
     format.mSampleRate = 44100;
