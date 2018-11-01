@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		8A34C1D52189333400F22BE9 /* ExampleAVPlayerAudioTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A34C1D42189333400F22BE9 /* ExampleAVPlayerAudioTap.swift */; };
-		8A34C1DA2189496A00F22BE9 /* ExampleCoreAudioDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A34C1D92189496A00F22BE9 /* ExampleCoreAudioDevice.m */; };
+		8A34C1DA2189496A00F22BE9 /* ExampleAVPlayerAudioDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A34C1D92189496A00F22BE9 /* ExampleAVPlayerAudioDevice.m */; };
 		8A395E432187D2B200437980 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A395E422187D2B200437980 /* AppDelegate.swift */; };
 		8A395E452187D2B200437980 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A395E442187D2B200437980 /* ViewController.swift */; };
 		8A395E482187D2B200437980 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A395E462187D2B200437980 /* Main.storyboard */; };
@@ -20,9 +20,9 @@
 
 /* Begin PBXFileReference section */
 		8A34C1D42189333400F22BE9 /* ExampleAVPlayerAudioTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAVPlayerAudioTap.swift; sourceTree = "<group>"; };
-		8A34C1D72189496A00F22BE9 /* ExampleCoreAudioDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExampleCoreAudioDevice.h; sourceTree = "<group>"; };
+		8A34C1D72189496A00F22BE9 /* ExampleAVPlayerAudioDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExampleAVPlayerAudioDevice.h; sourceTree = "<group>"; };
 		8A34C1D82189496A00F22BE9 /* AudioDevices-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "AudioDevices-Bridging-Header.h"; sourceTree = "<group>"; };
-		8A34C1D92189496A00F22BE9 /* ExampleCoreAudioDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExampleCoreAudioDevice.m; sourceTree = "<group>"; };
+		8A34C1D92189496A00F22BE9 /* ExampleAVPlayerAudioDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExampleAVPlayerAudioDevice.m; sourceTree = "<group>"; };
 		8A395E3F2187D2B200437980 /* CoViewingExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoViewingExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A395E422187D2B200437980 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8A395E442187D2B200437980 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -49,8 +49,8 @@
 			isa = PBXGroup;
 			children = (
 				8A34C1D82189496A00F22BE9 /* AudioDevices-Bridging-Header.h */,
-				8A34C1D72189496A00F22BE9 /* ExampleCoreAudioDevice.h */,
-				8A34C1D92189496A00F22BE9 /* ExampleCoreAudioDevice.m */,
+				8A34C1D72189496A00F22BE9 /* ExampleAVPlayerAudioDevice.h */,
+				8A34C1D92189496A00F22BE9 /* ExampleAVPlayerAudioDevice.m */,
 			);
 			path = AudioDevices;
 			sourceTree = "<group>";
@@ -163,7 +163,7 @@
 				8A395E432187D2B200437980 /* AppDelegate.swift in Sources */,
 				8A395E552187D52400437980 /* ExampleAVPlayerView.swift in Sources */,
 				8A34C1D52189333400F22BE9 /* ExampleAVPlayerAudioTap.swift in Sources */,
-				8A34C1DA2189496A00F22BE9 /* ExampleCoreAudioDevice.m in Sources */,
+				8A34C1DA2189496A00F22BE9 /* ExampleAVPlayerAudioDevice.m in Sources */,
 				8A395E572187F04C00437980 /* ExampleAVPlayerSource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

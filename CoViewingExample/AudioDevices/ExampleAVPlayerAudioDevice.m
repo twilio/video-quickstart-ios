@@ -1,11 +1,13 @@
 //
-//  ExampleCoreAudioDevice.m
-//  AudioDeviceExample
+//  ExampleAVPlayerAudioDevice.m
+//  CoViewingExample
 //
 //  Copyright © 2018 Twilio, Inc. All rights reserved.
 //
 
-#import "ExampleCoreAudioDevice.h"
+#import "ExampleAVPlayerAudioDevice.h"
+
+#import "TPCircularBuffer+AudioBufferList.h"
 
 // We want to get as close to 10 msec buffers as possible because this is what the media engine prefers.
 static double const kPreferredIOBufferDuration = 0.01;
@@ -15,11 +17,11 @@ static size_t const kPreferredNumberOfChannels = 2;
 static size_t const kAudioSampleSize = 2;
 static uint32_t const kPreferredSampleRate = 48000;
 
-typedef struct ExampleCoreAudioContext {
+typedef struct ExampleAVPlayerContext {
     TVIAudioDeviceContext deviceContext;
     size_t expectedFramesPerBuffer;
     size_t maxFramesPerBuffer;
-} ExampleCoreAudioContext;
+} ExampleAVPlayerContext;
 
 // The RemoteIO audio unit uses bus 0 for ouptut, and bus 1 for input.
 static int kOutputBus = 0;
@@ -27,23 +29,73 @@ static int kInputBus = 1;
 // This is the maximum slice size for RemoteIO (as observed in the field). We will double check at initialization time.
 static size_t kMaximumFramesPerBuffer = 1156;
 
-@interface ExampleCoreAudioDevice()
+@interface ExampleAVPlayerAudioDevice()
 
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
 @property (nonatomic, assign) AudioUnit audioUnit;
 
+@property (nonatomic, assign, nullable) TPCircularBuffer *audioTapBuffer;
 @property (nonatomic, strong, nullable) TVIAudioFormat *renderingFormat;
-@property (atomic, assign) ExampleCoreAudioContext *renderingContext;
+@property (atomic, assign) ExampleAVPlayerContext *renderingContext;
 
 @end
 
-@implementation ExampleCoreAudioDevice
+#pragma mark - MTAudioProcessingTap
+
+void init(MTAudioProcessingTapRef tap, void *clientInfo, void **tapStorageOut) {
+    // Provide access to our device in the Callbacks.
+    *tapStorageOut = clientInfo;
+}
+
+void finalize(MTAudioProcessingTapRef tap) {
+    // TODO
+}
+
+void prepare(MTAudioProcessingTapRef tap,
+             CMItemCount maxFrames,
+             const AudioStreamBasicDescription *processingFormat) {
+    NSLog(@"Preparing the Audio Tap Processor");
+
+    // Defer creation of the ring buffer until we understand the processing format.
+    ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
+
+}
+
+void unprepare(MTAudioProcessingTapRef tap) {
+    // TODO: Destroy the ring buffer?
+}
+
+void process(MTAudioProcessingTapRef tap,
+             CMItemCount numberFrames,
+             MTAudioProcessingTapFlags flags,
+             AudioBufferList *bufferListInOut,
+             CMItemCount *numberFramesOut,
+             MTAudioProcessingTapFlags *flagsOut) {
+    ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
+
+    OSStatus status = MTAudioProcessingTapGetSourceAudio(tap,
+                                                         numberFrames,
+                                                         bufferListInOut,
+                                                         flagsOut,
+                                                         NULL,
+                                                         numberFramesOut);
+
+    if (status != kCVReturnSuccess) {
+        // TODO
+        return;
+    }
+
+    // Fill the ring buffer with content.
+}
+
+@implementation ExampleAVPlayerAudioDevice
 
 #pragma mark - Init & Dealloc
 
 - (id)init {
     self = [super init];
     if (self) {
+        _audioTapBuffer = NULL;
     }
     return self;
 }
@@ -111,7 +163,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
     @synchronized(self) {
         NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
 
-        self.renderingContext = malloc(sizeof(ExampleCoreAudioContext));
+        self.renderingContext = malloc(sizeof(ExampleAVPlayerContext));
         self.renderingContext->deviceContext = context;
         self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
 
@@ -173,6 +225,8 @@ static size_t kMaximumFramesPerBuffer = 1156;
     return NO;
 }
 
+#pragma mark - Private (MTAudioProcessingTap)
+
 #pragma mark - Private (AudioUnit callbacks)
 
 static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
@@ -185,7 +239,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     assert(bufferList->mBuffers[0].mNumberChannels <= 2);
     assert(bufferList->mBuffers[0].mNumberChannels > 0);
 
-    ExampleCoreAudioContext *context = (ExampleCoreAudioContext *)refCon;
+    ExampleAVPlayerContext *context = (ExampleAVPlayerContext *)refCon;
     int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
     UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
 
@@ -263,7 +317,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     }
 }
 
-- (BOOL)setupAudioUnit:(ExampleCoreAudioContext *)context {
+- (BOOL)setupAudioUnit:(ExampleAVPlayerContext *)context {
     // Find and instantiate the RemoteIO audio unit.
     AudioComponentDescription audioUnitDescription = [[self class] audioUnitDescription];
     AudioComponent audioComponent = AudioComponentFindNext(NULL, &audioUnitDescription);
