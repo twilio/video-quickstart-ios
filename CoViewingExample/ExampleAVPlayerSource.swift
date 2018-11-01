@@ -56,7 +56,7 @@ class ExampleAVPlayerSource: NSObject {
             let pixelBuffer = output.copyPixelBuffer(forItemTime: targetItemTime, itemTimeForDisplay: &presentationTime)
 
             ExampleAVPlayerSource.frameCounter += 1
-            if ExampleAVPlayerSource.frameCounter % 30 == 0 {
+            if ExampleAVPlayerSource.frameCounter % 500 == 0 {
                 print("Copied new pixel buffer: ", pixelBuffer as Any)
             }
         } else {
