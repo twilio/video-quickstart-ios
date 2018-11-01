@@ -21,6 +21,7 @@ typedef struct ExampleAVPlayerContext {
     TVIAudioDeviceContext deviceContext;
     size_t expectedFramesPerBuffer;
     size_t maxFramesPerBuffer;
+    TPCircularBuffer *playoutBuffer;
 } ExampleAVPlayerContext;
 
 // The RemoteIO audio unit uses bus 0 for ouptut, and bus 1 for input.
@@ -43,7 +44,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 #pragma mark - MTAudioProcessingTap
 
 // TODO: Bad robot.
-static const AudioStreamBasicDescription *audioFormat = NULL;
+static AudioStreamBasicDescription *audioFormat = NULL;
 
 void init(MTAudioProcessingTapRef tap, void *clientInfo, void **tapStorageOut) {
     // Provide access to our device in the Callbacks.
@@ -74,7 +75,8 @@ void prepare(MTAudioProcessingTapRef tap,
 
     // TODO: If we are re-allocating then check the size?
     TPCircularBufferInit(buffer, bufferSize);
-    audioFormat = processingFormat;
+    audioFormat = malloc(sizeof(AudioStreamBasicDescription));
+    memcpy(audioFormat, processingFormat, sizeof(AudioStreamBasicDescription));
 }
 
 void unprepare(MTAudioProcessingTapRef tap) {
@@ -83,7 +85,10 @@ void unprepare(MTAudioProcessingTapRef tap) {
     TPCircularBuffer *buffer = NULL;
 
     TPCircularBufferClear(buffer);
-    audioFormat = NULL;
+    if (audioFormat) {
+        free(audioFormat);
+        audioFormat = NULL;
+    }
 }
 
 void process(MTAudioProcessingTapRef tap,
@@ -201,6 +206,7 @@ void process(MTAudioProcessingTapRef tap,
         self.renderingContext = malloc(sizeof(ExampleAVPlayerContext));
         self.renderingContext->deviceContext = context;
         self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
+        self.renderingContext->playoutBuffer = _audioTapBuffer;
 
         const NSTimeInterval sessionBufferDuration = [AVAudioSession sharedInstance].IOBufferDuration;
         const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
@@ -275,6 +281,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     assert(bufferList->mBuffers[0].mNumberChannels > 0);
 
     ExampleAVPlayerContext *context = (ExampleAVPlayerContext *)refCon;
+    TPCircularBuffer *buffer = context->playoutBuffer;
     int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
     UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
 
@@ -286,10 +293,32 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
         return noErr;
     }
 
-    // Pull decoded, mixed audio data from the media engine into the AudioUnit's AudioBufferList.
     assert(numFrames <= context->maxFramesPerBuffer);
     assert(audioBufferSizeInBytes == (bufferList->mBuffers[0].mNumberChannels * kAudioSampleSize * numFrames));
-    TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
+
+    // TODO: Include the format in the context? What if the formats are somehow not matched?
+    AudioStreamBasicDescription format;
+    format.mBitsPerChannel = 16;
+    format.mChannelsPerFrame = bufferList->mBuffers[0].mNumberChannels;
+    format.mBytesPerFrame = format.mChannelsPerFrame * format.mBitsPerChannel;
+    format.mFormatID = kAudioFormatLinearPCM;
+    format.mFormatFlags = kAudioFormatFlagIsPacked | kAudioFormatFlagIsSignedInteger;
+    format.mSampleRate = 44100;
+
+    UInt32 framesInOut = numFrames;
+    TPCircularBufferDequeueBufferListFrames(buffer, &framesInOut, bufferList, NULL, &format);
+
+    if (framesInOut != numFrames) {
+        // Render silence for the remaining frames.
+        UInt32 framesRemaining = numFrames - framesInOut;
+        UInt32 bytesRemaining = framesRemaining * format.mBytesPerFrame;
+        audioBuffer += bytesRemaining;
+
+        memset(audioBuffer, 0, bytesRemaining);
+    }
+
+    // TODO: Pull decoded, mixed audio data from the media engine into the AudioUnit's AudioBufferList.
+//    TVIAudioDeviceReadRenderData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
     return noErr;
 }
 
