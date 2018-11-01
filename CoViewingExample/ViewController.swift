@@ -10,11 +10,13 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    var audioDevice: ExampleAVPlayerAudioDevice = ExampleAVPlayerAudioDevice()
     var videoPlayer: AVPlayer? = nil
     var videoPlayerAudioTap: ExampleAVPlayerAudioTap? = nil
     var videoPlayerSource: ExampleAVPlayerSource? = nil
     var videoPlayerView: ExampleAVPlayerView? = nil
 
+    static var useAudioDevice = false
     static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
 
     override func viewDidLoad() {
@@ -67,13 +69,26 @@ class ViewController: UIViewController {
 
         if let assetAudioTrack = itemAsset.tracks(withMediaType: AVMediaType.audio).first {
             let inputParameters = AVMutableAudioMixInputParameters(track: assetAudioTrack)
-            let processor = ExampleAVPlayerAudioTap()
-            videoPlayerAudioTap = processor
 
             // TODO: Memory management of the MTAudioProcessingTap.
-            inputParameters.audioTapProcessor = ExampleAVPlayerAudioTap.mediaToolboxAudioProcessingTapCreate(audioTap: processor)
+            if ViewController.useAudioDevice {
+                inputParameters.audioTapProcessor = audioDevice.createProcessingTap()?.takeUnretainedValue()
+                player.volume = Float(0)
+            } else {
+                let processor = ExampleAVPlayerAudioTap()
+                videoPlayerAudioTap = processor
+                inputParameters.audioTapProcessor = ExampleAVPlayerAudioTap.mediaToolboxAudioProcessingTapCreate(audioTap: processor)
+            }
+
             audioMix.inputParameters = [inputParameters]
             playerItem.audioMix = audioMix
+
+            if ViewController.useAudioDevice {
+                // Fake start the device...?
+                let format = audioDevice.renderFormat()
+                print("Starting rendering with format:", format as Any)
+                audioDevice.startRendering(UnsafeMutableRawPointer(bitPattern: 1)!)
+            }
         } else {
             // Abort, retry, fail?
         }

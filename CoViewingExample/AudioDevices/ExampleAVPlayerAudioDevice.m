@@ -9,8 +9,8 @@
 
 #import "TPCircularBuffer+AudioBufferList.h"
 
-// We want to get as close to 10 msec buffers as possible because this is what the media engine prefers.
-static double const kPreferredIOBufferDuration = 0.01;
+// We want to get as close to 20 msec buffers as possible, to match the behavior of TVIDefaultAudioDevice.
+static double const kPreferredIOBufferDuration = 0.02;
 // We will use stereo playback where available. Some audio routes may be restricted to mono only.
 static size_t const kPreferredNumberOfChannels = 2;
 // An audio sample is a signed 16-bit integer.
@@ -52,25 +52,23 @@ void init(MTAudioProcessingTapRef tap, void *clientInfo, void **tapStorageOut) {
 }
 
 void finalize(MTAudioProcessingTapRef tap) {
-    ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
-    TPCircularBuffer *buffer = NULL;
-
+    TPCircularBuffer *buffer = (TPCircularBuffer *)MTAudioProcessingTapGetStorage(tap);
     TPCircularBufferCleanup(buffer);
 }
 
 void prepare(MTAudioProcessingTapRef tap,
              CMItemCount maxFrames,
              const AudioStreamBasicDescription *processingFormat) {
-    NSLog(@"Preparing the Audio Tap Processor");
+    NSLog(@"Preparing with frames: %d, channels: %d, sample rate: %0.1f",
+          (int)maxFrames, processingFormat->mChannelsPerFrame, processingFormat->mSampleRate);
 
-    // Defer creation of the ring buffer until we understand the processing format.
-    ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
-    TPCircularBuffer *buffer = NULL;
+    // Defer init of the ring buffer memory until we understand the processing format.
+    TPCircularBuffer *buffer = (TPCircularBuffer *)MTAudioProcessingTapGetStorage(tap);
 
     size_t bufferSize = processingFormat->mBytesPerFrame * maxFrames;
     // We need to add some overhead for the AudioBufferList data structures.
     bufferSize += 2048;
-    // TODO: Size the buffer appropriately, as we may need to accumulate more than maxFrames.
+    // TODO: Size the buffer appropriately, as we may need to accumulate more than maxFrames due to bursty processing.
     bufferSize *= 12;
 
     // TODO: If we are re-allocating then check the size?
@@ -81,14 +79,11 @@ void prepare(MTAudioProcessingTapRef tap,
 
 void unprepare(MTAudioProcessingTapRef tap) {
     // Prevent any more frames from being consumed. Note that this might end audio playback early.
-    ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
-    TPCircularBuffer *buffer = NULL;
+    TPCircularBuffer *buffer = (TPCircularBuffer *)MTAudioProcessingTapGetStorage(tap);
 
     TPCircularBufferClear(buffer);
-    if (audioFormat) {
-        free(audioFormat);
-        audioFormat = NULL;
-    }
+    free(audioFormat);
+    audioFormat = NULL;
 }
 
 void process(MTAudioProcessingTapRef tap,
@@ -97,14 +92,14 @@ void process(MTAudioProcessingTapRef tap,
              AudioBufferList *bufferListInOut,
              CMItemCount *numberFramesOut,
              MTAudioProcessingTapFlags *flagsOut) {
-    ExampleAVPlayerAudioDevice *device = (__bridge ExampleAVPlayerAudioDevice *) MTAudioProcessingTapGetStorage(tap);
-    TPCircularBuffer *buffer = NULL;
+    TPCircularBuffer *buffer = (TPCircularBuffer *)MTAudioProcessingTapGetStorage(tap);
 
+    CMTimeRange sourceRange;
     OSStatus status = MTAudioProcessingTapGetSourceAudio(tap,
                                                          numberFrames,
                                                          bufferListInOut,
                                                          flagsOut,
-                                                         NULL,
+                                                         &sourceRange,
                                                          numberFramesOut);
 
     if (status != kCVReturnSuccess) {
@@ -121,9 +116,14 @@ void process(MTAudioProcessingTapRef tap,
     if (!success) {
         // TODO
     }
+
+    // TODO: Silence the audio returned to AVPlayer just in case?
+//    memset(NULL, 0, numberFramesOut * )
 }
 
 @implementation ExampleAVPlayerAudioDevice
+
+@synthesize audioTapBuffer = _audioTapBuffer;
 
 #pragma mark - Init & Dealloc
 
@@ -138,10 +138,7 @@ void process(MTAudioProcessingTapRef tap,
 - (void)dealloc {
     [self unregisterAVAudioSessionObservers];
 
-    if (_audioTapBuffer != NULL) {
-        free(_audioTapBuffer);
-        _audioTapBuffer = NULL;
-    }
+    free(_audioTapBuffer);
 }
 
 + (NSString *)description {
@@ -185,7 +182,7 @@ void process(MTAudioProcessingTapRef tap,
 
     MTAudioProcessingTapCallbacks callbacks;
     callbacks.version = kMTAudioProcessingTapCallbacksVersion_0;
-    callbacks.clientInfo = (__bridge void *)(self);
+    callbacks.clientInfo = (void *)(_audioTapBuffer);
     callbacks.init = init;
     callbacks.prepare = prepare;
     callbacks.process = process;
@@ -227,10 +224,13 @@ void process(MTAudioProcessingTapRef tap,
 - (BOOL)startRendering:(nonnull TVIAudioDeviceContext)context {
     @synchronized(self) {
         NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
+        NSAssert(self.audioUnit == NULL, @"The audio unit should not be created yet.");
 
         self.renderingContext = malloc(sizeof(ExampleAVPlayerContext));
         self.renderingContext->deviceContext = context;
         self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
+
+        // TODO: Do we need to synchronize with the tap being started at this point?
         self.renderingContext->playoutBuffer = _audioTapBuffer;
 
         const NSTimeInterval sessionBufferDuration = [AVAudioSession sharedInstance].IOBufferDuration;
@@ -238,7 +238,6 @@ void process(MTAudioProcessingTapRef tap,
         const size_t sessionFramesPerBuffer = (size_t)(sessionSampleRate * sessionBufferDuration + .5);
         self.renderingContext->expectedFramesPerBuffer = sessionFramesPerBuffer;
 
-        NSAssert(self.audioUnit == NULL, @"The audio unit should not be created yet.");
         if (![self setupAudioUnit:self.renderingContext]) {
             free(self.renderingContext);
             self.renderingContext = NULL;
@@ -248,7 +247,7 @@ void process(MTAudioProcessingTapRef tap,
 
     BOOL success = [self startAudioUnit];
     if (success) {
-        TVIAudioSessionActivated(context);
+//        TVIAudioSessionActivated(context);
     }
     return success;
 }
@@ -321,7 +320,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     assert(numFrames <= context->maxFramesPerBuffer);
     assert(audioBufferSizeInBytes == (bufferList->mBuffers[0].mNumberChannels * kAudioSampleSize * numFrames));
 
-    // TODO: Include the format in the context? What if the formats are somehow not matched?
+    // TODO: Include this format in the context? What if the formats are somehow not matched?
     AudioStreamBasicDescription format;
     format.mBitsPerChannel = 16;
     format.mChannelsPerFrame = bufferList->mBuffers[0].mNumberChannels;
@@ -355,7 +354,8 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
      * to the `AVAudioSession.preferredIOBufferDuration` that we've requested.
      */
     const size_t sessionFramesPerBuffer = kMaximumFramesPerBuffer;
-    const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
+//    const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
+    const double sessionSampleRate = 44100.;
     const NSInteger sessionOutputChannels = [AVAudioSession sharedInstance].outputNumberOfChannels;
     size_t rendererChannels = sessionOutputChannels >= TVIAudioChannelsStereo ? TVIAudioChannelsStereo : TVIAudioChannelsMono;
 
