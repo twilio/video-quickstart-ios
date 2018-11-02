@@ -78,6 +78,7 @@ class ViewController: UIViewController {
     }
 
     func logMessage(messageText: String) {
+        print(messageText)
     }
 
     func connect(name: String) {
