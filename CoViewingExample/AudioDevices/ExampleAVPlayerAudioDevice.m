@@ -58,10 +58,10 @@ static size_t kMaximumFramesPerBuffer = 1156;
 @interface ExampleAVPlayerAudioDevice()
 
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
-@property (nonatomic, assign) AudioUnit voiceProcessingIO;
 @property (nonatomic, assign) AudioUnit playbackMixer;
 @property (nonatomic, assign) AudioUnit recordingMixer;
 @property (nonatomic, assign) AudioUnit recordingOutput;
+@property (nonatomic, assign) AudioUnit voiceProcessingIO;
 
 @property (nonatomic, assign, nullable) ExampleAVPlayerAudioTapContext *audioTapContext;
 @property (nonatomic, assign, nullable) TPCircularBuffer *audioTapCapturingBuffer;
