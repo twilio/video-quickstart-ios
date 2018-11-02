@@ -42,6 +42,9 @@ typedef struct ExampleAVPlayerCapturerContext {
     // Core Audio's VoiceProcessingIO audio unit.
     AudioUnit audioUnit;
 
+    // Buffer used to render into.
+    AudioBufferList *bufferList;
+
     // The buffer of AVPlayer content that we will consume.
     TPCircularBuffer *recordingBuffer;
 } ExampleAVPlayerCapturerContext;
@@ -57,9 +60,11 @@ static size_t kMaximumFramesPerBuffer = 1156;
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
 @property (nonatomic, assign) AudioUnit audioUnit;
 
+@property (nonatomic, assign, nullable) ExampleAVPlayerAudioTapContext *audioTapContext;
 @property (nonatomic, assign, nullable) TPCircularBuffer *audioTapCapturingBuffer;
 @property (nonatomic, assign, nullable) TPCircularBuffer *audioTapRenderingBuffer;
 
+@property (nonatomic, assign) AudioBufferList captureBufferList;
 @property (nonatomic, strong, nullable) TVIAudioFormat *capturingFormat;
 @property (nonatomic, assign, nullable) ExampleAVPlayerCapturerContext *capturingContext;
 @property (atomic, assign, nullable) ExampleAVPlayerRendererContext *renderingContext;
@@ -79,7 +84,8 @@ void init(MTAudioProcessingTapRef tap, void *clientInfo, void **tapStorageOut) {
 }
 
 void finalize(MTAudioProcessingTapRef tap) {
-    TPCircularBuffer *buffer = (TPCircularBuffer *)MTAudioProcessingTapGetStorage(tap);
+    ExampleAVPlayerAudioTapContext *context = (ExampleAVPlayerAudioTapContext *)MTAudioProcessingTapGetStorage(tap);
+    TPCircularBuffer *buffer = context->renderingBuffer;
     TPCircularBufferCleanup(buffer);
 }
 
@@ -91,7 +97,8 @@ void prepare(MTAudioProcessingTapRef tap,
     assert(processingFormat->mFormatID == kAudioFormatLinearPCM);
 
     // Defer init of the ring buffer memory until we understand the processing format.
-    TPCircularBuffer *buffer = (TPCircularBuffer *)MTAudioProcessingTapGetStorage(tap);
+    ExampleAVPlayerAudioTapContext *context = (ExampleAVPlayerAudioTapContext *)MTAudioProcessingTapGetStorage(tap);
+    TPCircularBuffer *buffer = context->renderingBuffer;
 
     size_t bufferSize = processingFormat->mBytesPerFrame * maxFrames;
     // We need to add some overhead for the AudioBufferList data structures.
@@ -121,7 +128,8 @@ void prepare(MTAudioProcessingTapRef tap,
 
 void unprepare(MTAudioProcessingTapRef tap) {
     // Prevent any more frames from being consumed. Note that this might end audio playback early.
-    TPCircularBuffer *buffer = (TPCircularBuffer *)MTAudioProcessingTapGetStorage(tap);
+    ExampleAVPlayerAudioTapContext *context = (ExampleAVPlayerAudioTapContext *)MTAudioProcessingTapGetStorage(tap);
+    TPCircularBuffer *buffer = context->renderingBuffer;
 
     TPCircularBufferClear(buffer);
     free(audioFormat);
@@ -139,7 +147,8 @@ void process(MTAudioProcessingTapRef tap,
              AudioBufferList *bufferListInOut,
              CMItemCount *numberFramesOut,
              MTAudioProcessingTapFlags *flagsOut) {
-    TPCircularBuffer *buffer = (TPCircularBuffer *)MTAudioProcessingTapGetStorage(tap);
+    ExampleAVPlayerAudioTapContext *context = (ExampleAVPlayerAudioTapContext *)MTAudioProcessingTapGetStorage(tap);
+    TPCircularBuffer *buffer = context->renderingBuffer;
 
     CMTimeRange sourceRange;
     OSStatus status = MTAudioProcessingTapGetSourceAudio(tap,
@@ -195,6 +204,7 @@ void process(MTAudioProcessingTapRef tap,
 
     free(_audioTapCapturingBuffer);
     free(_audioTapRenderingBuffer);
+    free(_audioTapContext);
 }
 
 + (NSString *)description {
@@ -202,7 +212,7 @@ void process(MTAudioProcessingTapRef tap,
 }
 
 /*
- * Determine at runtime the maximum slice size used by RemoteIO. Setting the stream format and sample rate doesn't
+ * Determine at runtime the maximum slice size used by our audio unit. Setting the stream format and sample rate doesn't
  * appear to impact the maximum size so we prefer to read this value once at initialization time.
  */
 + (void)initialize {
@@ -234,17 +244,21 @@ void process(MTAudioProcessingTapRef tap,
 #pragma mark - Public
 
 - (MTAudioProcessingTapRef)createProcessingTap {
-    MTAudioProcessingTapRef processingTap;
+    NSAssert(_audioTapContext == NULL, @"We should not already have an audio tap context when creating a tap.");
+    _audioTapContext = malloc(sizeof(ExampleAVPlayerAudioTapContext));
+    _audioTapContext->capturingBuffer = _audioTapCapturingBuffer;
+    _audioTapContext->renderingBuffer = _audioTapRenderingBuffer;
 
+    MTAudioProcessingTapRef processingTap;
     MTAudioProcessingTapCallbacks callbacks;
     callbacks.version = kMTAudioProcessingTapCallbacksVersion_0;
-    // TODO: Context
-    callbacks.clientInfo = (void *)(_audioTapRenderingBuffer);
     callbacks.init = init;
     callbacks.prepare = prepare;
     callbacks.process = process;
     callbacks.unprepare = unprepare;
     callbacks.finalize = finalize;
+
+    callbacks.clientInfo = (void *)(_audioTapContext);
 
     OSStatus status = MTAudioProcessingTapCreate(kCFAllocatorDefault,
                                                  &callbacks,
@@ -253,6 +267,8 @@ void process(MTAudioProcessingTapRef tap,
     if (status == kCVReturnSuccess) {
         return processingTap;
     } else {
+        free(_audioTapContext);
+        _audioTapContext = NULL;
         return NULL;
     }
 }
@@ -279,10 +295,16 @@ void process(MTAudioProcessingTapRef tap,
 }
 
 - (BOOL)startRendering:(nonnull TVIAudioDeviceContext)context {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+
     @synchronized(self) {
         NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
-        // TODO: No longer true.
-        NSAssert(self.audioUnit == NULL, @"The audio unit should not be created yet.");
+
+        // Restart the already setup graph.
+        if (_audioUnit) {
+            [self stopAudioUnit];
+            [self teardownAudioUnit];
+        }
 
         self.renderingContext = malloc(sizeof(ExampleAVPlayerRendererContext));
         self.renderingContext->deviceContext = context;
@@ -307,22 +329,25 @@ void process(MTAudioProcessingTapRef tap,
 
     BOOL success = [self startAudioUnit];
     if (success) {
-//        TVIAudioSessionActivated(context);
+        TVIAudioSessionActivated(context);
     }
     return success;
 }
 
 - (BOOL)stopRendering {
-    [self stopAudioUnit];
+    NSLog(@"%s", __PRETTY_FUNCTION__);
 
     @synchronized(self) {
         NSAssert(self.renderingContext != NULL, @"We should have a rendering context when stopping.");
-        TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
 
-        [self teardownAudioUnit];
+        if (!self.capturingContext) {
+            [self stopAudioUnit];
+            TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
+            [self teardownAudioUnit];
 
-        free(self.renderingContext);
-        self.renderingContext = NULL;
+            free(self.renderingContext);
+            self.renderingContext = NULL;
+        }
     }
 
     return YES;
@@ -331,7 +356,6 @@ void process(MTAudioProcessingTapRef tap,
 #pragma mark - TVIAudioDeviceCapturer
 
 - (nullable TVIAudioFormat *)captureFormat {
-    return nil;
     if (!_capturingFormat) {
 
         /*
@@ -345,11 +369,23 @@ void process(MTAudioProcessingTapRef tap,
 }
 
 - (BOOL)initializeCapturer {
-    return NO;
-//    return YES;
+    if (_captureBufferList.mNumberBuffers == 0) {
+        _captureBufferList.mNumberBuffers = 1;
+
+        AudioBuffer *audioBuffer = &_captureBufferList.mBuffers[0];
+        audioBuffer->mNumberChannels = kPreferredNumberOfChannels;
+
+        size_t byteSize = kMaximumFramesPerBuffer * kPreferredNumberOfChannels * 2;
+        audioBuffer->mDataByteSize = (UInt32)byteSize;
+        audioBuffer->mData = malloc(byteSize);
+    }
+
+    return YES;
 }
 
 - (BOOL)startCapturing:(nonnull TVIAudioDeviceContext)context {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+
     @synchronized(self) {
         NSAssert(self.capturingContext == NULL, @"We should not have a capturing context when starting.");
 
@@ -362,6 +398,7 @@ void process(MTAudioProcessingTapRef tap,
         self.capturingContext = malloc(sizeof(ExampleAVPlayerCapturerContext));
         self.capturingContext->deviceContext = context;
         self.capturingContext->maxFramesPerBuffer = _capturingFormat.framesPerBuffer;
+        self.capturingContext->bufferList = &_captureBufferList;
 
         // TODO: Do we need to synchronize with the tap being started at this point?
         self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;
@@ -377,12 +414,20 @@ void process(MTAudioProcessingTapRef tap,
             free(self.capturingContext);
             self.capturingContext = NULL;
             return NO;
+        } else {
+            self.capturingContext->audioUnit = _audioUnit;
         }
     }
-    return YES;
+    BOOL success = [self startAudioUnit];
+    if (success) {
+        TVIAudioSessionActivated(context);
+    }
+    return success;
 }
 
 - (BOOL)stopCapturing {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+
     @synchronized (self) {
         NSAssert(self.capturingContext != NULL, @"We should have a capturing context when stopping.");
 
@@ -470,22 +515,26 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
         return noErr;
     }
 
-    // Render into the buffer provided by the AudioUnit.
+    // Render into our recording buffer.
+    AudioBufferList *renderingBufferList = context->bufferList;
+    AudioBuffer *renderingBuffer = renderingBufferList->mBuffers;
+    UInt32 audioBufferSize = renderingBuffer->mDataByteSize;
+
+    assert(numFrames <= context->expectedFramesPerBuffer);
+
+    int8_t *audioBuffer = (int8_t *)renderingBuffer->mData;
     OSStatus status = AudioUnitRender(context->audioUnit,
                                       actionFlags,
                                       timestamp,
                                       1,
                                       numFrames,
-                                      bufferList);
+                                      renderingBufferList);
 
     if (status != noErr) {
         return status;
     }
 
     // Copy the recorded samples.
-    int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
-    UInt32 audioBufferSize = bufferList->mBuffers[0].mDataByteSize;
-
     if (context->deviceContext && audioBuffer) {
         TVIAudioDeviceWriteCaptureData(context->deviceContext, audioBuffer, audioBufferSize);
     }
@@ -542,7 +591,11 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
         NSLog(@"Error setting IOBuffer duration: %@", error);
     }
 
-    if (![session setCategory:AVAudioSessionCategoryPlayback error:&error]) {
+    if (![session setCategory:AVAudioSessionCategoryPlayAndRecord error:&error]) {
+        NSLog(@"Error setting session category: %@", error);
+    }
+
+    if (![session setMode:AVAudioSessionModeVideoChat error:&error]) {
         NSLog(@"Error setting session category: %@", error);
     }
 
@@ -559,8 +612,8 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
     AudioComponent audioComponent = AudioComponentFindNext(NULL, &audioUnitDescription);
 
     OSStatus status = AudioComponentInstanceNew(audioComponent, &_audioUnit);
-    if (status != 0) {
-        NSLog(@"Could not find RemoteIO AudioComponent instance!");
+    if (status != noErr) {
+        NSLog(@"Could not find the AudioComponent instance!");
         return NO;
     }
 
@@ -568,13 +621,11 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
      * Configure the VoiceProcessingIO audio unit. Our rendering format attempts to match what AVAudioSession requires to
      * prevent any additional format conversions after the media engine has mixed our playout audio.
      */
-    AudioStreamBasicDescription streamDescription = self.renderingFormat.streamDescription;
-
     UInt32 enableOutput = rendererContext ? 1 : 0;
     status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_EnableIO,
                                   kAudioUnitScope_Output, kOutputBus,
                                   &enableOutput, sizeof(enableOutput));
-    if (status != 0) {
+    if (status != noErr) {
         NSLog(@"Could not enable/disable output bus!");
         AudioComponentInstanceDispose(_audioUnit);
         _audioUnit = NULL;
@@ -582,10 +633,12 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
     }
 
     if (enableOutput) {
+        AudioStreamBasicDescription renderingFormatDescription = self.renderingFormat.streamDescription;
+
         status = AudioUnitSetProperty(_audioUnit, kAudioUnitProperty_StreamFormat,
                                       kAudioUnitScope_Input, kOutputBus,
-                                      &streamDescription, sizeof(streamDescription));
-        if (status != 0) {
+                                      &renderingFormatDescription, sizeof(renderingFormatDescription));
+        if (status != noErr) {
             NSLog(@"Could not set stream format on the output bus!");
             AudioComponentInstanceDispose(_audioUnit);
             _audioUnit = NULL;
@@ -612,7 +665,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
                                   kAudioUnitScope_Input, kInputBus, &enableInput,
                                   sizeof(enableInput));
 
-    if (status != 0) {
+    if (status != noErr) {
         NSLog(@"Could not enable/disable input bus!");
         AudioComponentInstanceDispose(_audioUnit);
         _audioUnit = NULL;
@@ -620,10 +673,12 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
     }
 
     if (enableInput) {
+        AudioStreamBasicDescription capturingFormatDescription = self.capturingFormat.streamDescription;
+
         status = AudioUnitSetProperty(_audioUnit, kAudioUnitProperty_StreamFormat,
-                                      kAudioUnitScope_Input, kInputBus,
-                                      &streamDescription, sizeof(streamDescription));
-        if (status != 0) {
+                                      kAudioUnitScope_Output, kInputBus,
+                                      &capturingFormatDescription, sizeof(capturingFormatDescription));
+        if (status != noErr) {
             NSLog(@"Could not set stream format on the input bus!");
             AudioComponentInstanceDispose(_audioUnit);
             _audioUnit = NULL;
@@ -637,8 +692,8 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
         status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_SetInputCallback,
                                       kAudioUnitScope_Input, kInputBus, &capturerCallback,
                                       sizeof(capturerCallback));
-        if (status != 0) {
-            NSLog(@"Could not set rendering callback!");
+        if (status != noErr) {
+            NSLog(@"Could not set capturing callback!");
             AudioComponentInstanceDispose(_audioUnit);
             _audioUnit = NULL;
             return NO;
@@ -647,7 +702,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
 
     // Finally, initialize and start the IO audio unit.
     status = AudioUnitInitialize(_audioUnit);
-    if (status != 0) {
+    if (status != noErr) {
         NSLog(@"Could not initialize the audio unit!");
         AudioComponentInstanceDispose(_audioUnit);
         _audioUnit = NULL;
@@ -659,8 +714,8 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
 
 - (BOOL)startAudioUnit {
     OSStatus status = AudioOutputUnitStart(_audioUnit);
-    if (status != 0) {
-        NSLog(@"Could not start the audio unit!");
+    if (status != noErr) {
+        NSLog(@"Could not start the audio unit. code: %d", status);
         return NO;
     }
     return YES;
@@ -668,8 +723,8 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
 
 - (BOOL)stopAudioUnit {
     OSStatus status = AudioOutputUnitStop(_audioUnit);
-    if (status != 0) {
-        NSLog(@"Could not stop the audio unit!");
+    if (status != noErr) {
+        NSLog(@"Could not stop the audio unit. code: %d", status);
         return NO;
     }
     return YES;
