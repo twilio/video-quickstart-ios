@@ -17,6 +17,10 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Wfk-me-r5H" customClass="TVIVideoView">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WzU-li-h0p">
                                 <rect key="frame" x="16" y="472" width="343" height="45"/>
                                 <constraints>
@@ -65,16 +69,22 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="6KT-Fu-sPL" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="4tB-nJ-0UG"/>
+                            <constraint firstItem="Wfk-me-r5H" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="A41-Ol-dRg"/>
                             <constraint firstItem="sdb-9X-Up8" firstAttribute="height" secondItem="WzU-li-h0p" secondAttribute="height" id="Aad-fX-Baj"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UOQ-1n-oDx" secondAttribute="trailing" constant="20" id="F14-kb-Bhx"/>
                             <constraint firstItem="sdb-9X-Up8" firstAttribute="centerX" secondItem="WzU-li-h0p" secondAttribute="centerX" id="Ixh-ur-T2X"/>
                             <constraint firstItem="sdb-9X-Up8" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="Mxg-Tr-qHV"/>
                             <constraint firstItem="sdb-9X-Up8" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="Ppn-D8-PX7"/>
+                            <constraint firstItem="Wfk-me-r5H" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="a57-XM-LJF"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="WzU-li-h0p" secondAttribute="bottom" constant="150" id="gOY-mk-5Vj"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="6KT-Fu-sPL" secondAttribute="bottom" constant="20" id="gzN-Of-gT4"/>
                             <constraint firstItem="sdb-9X-Up8" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="150" id="h7r-O4-2oa"/>
+                            <constraint firstItem="Wfk-me-r5H" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="icS-2Y-KP1"/>
+                            <constraint firstItem="Wfk-me-r5H" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" id="lVL-mT-xsP"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="sdb-9X-Up8" secondAttribute="trailing" constant="16" id="oNL-Yv-9wY"/>
+                            <constraint firstItem="Wfk-me-r5H" firstAttribute="centerX" secondItem="sdb-9X-Up8" secondAttribute="centerX" id="osw-s2-oJh"/>
                             <constraint firstItem="sdb-9X-Up8" firstAttribute="width" secondItem="WzU-li-h0p" secondAttribute="width" id="pxX-k0-kFj"/>
+                            <constraint firstItem="Wfk-me-r5H" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="xDR-X7-GOy"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="UOQ-1n-oDx" secondAttribute="bottom" constant="20" id="zjh-Fh-pHr"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -82,6 +92,7 @@
                     <connections>
                         <outlet property="localView" destination="UOQ-1n-oDx" id="xuG-rb-8kv"/>
                         <outlet property="presenterButton" destination="sdb-9X-Up8" id="Xe3-kj-7OE"/>
+                        <outlet property="remotePlayerView" destination="Wfk-me-r5H" id="G5H-Am-z9F"/>
                         <outlet property="remoteView" destination="6KT-Fu-sPL" id="CKh-S1-tE9"/>
                         <outlet property="viewerButton" destination="WzU-li-h0p" id="Ta2-6h-29E"/>
                     </connections>

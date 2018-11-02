@@ -26,6 +26,8 @@ class ViewController: UIViewController {
     var playerVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack!
 
+    let kPlayerTrackName = "player-track"
+
     var audioDevice: ExampleAVPlayerAudioDevice = ExampleAVPlayerAudioDevice()
     var videoPlayer: AVPlayer? = nil
     var videoPlayerAudioTap: ExampleAVPlayerAudioTap? = nil
@@ -39,6 +41,7 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var remoteView: TVIVideoView!
     @IBOutlet weak var localView: TVIVideoView!
+    @IBOutlet weak var remotePlayerView: TVIVideoView!
 
     static var useAudioDevice = true
     static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
@@ -52,7 +55,10 @@ class ViewController: UIViewController {
         presenterButton.titleLabel?.textColor = UIColor.white
         viewerButton.backgroundColor = UIColor.red
         viewerButton.titleLabel?.textColor = UIColor.white
+        self.remotePlayerView.contentMode = UIView.ContentMode.scaleAspectFit
+        self.remotePlayerView.isHidden = true
     }
+
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -187,9 +193,11 @@ class ViewController: UIViewController {
 
             audioMix.inputParameters = [inputParameters]
             playerItem.audioMix = audioMix
-
             // Create and publish video track.
-            if let track = TVILocalVideoTrack(capturer: videoPlayerSource!) {
+            if let track = TVILocalVideoTrack(capturer: videoPlayerSource!,
+                enabled: true,
+                constraints: nil,
+                name: kPlayerTrackName) {
                 playerVideoTrack = track
                 self.room!.localParticipant!.publishVideoTrack(track)
             }
@@ -235,6 +243,7 @@ extension ViewController : TVIRoomDelegate {
         }
 
         self.room = nil
+        self.remotePlayerView.isHidden = true
 
         self.showRoomUI(inRoom: false)
     }
@@ -308,7 +317,12 @@ extension ViewController : TVIRemoteParticipantDelegate {
         logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
 
         // Start remote rendering, and add a touch handler.
-        videoTrack.addRenderer(self.remoteView)
+        if (videoTrack.name == self.kPlayerTrackName) {
+            self.remotePlayerView.isHidden = false
+            videoTrack.addRenderer(self.remotePlayerView)
+        } else {
+            videoTrack.addRenderer(self.remoteView)
+        }
     }
 
     func unsubscribed(from videoTrack: TVIRemoteVideoTrack,
