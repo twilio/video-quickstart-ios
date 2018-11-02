@@ -58,9 +58,10 @@ static size_t kMaximumFramesPerBuffer = 1156;
 @interface ExampleAVPlayerAudioDevice()
 
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
-@property (nonatomic, assign) AudioUnit audioUnit;
+@property (nonatomic, assign) AudioUnit voiceProcessingIO;
 @property (nonatomic, assign) AudioUnit playbackMixer;
 @property (nonatomic, assign) AudioUnit recordingMixer;
+@property (nonatomic, assign) AudioUnit recordingOutput;
 
 @property (nonatomic, assign, nullable) ExampleAVPlayerAudioTapContext *audioTapContext;
 @property (nonatomic, assign, nullable) TPCircularBuffer *audioTapCapturingBuffer;
@@ -310,7 +311,7 @@ void process(MTAudioProcessingTapRef tap,
         NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
 
         // Restart the already setup graph.
-        if (_audioUnit) {
+        if (_voiceProcessingIO) {
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
@@ -334,7 +335,7 @@ void process(MTAudioProcessingTapRef tap,
             self.renderingContext = NULL;
             return NO;
         } else if (self.capturingContext) {
-            self.capturingContext->audioUnit = _audioUnit;
+            self.capturingContext->audioUnit = _voiceProcessingIO;
         }
     }
 
@@ -395,7 +396,7 @@ void process(MTAudioProcessingTapRef tap,
         NSAssert(self.capturingContext == NULL, @"We should not have a capturing context when starting.");
 
         // Restart the already setup graph.
-        if (_audioUnit) {
+        if (_voiceProcessingIO) {
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
@@ -421,7 +422,7 @@ void process(MTAudioProcessingTapRef tap,
             self.capturingContext = NULL;
             return NO;
         } else {
-            self.capturingContext->audioUnit = _audioUnit;
+            self.capturingContext->audioUnit = _voiceProcessingIO;
         }
     }
     BOOL success = [self startAudioUnit];
@@ -636,6 +637,16 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
     return audioUnitDescription;
 }
 
++ (AudioComponentDescription)genericOutputAudioCompontentDescription {
+    AudioComponentDescription audioUnitDescription;
+    audioUnitDescription.componentType = kAudioUnitType_Output;
+    audioUnitDescription.componentSubType = kAudioUnitSubType_GenericOutput;
+    audioUnitDescription.componentManufacturer = kAudioUnitManufacturer_Apple;
+    audioUnitDescription.componentFlags = 0;
+    audioUnitDescription.componentFlagsMask = 0;
+    return audioUnitDescription;
+}
+
 - (void)setupAVAudioSession {
     AVAudioSession *session = [AVAudioSession sharedInstance];
     NSError *error = nil;
@@ -672,12 +683,140 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
     }
 }
 
+- (OSStatus)setupCapturer:(ExampleAVPlayerCapturerContext *)capturerContext {
+    UInt32 enableInput = capturerContext ? 1 : 0;
+    OSStatus status = AudioUnitSetProperty(_voiceProcessingIO, kAudioOutputUnitProperty_EnableIO,
+                                           kAudioUnitScope_Input, kInputBus, &enableInput,
+                                           sizeof(enableInput));
+
+    if (status != noErr) {
+        NSLog(@"Could not enable/disable input bus!");
+        AudioComponentInstanceDispose(_voiceProcessingIO);
+        _voiceProcessingIO = NULL;
+        return status;
+    }
+
+    if (enableInput) {
+        AudioStreamBasicDescription capturingFormatDescription = self.capturingFormat.streamDescription;
+        Float64 sampleRate = capturingFormatDescription.mSampleRate;
+
+        // Setup recording mixer.
+        AudioComponentDescription mixerComponentDescription = [[self class] mixerAudioCompontentDescription];
+        AudioComponent mixerComponent = AudioComponentFindNext(NULL, &mixerComponentDescription);
+
+        OSStatus status = AudioComponentInstanceNew(mixerComponent, &_recordingMixer);
+        if (status != noErr) {
+            NSLog(@"Could not find the mixer AudioComponent instance!");
+            return status;
+        }
+
+        // Configure I/O format.
+        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_SampleRate,
+                                      kAudioUnitScope_Output, kOutputBus,
+                                      &sampleRate, sizeof(sampleRate));
+        if (status != noErr) {
+            NSLog(@"Could not set sample rate on the mixer output bus!");
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
+            return status;
+        }
+
+        // Set the sample rate for the inputs. We are not supposed to set a format?
+        //        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_SampleRate,
+        //                                      kAudioUnitScope_Input, 0,
+        //                                      &sampleRate, sizeof(sampleRate));
+        //        if (status != noErr) {
+        //            NSLog(@"Could not set sample rate on the mixer input bus 0!");
+        //            AudioComponentInstanceDispose(_audioUnit);
+        //            _audioUnit = NULL;
+        //            return NO;
+        //        }
+
+        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_StreamFormat,
+                                      kAudioUnitScope_Input, 0,
+                                      &capturingFormatDescription, sizeof(capturingFormatDescription));
+        if (status != noErr) {
+            NSLog(@"Could not set stream format on the mixer input bus 1!");
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
+            return status;
+        }
+
+        status = AudioUnitSetProperty(_voiceProcessingIO, kAudioUnitProperty_StreamFormat,
+                                      kAudioUnitScope_Output, kInputBus,
+                                      &capturingFormatDescription, sizeof(capturingFormatDescription));
+        if (status != noErr) {
+            NSLog(@"Could not set stream format on the input bus!");
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
+            return status;
+        }
+
+        // Connection: VoiceProcessingIO Output Scope, Input Bus -> Mixer Input Scope, Bus 0
+        AudioUnitConnection mixerInputConnection;
+        mixerInputConnection.sourceAudioUnit = _voiceProcessingIO;
+        mixerInputConnection.sourceOutputNumber = kInputBus;
+        mixerInputConnection.destInputNumber = 0;
+
+        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_MakeConnection,
+                                      kAudioUnitScope_Input, 0,
+                                      &mixerInputConnection, sizeof(mixerInputConnection));
+        if (status != noErr) {
+            NSLog(@"Could not connect voice processing output scope, input bus, to the mixer input!");
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
+            return status;
+        }
+
+        // Setup the rendering callbacks for the mixer.
+        UInt32 elementCount = 1;
+        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_ElementCount,
+                                      kAudioUnitScope_Input, 0, &elementCount,
+                                      sizeof(elementCount));
+        if (status != 0) {
+            NSLog(@"Could not set input element count!");
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
+            return status;
+        }
+
+        AURenderCallbackStruct mixerOutputRenderCallback;
+        mixerOutputRenderCallback.inputProc = ExampleAVPlayerAudioDeviceRecordingOutputCallback;
+        mixerOutputRenderCallback.inputProcRefCon = (void *)(capturerContext);
+        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_SetRenderCallback,
+                                      kAudioUnitScope_Output, 0, &mixerOutputRenderCallback,
+                                      sizeof(mixerOutputRenderCallback));
+        if (status != 0) {
+            NSLog(@"Could not set mixer output rendering callback!");
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
+            return status;
+        }
+
+        // Setup the I/O input callback.
+        AURenderCallbackStruct capturerCallback;
+        capturerCallback.inputProc = ExampleAVPlayerAudioDeviceRecordingInputCallback;
+        capturerCallback.inputProcRefCon = (void *)(capturerContext);
+        status = AudioUnitSetProperty(_voiceProcessingIO, kAudioOutputUnitProperty_SetInputCallback,
+                                      kAudioUnitScope_Input, kInputBus, &capturerCallback,
+                                      sizeof(capturerCallback));
+        if (status != noErr) {
+            NSLog(@"Could not set capturing callback!");
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
+            return status;
+        }
+    }
+
+    return status;
+}
+
 - (BOOL)setupAudioUnitRendererContext:(ExampleAVPlayerRendererContext *)rendererContext
                       capturerContext:(ExampleAVPlayerCapturerContext *)capturerContext {
     AudioComponentDescription audioUnitDescription = [[self class] audioUnitDescription];
     AudioComponent audioComponent = AudioComponentFindNext(NULL, &audioUnitDescription);
 
-    OSStatus status = AudioComponentInstanceNew(audioComponent, &_audioUnit);
+    OSStatus status = AudioComponentInstanceNew(audioComponent, &_voiceProcessingIO);
     if (status != noErr) {
         NSLog(@"Could not find the AudioComponent instance!");
         return NO;
@@ -688,13 +827,13 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
      * prevent any additional format conversions after the media engine has mixed our playout audio.
      */
     UInt32 enableOutput = rendererContext ? 1 : 0;
-    status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_EnableIO,
+    status = AudioUnitSetProperty(_voiceProcessingIO, kAudioOutputUnitProperty_EnableIO,
                                   kAudioUnitScope_Output, kOutputBus,
                                   &enableOutput, sizeof(enableOutput));
     if (status != noErr) {
         NSLog(@"Could not enable/disable output bus!");
-        AudioComponentInstanceDispose(_audioUnit);
-        _audioUnit = NULL;
+        AudioComponentInstanceDispose(_voiceProcessingIO);
+        _voiceProcessingIO = NULL;
         return NO;
     }
 
@@ -717,8 +856,8 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
                                       &renderingFormatDescription, sizeof(renderingFormatDescription));
         if (status != noErr) {
             NSLog(@"Could not set stream format on the mixer output bus!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
             return NO;
         }
 
@@ -727,8 +866,8 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
                                       &renderingFormatDescription, sizeof(renderingFormatDescription));
         if (status != noErr) {
             NSLog(@"Could not set stream format on the mixer input bus 0!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
             return NO;
         }
 
@@ -737,8 +876,8 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
                                       &renderingFormatDescription, sizeof(renderingFormatDescription));
         if (status != noErr) {
             NSLog(@"Could not set stream format on the mixer input bus 1!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
             return NO;
         }
 
@@ -748,23 +887,23 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
         mixerOutputConnection.sourceOutputNumber = kOutputBus;
         mixerOutputConnection.destInputNumber = kOutputBus;
 
-        status = AudioUnitSetProperty(_audioUnit, kAudioUnitProperty_MakeConnection,
+        status = AudioUnitSetProperty(_voiceProcessingIO, kAudioUnitProperty_MakeConnection,
                                       kAudioUnitScope_Input, kOutputBus,
                                       &mixerOutputConnection, sizeof(mixerOutputConnection));
         if (status != noErr) {
             NSLog(@"Could not connect the mixer output to voice processing input!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
             return NO;
         }
 
-        status = AudioUnitSetProperty(_audioUnit, kAudioUnitProperty_StreamFormat,
+        status = AudioUnitSetProperty(_voiceProcessingIO, kAudioUnitProperty_StreamFormat,
                                       kAudioUnitScope_Input, kOutputBus,
                                       &renderingFormatDescription, sizeof(renderingFormatDescription));
         if (status != noErr) {
             NSLog(@"Could not set stream format on the output bus!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
             return NO;
         }
 
@@ -775,8 +914,8 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
                                       sizeof(elementCount));
         if (status != 0) {
             NSLog(@"Could not set input element count!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
             return NO;
         }
 
@@ -788,8 +927,8 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
                                       sizeof(audioTapRenderCallback));
         if (status != 0) {
             NSLog(@"Could not set audio tap rendering callback!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
             return NO;
         }
 
@@ -801,142 +940,20 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
                                       sizeof(audioRendererRenderCallback));
         if (status != 0) {
             NSLog(@"Could not set audio renderer rendering callback!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
             return NO;
         }
     }
 
-    UInt32 enableInput = capturerContext ? 1 : 0;
-    status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_EnableIO,
-                                  kAudioUnitScope_Input, kInputBus, &enableInput,
-                                  sizeof(enableInput));
-
-    if (status != noErr) {
-        NSLog(@"Could not enable/disable input bus!");
-        AudioComponentInstanceDispose(_audioUnit);
-        _audioUnit = NULL;
-        return NO;
-    }
-
-    if (enableInput) {
-        AudioStreamBasicDescription capturingFormatDescription = self.capturingFormat.streamDescription;
-        Float64 sampleRate = capturingFormatDescription.mSampleRate;
-
-        // Setup recording mixer.
-        AudioComponentDescription mixerComponentDescription = [[self class] mixerAudioCompontentDescription];
-        AudioComponent mixerComponent = AudioComponentFindNext(NULL, &mixerComponentDescription);
-
-        OSStatus status = AudioComponentInstanceNew(mixerComponent, &_recordingMixer);
-        if (status != noErr) {
-            NSLog(@"Could not find the mixer AudioComponent instance!");
-            return NO;
-        }
-
-        // Configure I/O format.
-        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_SampleRate,
-                                      kAudioUnitScope_Output, kOutputBus,
-                                      &sampleRate, sizeof(sampleRate));
-        if (status != noErr) {
-            NSLog(@"Could not set sample rate on the mixer output bus!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
-            return NO;
-        }
-
-        // Set the sample rate for the inputs. We are not supposed to set a format?
-//        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_SampleRate,
-//                                      kAudioUnitScope_Input, 0,
-//                                      &sampleRate, sizeof(sampleRate));
-//        if (status != noErr) {
-//            NSLog(@"Could not set sample rate on the mixer input bus 0!");
-//            AudioComponentInstanceDispose(_audioUnit);
-//            _audioUnit = NULL;
-//            return NO;
-//        }
-
-        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_StreamFormat,
-                                      kAudioUnitScope_Input, 0,
-                                      &capturingFormatDescription, sizeof(capturingFormatDescription));
-        if (status != noErr) {
-            NSLog(@"Could not set stream format on the mixer input bus 1!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
-            return NO;
-        }
-
-        status = AudioUnitSetProperty(_audioUnit, kAudioUnitProperty_StreamFormat,
-                                      kAudioUnitScope_Output, kInputBus,
-                                      &capturingFormatDescription, sizeof(capturingFormatDescription));
-        if (status != noErr) {
-            NSLog(@"Could not set stream format on the input bus!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
-            return NO;
-        }
-
-        // Connection: VoiceProcessingIO Output Scope, Input Bus -> Mixer Input Scope, Bus 0
-        AudioUnitConnection mixerInputConnection;
-        mixerInputConnection.sourceAudioUnit = _audioUnit;
-        mixerInputConnection.sourceOutputNumber = kInputBus;
-        mixerInputConnection.destInputNumber = 0;
-
-        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_MakeConnection,
-                                      kAudioUnitScope_Input, 0,
-                                      &mixerInputConnection, sizeof(mixerInputConnection));
-        if (status != noErr) {
-            NSLog(@"Could not connect voice processing output scope, input bus, to the mixer input!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
-            return NO;
-        }
-
-        // Setup the rendering callbacks for the mixer.
-        UInt32 elementCount = 1;
-        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_ElementCount,
-                                      kAudioUnitScope_Input, 0, &elementCount,
-                                      sizeof(elementCount));
-        if (status != 0) {
-            NSLog(@"Could not set input element count!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
-            return NO;
-        }
-
-        AURenderCallbackStruct mixerOutputRenderCallback;
-        mixerOutputRenderCallback.inputProc = ExampleAVPlayerAudioDeviceRecordingOutputCallback;
-        mixerOutputRenderCallback.inputProcRefCon = (void *)(capturerContext);
-        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_SetRenderCallback,
-                                      kAudioUnitScope_Output, 0, &mixerOutputRenderCallback,
-                                      sizeof(mixerOutputRenderCallback));
-        if (status != 0) {
-            NSLog(@"Could not set mixer output rendering callback!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
-            return NO;
-        }
-
-        // Setup the I/O input callback.
-        AURenderCallbackStruct capturerCallback;
-        capturerCallback.inputProc = ExampleAVPlayerAudioDeviceRecordingInputCallback;
-        capturerCallback.inputProcRefCon = (void *)(capturerContext);
-        status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_SetInputCallback,
-                                      kAudioUnitScope_Input, kInputBus, &capturerCallback,
-                                      sizeof(capturerCallback));
-        if (status != noErr) {
-            NSLog(@"Could not set capturing callback!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
-            return NO;
-        }
-    }
+    [self setupCapturer:self.capturingContext];
 
     // Finally, initialize the IO audio unit and mixer (if present).
-    status = AudioUnitInitialize(_audioUnit);
+    status = AudioUnitInitialize(_voiceProcessingIO);
     if (status != noErr) {
         NSLog(@"Could not initialize the audio unit!");
-        AudioComponentInstanceDispose(_audioUnit);
-        _audioUnit = NULL;
+        AudioComponentInstanceDispose(_voiceProcessingIO);
+        _voiceProcessingIO = NULL;
         return NO;
     }
 
@@ -964,7 +981,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
 }
 
 - (BOOL)startAudioUnit {
-    OSStatus status = AudioOutputUnitStart(_audioUnit);
+    OSStatus status = AudioOutputUnitStart(_voiceProcessingIO);
     if (status != noErr) {
         NSLog(@"Could not start the audio unit. code: %d", status);
         return NO;
@@ -973,7 +990,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
 }
 
 - (BOOL)stopAudioUnit {
-    OSStatus status = AudioOutputUnitStop(_audioUnit);
+    OSStatus status = AudioOutputUnitStop(_voiceProcessingIO);
     if (status != noErr) {
         NSLog(@"Could not stop the audio unit. code: %d", status);
         return NO;
@@ -982,10 +999,10 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
 }
 
 - (void)teardownAudioUnit {
-    if (_audioUnit) {
-        AudioUnitUninitialize(_audioUnit);
-        AudioComponentInstanceDispose(_audioUnit);
-        _audioUnit = NULL;
+    if (_voiceProcessingIO) {
+        AudioUnitUninitialize(_voiceProcessingIO);
+        AudioComponentInstanceDispose(_voiceProcessingIO);
+        _voiceProcessingIO = NULL;
     }
 
     if (_playbackMixer) {
@@ -1091,7 +1108,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
     // Nothing to process while we are interrupted. We will interrogate the AVAudioSession once the interruption ends.
     if (self.isInterrupted) {
         return;
-    } else if (_audioUnit == NULL) {
+    } else if (_voiceProcessingIO == NULL) {
         return;
     }
 
