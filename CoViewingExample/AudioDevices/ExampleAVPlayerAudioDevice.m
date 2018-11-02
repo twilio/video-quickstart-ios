@@ -566,6 +566,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
                                       busNumber,
                                       numFrames,
                                       &renderingBufferList);
+
     return status;
 }
 
@@ -683,7 +684,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
     }
 }
 
-- (OSStatus)setupCapturer:(ExampleAVPlayerCapturerContext *)capturerContext {
+- (OSStatus)setupAudioCapturer:(ExampleAVPlayerCapturerContext *)capturerContext {
     UInt32 enableInput = capturerContext ? 1 : 0;
     OSStatus status = AudioUnitSetProperty(_voiceProcessingIO, kAudioOutputUnitProperty_EnableIO,
                                            kAudioUnitScope_Input, kInputBus, &enableInput,
@@ -780,19 +781,6 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
             return status;
         }
 
-        AURenderCallbackStruct mixerOutputRenderCallback;
-        mixerOutputRenderCallback.inputProc = ExampleAVPlayerAudioDeviceRecordingOutputCallback;
-        mixerOutputRenderCallback.inputProcRefCon = (void *)(capturerContext);
-        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_SetRenderCallback,
-                                      kAudioUnitScope_Output, 0, &mixerOutputRenderCallback,
-                                      sizeof(mixerOutputRenderCallback));
-        if (status != 0) {
-            NSLog(@"Could not set mixer output rendering callback!");
-            AudioComponentInstanceDispose(_voiceProcessingIO);
-            _voiceProcessingIO = NULL;
-            return status;
-        }
-
         // Setup the I/O input callback.
         AURenderCallbackStruct capturerCallback;
         capturerCallback.inputProc = ExampleAVPlayerAudioDeviceRecordingInputCallback;
@@ -802,6 +790,46 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
                                       sizeof(capturerCallback));
         if (status != noErr) {
             NSLog(@"Could not set capturing callback!");
+            AudioComponentInstanceDispose(_voiceProcessingIO);
+            _voiceProcessingIO = NULL;
+            return status;
+        }
+
+        // Setup generic output.
+        AudioComponentDescription recorderOutputDescription = [[self class] genericOutputAudioCompontentDescription];
+        AudioComponent recorderOutputComponent = AudioComponentFindNext(NULL, &recorderOutputDescription);
+
+        status = AudioComponentInstanceNew(recorderOutputComponent, &_recordingOutput);
+        if (status != noErr) {
+            NSLog(@"Could not find the generic output AudioComponent instance!");
+            return status;
+        }
+
+        // Connection: Mixer Output Scope, Bus 0 -> Generic Output Input Scope, Output Bus.
+        AudioUnitConnection mixerOutputConnection;
+        mixerOutputConnection.sourceAudioUnit = _recordingMixer;
+        mixerOutputConnection.sourceOutputNumber = 0;
+        mixerOutputConnection.destInputNumber = kOutputBus;
+
+        status = AudioUnitSetProperty(_recordingOutput, kAudioUnitProperty_MakeConnection,
+                                      kAudioUnitScope_Input, kOutputBus,
+                                      &mixerOutputConnection, sizeof(mixerOutputConnection));
+        if (status != noErr) {
+            NSLog(@"Could not connect mixer output scope, output bus, to Generic Output input scope, output bus!");
+            AudioComponentInstanceDispose(_recordingOutput);
+            _recordingOutput = NULL;
+            return status;
+        }
+
+        // Setup rendering callback for the output.
+        AURenderCallbackStruct recordingOutputCallback;
+        recordingOutputCallback.inputProc = ExampleAVPlayerAudioDeviceRecordingOutputCallback;
+        recordingOutputCallback.inputProcRefCon = (void *)(capturerContext);
+        status = AudioUnitSetProperty(_recordingOutput, kAudioUnitProperty_SetRenderCallback,
+                                      kAudioUnitScope_Output, kOutputBus, &recordingOutputCallback,
+                                      sizeof(recordingOutputCallback));
+        if (status != 0) {
+            NSLog(@"Could not set mixer output rendering callback!");
             AudioComponentInstanceDispose(_voiceProcessingIO);
             _voiceProcessingIO = NULL;
             return status;
@@ -946,7 +974,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
         }
     }
 
-    [self setupCapturer:self.capturingContext];
+    [self setupAudioCapturer:self.capturingContext];
 
     // Finally, initialize the IO audio unit and mixer (if present).
     status = AudioUnitInitialize(_voiceProcessingIO);
@@ -977,6 +1005,16 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
         }
     }
 
+    if (_recordingOutput) {
+        status = AudioUnitInitialize(_recordingOutput);
+        if (status != noErr) {
+            NSLog(@"Could not initialize the recording output audio unit!");
+            AudioComponentInstanceDispose(_recordingOutput);
+            _recordingOutput = NULL;
+            return NO;
+        }
+    }
+
     return YES;
 }
 
@@ -986,6 +1024,14 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
         NSLog(@"Could not start the audio unit. code: %d", status);
         return NO;
     }
+
+    if (_recordingOutput) {
+        status = AudioOutputUnitStart(_recordingOutput);
+        if (status != noErr) {
+            NSLog(@"Could not start the recording audio unit. code: %d", status);
+            return NO;
+        }
+    }
     return YES;
 }
 
@@ -994,6 +1040,14 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
     if (status != noErr) {
         NSLog(@"Could not stop the audio unit. code: %d", status);
         return NO;
+    }
+
+    if (_recordingOutput) {
+        status = AudioOutputUnitStop(_recordingOutput);
+        if (status != noErr) {
+            NSLog(@"Could not stop the recording audio unit. code: %d", status);
+            return NO;
+        }
     }
     return YES;
 }
@@ -1009,6 +1063,18 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
         AudioUnitUninitialize(_playbackMixer);
         AudioComponentInstanceDispose(_playbackMixer);
         _playbackMixer = NULL;
+    }
+
+    if (_recordingMixer) {
+        AudioUnitUninitialize(_recordingMixer);
+        AudioComponentInstanceDispose(_recordingMixer);
+        _recordingMixer = NULL;
+    }
+
+    if (_recordingOutput) {
+        AudioUnitUninitialize(_recordingOutput);
+        AudioComponentInstanceDispose(_recordingOutput);
+        _recordingOutput = NULL;
     }
 }
 
