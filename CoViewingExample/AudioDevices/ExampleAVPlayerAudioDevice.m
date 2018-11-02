@@ -845,15 +845,25 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
 //            return NO;
 //        }
 
-//        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_StreamFormat,
-//                                      kAudioUnitScope_Input, 1,
-//                                      &capturingFormatDescription, sizeof(capturingFormatDescription));
-//        if (status != noErr) {
-//            NSLog(@"Could not set stream format on the mixer input bus 1!");
-//            AudioComponentInstanceDispose(_audioUnit);
-//            _audioUnit = NULL;
-//            return NO;
-//        }
+        status = AudioUnitSetProperty(_recordingMixer, kAudioUnitProperty_StreamFormat,
+                                      kAudioUnitScope_Input, 0,
+                                      &capturingFormatDescription, sizeof(capturingFormatDescription));
+        if (status != noErr) {
+            NSLog(@"Could not set stream format on the mixer input bus 1!");
+            AudioComponentInstanceDispose(_audioUnit);
+            _audioUnit = NULL;
+            return NO;
+        }
+
+        status = AudioUnitSetProperty(_audioUnit, kAudioUnitProperty_StreamFormat,
+                                      kAudioUnitScope_Output, kInputBus,
+                                      &capturingFormatDescription, sizeof(capturingFormatDescription));
+        if (status != noErr) {
+            NSLog(@"Could not set stream format on the input bus!");
+            AudioComponentInstanceDispose(_audioUnit);
+            _audioUnit = NULL;
+            return NO;
+        }
 
         // Connection: VoiceProcessingIO Output Scope, Input Bus -> Mixer Input Scope, Bus 0
         AudioUnitConnection mixerInputConnection;
@@ -866,16 +876,6 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
                                       &mixerInputConnection, sizeof(mixerInputConnection));
         if (status != noErr) {
             NSLog(@"Could not connect voice processing output scope, input bus, to the mixer input!");
-            AudioComponentInstanceDispose(_audioUnit);
-            _audioUnit = NULL;
-            return NO;
-        }
-
-        status = AudioUnitSetProperty(_audioUnit, kAudioUnitProperty_StreamFormat,
-                                      kAudioUnitScope_Output, kInputBus,
-                                      &capturingFormatDescription, sizeof(capturingFormatDescription));
-        if (status != noErr) {
-            NSLog(@"Could not set stream format on the input bus!");
             AudioComponentInstanceDispose(_audioUnit);
             _audioUnit = NULL;
             return NO;
