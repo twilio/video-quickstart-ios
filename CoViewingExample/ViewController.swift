@@ -23,6 +23,7 @@ class ViewController: UIViewController {
     var room: TVIRoom?
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack!
+    var playerVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack!
 
     var audioDevice: ExampleAVPlayerAudioDevice = ExampleAVPlayerAudioDevice()
@@ -186,6 +187,13 @@ class ViewController: UIViewController {
 
             audioMix.inputParameters = [inputParameters]
             playerItem.audioMix = audioMix
+
+            // Create and publish video track.
+            if let track = TVILocalVideoTrack(capturer: videoPlayerSource!) {
+                playerVideoTrack = track
+                self.room!.localParticipant!.publishVideoTrack(track)
+            }
+
         } else {
             // Abort, retry, fail?
         }

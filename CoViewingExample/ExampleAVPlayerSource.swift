@@ -6,14 +6,16 @@
 //
 
 import AVFoundation
+import TwilioVideo
 
-class ExampleAVPlayerSource: NSObject {
+class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
 
     private let sampleQueue: DispatchQueue
     private var outputTimer: CADisplayLink? = nil
     private var videoOutput: AVPlayerItemVideoOutput? = nil
+    private var captureConsumer: TVIVideoCaptureConsumer? = nil
 
-    static private var frameCounter = UInt32(0)
+    private var frameCounter = UInt32(0)
 
     init(item: AVPlayerItem) {
         sampleQueue = DispatchQueue(label: "", qos: DispatchQoS.userInteractive,
@@ -55,9 +57,16 @@ class ExampleAVPlayerSource: NSObject {
             var presentationTime = CMTime.zero
             let pixelBuffer = output.copyPixelBuffer(forItemTime: targetItemTime, itemTimeForDisplay: &presentationTime)
 
-            ExampleAVPlayerSource.frameCounter += 1
-            if ExampleAVPlayerSource.frameCounter % 500 == 0 {
-//                print("Copied new pixel buffer: ", pixelBuffer as Any)
+            if let consumer = self.captureConsumer,
+                let buffer = pixelBuffer {
+                guard let frame = TVIVideoFrame(timestamp: targetItemTime,
+                                                buffer: buffer,
+                                                orientation: TVIVideoOrientation.up) else {
+                                                    assertionFailure("We couldn't create a TVIVideoFrame with a valid CVPixelBuffer.")
+                                                    return
+                }
+
+                consumer.consumeCapturedFrame(frame)
             }
         } else {
             // TODO: Consider suspending the timer and requesting a notification when media becomes available.
@@ -66,6 +75,31 @@ class ExampleAVPlayerSource: NSObject {
 
     @objc func stopTimer() {
         outputTimer?.invalidate()
+    }
+
+    public var isScreencast: Bool {
+        get {
+            return false
+        }
+    }
+
+    public var supportedFormats: [TVIVideoFormat] {
+        get {
+            return [TVIVideoFormat()]
+        }
+    }
+
+    func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
+        DispatchQueue.main.async {
+            self.captureConsumer = consumer;
+            consumer.captureDidStart(true)
+        }
+    }
+
+    func stopCapture() {
+        DispatchQueue.main.async {
+            self.captureConsumer = nil
+        }
     }
 }
 
