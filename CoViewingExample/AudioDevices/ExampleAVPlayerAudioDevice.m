@@ -549,12 +549,22 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
         return noErr;
     }
 
+    // Render into our recording buffer.
+
+    AudioBufferList renderingBufferList;
+    renderingBufferList.mNumberBuffers = 1;
+
+    AudioBuffer *audioBuffer = &renderingBufferList.mBuffers[0];
+    audioBuffer->mNumberChannels = kPreferredNumberOfChannels;
+    audioBuffer->mDataByteSize = (UInt32)context->maxFramesPerBuffer * kPreferredNumberOfChannels * 2;
+    audioBuffer->mData = context->audioBuffer;
+
     OSStatus status = AudioUnitRender(context->audioUnit,
                                       actionFlags,
                                       timestamp,
                                       busNumber,
                                       numFrames,
-                                      bufferList);
+                                      &renderingBufferList);
     return status;
 }
 
