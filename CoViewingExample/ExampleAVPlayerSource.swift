@@ -57,7 +57,7 @@ class ExampleAVPlayerSource: NSObject {
 
             ExampleAVPlayerSource.frameCounter += 1
             if ExampleAVPlayerSource.frameCounter % 500 == 0 {
-                print("Copied new pixel buffer: ", pixelBuffer as Any)
+//                print("Copied new pixel buffer: ", pixelBuffer as Any)
             }
         } else {
             // TODO: Consider suspending the timer and requesting a notification when media becomes available.

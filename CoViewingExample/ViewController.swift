@@ -45,6 +45,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // We use the front facing camera for Co-Viewing.
+        localView.shouldMirror = true
         presenterButton.backgroundColor = UIColor.red
         presenterButton.titleLabel?.textColor = UIColor.white
         viewerButton.backgroundColor = UIColor.red
@@ -99,10 +101,7 @@ class ViewController: UIViewController {
 
             // Use the local media that we prepared earlier.
             builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
-            if (!self.isPresenter!) {
-                builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
-            }
-
+            builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
 
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
@@ -111,17 +110,15 @@ class ViewController: UIViewController {
 
         // Connect to the Room using the options we provided.
         room = TwilioVideo.connect(with: connectOptions, delegate: self)
-        print("Attempting to connect to room")
+        print("Attempting to connect to:", connectOptions.roomName as Any)
 
         self.showRoomUI(inRoom: true)
     }
 
     func prepareLocalMedia() {
-
-        // We will share local audio and video when we connect to the Room.
-
+        // All Participants share local audio and video when they connect to the Room.
         // Create an audio track.
-        if (!self.isPresenter! && localAudioTrack == nil) {
+        if (localAudioTrack == nil) {
             localAudioTrack = TVILocalAudioTrack.init()
 
             if (localAudioTrack == nil) {
@@ -129,12 +126,15 @@ class ViewController: UIViewController {
             }
         }
 
+        // Create a camera video Track.
         if (localVideoTrack == nil) {
             // Preview our local camera track in the local video preview view.
             camera = TVICameraCapturer(source: .frontCamera, delegate: nil)
             localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
             localVideoTrack.addRenderer(self.localView)
         }
+
+        // TODO: Create a player video Track.
     }
 
     func showRoomUI(inRoom: Bool) {
