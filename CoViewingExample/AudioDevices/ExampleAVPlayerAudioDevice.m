@@ -42,8 +42,8 @@ typedef struct ExampleAVPlayerCapturerContext {
     // Core Audio's VoiceProcessingIO audio unit.
     AudioUnit audioUnit;
 
-    // Buffer used to render into.
-    AudioBufferList *bufferList;
+    // Buffer used to render audio samples into.
+    int16_t *audioBuffer;
 
     // The buffer of AVPlayer content that we will consume.
     TPCircularBuffer *recordingBuffer;
@@ -64,7 +64,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 @property (nonatomic, assign, nullable) TPCircularBuffer *audioTapCapturingBuffer;
 @property (nonatomic, assign, nullable) TPCircularBuffer *audioTapRenderingBuffer;
 
-@property (nonatomic, assign) AudioBufferList captureBufferList;
+@property (nonatomic, assign) int16_t *captureBuffer;
 @property (nonatomic, strong, nullable) TVIAudioFormat *capturingFormat;
 @property (nonatomic, assign, nullable) ExampleAVPlayerCapturerContext *capturingContext;
 @property (atomic, assign, nullable) ExampleAVPlayerRendererContext *renderingContext;
@@ -295,7 +295,7 @@ void process(MTAudioProcessingTapRef tap,
 }
 
 - (BOOL)startRendering:(nonnull TVIAudioDeviceContext)context {
-    NSLog(@"%s", __PRETTY_FUNCTION__);
+    NSLog(@"%s %@", __PRETTY_FUNCTION__, self.renderingFormat);
 
     @synchronized(self) {
         NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
@@ -324,6 +324,8 @@ void process(MTAudioProcessingTapRef tap,
             free(self.renderingContext);
             self.renderingContext = NULL;
             return NO;
+        } else if (self.capturingContext) {
+            self.capturingContext->audioUnit = _audioUnit;
         }
     }
 
@@ -369,22 +371,16 @@ void process(MTAudioProcessingTapRef tap,
 }
 
 - (BOOL)initializeCapturer {
-    if (_captureBufferList.mNumberBuffers == 0) {
-        _captureBufferList.mNumberBuffers = 1;
-
-        AudioBuffer *audioBuffer = &_captureBufferList.mBuffers[0];
-        audioBuffer->mNumberChannels = kPreferredNumberOfChannels;
-
+    if (_captureBuffer == NULL) {
         size_t byteSize = kMaximumFramesPerBuffer * kPreferredNumberOfChannels * 2;
-        audioBuffer->mDataByteSize = (UInt32)byteSize;
-        audioBuffer->mData = malloc(byteSize);
+        _captureBuffer = malloc(byteSize);
     }
 
     return YES;
 }
 
 - (BOOL)startCapturing:(nonnull TVIAudioDeviceContext)context {
-    NSLog(@"%s", __PRETTY_FUNCTION__);
+    NSLog(@"%s %@", __PRETTY_FUNCTION__, self.capturingFormat);
 
     @synchronized(self) {
         NSAssert(self.capturingContext == NULL, @"We should not have a capturing context when starting.");
@@ -396,9 +392,10 @@ void process(MTAudioProcessingTapRef tap,
         }
 
         self.capturingContext = malloc(sizeof(ExampleAVPlayerCapturerContext));
+        memset(self.capturingContext, 0, sizeof(ExampleAVPlayerCapturerContext));
         self.capturingContext->deviceContext = context;
         self.capturingContext->maxFramesPerBuffer = _capturingFormat.framesPerBuffer;
-        self.capturingContext->bufferList = &_captureBufferList;
+        self.capturingContext->audioBuffer = _captureBuffer;
 
         // TODO: Do we need to synchronize with the tap being started at this point?
         self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;
@@ -438,6 +435,9 @@ void process(MTAudioProcessingTapRef tap,
 
             free(self.capturingContext);
             self.capturingContext = NULL;
+
+            free(self.captureBuffer);
+            self.captureBuffer = NULL;
         }
     }
     return YES;
@@ -516,27 +516,33 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingCallback(void *refCon,
     }
 
     // Render into our recording buffer.
-    AudioBufferList *renderingBufferList = context->bufferList;
-    AudioBuffer *renderingBuffer = renderingBufferList->mBuffers;
-    UInt32 audioBufferSize = renderingBuffer->mDataByteSize;
 
-    assert(numFrames <= context->expectedFramesPerBuffer);
+    AudioBufferList renderingBufferList;
+    renderingBufferList.mNumberBuffers = 1;
 
-    int8_t *audioBuffer = (int8_t *)renderingBuffer->mData;
+    AudioBuffer *audioBuffer = &renderingBufferList.mBuffers[0];
+    audioBuffer->mNumberChannels = kPreferredNumberOfChannels;
+    audioBuffer->mDataByteSize = (UInt32)context->maxFramesPerBuffer * kPreferredNumberOfChannels * 2;
+    audioBuffer->mData = context->audioBuffer;
+
     OSStatus status = AudioUnitRender(context->audioUnit,
                                       actionFlags,
                                       timestamp,
-                                      1,
+                                      busNumber,
                                       numFrames,
-                                      renderingBufferList);
+                                      &renderingBufferList);
 
     if (status != noErr) {
+        NSLog(@"Render failed with code: %d", status);
         return status;
     }
 
     // Copy the recorded samples.
+    int8_t *audioData = (int8_t *)audioBuffer->mData;
+    UInt32 audioDataByteSize = audioBuffer->mDataByteSize;
+
     if (context->deviceContext && audioBuffer) {
-        TVIAudioDeviceWriteCaptureData(context->deviceContext, audioBuffer, audioBufferSize);
+        TVIAudioDeviceWriteCaptureData(context->deviceContext, audioData, audioDataByteSize);
     }
 
     return noErr;
