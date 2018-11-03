@@ -21,7 +21,7 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'CoViewingExample' do
-    platform :ios, '12.0'
+    platform :ios, '11.0'
     project 'CoViewingExample.xcproject'
 
     pod 'TPCircularBuffer', '~> 1.6'
