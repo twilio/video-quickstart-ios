@@ -51,20 +51,25 @@ class ViewController: UIViewController {
         super.viewDidLoad()
 
         // We use the front facing camera for Co-Viewing.
+        let red = UIColor(red: 226.0/255.0,
+                          green: 29.0/255.0,
+                          blue: 37.0/255.0,
+                          alpha: 1.0)
+
         localView.shouldMirror = true
-        presenterButton.backgroundColor = UIColor.red
+        presenterButton.backgroundColor = red
         presenterButton.titleLabel?.textColor = UIColor.white
-        viewerButton.backgroundColor = UIColor.red
+        viewerButton.backgroundColor = red
         viewerButton.titleLabel?.textColor = UIColor.white
         self.remotePlayerView.contentMode = UIView.ContentMode.scaleAspectFit
         self.remotePlayerView.isHidden = true
-        self.hangupButton.backgroundColor = UIColor.red
+        self.hangupButton.backgroundColor = red
         self.hangupButton.titleLabel?.textColor = UIColor.white
         self.hangupButton.isHidden = true
 
-        presenterButton.layer.cornerRadius = 5;
-        viewerButton.layer.cornerRadius = 5;
-        hangupButton.layer.cornerRadius = 5;
+        presenterButton.layer.cornerRadius = 4;
+        viewerButton.layer.cornerRadius = 4;
+        hangupButton.layer.cornerRadius = 2;
 
         self.localView.contentMode = UIView.ContentMode.scaleAspectFit
         self.remoteView.contentMode = UIView.ContentMode.scaleAspectFit

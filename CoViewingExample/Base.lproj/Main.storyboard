@@ -36,12 +36,12 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ojd-F2-ENB">
-                                <rect key="frame" x="225" y="30" width="140" height="46"/>
+                                <rect key="frame" x="249" y="30" width="116" height="46"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="140" id="Wik-QB-Vnz"/>
+                                    <constraint firstAttribute="width" constant="116" id="Wik-QB-Vnz"/>
                                     <constraint firstAttribute="height" constant="46" id="gB6-b4-cDl"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="22"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                 <state key="normal" title="Disconnect">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
