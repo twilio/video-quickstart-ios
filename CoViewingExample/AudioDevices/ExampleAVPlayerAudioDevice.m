@@ -697,7 +697,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
         return status;
     } else if (!enableInput) {
         // Input is not required.
-        return;
+        return noErr;
     }
 
     AudioStreamBasicDescription capturingFormatDescription = self.capturingFormat.streamDescription;
@@ -707,7 +707,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
     AudioComponentDescription mixerComponentDescription = [[self class] mixerAudioCompontentDescription];
     AudioComponent mixerComponent = AudioComponentFindNext(NULL, &mixerComponentDescription);
 
-    OSStatus status = AudioComponentInstanceNew(mixerComponent, &_recordingMixer);
+    status = AudioComponentInstanceNew(mixerComponent, &_recordingMixer);
     if (status != noErr) {
         NSLog(@"Could not find the mixer AudioComponent instance!");
         return status;
