@@ -17,7 +17,7 @@ class ViewController: UIViewController {
     var accessToken = "TWILIO_ACCESS_TOKEN"
 
     // Configure remote URL to fetch token from
-    var tokenUrl = "https://username:password@simple-signaling.appspot.com/access-token"
+    var tokenUrl = "https://username:passowrd@simple-signaling.appspot.com/access-token"
 
     // Video SDK components
     var room: TVIRoom?
@@ -25,6 +25,8 @@ class ViewController: UIViewController {
     var localVideoTrack: TVILocalVideoTrack!
     var playerVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack!
+
+    let kPlayerTrackName = "player-track"
 
     var audioDevice: ExampleAVPlayerAudioDevice = ExampleAVPlayerAudioDevice()
     var videoPlayer: AVPlayer? = nil
@@ -39,6 +41,8 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var remoteView: TVIVideoView!
     @IBOutlet weak var localView: TVIVideoView!
+    @IBOutlet weak var remotePlayerView: TVIVideoView!
+    @IBOutlet weak var hangupButton: UIButton!
 
     static var useAudioDevice = true
     static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
@@ -52,7 +56,20 @@ class ViewController: UIViewController {
         presenterButton.titleLabel?.textColor = UIColor.white
         viewerButton.backgroundColor = UIColor.red
         viewerButton.titleLabel?.textColor = UIColor.white
+        self.remotePlayerView.contentMode = UIView.ContentMode.scaleAspectFit
+        self.remotePlayerView.isHidden = true
+        self.hangupButton.backgroundColor = UIColor.red
+        self.hangupButton.titleLabel?.textColor = UIColor.white
+        self.hangupButton.isHidden = true
+
+        presenterButton.layer.cornerRadius = 5;
+        viewerButton.layer.cornerRadius = 5;
+        hangupButton.layer.cornerRadius = 5;
+
+        self.localView.contentMode = UIView.ContentMode.scaleAspectFit
+        self.remoteView.contentMode = UIView.ContentMode.scaleAspectFit
     }
+
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -67,7 +84,8 @@ class ViewController: UIViewController {
     }
 
     @IBAction func startPresenter(_ sender: Any) {
-        TwilioVideo.audioDevice = audioDevice
+        self.audioDevice = ExampleAVPlayerAudioDevice()
+        TwilioVideo.audioDevice =  self.audioDevice
         isPresenter = true
         connect(name: "presenter")
     }
@@ -76,6 +94,10 @@ class ViewController: UIViewController {
         TwilioVideo.audioDevice = TVIDefaultAudioDevice()
         isPresenter = false
         connect(name: "viewer")
+    }
+
+    @IBAction func hangup(_ sender: Any) {
+        self.room?.disconnect()
     }
 
     func logMessage(messageText: String) {
@@ -140,8 +162,14 @@ class ViewController: UIViewController {
     }
 
     func showRoomUI(inRoom: Bool) {
-        self.presenterButton.isHidden = true
-        self.viewerButton.isHidden = true
+        self.hangupButton.isHidden = !inRoom
+        self.localView.isHidden = !inRoom
+        if (self.isPresenter == false) {
+            self.remotePlayerView.isHidden = !inRoom
+        }
+        self.remoteView.isHidden = !inRoom
+        self.presenterButton.isHidden = inRoom
+        self.viewerButton.isHidden = inRoom
     }
 
     func startVideoPlayer() {
@@ -187,9 +215,11 @@ class ViewController: UIViewController {
 
             audioMix.inputParameters = [inputParameters]
             playerItem.audioMix = audioMix
-
             // Create and publish video track.
-            if let track = TVILocalVideoTrack(capturer: videoPlayerSource!) {
+            if let track = TVILocalVideoTrack(capturer: videoPlayerSource!,
+                enabled: true,
+                constraints: nil,
+                name: kPlayerTrackName) {
                 playerVideoTrack = track
                 self.room!.localParticipant!.publishVideoTrack(track)
             }
@@ -225,6 +255,8 @@ extension ViewController : TVIRoomDelegate {
 
         let connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
         logMessage(messageText: connectMessage)
+
+        self.showRoomUI(inRoom: true)
     }
 
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
@@ -234,9 +266,12 @@ extension ViewController : TVIRoomDelegate {
             logMessage(messageText: "Disconnected from \(room.name)")
         }
 
-        self.room = nil
 
+        stopVideoPlayer()
         self.showRoomUI(inRoom: false)
+        self.localVideoTrack = nil;
+        self.localAudioTrack = nil;
+        self.playerVideoTrack = nil;
     }
 
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
@@ -308,7 +343,12 @@ extension ViewController : TVIRemoteParticipantDelegate {
         logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
 
         // Start remote rendering, and add a touch handler.
-        videoTrack.addRenderer(self.remoteView)
+        if (videoTrack.name == self.kPlayerTrackName) {
+            self.remotePlayerView.isHidden = false
+            videoTrack.addRenderer(self.remotePlayerView)
+        } else {
+            videoTrack.addRenderer(self.remoteView)
+        }
     }
 
     func unsubscribed(from videoTrack: TVIRemoteVideoTrack,
