@@ -744,7 +744,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
         return status;
     }
 
-    // Connection: VoiceProcessingIO Output Scope, Input Bus -> Mixer Input Scope, Bus 0
+    // Connection: VoiceProcessingIO Output Scope, Input Bus (1) -> Mixer Input Scope, Bus 0
     AudioUnitConnection mixerInputConnection;
     mixerInputConnection.sourceAudioUnit = _voiceProcessingIO;
     mixerInputConnection.sourceOutputNumber = kInputBus;
@@ -820,7 +820,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
                                   kAudioUnitScope_Output, kOutputBus, &recordingOutputCallback,
                                   sizeof(recordingOutputCallback));
     if (status != 0) {
-        NSLog(@"Could not set mixer output rendering callback!");
+        NSLog(@"Could not set mixer output rendering callback! code: %d", status);
         AudioComponentInstanceDispose(_voiceProcessingIO);
         _voiceProcessingIO = NULL;
         return status;
@@ -868,7 +868,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingOutputCallback(void *refCon,
             return NO;
         }
 
-        // Configure I/O format.
+        // Configure the mixer's output format.
         status = AudioUnitSetProperty(_playbackMixer, kAudioUnitProperty_StreamFormat,
                                       kAudioUnitScope_Output, kOutputBus,
                                       &renderingFormatDescription, sizeof(renderingFormatDescription));
