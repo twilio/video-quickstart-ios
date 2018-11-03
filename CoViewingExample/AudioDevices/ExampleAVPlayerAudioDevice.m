@@ -90,14 +90,20 @@ static AudioConverterRef captureFormatConverter = NULL;
 static AudioConverterRef formatConverter = NULL;
 
 void init(MTAudioProcessingTapRef tap, void *clientInfo, void **tapStorageOut) {
+    NSLog(@"Init audio tap.");
+
     // Provide access to our device in the Callbacks.
     *tapStorageOut = clientInfo;
 }
 
 void finalize(MTAudioProcessingTapRef tap) {
+    NSLog(@"Finalize audio tap.");
+
     ExampleAVPlayerAudioTapContext *context = (ExampleAVPlayerAudioTapContext *)MTAudioProcessingTapGetStorage(tap);
     TPCircularBuffer *capturingBuffer = context->capturingBuffer;
     TPCircularBuffer *renderingBuffer = context->renderingBuffer;
+    dispatch_semaphore_signal(context->capturingInitSemaphore);
+    dispatch_semaphore_signal(context->renderingInitSemaphore);
     TPCircularBufferCleanup(capturingBuffer);
     TPCircularBufferCleanup(renderingBuffer);
 }
@@ -158,6 +164,8 @@ void prepare(MTAudioProcessingTapRef tap,
 }
 
 void unprepare(MTAudioProcessingTapRef tap) {
+    NSLog(@"Unpreparing audio tap.");
+
     // Prevent any more frames from being consumed. Note that this might end audio playback early.
     ExampleAVPlayerAudioTapContext *context = (ExampleAVPlayerAudioTapContext *)MTAudioProcessingTapGetStorage(tap);
     TPCircularBuffer *capturingBuffer = context->capturingBuffer;
@@ -248,8 +256,8 @@ void process(MTAudioProcessingTapRef tap,
 - (id)init {
     self = [super init];
     if (self) {
-        _audioTapCapturingBuffer = malloc(sizeof(TPCircularBuffer));
-        _audioTapRenderingBuffer = malloc(sizeof(TPCircularBuffer));
+        _audioTapCapturingBuffer = calloc(1, sizeof(TPCircularBuffer));
+        _audioTapRenderingBuffer = calloc(1, sizeof(TPCircularBuffer));
         _audioTapCapturingSemaphore = dispatch_semaphore_create(0);
         _audioTapRenderingSemaphore = dispatch_semaphore_create(0);
     }
@@ -328,7 +336,7 @@ void process(MTAudioProcessingTapRef tap,
                                                  kMTAudioProcessingTapCreationFlag_PostEffects,
                                                  &processingTap);
     if (status == kCVReturnSuccess) {
-        _audioTap = _audioTap;
+        _audioTap = processingTap;
         return processingTap;
     } else {
         free(_audioTapContext);
@@ -377,7 +385,7 @@ void process(MTAudioProcessingTapRef tap,
         // Ensure that we wait for the audio tap buffer to become ready.
         if (_audioTapCapturingBuffer) {
             self.renderingContext->playoutBuffer = _audioTapRenderingBuffer;
-            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 200 * 1000 * 1000);
+            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 100 * 1000 * 1000);
             dispatch_semaphore_wait(_audioTapRenderingSemaphore, timeout);
         } else {
             self.renderingContext->playoutBuffer = NULL;
@@ -442,7 +450,8 @@ void process(MTAudioProcessingTapRef tap,
 
 - (BOOL)initializeCapturer {
     if (_captureBuffer == NULL) {
-        size_t byteSize = kMaximumFramesPerBuffer * kPreferredNumberOfChannels * 2;
+        size_t byteSize = kMaximumFramesPerBuffer * 4 * 2;
+        byteSize += 16;
         _captureBuffer = malloc(byteSize);
     }
 
@@ -470,7 +479,7 @@ void process(MTAudioProcessingTapRef tap,
         // Ensure that we wait for the audio tap buffer to become ready.
         if (_audioTapCapturingBuffer) {
             self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;
-            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 200 * 1000 * 1000);
+            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 100 * 1000 * 1000);
             dispatch_semaphore_wait(_audioTapCapturingSemaphore, timeout);
         } else {
             self.capturingContext->recordingBuffer = NULL;
@@ -536,13 +545,17 @@ static void ExampleAVPlayerAudioDeviceDequeueFrames(TPCircularBuffer *buffer,
     format.mSampleRate = 44100;
 
     UInt32 framesInOut = numFrames;
-    TPCircularBufferDequeueBufferListFrames(buffer, &framesInOut, bufferList, NULL, &format);
+    if (buffer->buffer != NULL) {
+        TPCircularBufferDequeueBufferListFrames(buffer, &framesInOut, bufferList, NULL, &format);
+    } else {
+        framesInOut = 0;
+    }
 
     if (framesInOut != numFrames) {
         // Render silence for the remaining frames.
         UInt32 framesRemaining = numFrames - framesInOut;
         UInt32 bytesRemaining = framesRemaining * format.mBytesPerFrame;
-        audioBuffer += bytesRemaining;
+        audioBuffer += format.mBytesPerFrame * framesInOut;
 
         memset(audioBuffer, 0, bytesRemaining);
     }
@@ -569,7 +582,6 @@ static OSStatus ExampleAVPlayerAudioDeviceAudioTapPlaybackCallback(void *refCon,
         memset(audioBuffer, 0, audioBufferSizeInBytes);
         return noErr;
     }
-
 
     TPCircularBuffer *buffer = context->playoutBuffer;
     ExampleAVPlayerAudioDeviceDequeueFrames(buffer, numFrames, bufferList);
@@ -653,8 +665,6 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
 
     ExampleAVPlayerAudioDeviceDequeueFrames(context->recordingBuffer, numFrames, &playerBufferList);
 
-    playerAudioBuffer = &playerBufferList.mBuffers[0];
-
     // Convert the mono AVPlayer and Microphone sources into a stereo stream.
     AudioConverterRef converter = context->audioConverter;
 
@@ -669,7 +679,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
 
     AudioBuffer *microphoneConvertBuffer = &playerMicrophoneBufferList->mBuffers[1];
     microphoneConvertBuffer->mNumberChannels = microphoneAudioBuffer->mNumberChannels;
-    microphoneConvertBuffer->mDataByteSize = (UInt32)numFrames * 2;
+    microphoneConvertBuffer->mDataByteSize = microphoneAudioBuffer->mDataByteSize;
     microphoneConvertBuffer->mData = microphoneAudioBuffer->mData;
 
     // Destination buffer list.
@@ -688,11 +698,11 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
     if (status != noErr) {
         NSLog(@"Convert failed, status: %d", status);
     }
-    int8_t *playerAudioData = (int8_t *)convertedAudioBuffer->mData;
+    int8_t *convertedAudioData = (int8_t *)convertedAudioBuffer->mData;
 
     // Deliver the samples (via copying) to WebRTC.
-    if (context->deviceContext && playerAudioData) {
-        TVIAudioDeviceWriteCaptureData(context->deviceContext, playerAudioData, playerAudioBuffer->mDataByteSize);
+    if (context->deviceContext && convertedAudioData) {
+        TVIAudioDeviceWriteCaptureData(context->deviceContext, convertedAudioData, convertedAudioBuffer->mDataByteSize);
     }
 
     return status;
