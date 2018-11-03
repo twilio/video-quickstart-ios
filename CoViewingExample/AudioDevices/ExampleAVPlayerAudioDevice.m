@@ -439,6 +439,7 @@ void process(MTAudioProcessingTapRef tap,
 
             free(self.captureBuffer);
             self.captureBuffer = NULL;
+            self.capturingContext = NULL;
         }
     }
     return YES;
