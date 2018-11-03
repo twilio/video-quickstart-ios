@@ -32,9 +32,12 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
         timer.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
         outputTimer = timer
 
-        // Note: It appears requesting IOSurface backing causes a crash on iPhone X / iOS 12.0.1.
+        // We request NV12 buffers downscaled to 480p for streaming.
         let attributes = [
-//            kCVPixelBufferIOSurfacePropertiesKey as String : [],
+            // Note: It appears requesting IOSurface backing causes a crash on iPhone X / iOS 12.0.1.
+            // kCVPixelBufferIOSurfacePropertiesKey as String : [],
+            kCVPixelBufferWidthKey as String : 640,
+            kCVPixelBufferHeightKey as String : 360,
             kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
             ] as [String : Any]
 
