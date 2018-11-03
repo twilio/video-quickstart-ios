@@ -1,6 +1,6 @@
 //
 //  ExampleAVPlayerAudioDevice.h
-//  AudioDeviceExample
+//  CoViewingExample
 //
 //  Copyright © 2018 Twilio, Inc. All rights reserved.
 //
@@ -17,8 +17,8 @@
 /*
  * Creates a processing tap bound to the device instance.
  *
- * @return An `MTAudioProcessingTap` which is bound to the device, or NULL if there is an error. The caller
- * assumes all ownership of the tap, and should call CFRelease when they are finished with it.
+ * @return An `MTAudioProcessingTap`, or NULL if there is an error. The caller assumes all ownership
+ * of the tap, and should call CFRelease when they are finished with it.
  */
 - (nullable MTAudioProcessingTapRef)createProcessingTap;
 
