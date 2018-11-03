@@ -14,7 +14,6 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
     private var outputTimer: CADisplayLink? = nil
     private var videoOutput: AVPlayerItemVideoOutput? = nil
     private var captureConsumer: TVIVideoCaptureConsumer? = nil
-
     private var frameCounter = UInt32(0)
 
     init(item: AVPlayerItem) {
@@ -88,7 +87,11 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
 
     public var supportedFormats: [TVIVideoFormat] {
         get {
-            return [TVIVideoFormat()]
+            let format = TVIVideoFormat()
+            format.dimensions = CMVideoDimensions(width: 640, height: 360)
+            format.frameRate = 30
+            format.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
+            return [format]
         }
     }
 
