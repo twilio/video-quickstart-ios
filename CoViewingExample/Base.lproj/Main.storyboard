@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.30.1" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.19.1"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -32,6 +33,20 @@
                                 </state>
                                 <connections>
                                     <action selector="startViewer:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9L4-Ll-MdO"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ojd-F2-ENB">
+                                <rect key="frame" x="249" y="30" width="116" height="46"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="116" id="Wik-QB-Vnz"/>
+                                    <constraint firstAttribute="height" constant="46" id="gB6-b4-cDl"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <state key="normal" title="Disconnect">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="hangup:" destination="BYZ-38-t0r" eventType="touchUpInside" id="gW5-bP-aLd"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sdb-9X-Up8">
@@ -68,6 +83,7 @@
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="ojd-F2-ENB" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="10" id="20t-9p-vYN"/>
                             <constraint firstItem="6KT-Fu-sPL" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="4tB-nJ-0UG"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="A41-Ol-dRg"/>
                             <constraint firstItem="sdb-9X-Up8" firstAttribute="height" secondItem="WzU-li-h0p" secondAttribute="height" id="Aad-fX-Baj"/>
@@ -84,12 +100,14 @@
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="sdb-9X-Up8" secondAttribute="trailing" constant="16" id="oNL-Yv-9wY"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="centerX" secondItem="sdb-9X-Up8" secondAttribute="centerX" id="osw-s2-oJh"/>
                             <constraint firstItem="sdb-9X-Up8" firstAttribute="width" secondItem="WzU-li-h0p" secondAttribute="width" id="pxX-k0-kFj"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ojd-F2-ENB" secondAttribute="trailing" constant="10" id="swU-y5-1Fd"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="xDR-X7-GOy"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="UOQ-1n-oDx" secondAttribute="bottom" constant="20" id="zjh-Fh-pHr"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="hangupButton" destination="ojd-F2-ENB" id="m6K-yL-jEE"/>
                         <outlet property="localView" destination="UOQ-1n-oDx" id="xuG-rb-8kv"/>
                         <outlet property="presenterButton" destination="sdb-9X-Up8" id="Xe3-kj-7OE"/>
                         <outlet property="remotePlayerView" destination="Wfk-me-r5H" id="G5H-Am-z9F"/>
