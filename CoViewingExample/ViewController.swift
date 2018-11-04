@@ -129,7 +129,7 @@ class ViewController: UIViewController {
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
 
             // Use the local media that we prepared earlier.
-            builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
+            builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : []
             builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
 
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
@@ -183,52 +183,73 @@ class ViewController: UIViewController {
             return
         }
 
-        let playerItem = AVPlayerItem(url: ViewController.kRemoteContentURL)
+        let asset = AVAsset(url: ViewController.kRemoteContentURL)
+        let assetKeysToPreload = [
+            "hasProtectedContent",
+            "playable",
+            "tracks"
+        ]
+        print("Created asset with tracks:", asset.tracks as Any)
+
+        let playerItem = AVPlayerItem(asset: asset, automaticallyLoadedAssetKeys: assetKeysToPreload)
+        // Prevent excessive bandwidth usage when the content is HLS.
+        playerItem.preferredMaximumResolution = CGSize(width: 640, height: 480)
+        // Register as an observer of the player item's status property
+        playerItem.addObserver(self,
+                               forKeyPath: #keyPath(AVPlayerItem.status),
+                               options: [.old, .new],
+                               context: nil)
+
+        playerItem.addObserver(self,
+                               forKeyPath: #keyPath(AVPlayerItem.tracks),
+                               options: [.old, .new],
+                               context: nil)
+
         let player = AVPlayer(playerItem: playerItem)
+        player.volume = Float(0)
         videoPlayer = player
 
         let playerView = ExampleAVPlayerView(frame: CGRect.zero, player: player)
         videoPlayerView = playerView
 
+        setupVideoSource(item: playerItem)
+
         // We will rely on frame based layout to size and position `self.videoPlayerView`.
         self.view.insertSubview(playerView, at: 0)
         self.view.setNeedsLayout()
+    }
 
-        // TODO: Add KVO observer instead?
-        player.play()
+    func setupVideoSource(item: AVPlayerItem) {
+        videoPlayerSource = ExampleAVPlayerSource(item: item)
 
-        // Configure our video capturer to receive video samples from the AVPlayerItem.
-        videoPlayerSource = ExampleAVPlayerSource(item: playerItem)
+        // Create and publish video track.
+        if let track = TVILocalVideoTrack(capturer: videoPlayerSource!,
+                                          enabled: true,
+                                          constraints: nil,
+                                          name: kPlayerTrackName) {
+            playerVideoTrack = track
+            self.room!.localParticipant!.publishVideoTrack(track)
+        }
+    }
 
-        // Configure our audio capturer to receive audio samples from the AVPlayerItem.
+    func setupAudioMix(player: AVPlayer, playerItem: AVPlayerItem) {
         let audioMix = AVMutableAudioMix()
-        let itemAsset = playerItem.asset
-        print("Created asset with tracks: ", itemAsset.tracks as Any)
 
-        if let assetAudioTrack = itemAsset.tracks(withMediaType: AVMediaType.audio).first {
+        var audioAssetTracks: [AVAssetTrack] = []
+        for playerItemTrack in playerItem.tracks {
+            if let assetTrack = playerItemTrack.assetTrack,
+                assetTrack.mediaType == AVMediaType.audio {
+                audioAssetTracks.append(assetTrack)
+            }
+        }
+
+        if let assetAudioTrack = audioAssetTracks.first {
             let inputParameters = AVMutableAudioMixInputParameters(track: assetAudioTrack)
 
             // TODO: Memory management of the MTAudioProcessingTap.
-            if ViewController.useAudioDevice {
-                inputParameters.audioTapProcessor = audioDevice.createProcessingTap()?.takeUnretainedValue()
-                player.volume = Float(0)
-            } else {
-                let processor = ExampleAVPlayerAudioTap()
-                videoPlayerAudioTap = processor
-                inputParameters.audioTapProcessor = ExampleAVPlayerAudioTap.mediaToolboxAudioProcessingTapCreate(audioTap: processor)
-            }
-
+            inputParameters.audioTapProcessor = audioDevice.createProcessingTap()?.takeUnretainedValue()
             audioMix.inputParameters = [inputParameters]
             playerItem.audioMix = audioMix
-            // Create and publish video track.
-            if let track = TVILocalVideoTrack(capturer: videoPlayerSource!,
-                enabled: true,
-                constraints: nil,
-                name: kPlayerTrackName) {
-                playerVideoTrack = track
-                self.room!.localParticipant!.publishVideoTrack(track)
-            }
-
         } else {
             // Abort, retry, fail?
         }
@@ -241,6 +262,57 @@ class ViewController: UIViewController {
         // Remove player UI
         videoPlayerView?.removeFromSuperview()
         videoPlayerView = nil
+    }
+
+    override func observeValue(forKeyPath keyPath: String?,
+                               of object: Any?,
+                               change: [NSKeyValueChangeKey : Any]?,
+                               context: UnsafeMutableRawPointer?) {
+        // Only handle observations for the playerItemContext
+//        if object != videoPlayer?.currentItem {
+//            super.observeValue(forKeyPath: keyPath,
+//                               of: object,
+//                               change: change,
+//                               context: context)
+//            return
+//        }
+
+        if keyPath == #keyPath(AVPlayerItem.status) {
+            let status: AVPlayerItem.Status
+
+            // Get the status change from the change dictionary
+            if let statusNumber = change?[.newKey] as? NSNumber {
+                status = AVPlayerItem.Status(rawValue: statusNumber.intValue)!
+            } else {
+                status = .unknown
+            }
+
+            // Switch over the status
+            switch status {
+            case .readyToPlay:
+            // Player item is ready to play.
+                print("Playing asset with asset tracks: ", videoPlayer?.currentItem?.asset.tracks as Any)
+                videoPlayer?.play()
+                break
+            case .failed:
+            // Player item failed. See error.
+                print("Playback failed with error:", videoPlayer?.currentItem?.error as Any)
+                break
+            case .unknown:
+                // Player item is not yet ready.
+                print("Player status unknown.")
+                break
+            }
+        } else if keyPath == #keyPath(AVPlayerItem.tracks) {
+            let playerItem = object as! AVPlayerItem
+            print("Player item tracks are:", playerItem.tracks as Any)
+
+            // Configure our audio capturer to receive audio samples from the AVPlayerItem.
+            if playerItem.audioMix == nil,
+                playerItem.tracks.count > 0 {
+                setupAudioMix(player: videoPlayer!, playerItem: playerItem)
+            }
+        }
     }
 }
 
