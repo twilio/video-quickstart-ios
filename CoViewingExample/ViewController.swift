@@ -156,14 +156,14 @@ class ViewController: UIViewController {
         }
 
         // Create a camera video Track.
+        #if !targetEnvironment(simulator)
         if (localVideoTrack == nil) {
             // Preview our local camera track in the local video preview view.
             camera = TVICameraCapturer(source: .frontCamera, delegate: nil)
             localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
             localVideoTrack.addRenderer(self.localView)
         }
-
-        // TODO: Create a player video Track.
+        #endif
     }
 
     func showRoomUI(inRoom: Bool) {
