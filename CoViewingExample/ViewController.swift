@@ -36,6 +36,11 @@ class ViewController: UIViewController {
 
     var isPresenter:Bool?
 
+    @IBOutlet weak var localHeightConstraint: NSLayoutConstraint?
+    @IBOutlet weak var localWidthConstraint: NSLayoutConstraint?
+    @IBOutlet weak var remoteHeightConstraint: NSLayoutConstraint?
+    @IBOutlet weak var remoteWidthConstraint: NSLayoutConstraint?
+
     @IBOutlet weak var presenterButton: UIButton!
     @IBOutlet weak var viewerButton: UIButton!
 
@@ -44,8 +49,30 @@ class ViewController: UIViewController {
     @IBOutlet weak var remotePlayerView: TVIVideoView!
     @IBOutlet weak var hangupButton: UIButton!
 
-    static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
-//    static let kRemoteContentURL = URL(string: "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8")!
+    // Avengers: Infinity War Trailer (720p24 (1280x544) / Stereo 44.1 kHz)
+//    static let kRemoteContentURL = URL(string: "https://trailers.apple.com/movies/marvel/avengers-infinity-war/avengers-infinity-war-trailer-2_h720p.mov")!
+//    static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
+    // BitDash / BitMovin demo content. The first stream is HLS and runs into the AVPlayer / AVAudioMix issue.
+    // Straight mp4 stream without AVAudioMix issue. Audio sync is a bit off in the source, but more so in our player.
+//    static let kRemoteContentURL = URL(string: "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4")!
+//    static let kRemoteContentURL = URL(string: "https://b028.wpc.azureedge.net/80B028/Samples/a38e6323-95e9-4f1f-9b38-75eba91704e4/5f2ce531-d508-49fb-8152-647eba422aec.ism/Manifest(format=m3u8-aapl-v3)")!
+//    static let kRemoteContentURL = URL(string: "https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8")!
+    // Video only source, but at 720p30 which is the max frame rate that we can capture.
+//    static let kRemoteContentURL = URL(string: "https://download.tsi.telecom-paristech.fr/gpac/dataset/dash/uhd/mux_sources/hevcds_720p30_2M.mp4")!
+
+    // http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h720p.mov
+    static let kRemoteContentUrls = [
+        "Avengers: Infinity War Trailer 3 (720p24, 44.1 kHz)" : URL(string: "https://trailers.apple.com/movies/marvel/avengers-infinity-war/avengers-infinity-war-trailer-2_h720p.mov")!,
+        "BitDash - Parkour (HLS)" : URL(string: "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8")!,
+        "BitDash - Parkour (1080p25, 48 kHz)" : URL(string: "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4")!,
+        "Interstellar Trailer 3 (720p24, 44.1 kHz)" : URL(string: "http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h720p.mov")!,
+        "Interstellar Trailer 3 (1080p24, 44.1 kHz)" : URL(string: "http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h1080p.mov")!,
+        "Tele Quebec (HLS)" : URL(string: "https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8")!,
+        "Telecom ParisTech, GPAC (720p30)" : URL(string: "https://download.tsi.telecom-paristech.fr/gpac/dataset/dash/uhd/mux_sources/hevcds_720p30_2M.mp4")!,
+        "Telecom ParisTech, GPAC (1080p30)" : URL(string: "https://download.tsi.telecom-paristech.fr/gpac/dataset/dash/uhd/mux_sources/hevcds_1080p30_6M.mp4")!,
+        "Twilio: What is Cloud Communications? (1080p24, 44.1 kHz)" : URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
+    ]
+    static let kRemoteContentURL = kRemoteContentUrls["Twilio: What is Cloud Communications? (1080p24, 44.1 kHz)"]!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,9 +94,14 @@ class ViewController: UIViewController {
         hangupButton.layer.cornerRadius = 2;
 
         self.localView.contentMode = UIView.ContentMode.scaleAspectFit
+        self.localView.delegate = self
+        self.localWidthConstraint = self.localView.constraints.first
+        self.localHeightConstraint = self.localView.constraints.last
         self.remoteView.contentMode = UIView.ContentMode.scaleAspectFit
+        self.remoteView.delegate = self
+        self.remoteHeightConstraint = self.remoteView.constraints.first
+        self.remoteWidthConstraint = self.remoteView.constraints.last
     }
-
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -80,6 +112,38 @@ class ViewController: UIViewController {
 
         if let playerView = videoPlayerView {
             playerView.frame = CGRect(origin: CGPoint.zero, size: self.view.bounds.size)
+        }
+    }
+
+    override func updateViewConstraints() {
+        super.updateViewConstraints()
+
+        if self.localView.hasVideoData {
+            let localDimensions = self.localView.videoDimensions
+            if localDimensions.width > localDimensions.height {
+                self.localWidthConstraint?.constant = 128
+                self.localHeightConstraint?.constant = 96
+            } else {
+                self.localWidthConstraint?.constant = 96
+                self.localHeightConstraint?.constant = 128
+            }
+        }
+
+        if self.remoteView.hasVideoData {
+            let remoteDimensions = self.remoteView.videoDimensions
+            if remoteDimensions.width > remoteDimensions.height {
+                self.remoteWidthConstraint?.constant = 128
+                self.remoteHeightConstraint?.constant = 96
+            } else {
+                self.remoteWidthConstraint?.constant = 96
+                self.remoteHeightConstraint?.constant = 128
+            }
+        }
+    }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        get {
+            return self.room != nil
         }
     }
 
@@ -134,6 +198,11 @@ class ViewController: UIViewController {
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             builder.roomName = "twilio"
+
+            // Restrict video bandwidth used by viewers to improve presenter video.
+            if name == "viewer" {
+                builder.encodingParameters = TVIEncodingParameters(audioBitrate: 0, videoBitrate: 1024 * 900)
+            }
         }
 
         // Connect to the Room using the options we provided.
@@ -158,8 +227,17 @@ class ViewController: UIViewController {
         #if !targetEnvironment(simulator)
         if (localVideoTrack == nil) {
             // Preview our local camera track in the local video preview view.
+
             camera = TVICameraCapturer(source: .frontCamera, delegate: nil)
-            localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
+            let constraints = TVIVideoConstraints.init { (builder) in
+                builder.maxSize = TVIVideoConstraintsSize480x360
+                builder.maxFrameRate = TVIVideoConstraintsFrameRate24
+            }
+
+            localVideoTrack = TVILocalVideoTrack(capturer: camera!,
+                                                 enabled: true,
+                                                 constraints: constraints,
+                                                 name: "camera")
             localVideoTrack.addRenderer(self.localView)
             // We use the front facing camera only. Set mirroring each time since the renderer might be reused.
             localView.shouldMirror = true
@@ -176,6 +254,7 @@ class ViewController: UIViewController {
         self.remoteView.isHidden = !inRoom
         self.presenterButton.isHidden = inRoom
         self.viewerButton.isHidden = inRoom
+        self.setNeedsUpdateOfHomeIndicatorAutoHidden()
     }
 
     func startVideoPlayer() {
@@ -218,6 +297,7 @@ class ViewController: UIViewController {
         // We will rely on frame based layout to size and position `self.videoPlayerView`.
         self.view.insertSubview(playerView, at: 0)
         self.view.setNeedsLayout()
+        self.view.backgroundColor = UIColor.black
     }
 
     func setupVideoSource(item: AVPlayerItem) {
@@ -234,8 +314,19 @@ class ViewController: UIViewController {
     }
 
     func setupAudioMix(player: AVPlayer, playerItem: AVPlayerItem) {
+        let audioAssetTrack = firstAudioAssetTrack(playerItem: playerItem)
+        print("Setup audio mix with AssetTrack:", audioAssetTrack != nil ? audioAssetTrack as Any : " none")
+
         let audioMix = AVMutableAudioMix()
 
+        let inputParameters = AVMutableAudioMixInputParameters(track: audioAssetTrack)
+        // TODO: Memory management of the MTAudioProcessingTap.
+        inputParameters.audioTapProcessor = audioDevice!.createProcessingTap()?.takeUnretainedValue()
+        audioMix.inputParameters = [inputParameters]
+        playerItem.audioMix = audioMix
+    }
+
+    func firstAudioAssetTrack(playerItem: AVPlayerItem) -> AVAssetTrack? {
         var audioAssetTracks: [AVAssetTrack] = []
         for playerItemTrack in playerItem.tracks {
             if let assetTrack = playerItemTrack.assetTrack,
@@ -243,16 +334,21 @@ class ViewController: UIViewController {
                 audioAssetTracks.append(assetTrack)
             }
         }
+        return audioAssetTracks.first
+    }
 
-        if let assetAudioTrack = audioAssetTracks.first {
-            let inputParameters = AVMutableAudioMixInputParameters(track: assetAudioTrack)
-
-            // TODO: Memory management of the MTAudioProcessingTap.
-            inputParameters.audioTapProcessor = audioDevice!.createProcessingTap()?.takeUnretainedValue()
-            audioMix.inputParameters = [inputParameters]
-            playerItem.audioMix = audioMix
+    func updateAudioMixParameters(playerItem: AVPlayerItem) {
+        // Update the audio mix to point to the first AVAssetTrack that we find.
+        if let audioAssetTrack = firstAudioAssetTrack(playerItem: playerItem),
+            let inputParameters = playerItem.audioMix?.inputParameters.first {
+            let mutableInputParameters = inputParameters as! AVMutableAudioMixInputParameters
+            mutableInputParameters.trackID = audioAssetTrack.trackID
+            print("Update the mix input parameters to use Track Id:", audioAssetTrack.trackID as Any, "\n",
+                  "Asset:", audioAssetTrack.asset as Any, "\n",
+                  "Audio Fallbacks:", audioAssetTrack.associatedTracks(ofType: AVAssetTrack.AssociationType.audioFallback), "\n",
+                  "isPlayable:", audioAssetTrack.isPlayable)
         } else {
-            // Abort, retry, fail?
+            // TODO
         }
     }
 
@@ -310,8 +406,10 @@ class ViewController: UIViewController {
 
             // Configure our audio capturer to receive audio samples from the AVPlayerItem.
             if playerItem.audioMix == nil,
-                playerItem.tracks.count > 0 {
+                firstAudioAssetTrack(playerItem: playerItem) != nil {
                 setupAudioMix(player: videoPlayer!, playerItem: playerItem)
+            } else {
+                // Possibly update the existing mix?
             }
         }
     }
@@ -346,11 +444,11 @@ extension ViewController : TVIRoomDelegate {
 
 
         stopVideoPlayer()
-        self.showRoomUI(inRoom: false)
         self.localVideoTrack = nil;
         self.localAudioTrack = nil;
         self.playerVideoTrack = nil;
         self.room = nil
+        self.showRoomUI(inRoom: false)
         self.accessToken = "TWILIO_ACCESS_TOKEN"
     }
 
@@ -358,9 +456,9 @@ extension ViewController : TVIRoomDelegate {
         logMessage(messageText: "Failed to connect to Room:\n\(error.localizedDescription)")
 
         self.room = nil
-        self.showRoomUI(inRoom: false)
         self.localVideoTrack = nil;
         self.localAudioTrack = nil;
+        self.showRoomUI(inRoom: false)
         self.accessToken = "TWILIO_ACCESS_TOKEN"
     }
 
@@ -428,6 +526,9 @@ extension ViewController : TVIRemoteParticipantDelegate {
         if (videoTrack.name == self.kPlayerTrackName) {
             self.remotePlayerView.isHidden = false
             videoTrack.addRenderer(self.remotePlayerView)
+            UIView.animate(withDuration: 0.2) {
+                self.view.backgroundColor = UIColor.black
+            }
         } else {
             videoTrack.addRenderer(self.remoteView)
         }
@@ -509,5 +610,18 @@ extension ViewController : TVICameraCapturerDelegate {
     func cameraCapturer(_ capturer: TVICameraCapturer, didFailWithError error: Error) {
         logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
         capturer.previewView.removeFromSuperview()
+    }
+}
+
+extension ViewController : TVIVideoViewDelegate {
+    func videoViewDidReceiveData(_ view: TVIVideoView) {
+        if view == self.localView || view == self.remoteView {
+            self.view.setNeedsUpdateConstraints()
+        }
+    }
+    func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
+        if view == self.localView || view == self.remoteView {
+            self.view.setNeedsUpdateConstraints()
+        }
     }
 }

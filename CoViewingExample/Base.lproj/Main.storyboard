@@ -67,7 +67,7 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UOQ-1n-oDx" customClass="TVIVideoView">
-                                <rect key="frame" x="235" y="487" width="120" height="160"/>
+                                <rect key="frame" x="245" y="497" width="120" height="160"/>
                                 <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="120" id="I19-aQ-00p"/>
@@ -75,12 +75,10 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6KT-Fu-sPL" customClass="TVIVideoView">
-                                <rect key="frame" x="20" y="487" width="120" height="160"/>
+                                <rect key="frame" x="10" y="497" width="120" height="160"/>
                                 <color key="backgroundColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="160" id="7vC-JA-pfq"/>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="ZZE-gP-RTX"/>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="160" id="iu6-Kd-xbP"/>
                                     <constraint firstAttribute="width" constant="120" id="zss-ig-03R"/>
                                 </constraints>
                             </view>
@@ -89,23 +87,23 @@
                         <constraints>
                             <constraint firstItem="ojd-F2-ENB" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="10" id="20t-9p-vYN"/>
                             <constraint firstItem="WIy-4c-tCA" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="3UN-RH-L5S"/>
-                            <constraint firstItem="6KT-Fu-sPL" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="4tB-nJ-0UG"/>
+                            <constraint firstItem="6KT-Fu-sPL" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="10" id="4tB-nJ-0UG"/>
                             <constraint firstItem="kCg-BR-VLn" firstAttribute="top" secondItem="WIy-4c-tCA" secondAttribute="bottom" constant="16" id="5SK-bD-xpQ"/>
                             <constraint firstItem="WIy-4c-tCA" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="999" constant="40" id="8PV-RZ-3y4"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="A41-Ol-dRg"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UOQ-1n-oDx" secondAttribute="trailing" constant="20" id="F14-kb-Bhx"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UOQ-1n-oDx" secondAttribute="trailing" constant="10" id="F14-kb-Bhx"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="WIy-4c-tCA" secondAttribute="trailing" priority="999" constant="40" id="LCv-vc-0Ln"/>
                             <constraint firstItem="WIy-4c-tCA" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="LzM-wm-1ir"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="kCg-BR-VLn" secondAttribute="trailing" priority="999" constant="40" id="Zel-xZ-diT"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="a57-XM-LJF"/>
                             <constraint firstItem="kCg-BR-VLn" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="gdh-oE-qCm"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="6KT-Fu-sPL" secondAttribute="bottom" constant="20" id="gzN-Of-gT4"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="6KT-Fu-sPL" secondAttribute="bottom" constant="10" id="gzN-Of-gT4"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="icS-2Y-KP1"/>
                             <constraint firstItem="kCg-BR-VLn" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="999" constant="40" id="jpP-Jx-zzd"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" id="lVL-mT-xsP"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ojd-F2-ENB" secondAttribute="trailing" constant="10" id="swU-y5-1Fd"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="xDR-X7-GOy"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="UOQ-1n-oDx" secondAttribute="bottom" constant="20" id="zjh-Fh-pHr"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="UOQ-1n-oDx" secondAttribute="bottom" constant="10" id="zjh-Fh-pHr"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>

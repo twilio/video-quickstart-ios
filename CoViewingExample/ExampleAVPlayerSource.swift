@@ -35,8 +35,8 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
         let attributes = [
             // Note: It appears requesting IOSurface backing causes a crash on iPhone X / iOS 12.0.1.
             // kCVPixelBufferIOSurfacePropertiesKey as String : [],
-            kCVPixelBufferWidthKey as String : 640,
-            kCVPixelBufferHeightKey as String : 360,
+//            kCVPixelBufferWidthKey as String : 640,
+//            kCVPixelBufferHeightKey as String : 360,
             kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
             ] as [String : Any]
 
@@ -61,7 +61,7 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
 
             if let consumer = self.captureConsumer,
                 let buffer = pixelBuffer {
-                guard let frame = TVIVideoFrame(timestamp: targetItemTime,
+                guard let frame = TVIVideoFrame(timestamp: presentationTime,
                                                 buffer: buffer,
                                                 orientation: TVIVideoOrientation.up) else {
                                                     assertionFailure("We couldn't create a TVIVideoFrame with a valid CVPixelBuffer.")
