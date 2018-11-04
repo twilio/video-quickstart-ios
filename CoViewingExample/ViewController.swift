@@ -46,21 +46,17 @@ class ViewController: UIViewController {
 
     static var useAudioDevice = true
     static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
+//    static let kRemoteContentURL = URL(string: "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8")!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // We use the front facing camera for Co-Viewing.
         let red = UIColor(red: 226.0/255.0,
                           green: 29.0/255.0,
                           blue: 37.0/255.0,
                           alpha: 1.0)
 
-        localView.shouldMirror = true
         presenterButton.backgroundColor = red
-        presenterButton.titleLabel?.textColor = UIColor.white
-        viewerButton.backgroundColor = red
-        viewerButton.titleLabel?.textColor = UIColor.white
         self.remotePlayerView.contentMode = UIView.ContentMode.scaleAspectFit
         self.remotePlayerView.isHidden = true
         self.hangupButton.backgroundColor = red
@@ -162,6 +158,8 @@ class ViewController: UIViewController {
             camera = TVICameraCapturer(source: .frontCamera, delegate: nil)
             localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
             localVideoTrack.addRenderer(self.localView)
+            // We use the front facing camera only. Set mirroring each time since the renderer might be reused.
+            localView.shouldMirror = true
         }
         #endif
     }
@@ -349,6 +347,7 @@ extension ViewController : TVIRoomDelegate {
         self.localVideoTrack = nil;
         self.localAudioTrack = nil;
         self.playerVideoTrack = nil;
+        self.accessToken = "TWILIO_ACCESS_TOKEN"
     }
 
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {

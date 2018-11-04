@@ -22,17 +22,34 @@
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WzU-li-h0p">
-                                <rect key="frame" x="16" y="472" width="343" height="45"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kCg-BR-VLn">
+                                <rect key="frame" x="40" y="385.5" width="295" height="72"/>
+                                <color key="backgroundColor" red="0.094117647060000004" green="0.56078431370000004" blue="0.98431372549999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="45" id="C2V-1u-gSl"/>
+                                    <constraint firstAttribute="height" constant="72" id="Mic-Ga-aMK"/>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="bfs-bY-uXQ"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="22"/>
-                                <state key="normal" title="I am a viewer">
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                <state key="normal" title="Viewer">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
                                 <connections>
-                                    <action selector="startViewer:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9L4-Ll-MdO"/>
+                                    <action selector="startViewer:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Qv2-Ut-1CK"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WIy-4c-tCA">
+                                <rect key="frame" x="40" y="297.5" width="295" height="72"/>
+                                <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="72" id="VFf-Gr-VbJ"/>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="j6O-o7-ubI"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                <state key="normal" title="Presenter">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="startPresenter:" destination="BYZ-38-t0r" eventType="touchUpInside" id="E4t-JH-Skd"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ojd-F2-ENB">
@@ -47,19 +64,6 @@
                                 </state>
                                 <connections>
                                     <action selector="hangup:" destination="BYZ-38-t0r" eventType="touchUpInside" id="gW5-bP-aLd"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sdb-9X-Up8">
-                                <rect key="frame" x="16" y="170" width="343" height="45"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="45" id="iZ7-iA-HsF"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="21"/>
-                                <state key="normal" title="I am a presenter">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                </state>
-                                <connections>
-                                    <action selector="startPresenter:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Q9d-lp-HmV"/>
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UOQ-1n-oDx" customClass="TVIVideoView">
@@ -84,22 +88,21 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="ojd-F2-ENB" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="10" id="20t-9p-vYN"/>
+                            <constraint firstItem="WIy-4c-tCA" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="3UN-RH-L5S"/>
                             <constraint firstItem="6KT-Fu-sPL" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="4tB-nJ-0UG"/>
+                            <constraint firstItem="kCg-BR-VLn" firstAttribute="top" secondItem="WIy-4c-tCA" secondAttribute="bottom" constant="16" id="5SK-bD-xpQ"/>
+                            <constraint firstItem="WIy-4c-tCA" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="999" constant="40" id="8PV-RZ-3y4"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="A41-Ol-dRg"/>
-                            <constraint firstItem="sdb-9X-Up8" firstAttribute="height" secondItem="WzU-li-h0p" secondAttribute="height" id="Aad-fX-Baj"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UOQ-1n-oDx" secondAttribute="trailing" constant="20" id="F14-kb-Bhx"/>
-                            <constraint firstItem="sdb-9X-Up8" firstAttribute="centerX" secondItem="WzU-li-h0p" secondAttribute="centerX" id="Ixh-ur-T2X"/>
-                            <constraint firstItem="sdb-9X-Up8" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="Mxg-Tr-qHV"/>
-                            <constraint firstItem="sdb-9X-Up8" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="Ppn-D8-PX7"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="WIy-4c-tCA" secondAttribute="trailing" priority="999" constant="40" id="LCv-vc-0Ln"/>
+                            <constraint firstItem="WIy-4c-tCA" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="LzM-wm-1ir"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="kCg-BR-VLn" secondAttribute="trailing" priority="999" constant="40" id="Zel-xZ-diT"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="a57-XM-LJF"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="WzU-li-h0p" secondAttribute="bottom" constant="150" id="gOY-mk-5Vj"/>
+                            <constraint firstItem="kCg-BR-VLn" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="gdh-oE-qCm"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="6KT-Fu-sPL" secondAttribute="bottom" constant="20" id="gzN-Of-gT4"/>
-                            <constraint firstItem="sdb-9X-Up8" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="150" id="h7r-O4-2oa"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="icS-2Y-KP1"/>
+                            <constraint firstItem="kCg-BR-VLn" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="999" constant="40" id="jpP-Jx-zzd"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" id="lVL-mT-xsP"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="sdb-9X-Up8" secondAttribute="trailing" constant="16" id="oNL-Yv-9wY"/>
-                            <constraint firstItem="Wfk-me-r5H" firstAttribute="centerX" secondItem="sdb-9X-Up8" secondAttribute="centerX" id="osw-s2-oJh"/>
-                            <constraint firstItem="sdb-9X-Up8" firstAttribute="width" secondItem="WzU-li-h0p" secondAttribute="width" id="pxX-k0-kFj"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ojd-F2-ENB" secondAttribute="trailing" constant="10" id="swU-y5-1Fd"/>
                             <constraint firstItem="Wfk-me-r5H" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="xDR-X7-GOy"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="UOQ-1n-oDx" secondAttribute="bottom" constant="20" id="zjh-Fh-pHr"/>
@@ -109,10 +112,10 @@
                     <connections>
                         <outlet property="hangupButton" destination="ojd-F2-ENB" id="m6K-yL-jEE"/>
                         <outlet property="localView" destination="UOQ-1n-oDx" id="xuG-rb-8kv"/>
-                        <outlet property="presenterButton" destination="sdb-9X-Up8" id="Xe3-kj-7OE"/>
+                        <outlet property="presenterButton" destination="WIy-4c-tCA" id="uA5-Kt-WdK"/>
                         <outlet property="remotePlayerView" destination="Wfk-me-r5H" id="G5H-Am-z9F"/>
                         <outlet property="remoteView" destination="6KT-Fu-sPL" id="CKh-S1-tE9"/>
-                        <outlet property="viewerButton" destination="WzU-li-h0p" id="Ta2-6h-29E"/>
+                        <outlet property="viewerButton" destination="kCg-BR-VLn" id="4p9-IW-zaZ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
