@@ -28,7 +28,7 @@ class ViewController: UIViewController {
 
     let kPlayerTrackName = "player-track"
 
-    var audioDevice: ExampleAVPlayerAudioDevice = ExampleAVPlayerAudioDevice()
+    var audioDevice: ExampleAVPlayerAudioDevice?
     var videoPlayer: AVPlayer? = nil
     var videoPlayerAudioTap: ExampleAVPlayerAudioTap? = nil
     var videoPlayerSource: ExampleAVPlayerSource? = nil
@@ -44,7 +44,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var remotePlayerView: TVIVideoView!
     @IBOutlet weak var hangupButton: UIButton!
 
-    static var useAudioDevice = true
     static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
 //    static let kRemoteContentURL = URL(string: "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8")!
 
@@ -85,13 +84,17 @@ class ViewController: UIViewController {
     }
 
     @IBAction func startPresenter(_ sender: Any) {
-        self.audioDevice = ExampleAVPlayerAudioDevice()
-        TwilioVideo.audioDevice =  self.audioDevice
+        if self.audioDevice == nil {
+            let device = ExampleAVPlayerAudioDevice()
+            TwilioVideo.audioDevice =  device
+            self.audioDevice = device
+        }
         isPresenter = true
         connect(name: "presenter")
     }
 
     @IBAction func startViewer(_ sender: Any) {
+        self.audioDevice = nil
         TwilioVideo.audioDevice = TVIDefaultAudioDevice()
         isPresenter = false
         connect(name: "viewer")
@@ -245,7 +248,7 @@ class ViewController: UIViewController {
             let inputParameters = AVMutableAudioMixInputParameters(track: assetAudioTrack)
 
             // TODO: Memory management of the MTAudioProcessingTap.
-            inputParameters.audioTapProcessor = audioDevice.createProcessingTap()?.takeUnretainedValue()
+            inputParameters.audioTapProcessor = audioDevice!.createProcessingTap()?.takeUnretainedValue()
             audioMix.inputParameters = [inputParameters]
             playerItem.audioMix = audioMix
         } else {
