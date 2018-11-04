@@ -350,6 +350,7 @@ extension ViewController : TVIRoomDelegate {
         self.localVideoTrack = nil;
         self.localAudioTrack = nil;
         self.playerVideoTrack = nil;
+        self.room = nil
         self.accessToken = "TWILIO_ACCESS_TOKEN"
     }
 
@@ -357,8 +358,10 @@ extension ViewController : TVIRoomDelegate {
         logMessage(messageText: "Failed to connect to Room:\n\(error.localizedDescription)")
 
         self.room = nil
-
         self.showRoomUI(inRoom: false)
+        self.localVideoTrack = nil;
+        self.localAudioTrack = nil;
+        self.accessToken = "TWILIO_ACCESS_TOKEN"
     }
 
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
