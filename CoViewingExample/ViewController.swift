@@ -158,8 +158,10 @@ class ViewController: UIViewController {
             self.audioDevice = device
         }
         isPresenter = true
-        self.remotePlayerView.removeFromSuperview()
-        self.remotePlayerView = nil
+        if self.remotePlayerView != nil {
+            self.remotePlayerView.removeFromSuperview()
+            self.remotePlayerView = nil
+        }
         connect(name: "presenter")
     }
 
