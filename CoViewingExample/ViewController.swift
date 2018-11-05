@@ -266,8 +266,8 @@ class ViewController: UIViewController {
         print("Created asset with tracks:", asset.tracks as Any)
 
         let playerItem = AVPlayerItem(asset: asset, automaticallyLoadedAssetKeys: assetKeysToPreload)
-        // Prevent excessive bandwidth usage when the content is HLS.
-        playerItem.preferredMaximumResolution = CGSize(width: 640, height: 480)
+        // Prevent excessive resource usage when the content is HLS. We will downscale large progressively streamed content.
+        playerItem.preferredMaximumResolution = ExampleAVPlayerSource.kFrameOutputMaxRect.size
         // Register as an observer of the player item's status property
         playerItem.addObserver(self,
                                forKeyPath: #keyPath(AVPlayerItem.status),
@@ -289,8 +289,6 @@ class ViewController: UIViewController {
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handlePlayerTap))
         tapRecognizer.numberOfTapsRequired = 2
         videoPlayerView?.addGestureRecognizer(tapRecognizer)
-
-        setupVideoSource(item: playerItem)
 
         // We will rely on frame based layout to size and position `self.videoPlayerView`.
         self.view.insertSubview(playerView, at: 0)
@@ -393,12 +391,17 @@ class ViewController: UIViewController {
             // Switch over the status
             switch status {
             case .readyToPlay:
-            // Player item is ready to play.
-                print("Playing asset with asset tracks: ", videoPlayer?.currentItem?.asset.tracks as Any)
+                // Player item is ready to play.
+                print("Ready. Playing asset with tracks: ", videoPlayer?.currentItem?.asset.tracks as Any)
+                // Defer video source setup until we've loaded the asset so that we can determine downscaling for progressive streaming content.
+                if self.videoPlayerSource == nil {
+                    setupVideoSource(item: object as! AVPlayerItem)
+                }
                 videoPlayer?.play()
                 break
             case .failed:
-            // Player item failed. See error.
+                // Player item failed. See error.
+                // TODO: Show in the UI.
                 print("Playback failed with error:", videoPlayer?.currentItem?.error as Any)
                 break
             case .unknown:
@@ -415,7 +418,7 @@ class ViewController: UIViewController {
                 firstAudioAssetTrack(playerItem: playerItem) != nil {
                 setupAudioMix(player: videoPlayer!, playerItem: playerItem)
             } else {
-                // Possibly update the existing mix?
+                // TODO: Possibly update the existing mix?
             }
         }
     }

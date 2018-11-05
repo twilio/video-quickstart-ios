@@ -10,73 +10,164 @@ import TwilioVideo
 
 class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
 
-    private let sampleQueue: DispatchQueue
-    private var outputTimer: CADisplayLink? = nil
-    private var videoOutput: AVPlayerItemVideoOutput? = nil
     private var captureConsumer: TVIVideoCaptureConsumer? = nil
-    private var frameCounter = UInt32(0)
+    private let sampleQueue: DispatchQueue
+    private var timerSource: DispatchSourceTimer? = nil
+    private var videoOutput: AVPlayerItemVideoOutput? = nil
+    private var lastPresentationTimestamp: CMTime?
+    private var outputTimer: CADisplayLink? = nil
+
+    // 60 Hz = 16667, 23.976 Hz = 41708
+    static let kFrameOutputInterval = DispatchTimeInterval.microseconds(16667)
+    static let kFrameOutputLeeway = DispatchTimeInterval.milliseconds(0)
+    static let kFrameOutputSuspendTimeout = Double(1.0)
+    static let kFrameOutputMaxDimension = CGFloat(960.0)
+    static let kFrameOutputMaxRect = CGRect(x: 0, y: 0, width: kFrameOutputMaxDimension, height: kFrameOutputMaxDimension)
+    static private var useDisplayLinkTimer = true
 
     init(item: AVPlayerItem) {
-        sampleQueue = DispatchQueue(label: "", qos: DispatchQoS.userInteractive,
+        sampleQueue = DispatchQueue(label: "com.twilio.avplayersource", qos: DispatchQoS.userInteractive,
                                     attributes: DispatchQueue.Attributes(rawValue: 0),
                                     autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.workItem,
                                     target: nil)
-
         super.init()
 
-        let timer = CADisplayLink(target: self,
-                                selector: #selector(ExampleAVPlayerSource.displayLinkDidFire(displayLink:)))
-        timer.preferredFramesPerSecond = 30
-        timer.isPaused = true
-        timer.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
-        outputTimer = timer
+        let presentationSize = item.presentationSize
+        let presentationPixels = presentationSize.width * presentationSize.height
+        print("Prepare for player item with size:", presentationSize, " pixels:", presentationPixels);
 
-        // We request NV12 buffers downscaled to 480p for streaming.
-        let attributes = [
-            // Note: It appears requesting IOSurface backing causes a crash on iPhone X / iOS 12.0.1.
-            // kCVPixelBufferIOSurfacePropertiesKey as String : [],
-//            kCVPixelBufferWidthKey as String : 640,
-//            kCVPixelBufferHeightKey as String : 360,
-            kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
-            ] as [String : Any]
+        /*
+         * We might request buffers downscaled for streaming. The output will be NV12, and backed by an IOSurface
+         * even though we dont explicitly include kCVPixelBufferIOSurfacePropertiesKey.
+         */
+        let attributes: [String : Any]
+
+        if (presentationSize.width > ExampleAVPlayerSource.kFrameOutputMaxDimension ||
+            presentationSize.height > ExampleAVPlayerSource.kFrameOutputMaxDimension) {
+            let streamingRect = AVMakeRect(aspectRatio: presentationSize, insideRect: ExampleAVPlayerSource.kFrameOutputMaxRect)
+            print("Requesting downscaling to:", streamingRect.size, ".");
+
+            attributes = [
+                kCVPixelBufferWidthKey as String : Int(streamingRect.width),
+                kCVPixelBufferHeightKey as String : Int(streamingRect.height),
+                kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+                ] as [String : Any]
+        } else {
+            attributes = [
+                kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+                ] as [String : Any]
+        }
 
         videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: attributes)
         videoOutput?.setDelegate(self, queue: sampleQueue)
-        videoOutput?.requestNotificationOfMediaDataChange(withAdvanceInterval: 0.1)
+
+        if ExampleAVPlayerSource.useDisplayLinkTimer {
+            addDisplayTimer()
+        }
+        videoOutput?.requestNotificationOfMediaDataChange(withAdvanceInterval: 0.02)
 
         item.add(videoOutput!)
     }
 
-    @objc func displayLinkDidFire(displayLink: CADisplayLink) {
+    func outputFrame(itemTimestamp: CMTime) {
         guard let output = videoOutput else {
             return
         }
-
-        let targetHostTime = displayLink.targetTimestamp
-        let targetItemTime = output.itemTime(forHostTime: targetHostTime)
-
-        if output.hasNewPixelBuffer(forItemTime: targetItemTime) {
-            var presentationTime = CMTime.zero
-            let pixelBuffer = output.copyPixelBuffer(forItemTime: targetItemTime, itemTimeForDisplay: &presentationTime)
-
-            if let consumer = self.captureConsumer,
-                let buffer = pixelBuffer {
-                guard let frame = TVIVideoFrame(timestamp: presentationTime,
-                                                buffer: buffer,
-                                                orientation: TVIVideoOrientation.up) else {
-                                                    assertionFailure("We couldn't create a TVIVideoFrame with a valid CVPixelBuffer.")
-                                                    return
-                }
-
-                consumer.consumeCapturedFrame(frame)
-            }
-        } else {
+        guard let consumer = captureConsumer else {
+            return
+        }
+        if !output.hasNewPixelBuffer(forItemTime: itemTimestamp) {
             // TODO: Consider suspending the timer and requesting a notification when media becomes available.
+            print("No frame for host timestamp:", CACurrentMediaTime(), "\n",
+                  "Last presentation timestamp was:", lastPresentationTimestamp != nil ? lastPresentationTimestamp! : CMTime.zero)
+            return
+        }
+
+        var presentationTimestamp = CMTime.zero
+        let pixelBuffer = output.copyPixelBuffer(forItemTime: itemTimestamp,
+                                                 itemTimeForDisplay: &presentationTimestamp)
+        if let buffer = pixelBuffer {
+            if let lastTime = lastPresentationTimestamp {
+                // TODO: Use this info to target our DispatchSource timestamps?
+//                let delta = presentationTimestamp - lastTime
+//                print("Frame delta was:", delta)
+//                let movieTime = CVBufferGetAttachment(buffer, kCVBufferMovieTimeKey, nil)
+//                print("Movie time was:", movieTime as Any)
+            }
+            lastPresentationTimestamp = presentationTimestamp
+
+            guard let frame = TVIVideoFrame(timestamp: presentationTimestamp,
+                                            buffer: buffer,
+                                            orientation: TVIVideoOrientation.up) else {
+                                                assertionFailure("We couldn't create a TVIVideoFrame with a valid CVPixelBuffer.")
+                                                return
+            }
+            consumer.consumeCapturedFrame(frame)
+        }
+
+        if ExampleAVPlayerSource.useDisplayLinkTimer {
+            outputTimer?.isPaused = false
+        } else if timerSource == nil {
+            startTimerSource(hostTime: CACurrentMediaTime())
         }
     }
 
-    @objc func stopTimer() {
+    func startTimerSource(hostTime: CFTimeInterval) {
+        print(#function)
+
+        let source = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags.strict,
+                                                    queue: sampleQueue)
+        timerSource = source
+
+        source.setEventHandler(handler: {
+            if let output = self.videoOutput {
+                let currentHostTime = CACurrentMediaTime()
+                let currentItemTime = output.itemTime(forHostTime: currentHostTime)
+                self.outputFrame(itemTimestamp: currentItemTime)
+            }
+        })
+
+        // Thread safe cleanup of temporary storage, in case of cancellation.
+        source.setCancelHandler(handler: {
+        })
+
+        // Schedule a first time source for the full interval.
+        let deadline = DispatchTime.now() + ExampleAVPlayerSource.kFrameOutputInterval
+        source.schedule(deadline: deadline,
+                        repeating: ExampleAVPlayerSource.kFrameOutputInterval,
+                        leeway: ExampleAVPlayerSource.kFrameOutputLeeway)
+        source.resume()
+    }
+
+    func addDisplayTimer() {
+        let timer = CADisplayLink(target: self,
+                                  selector: #selector(ExampleAVPlayerSource.displayLinkDidFire(displayLink:)))
+        // Fire at the native v-sync cadence of our display. This is what AVPlayer is targeting anyways.
+        timer.preferredFramesPerSecond = 0
+        timer.isPaused = true
+        timer.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
+        outputTimer = timer
+    }
+
+    @objc func displayLinkDidFire(displayLink: CADisplayLink) {
+        if let output = self.videoOutput {
+            // We want the video content targeted for the next v-sync.
+            let targetHostTime = displayLink.targetTimestamp
+            let currentItemTime = output.itemTime(forHostTime: targetHostTime)
+            self.outputFrame(itemTimestamp: currentItemTime)
+        }
+    }
+
+    @objc func stopTimerSource() {
+        print(#function)
+
+        timerSource?.cancel()
+        timerSource = nil
+    }
+
+    func stopDisplayTimer() {
         outputTimer?.invalidate()
+        outputTimer = nil
     }
 
     public var isScreencast: Bool {
@@ -96,27 +187,47 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
     }
 
     func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
-        DispatchQueue.main.async {
-            self.captureConsumer = consumer;
-            consumer.captureDidStart(true)
-        }
+        print(#function)
+
+        self.captureConsumer = consumer;
+        consumer.captureDidStart(true)
     }
 
     func stopCapture() {
-        DispatchQueue.main.async {
-            self.captureConsumer = nil
+        print(#function)
+
+        if ExampleAVPlayerSource.useDisplayLinkTimer {
+            stopDisplayTimer()
+        } else {
+            stopTimerSource()
         }
+        self.captureConsumer = nil
     }
 }
 
 extension ExampleAVPlayerSource: AVPlayerItemOutputPullDelegate {
     func outputMediaDataWillChange(_ sender: AVPlayerItemOutput) {
         print(#function)
+
         // Begin to receive video frames.
-        outputTimer?.isPaused = false
+        let videoOutput = sender as! AVPlayerItemVideoOutput
+        let currentHostTime = CACurrentMediaTime()
+        let currentItemTime = videoOutput.itemTime(forHostTime: currentHostTime)
+
+        // We might have been called back so late that the output already has a frame ready.
+        let hasFrame = videoOutput.hasNewPixelBuffer(forItemTime: currentItemTime)
+        if hasFrame {
+            outputFrame(itemTimestamp: currentItemTime)
+        } else if ExampleAVPlayerSource.useDisplayLinkTimer {
+            outputTimer?.isPaused = false
+        } else {
+            startTimerSource(hostTime: currentHostTime);
+        }
     }
 
     func outputSequenceWasFlushed(_ output: AVPlayerItemOutput) {
+        print(#function)
+
         // TODO: Flush and output a black frame while we wait.
     }
 }
