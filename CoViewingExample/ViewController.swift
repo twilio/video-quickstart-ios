@@ -51,6 +51,8 @@ class ViewController: UIViewController {
 
     // http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h720p.mov
     static let kRemoteContentUrls = [
+        // Nice stereo separation in the trailer music. We only record in mono at the moment.
+        "American Animals Trailer 2 (720p24, 44.1 kHz)" : URL(string: "http://movietrailers.apple.com/movies/independent/american-animals/american-animals-trailer-2_h720p.mov")!,
         "Avengers: Infinity War Trailer 3 (720p24, 44.1 kHz)" : URL(string: "https://trailers.apple.com/movies/marvel/avengers-infinity-war/avengers-infinity-war-trailer-2_h720p.mov")!,
         // HLS stream which runs into the AVPlayer / AVAudioMix issue.
         "BitDash - Parkour (HLS)" : URL(string: "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8")!,
@@ -138,6 +140,12 @@ class ViewController: UIViewController {
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
+        get {
+            return self.room != nil
+        }
+    }
+
+    override var prefersStatusBarHidden: Bool {
         get {
             return self.room != nil
         }
@@ -253,6 +261,7 @@ class ViewController: UIViewController {
         self.presenterButton.isHidden = inRoom
         self.viewerButton.isHidden = inRoom
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        self.setNeedsStatusBarAppearanceUpdate()
     }
 
     func startVideoPlayer() {
