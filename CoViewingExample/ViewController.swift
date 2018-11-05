@@ -59,6 +59,8 @@ class ViewController: UIViewController {
         // Encoding in 1080p takes significantly more CPU than 720p
         "Interstellar Trailer 3 (720p24, 44.1 kHz)" : URL(string: "http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h720p.mov")!,
         "Interstellar Trailer 3 (1080p24, 44.1 kHz)" : URL(string: "http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h1080p.mov")!,
+        // Most trailers have a lot of cuts... this one not as many
+        "Mississippi Grind (720p24, 44.1 kHz)" : URL(string: "http://movietrailers.apple.com/movies/independent/mississippigrind/mississippigrind-tlr1_h1080p.mov")!,
         // HLS stream which runs into the AVPlayer / AVAudioMix issue.
         "Tele Quebec (HLS)" : URL(string: "https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8")!,
         // Video only source, but at 30 fps which is the max frame rate that we can capture.
