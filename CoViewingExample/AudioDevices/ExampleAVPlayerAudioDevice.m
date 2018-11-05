@@ -383,8 +383,8 @@ void process(MTAudioProcessingTapRef tap,
         // Ensure that we wait for the audio tap buffer to become ready.
         if (_audioTapCapturingBuffer) {
             self.renderingContext->playoutBuffer = _audioTapRenderingBuffer;
-            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 100 * 1000 * 1000);
-            dispatch_semaphore_wait(_audioTapRenderingSemaphore, timeout);
+//            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 100 * 1000 * 1000);
+//            dispatch_semaphore_wait(_audioTapRenderingSemaphore, timeout);
         } else {
             self.renderingContext->playoutBuffer = NULL;
         }
@@ -477,8 +477,8 @@ void process(MTAudioProcessingTapRef tap,
         // Ensure that we wait for the audio tap buffer to become ready.
         if (_audioTapCapturingBuffer) {
             self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;
-            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 100 * 1000 * 1000);
-            dispatch_semaphore_wait(_audioTapCapturingSemaphore, timeout);
+//            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 100 * 1000 * 1000);
+//            dispatch_semaphore_wait(_audioTapCapturingSemaphore, timeout);
         } else {
             self.capturingContext->recordingBuffer = NULL;
         }

@@ -28,8 +28,27 @@ class ExampleAVPlayerView: UIView {
         }
     }
 
+    override var contentMode: UIView.ContentMode {
+        set {
+            switch newValue {
+            case .scaleAspectFill:
+                playerLayer.videoGravity = .resizeAspectFill
+            case .scaleAspectFit:
+                playerLayer.videoGravity = .resizeAspect
+            case .scaleToFill:
+                playerLayer.videoGravity = .resize
+            default:
+                playerLayer.videoGravity = .resizeAspect
+            }
+            super.contentMode = newValue
+        }
+        
+        get {
+            return super.contentMode
+        }
+    }
+
     override class var layerClass : AnyClass {
         return AVPlayerLayer.self
     }
-
 }

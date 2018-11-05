@@ -49,30 +49,24 @@ class ViewController: UIViewController {
     @IBOutlet weak var remotePlayerView: TVIVideoView!
     @IBOutlet weak var hangupButton: UIButton!
 
-    // Avengers: Infinity War Trailer (720p24 (1280x544) / Stereo 44.1 kHz)
-//    static let kRemoteContentURL = URL(string: "https://trailers.apple.com/movies/marvel/avengers-infinity-war/avengers-infinity-war-trailer-2_h720p.mov")!
-//    static let kRemoteContentURL = URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
-    // BitDash / BitMovin demo content. The first stream is HLS and runs into the AVPlayer / AVAudioMix issue.
-    // Straight mp4 stream without AVAudioMix issue. Audio sync is a bit off in the source, but more so in our player.
-//    static let kRemoteContentURL = URL(string: "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4")!
-//    static let kRemoteContentURL = URL(string: "https://b028.wpc.azureedge.net/80B028/Samples/a38e6323-95e9-4f1f-9b38-75eba91704e4/5f2ce531-d508-49fb-8152-647eba422aec.ism/Manifest(format=m3u8-aapl-v3)")!
-//    static let kRemoteContentURL = URL(string: "https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8")!
-    // Video only source, but at 720p30 which is the max frame rate that we can capture.
-//    static let kRemoteContentURL = URL(string: "https://download.tsi.telecom-paristech.fr/gpac/dataset/dash/uhd/mux_sources/hevcds_720p30_2M.mp4")!
-
     // http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h720p.mov
     static let kRemoteContentUrls = [
         "Avengers: Infinity War Trailer 3 (720p24, 44.1 kHz)" : URL(string: "https://trailers.apple.com/movies/marvel/avengers-infinity-war/avengers-infinity-war-trailer-2_h720p.mov")!,
+        // HLS stream which runs into the AVPlayer / AVAudioMix issue.
         "BitDash - Parkour (HLS)" : URL(string: "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8")!,
+        // Progressive download mp4 version. Demonstrates that 48 kHz support is incorrect right now.
         "BitDash - Parkour (1080p25, 48 kHz)" : URL(string: "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4")!,
+        // Encoding in 1080p takes significantly more CPU than 720p
         "Interstellar Trailer 3 (720p24, 44.1 kHz)" : URL(string: "http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h720p.mov")!,
         "Interstellar Trailer 3 (1080p24, 44.1 kHz)" : URL(string: "http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h1080p.mov")!,
+        // HLS stream which runs into the AVPlayer / AVAudioMix issue.
         "Tele Quebec (HLS)" : URL(string: "https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8")!,
+        // Video only source, but at 30 fps which is the max frame rate that we can capture.
         "Telecom ParisTech, GPAC (720p30)" : URL(string: "https://download.tsi.telecom-paristech.fr/gpac/dataset/dash/uhd/mux_sources/hevcds_720p30_2M.mp4")!,
         "Telecom ParisTech, GPAC (1080p30)" : URL(string: "https://download.tsi.telecom-paristech.fr/gpac/dataset/dash/uhd/mux_sources/hevcds_1080p30_6M.mp4")!,
         "Twilio: What is Cloud Communications? (1080p24, 44.1 kHz)" : URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
     ]
-    static let kRemoteContentURL = kRemoteContentUrls["Twilio: What is Cloud Communications? (1080p24, 44.1 kHz)"]!
+    static let kRemoteContentURL = kRemoteContentUrls["Interstellar Trailer 3 (720p24, 44.1 kHz)"]!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -292,12 +286,24 @@ class ViewController: UIViewController {
         let playerView = ExampleAVPlayerView(frame: CGRect.zero, player: player)
         videoPlayerView = playerView
 
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handlePlayerTap))
+        tapRecognizer.numberOfTapsRequired = 2
+        videoPlayerView?.addGestureRecognizer(tapRecognizer)
+
         setupVideoSource(item: playerItem)
 
         // We will rely on frame based layout to size and position `self.videoPlayerView`.
         self.view.insertSubview(playerView, at: 0)
         self.view.setNeedsLayout()
-        self.view.backgroundColor = UIColor.black
+        UIView.animate(withDuration: 0.2) {
+            self.view.backgroundColor = UIColor.black
+        }
+    }
+
+    @objc func handlePlayerTap(recognizer: UITapGestureRecognizer) {
+        if let view = self.videoPlayerView {
+            view.contentMode = view.contentMode == .scaleAspectFit ? .scaleAspectFill : .scaleAspectFit
+        }
     }
 
     func setupVideoSource(item: AVPlayerItem) {
