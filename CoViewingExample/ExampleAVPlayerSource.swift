@@ -78,8 +78,8 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
         }
         if !output.hasNewPixelBuffer(forItemTime: itemTimestamp) {
             // TODO: Consider suspending the timer and requesting a notification when media becomes available.
-            print("No frame for host timestamp:", CACurrentMediaTime(), "\n",
-                  "Last presentation timestamp was:", lastPresentationTimestamp != nil ? lastPresentationTimestamp! : CMTime.zero)
+//            print("No frame for host timestamp:", CACurrentMediaTime(), "\n",
+//                  "Last presentation timestamp was:", lastPresentationTimestamp != nil ? lastPresentationTimestamp! : CMTime.zero)
             return
         }
 
