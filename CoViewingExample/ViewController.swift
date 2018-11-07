@@ -57,6 +57,8 @@ class ViewController: UIViewController {
         "Avengers: Infinity War Trailer 3 (720p24, 44.1 kHz)" : URL(string: "https://trailers.apple.com/movies/marvel/avengers-infinity-war/avengers-infinity-war-trailer-2_h720p.mov")!,
         // HLS stream which runs into the AVPlayer / AVAudioMix issue.
         "BitDash - Parkour (HLS)" : URL(string: "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8")!,
+        // 540p variant taken directly from the master playlist above. Still shows the AVPlayer issue.
+        "BitDash - Parkour (HLS, 540p)" : URL(string: "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa_video_540_1200000.m3u8")!,
         // Progressive download mp4 version. Demonstrates that 48 kHz support is incorrect right now.
         "BitDash - Parkour (1080p25, 48 kHz)" : URL(string: "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4")!,
         // Encoding in 1080p takes significantly more CPU than 720p
