@@ -14,7 +14,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        print("didFinishLaunchingWithOptions:", launchOptions as Any)
+        if let options = launchOptions,
+            let videoUrl = options[UIApplication.LaunchOptionsKey.url] as? URL {
+                let rootVC = window?.rootViewController as! ViewController
+                rootVC.startPresenter(contentUrl: videoUrl)
+        }
+        return true
+    }
+
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        print("app:openURL:", url, " options:", options as Any)
+
+        let rootVC = window?.rootViewController as! ViewController
+        rootVC.startPresenter(contentUrl: url)
+
         return true
     }
 

@@ -33,6 +33,7 @@ class ViewController: UIViewController {
     var videoPlayerAudioTap: ExampleAVPlayerAudioTap? = nil
     var videoPlayerSource: ExampleAVPlayerSource? = nil
     var videoPlayerView: ExampleAVPlayerView? = nil
+    var videoPlayerUrl: URL? = nil
 
     var isPresenter:Bool?
 
@@ -99,6 +100,10 @@ class ViewController: UIViewController {
         self.remoteView.delegate = self
         self.remoteHeightConstraint = self.remoteView.constraints.first
         self.remoteWidthConstraint = self.remoteView.constraints.last
+
+        if let videoUrl = videoPlayerUrl {
+            startPresenter(contentUrl: videoUrl)
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -152,6 +157,15 @@ class ViewController: UIViewController {
     }
 
     @IBAction func startPresenter(_ sender: Any) {
+        startPresenter(contentUrl: ViewController.kRemoteContentURL)
+    }
+
+    public func startPresenter(contentUrl: URL) {
+        videoPlayerUrl = contentUrl
+        if self.isViewLoaded == false {
+            return
+        }
+        
         if self.audioDevice == nil {
             let device = ExampleAVPlayerAudioDevice()
             TwilioVideo.audioDevice =  device
@@ -272,7 +286,7 @@ class ViewController: UIViewController {
             return
         }
 
-        let asset = AVAsset(url: ViewController.kRemoteContentURL)
+        let asset = AVAsset(url: videoPlayerUrl!)
         let assetKeysToPreload = [
             "hasProtectedContent",
             "playable",
