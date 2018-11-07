@@ -278,6 +278,12 @@ class ViewController: UIViewController {
         self.viewerButton.isHidden = inRoom
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         self.setNeedsStatusBarAppearanceUpdate()
+
+        if inRoom == false {
+            UIView.animate(withDuration: 0.2) {
+                self.view.backgroundColor = .white
+            }
+        }
     }
 
     func startVideoPlayer() {

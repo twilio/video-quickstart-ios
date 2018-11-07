@@ -77,6 +77,9 @@ static size_t kMaximumFramesPerBuffer = 1156;
 @property (nonatomic, assign, nullable) ExampleAVPlayerCapturerContext *capturingContext;
 @property (atomic, assign, nullable) ExampleAVPlayerRendererContext *renderingContext;
 @property (nonatomic, strong, nullable) TVIAudioFormat *renderingFormat;
+@property (nonatomic, assign, readonly) BOOL wantsAudio;
+@property (nonatomic, assign) BOOL wantsCapturing;
+@property (nonatomic, assign) BOOL wantsRendering;
 
 @end
 
@@ -258,6 +261,8 @@ void process(MTAudioProcessingTapRef tap,
         _audioTapRenderingBuffer = calloc(1, sizeof(TPCircularBuffer));
         _audioTapCapturingSemaphore = dispatch_semaphore_create(0);
         _audioTapRenderingSemaphore = dispatch_semaphore_create(0);
+        _wantsCapturing = NO;
+        _wantsRendering = NO;
     }
     return self;
 }
@@ -305,6 +310,10 @@ void process(MTAudioProcessingTapRef tap,
 }
 
 #pragma mark - Public
+
+- (BOOL)wantsAudio {
+    return _wantsCapturing || _wantsRendering;
+}
 
 - (MTAudioProcessingTapRef)createProcessingTap {
     if (_audioTap) {
@@ -368,23 +377,23 @@ void process(MTAudioProcessingTapRef tap,
     NSLog(@"%s %@", __PRETTY_FUNCTION__, self.renderingFormat);
 
     @synchronized(self) {
-        NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
-
         // Restart the already setup graph.
         if (_voiceProcessingIO) {
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
 
-        self.renderingContext = malloc(sizeof(ExampleAVPlayerRendererContext));
+        self.wantsRendering = YES;
+        if (!self.renderingContext) {
+            self.renderingContext = malloc(sizeof(ExampleAVPlayerRendererContext));
+            memset(self.renderingContext, 0, sizeof(ExampleAVPlayerRendererContext));
+        }
         self.renderingContext->deviceContext = context;
         self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
 
         // Ensure that we wait for the audio tap buffer to become ready.
         if (_audioTapCapturingBuffer) {
             self.renderingContext->playoutBuffer = _audioTapRenderingBuffer;
-//            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 100 * 1000 * 1000);
-//            dispatch_semaphore_wait(_audioTapRenderingSemaphore, timeout);
         } else {
             self.renderingContext->playoutBuffer = NULL;
         }
@@ -398,6 +407,7 @@ void process(MTAudioProcessingTapRef tap,
                                  capturerContext:self.capturingContext]) {
             free(self.renderingContext);
             self.renderingContext = NULL;
+            self.wantsRendering = NO;
             return NO;
         } else if (self.capturingContext) {
             self.capturingContext->audioUnit = _voiceProcessingIO;
@@ -417,11 +427,18 @@ void process(MTAudioProcessingTapRef tap,
 
     @synchronized(self) {
         NSAssert(self.renderingContext != NULL, @"We should have a rendering context when stopping.");
+        self.wantsRendering = NO;
 
-        if (!self.capturingContext) {
+        if (!self.wantsAudio) {
             [self stopAudioUnit];
             TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
             [self teardownAudioUnit];
+
+            free(self.capturingContext);
+            self.capturingContext = NULL;
+
+            free(self.captureBuffer);
+            self.captureBuffer = NULL;
 
             free(self.renderingContext);
             self.renderingContext = NULL;
@@ -460,16 +477,17 @@ void process(MTAudioProcessingTapRef tap,
     NSLog(@"%s %@", __PRETTY_FUNCTION__, self.capturingFormat);
 
     @synchronized(self) {
-        NSAssert(self.capturingContext == NULL, @"We should not have a capturing context when starting.");
-
         // Restart the already setup graph.
         if (_voiceProcessingIO) {
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
 
-        self.capturingContext = malloc(sizeof(ExampleAVPlayerCapturerContext));
-        memset(self.capturingContext, 0, sizeof(ExampleAVPlayerCapturerContext));
+        self.wantsCapturing = YES;
+        if (!self.capturingContext) {
+            self.capturingContext = malloc(sizeof(ExampleAVPlayerCapturerContext));
+            memset(self.capturingContext, 0, sizeof(ExampleAVPlayerCapturerContext));
+        }
         self.capturingContext->deviceContext = context;
         self.capturingContext->maxFramesPerBuffer = _capturingFormat.framesPerBuffer;
         self.capturingContext->audioBuffer = _captureBuffer;
@@ -477,8 +495,6 @@ void process(MTAudioProcessingTapRef tap,
         // Ensure that we wait for the audio tap buffer to become ready.
         if (_audioTapCapturingBuffer) {
             self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;
-//            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 100 * 1000 * 1000);
-//            dispatch_semaphore_wait(_audioTapCapturingSemaphore, timeout);
         } else {
             self.capturingContext->recordingBuffer = NULL;
         }
@@ -492,6 +508,7 @@ void process(MTAudioProcessingTapRef tap,
                                  capturerContext:self.capturingContext]) {
             free(self.capturingContext);
             self.capturingContext = NULL;
+            self.wantsCapturing = NO;
             return NO;
         } else {
             self.capturingContext->audioUnit = _voiceProcessingIO;
@@ -510,8 +527,9 @@ void process(MTAudioProcessingTapRef tap,
 
     @synchronized (self) {
         NSAssert(self.capturingContext != NULL, @"We should have a capturing context when stopping.");
+        self.wantsCapturing = NO;
 
-        if (!self.renderingContext) {
+        if (!self.wantsAudio) {
             [self stopAudioUnit];
             TVIAudioSessionDeactivated(self.capturingContext->deviceContext);
             [self teardownAudioUnit];
@@ -521,6 +539,9 @@ void process(MTAudioProcessingTapRef tap,
 
             free(self.captureBuffer);
             self.captureBuffer = NULL;
+
+            free(self.renderingContext);
+            self.renderingContext = NULL;
         }
     }
     return YES;
