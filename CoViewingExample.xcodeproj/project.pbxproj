@@ -16,6 +16,7 @@
 		8A395E4D2187D2B300437980 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A395E4B2187D2B300437980 /* LaunchScreen.storyboard */; };
 		8A395E552187D52400437980 /* ExampleAVPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A395E542187D52400437980 /* ExampleAVPlayerView.swift */; };
 		8A395E572187F04C00437980 /* ExampleAVPlayerSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A395E562187F04C00437980 /* ExampleAVPlayerSource.swift */; };
+		8AF48A832193FC5B007B1A84 /* ExampleAVPlayerProcessingTap.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AF48A822193FC5B007B1A84 /* ExampleAVPlayerProcessingTap.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,8 @@
 		8A395E4E2187D2B300437980 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8A395E542187D52400437980 /* ExampleAVPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAVPlayerView.swift; sourceTree = "<group>"; };
 		8A395E562187F04C00437980 /* ExampleAVPlayerSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAVPlayerSource.swift; sourceTree = "<group>"; };
+		8AF48A812193FC5B007B1A84 /* ExampleAVPlayerProcessingTap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleAVPlayerProcessingTap.h; sourceTree = "<group>"; };
+		8AF48A822193FC5B007B1A84 /* ExampleAVPlayerProcessingTap.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleAVPlayerProcessingTap.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +54,8 @@
 				8A34C1D82189496A00F22BE9 /* AudioDevices-Bridging-Header.h */,
 				8A34C1D72189496A00F22BE9 /* ExampleAVPlayerAudioDevice.h */,
 				8A34C1D92189496A00F22BE9 /* ExampleAVPlayerAudioDevice.m */,
+				8AF48A812193FC5B007B1A84 /* ExampleAVPlayerProcessingTap.h */,
+				8AF48A822193FC5B007B1A84 /* ExampleAVPlayerProcessingTap.m */,
 			);
 			path = AudioDevices;
 			sourceTree = "<group>";
@@ -163,6 +168,7 @@
 				8A395E432187D2B200437980 /* AppDelegate.swift in Sources */,
 				8A395E552187D52400437980 /* ExampleAVPlayerView.swift in Sources */,
 				8A34C1D52189333400F22BE9 /* ExampleAVPlayerAudioTap.swift in Sources */,
+				8AF48A832193FC5B007B1A84 /* ExampleAVPlayerProcessingTap.m in Sources */,
 				8A34C1DA2189496A00F22BE9 /* ExampleAVPlayerAudioDevice.m in Sources */,
 				8A395E572187F04C00437980 /* ExampleAVPlayerSource.swift in Sources */,
 			);

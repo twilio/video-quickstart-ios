@@ -14,6 +14,8 @@
  */
 @interface ExampleAVPlayerAudioDevice : NSObject <TVIAudioDevice>
 
+- (void)audioTapDidPrepare;
+
 /*
  * Creates a processing tap bound to the device instance.
  *
