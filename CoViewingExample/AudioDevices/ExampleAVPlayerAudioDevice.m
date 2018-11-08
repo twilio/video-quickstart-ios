@@ -559,11 +559,19 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
     AudioBufferList playerBufferList;
     playerBufferList.mNumberBuffers = 1;
     AudioBuffer *playerAudioBuffer = &playerBufferList.mBuffers[0];
-    playerAudioBuffer->mNumberChannels = 1;
-    playerAudioBuffer->mDataByteSize = (UInt32)numFrames * 2;
+    playerAudioBuffer->mNumberChannels = kPreferredNumberOfChannels;
+    playerAudioBuffer->mDataByteSize = (UInt32)numFrames * playerAudioBuffer->mNumberChannels * kAudioSampleSize;
     playerAudioBuffer->mData = context->audioBuffer;
 
     ExampleAVPlayerAudioDeviceDequeueFrames(context->recordingBuffer, numFrames, &playerBufferList);
+
+    // Early return to test player audio.
+    // Deliver the samples (via copying) to WebRTC.
+    if (context->deviceContext) {
+        TVIAudioDeviceWriteCaptureData(context->deviceContext, playerAudioBuffer->mData, playerAudioBuffer->mDataByteSize);
+        return noErr;
+    }
+
 
     // Convert the mono AVPlayer and Microphone sources into a stereo stream.
     AudioConverterRef converter = context->audioConverter;

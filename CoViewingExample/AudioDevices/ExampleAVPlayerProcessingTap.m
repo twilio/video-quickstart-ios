@@ -64,21 +64,31 @@ OSStatus AVPlayerAudioTapConverterInputDataProc(AudioConverterRef inAudioConvert
                                                 AudioBufferList *ioData,
                                                 AudioStreamPacketDescription * _Nullable *outDataPacketDescription,
                                                 void *inUserData) {
+    if (*ioNumberDataPackets == 8) {
+        *ioNumberDataPackets = 0;
+        return noErr;
+    }
     // Give the converter what they asked for. They might not consume all of our source in one callback.
     UInt32 minimumPackets = *ioNumberDataPackets;
     ExampleAVPlayerAudioConverterContext *context = inUserData;
+    assert(context->sourcePackets >= *ioNumberDataPackets);
+    printf("Convert at least %d input packets. Providing %d packets.\n", *ioNumberDataPackets, context->sourcePackets);
+    minimumPackets = context->sourcePackets;
+    *ioNumberDataPackets = context->sourcePackets;
     AudioBufferList *sourceBufferList = (AudioBufferList *)context->sourceBuffers;
     AudioBufferList *cacheBufferList = (AudioBufferList *)context->cacheBuffers;
     assert(sourceBufferList->mNumberBuffers == ioData->mNumberBuffers);
     UInt32 bytesPerChannel = 4;
-    printf("Convert at least %d input packets.\n", minimumPackets);
 
     for (UInt32 i = 0; i < sourceBufferList->mNumberBuffers; i++) {
-        // TODO: What if the cached packets are more than what is requested?
-        if (context->cachePackets > 0) {
+        if (context->cachePackets > minimumPackets) {
+            // TODO: What if the cached packets are more than what is requested?
+            assert(false);
+        } else if (context->cachePackets > 0) {
             // Copy the minimum packets from the source to the back of our cache, and return the continuous samples to the converter.
             AudioBuffer *cacheBuffer = &cacheBufferList->mBuffers[i];
             AudioBuffer *sourceBuffer = &sourceBufferList->mBuffers[i];
+            AudioBuffer *outputBuffer = &ioData->mBuffers[i];
 
             UInt32 sourceFramesToCopy = minimumPackets - context->cachePackets;
             UInt32 sourceBytesToCopy = sourceFramesToCopy * bytesPerChannel;
@@ -87,12 +97,23 @@ OSStatus AVPlayerAudioTapConverterInputDataProc(AudioConverterRef inAudioConvert
             void *cacheData = cacheBuffer->mData + cachedBytes;
             memcpy(cacheData, sourceBuffer->mData, sourceBytesToCopy);
             ioData->mBuffers[i] = *cacheBuffer;
+            outputBuffer->mNumberChannels = sourceBuffer->mNumberChannels;
+            outputBuffer->mDataByteSize = minimumPackets * bytesPerChannel;
+            outputBuffer->mData = cacheBuffer->mData;
         } else {
-            ioData->mBuffers[i] = sourceBufferList->mBuffers[i];
+//            ioData->mBuffers[i] = sourceBufferList->mBuffers[i];
+            UInt32 sourceFrames = minimumPackets;
+            UInt32 sourceBytes = sourceFrames * bytesPerChannel;
+
+            AudioBuffer *sourceBuffer = &sourceBufferList->mBuffers[i];
+            AudioBuffer *outputBuffer = &ioData->mBuffers[i];
+            outputBuffer->mNumberChannels = sourceBuffer->mNumberChannels;
+            outputBuffer->mDataByteSize = sourceBytes;
+            outputBuffer->mData = sourceBuffer->mData;
         }
     }
 
-    if (minimumPackets < context->sourcePackets) {
+    if (context->sourcePackets - minimumPackets > 0) {
         // Copy the remainder of the source which was not used into the front of our cache.
 
         UInt32 packetsToCopy = context->sourcePackets - minimumPackets;
@@ -107,7 +128,6 @@ OSStatus AVPlayerAudioTapConverterInputDataProc(AudioConverterRef inAudioConvert
         context->cachePackets = packetsToCopy;
     }
 
-    //    *ioNumberDataPackets = inputBufferList->mBuffers[0].mDataByteSize / (UInt32)(4);
     return noErr;
 }
 
@@ -117,17 +137,21 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
                                                        AudioBufferList *sourceCache,
                                                        UInt32 *cachedSourceFrames,
                                                        UInt32 framesIn,
-                                                       UInt32 bytesPerFrameOut) {
+                                                       UInt32 channelsOut) {
     // Start with input buffer size as our argument.
     // TODO: Does non-interleaving count towards the size (*2)?
     UInt32 desiredIoBufferSize = framesIn * 4 * bufferListIn->mNumberBuffers;
+//    UInt32 desiredIoBufferSize = framesIn * 4;
     printf("Input is %d bytes (%d frames).\n", desiredIoBufferSize, framesIn);
     UInt32 propertySizeIo = sizeof(desiredIoBufferSize);
     AudioConverterGetProperty(converter,
                               kAudioConverterPropertyCalculateOutputBufferSize,
                               &propertySizeIo, &desiredIoBufferSize);
 
-    UInt32 framesOut = desiredIoBufferSize / bytesPerFrameOut;
+    UInt32 bytesPerFrameOut = channelsOut * sizeof(SInt16);
+    UInt32 framesOut = (desiredIoBufferSize) / bytesPerFrameOut;
+//    UInt32 framesOut = (desiredIoBufferSize + (bytesPerFrameOut - 1)) / bytesPerFrameOut;
+//    framesOut += framesOut % 2;
     UInt32 bytesOut = framesOut * bytesPerFrameOut;
     printf("Converter wants an output of %d bytes (%d frames, %d bytes per frames).\n",
            desiredIoBufferSize, framesOut, bytesPerFrameOut);
@@ -136,7 +160,7 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
     if (producerBufferList == NULL) {
         return;
     }
-    producerBufferList->mBuffers[0].mNumberChannels = bytesPerFrameOut / 2;
+    producerBufferList->mBuffers[0].mNumberChannels = channelsOut;
 
     OSStatus status;
     UInt32 ioPacketSize = framesOut;
@@ -162,6 +186,7 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
     if (status == kCVReturnSuccess) {
         *cachedSourceFrames = context.cachePackets;
         TPCircularBufferProduceAudioBufferList(buffer, NULL);
+//        printf("Produced filled buffers!\n");
     } else {
         printf("Error converting buffers: %d\n", status);
     }
@@ -255,7 +280,7 @@ void AVPlayerProcessingTapPrepare(MTAudioProcessingTapRef tap,
         }
     }
 
-    TVIAudioFormat *recordingFormat = [[TVIAudioFormat alloc] initWithChannels:1
+    TVIAudioFormat *recordingFormat = [[TVIAudioFormat alloc] initWithChannels:2
                                                                     sampleRate:(Float64)kPreferredSampleRate
                                                                framesPerBuffer:maxFrames];
     AudioStreamBasicDescription preferredRecordingDescription = [recordingFormat streamDescription];
@@ -268,7 +293,7 @@ void AVPlayerProcessingTapPrepare(MTAudioProcessingTapRef tap,
             NSLog(@"Failed to create AudioConverter: %d", (int)status);
             return;
         }
-        UInt32 primingMethod = kConverterPrimeMethod_None;
+        UInt32 primingMethod = kConverterPrimeMethod_Normal;
         status = AudioConverterSetProperty(context->captureFormatConverter, kAudioConverterPrimeMethod,
                                            sizeof(UInt32), &primingMethod);
     }
@@ -331,12 +356,11 @@ void AVPlayerProcessingTapProcess(MTAudioProcessingTapRef tap,
     AVPlayerAudioTapProduceConvertedFrames(renderingBuffer, context->renderFormatConverter, bufferListInOut, framesToCopy, 2);
 
     // Produce capturer buffers. We will perform a sample rate conversion if needed.
-    UInt32 bytesPerFrameOut = 2;
     TPCircularBuffer *capturingBuffer = context->capturingBuffer;
     if (context->capturingSampleRateConversion) {
-        AVPlayerAudioTapProduceFilledFrames(capturingBuffer, context->captureFormatConverter, bufferListInOut, context->sourceCache, &context->sourceCacheFrames, framesToCopy, bytesPerFrameOut);
+        AVPlayerAudioTapProduceFilledFrames(capturingBuffer, context->captureFormatConverter, bufferListInOut, context->sourceCache, &context->sourceCacheFrames, framesToCopy, kPreferredNumberOfChannels);
     } else {
-        AVPlayerAudioTapProduceConvertedFrames(capturingBuffer, context->captureFormatConverter, bufferListInOut, framesToCopy, 1);
+        AVPlayerAudioTapProduceConvertedFrames(capturingBuffer, context->captureFormatConverter, bufferListInOut, framesToCopy, kPreferredNumberOfChannels);
     }
 
     // Flush converters on a discontinuity. This is especially important for priming a sample rate converter.
