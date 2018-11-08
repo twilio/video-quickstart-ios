@@ -17,12 +17,31 @@ static size_t const kPreferredNumberOfChannels = 2;
 static size_t const kAudioSampleSize = 2;
 static uint32_t const kPreferredSampleRate = 48000;
 
+typedef struct ExampleAVPlayerAudioConverterContext {
+    AudioBufferList *cacheBuffers;
+    UInt32 cachePackets;
+    AudioBufferList *sourceBuffers;
+    // Keep track if we are iterating through the source to provide data to a converter.
+    UInt32 sourcePackets;
+} ExampleAVPlayerAudioConverterContext;
+
 typedef struct ExampleAVPlayerAudioTapContext {
+    __weak ExampleAVPlayerAudioDevice *audioDevice;
+    BOOL audioTapPrepared;
+
     TPCircularBuffer *capturingBuffer;
+    AudioConverterRef captureFormatConverter;
     dispatch_semaphore_t capturingInitSemaphore;
+    BOOL capturingSampleRateConversion;
 
     TPCircularBuffer *renderingBuffer;
+    AudioConverterRef renderFormatConverter;
     dispatch_semaphore_t renderingInitSemaphore;
+
+    // Cached source audio, in case we need to perform a sample rate conversion and can't consume all the samples in one go.
+    AudioBufferList *sourceCache;
+    UInt32 sourceCacheFrames;
+    AudioStreamBasicDescription sourceFormat;
 } ExampleAVPlayerAudioTapContext;
 
 typedef struct ExampleAVPlayerRendererContext {
@@ -60,6 +79,8 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 @interface ExampleAVPlayerAudioDevice()
 
+- (void)audioTapDidPrepare:(const AudioStreamBasicDescription *)audioFormat;
+
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
 @property (nonatomic, assign) AudioUnit playbackMixer;
 @property (nonatomic, assign) AudioUnit voiceProcessingIO;
@@ -85,31 +106,197 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 #pragma mark - MTAudioProcessingTap
 
-// TODO: Bad robot.
-static AudioStreamBasicDescription *audioFormat = NULL;
-static AudioConverterRef captureFormatConverter = NULL;
-static AudioConverterRef formatConverter = NULL;
+AudioBufferList *AudioBufferListCreate(const AudioStreamBasicDescription *audioFormat, int frameCount) {
+    int numberOfBuffers = audioFormat->mFormatFlags & kAudioFormatFlagIsNonInterleaved ? audioFormat->mChannelsPerFrame : 1;
+    AudioBufferList *audio = malloc(sizeof(AudioBufferList) + (numberOfBuffers - 1) * sizeof(AudioBuffer));
+    if (!audio) {
+        return NULL;
+    }
+    audio->mNumberBuffers = numberOfBuffers;
 
-void init(MTAudioProcessingTapRef tap, void *clientInfo, void **tapStorageOut) {
+    int channelsPerBuffer = audioFormat->mFormatFlags & kAudioFormatFlagIsNonInterleaved ? 1 : audioFormat->mChannelsPerFrame;
+    int bytesPerBuffer = audioFormat->mBytesPerFrame * frameCount;
+    for (int i = 0; i < numberOfBuffers; i++) {
+        if (bytesPerBuffer > 0) {
+            audio->mBuffers[i].mData = calloc(bytesPerBuffer, 1);
+            if (!audio->mBuffers[i].mData) {
+                for (int j = 0; j < i; j++ ) {
+                    free(audio->mBuffers[j].mData);
+                }
+                free(audio);
+                return NULL;
+            }
+        } else {
+            audio->mBuffers[i].mData = NULL;
+        }
+        audio->mBuffers[i].mDataByteSize = bytesPerBuffer;
+        audio->mBuffers[i].mNumberChannels = channelsPerBuffer;
+    }
+    return audio;
+}
+
+void AudioBufferListFree(AudioBufferList *bufferList ) {
+    for (int i=0; i<bufferList->mNumberBuffers; i++) {
+        if (bufferList->mBuffers[i].mData != NULL) {
+            free(bufferList->mBuffers[i].mData);
+        }
+    }
+    free(bufferList);
+}
+
+OSStatus ExampleAVPlayerAudioDeviceAudioConverterInputDataProc(AudioConverterRef inAudioConverter,
+                                                               UInt32 *ioNumberDataPackets,
+                                                               AudioBufferList *ioData,
+                                                               AudioStreamPacketDescription * _Nullable *outDataPacketDescription,
+                                                               void *inUserData) {
+    // Give the converter what they asked for. They might not consume all of our source in one callback.
+    UInt32 minimumPackets = *ioNumberDataPackets;
+    ExampleAVPlayerAudioConverterContext *context = inUserData;
+    AudioBufferList *sourceBufferList = (AudioBufferList *)context->sourceBuffers;
+    AudioBufferList *cacheBufferList = (AudioBufferList *)context->cacheBuffers;
+    assert(sourceBufferList->mNumberBuffers == ioData->mNumberBuffers);
+    UInt32 bytesPerChannel = 4;
+    printf("Convert at least %d input packets.\n", minimumPackets);
+
+    for (UInt32 i = 0; i < sourceBufferList->mNumberBuffers; i++) {
+        // TODO: What if the cached packets are more than what is requested?
+        if (context->cachePackets > 0) {
+            // Copy the minimum packets from the source to the back of our cache, and return the continuous samples to the converter.
+            AudioBuffer *cacheBuffer = &cacheBufferList->mBuffers[i];
+            AudioBuffer *sourceBuffer = &sourceBufferList->mBuffers[i];
+
+            UInt32 sourceFramesToCopy = minimumPackets - context->cachePackets;
+            UInt32 sourceBytesToCopy = sourceFramesToCopy * bytesPerChannel;
+            UInt32 cachedBytes = context->cachePackets * bytesPerChannel;
+            assert(sourceBytesToCopy <= cacheBuffer->mDataByteSize - cachedBytes);
+            void *cacheData = cacheBuffer->mData + cachedBytes;
+            memcpy(cacheData, sourceBuffer->mData, sourceBytesToCopy);
+            ioData->mBuffers[i] = *cacheBuffer;
+        } else {
+            ioData->mBuffers[i] = sourceBufferList->mBuffers[i];
+        }
+    }
+
+    if (minimumPackets < context->sourcePackets) {
+        // Copy the remainder of the source which was not used into the front of our cache.
+
+        UInt32 packetsToCopy = context->sourcePackets - minimumPackets;
+        for (UInt32 i = 0; i < sourceBufferList->mNumberBuffers; i++) {
+            AudioBuffer *cacheBuffer = &cacheBufferList->mBuffers[i];
+            AudioBuffer *sourceBuffer = &sourceBufferList->mBuffers[i];
+            assert(cacheBuffer->mDataByteSize >= sourceBuffer->mDataByteSize);
+            UInt32 bytesToCopy = packetsToCopy * bytesPerChannel;
+            void *sourceData = sourceBuffer->mData + (minimumPackets * bytesPerChannel);
+            memcpy(cacheBuffer->mData, sourceData, bytesToCopy);
+        }
+        context->cachePackets = packetsToCopy;
+    }
+
+//    *ioNumberDataPackets = inputBufferList->mBuffers[0].mDataByteSize / (UInt32)(4);
+    return noErr;
+}
+
+static inline void AVPlayerAudioDeviceProduceFilledFrames(TPCircularBuffer *buffer,
+                                                          AudioConverterRef converter,
+                                                          AudioBufferList *bufferListIn,
+                                                          AudioBufferList *sourceCache,
+                                                          UInt32 *cachedSourceFrames,
+                                                          UInt32 framesIn,
+                                                          UInt32 bytesPerFrameOut) {
+    // Start with input buffer size as our argument.
+    // TODO: Does non-interleaving count towards the size (*2)?
+    UInt32 desiredIoBufferSize = framesIn * 4 * bufferListIn->mNumberBuffers;
+    printf("Input is %d bytes (%d frames).\n", desiredIoBufferSize, framesIn);
+    UInt32 propertySizeIo = sizeof(desiredIoBufferSize);
+    AudioConverterGetProperty(converter,
+                              kAudioConverterPropertyCalculateOutputBufferSize,
+                              &propertySizeIo, &desiredIoBufferSize);
+
+    UInt32 framesOut = desiredIoBufferSize / bytesPerFrameOut;
+    UInt32 bytesOut = framesOut * bytesPerFrameOut;
+    printf("Converter wants an output of %d bytes (%d frames, %d bytes per frames).\n",
+           desiredIoBufferSize, framesOut, bytesPerFrameOut);
+
+    AudioBufferList *producerBufferList = TPCircularBufferPrepareEmptyAudioBufferList(buffer, 1, bytesOut, NULL);
+    if (producerBufferList == NULL) {
+        return;
+    }
+    producerBufferList->mBuffers[0].mNumberChannels = bytesPerFrameOut / 2;
+
+    OSStatus status;
+    UInt32 ioPacketSize = framesOut;
+    printf("Ready to fill output buffer of frames: %d, bytes: %d with input buffer of frames: %d, bytes: %d.\n",
+           framesOut, bytesOut, framesIn, framesIn * 4 * bufferListIn->mNumberBuffers);
+    ExampleAVPlayerAudioConverterContext context;
+    context.sourceBuffers = bufferListIn;
+    context.cacheBuffers = sourceCache;
+    context.sourcePackets = framesIn;
+    // TODO: Update this each time!
+    context.cachePackets = *cachedSourceFrames;
+    status = AudioConverterFillComplexBuffer(converter,
+                                             ExampleAVPlayerAudioDeviceAudioConverterInputDataProc,
+                                             &context,
+                                             &ioPacketSize,
+                                             producerBufferList,
+                                             NULL);
+    // Adjust for what the format converter actually produced, in case it was different than what we asked for.
+    producerBufferList->mBuffers[0].mDataByteSize = ioPacketSize * bytesPerFrameOut;
+    printf("Output was: %d packets / %d bytes. Consumed input packets: %d. Cached input packets: %d.\n",
+           ioPacketSize, ioPacketSize * bytesPerFrameOut, context.sourcePackets, context.cachePackets);
+
+    // TODO: Do we still produce the buffer list after a failure?
+    if (status == kCVReturnSuccess) {
+        *cachedSourceFrames = context.cachePackets;
+        TPCircularBufferProduceAudioBufferList(buffer, NULL);
+    } else {
+        printf("Error converting buffers: %d\n", status);
+    }
+}
+
+static inline void AVPlayerAudioDeviceProduceConvertedFrames(TPCircularBuffer *buffer,
+                                                             AudioConverterRef converter,
+                                                             AudioBufferList *bufferListIn,
+                                                             UInt32 framesIn,
+                                                             UInt32 channelsOut) {
+    UInt32 bytesOut = framesIn * channelsOut * 2;
+    AudioBufferList *producerBufferList = TPCircularBufferPrepareEmptyAudioBufferList(buffer, 1, bytesOut, NULL);
+    if (producerBufferList == NULL) {
+        return;
+    }
+    producerBufferList->mBuffers[0].mNumberChannels = channelsOut;
+
+    OSStatus status = AudioConverterConvertComplexBuffer(converter,
+                                                         framesIn,
+                                                         bufferListIn,
+                                                         producerBufferList);
+
+    // TODO: Do we still produce the buffer list after a failure?
+    if (status == kCVReturnSuccess) {
+        TPCircularBufferProduceAudioBufferList(buffer, NULL);
+    } else {
+        printf("Error converting buffers: %d\n", status);
+    }
+}
+
+void AVPlayerProcessingTapInit(MTAudioProcessingTapRef tap, void *clientInfo, void **tapStorageOut) {
     NSLog(@"Init audio tap.");
 
     // Provide access to our device in the Callbacks.
     *tapStorageOut = clientInfo;
 }
 
-void finalize(MTAudioProcessingTapRef tap) {
+void AVPlayerProcessingTapFinalize(MTAudioProcessingTapRef tap) {
     NSLog(@"Finalize audio tap.");
 
     ExampleAVPlayerAudioTapContext *context = (ExampleAVPlayerAudioTapContext *)MTAudioProcessingTapGetStorage(tap);
+    context->audioTapPrepared = NO;
     TPCircularBuffer *capturingBuffer = context->capturingBuffer;
     TPCircularBuffer *renderingBuffer = context->renderingBuffer;
-    dispatch_semaphore_signal(context->capturingInitSemaphore);
-    dispatch_semaphore_signal(context->renderingInitSemaphore);
     TPCircularBufferCleanup(capturingBuffer);
     TPCircularBufferCleanup(renderingBuffer);
 }
 
-void prepare(MTAudioProcessingTapRef tap,
+void AVPlayerProcessingTapPrepare(MTAudioProcessingTapRef tap,
              CMItemCount maxFrames,
              const AudioStreamBasicDescription *processingFormat) {
     NSLog(@"Preparing with frames: %d, channels: %d, bits/channel: %d, sample rate: %0.1f",
@@ -125,7 +312,7 @@ void prepare(MTAudioProcessingTapRef tap,
     // We need to add some overhead for the AudioBufferList data structures.
     bufferSize += 2048;
     // TODO: Size the buffer appropriately, as we may need to accumulate more than maxFrames due to bursty processing.
-    bufferSize *= 12;
+    bufferSize *= 20;
 
     // TODO: If we are re-allocating then check the size?
     TPCircularBufferInit(capturingBuffer, bufferSize);
@@ -133,17 +320,19 @@ void prepare(MTAudioProcessingTapRef tap,
     dispatch_semaphore_signal(context->capturingInitSemaphore);
     dispatch_semaphore_signal(context->renderingInitSemaphore);
 
-    audioFormat = malloc(sizeof(AudioStreamBasicDescription));
-    memcpy(audioFormat, processingFormat, sizeof(AudioStreamBasicDescription));
+    AudioBufferList *cacheBufferList = AudioBufferListCreate(processingFormat, (int)maxFrames);
+    context->sourceCache = cacheBufferList;
+    context->sourceCacheFrames = 0;
+    context->sourceFormat = *processingFormat;
 
-    TVIAudioFormat *playbackFormat = [[TVIAudioFormat alloc] initWithChannels:processingFormat->mChannelsPerFrame
+    TVIAudioFormat *playbackFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
                                                                    sampleRate:processingFormat->mSampleRate
                                                               framesPerBuffer:maxFrames];
     AudioStreamBasicDescription preferredPlaybackDescription = [playbackFormat streamDescription];
     BOOL requiresFormatConversion = preferredPlaybackDescription.mFormatFlags != processingFormat->mFormatFlags;
 
     if (requiresFormatConversion) {
-        OSStatus status = AudioConverterNew(processingFormat, &preferredPlaybackDescription, &formatConverter);
+        OSStatus status = AudioConverterNew(processingFormat, &preferredPlaybackDescription, &context->renderFormatConverter);
         if (status != 0) {
             NSLog(@"Failed to create AudioConverter: %d", (int)status);
             return;
@@ -151,20 +340,28 @@ void prepare(MTAudioProcessingTapRef tap,
     }
 
     TVIAudioFormat *recordingFormat = [[TVIAudioFormat alloc] initWithChannels:1
-                                                                    sampleRate:processingFormat->mSampleRate
+                                                                    sampleRate:(Float64)kPreferredSampleRate
                                                                framesPerBuffer:maxFrames];
     AudioStreamBasicDescription preferredRecordingDescription = [recordingFormat streamDescription];
+    BOOL requiresSampleRateConversion = processingFormat->mSampleRate != preferredRecordingDescription.mSampleRate;
+    context->capturingSampleRateConversion = requiresSampleRateConversion;
 
-    if (requiresFormatConversion) {
-        OSStatus status = AudioConverterNew(processingFormat, &preferredRecordingDescription, &captureFormatConverter);
+    if (requiresFormatConversion || requiresSampleRateConversion) {
+        OSStatus status = AudioConverterNew(processingFormat, &preferredRecordingDescription, &context->captureFormatConverter);
         if (status != 0) {
             NSLog(@"Failed to create AudioConverter: %d", (int)status);
             return;
         }
+        UInt32 primingMethod = kConverterPrimeMethod_None;
+        status = AudioConverterSetProperty(context->captureFormatConverter, kAudioConverterPrimeMethod,
+                                           sizeof(UInt32), &primingMethod);
     }
+
+    context->audioTapPrepared = YES;
+    [context->audioDevice audioTapDidPrepare:processingFormat];
 }
 
-void unprepare(MTAudioProcessingTapRef tap) {
+void AVPlayerProcessingTapUnprepare(MTAudioProcessingTapRef tap) {
     NSLog(@"Unpreparing audio tap.");
 
     // Prevent any more frames from being consumed. Note that this might end audio playback early.
@@ -174,29 +371,30 @@ void unprepare(MTAudioProcessingTapRef tap) {
 
     TPCircularBufferClear(capturingBuffer);
     TPCircularBufferClear(renderingBuffer);
-    free(audioFormat);
-    audioFormat = NULL;
-
-    if (formatConverter != NULL) {
-        AudioConverterDispose(formatConverter);
-        formatConverter = NULL;
+    if (context->sourceCache) {
+        AudioBufferListFree(context->sourceCache);
+        context->sourceCache = NULL;
+        context->sourceCacheFrames = 0;
     }
 
-    if (captureFormatConverter != NULL) {
-        AudioConverterDispose(captureFormatConverter);
-        captureFormatConverter = NULL;
+    if (context->renderFormatConverter != NULL) {
+        AudioConverterDispose(context->renderFormatConverter);
+        context->renderFormatConverter = NULL;
+    }
+
+    if (context->captureFormatConverter != NULL) {
+        AudioConverterDispose(context->captureFormatConverter);
+        context->captureFormatConverter = NULL;
     }
 }
 
-void process(MTAudioProcessingTapRef tap,
-             CMItemCount numberFrames,
-             MTAudioProcessingTapFlags flags,
-             AudioBufferList *bufferListInOut,
-             CMItemCount *numberFramesOut,
-             MTAudioProcessingTapFlags *flagsOut) {
+void AVPlayerProcessingTapProcess(MTAudioProcessingTapRef tap,
+                                  CMItemCount numberFrames,
+                                  MTAudioProcessingTapFlags flags,
+                                  AudioBufferList *bufferListInOut,
+                                  CMItemCount *numberFramesOut,
+                                  MTAudioProcessingTapFlags *flagsOut) {
     ExampleAVPlayerAudioTapContext *context = (ExampleAVPlayerAudioTapContext *)MTAudioProcessingTapGetStorage(tap);
-    TPCircularBuffer *capturingBuffer = context->capturingBuffer;
-    TPCircularBuffer *renderingBuffer = context->renderingBuffer;
     CMTimeRange sourceRange;
     OSStatus status = MTAudioProcessingTapGetSourceAudio(tap,
                                                          numberFrames,
@@ -212,39 +410,23 @@ void process(MTAudioProcessingTapRef tap,
 
     UInt32 framesToCopy = (UInt32)*numberFramesOut;
 
-    // TODO: Assumptions about our producer's format.
-    // Produce renderer buffers.
-    UInt32 bytesToCopy = framesToCopy * 4;
-    AudioBufferList *rendererProducerBufferList = TPCircularBufferPrepareEmptyAudioBufferList(renderingBuffer, 1, bytesToCopy, NULL);
-    if (rendererProducerBufferList != NULL) {
-        status = AudioConverterConvertComplexBuffer(formatConverter,
-                                                    framesToCopy, bufferListInOut, rendererProducerBufferList);
-        if (status != kCVReturnSuccess) {
-            // TODO: Do we still produce the buffer list?
-            return;
-        }
+    // Produce renderer buffers. These are interleaved, signed integer frames in the source's sample rate.
+    TPCircularBuffer *renderingBuffer = context->renderingBuffer;
+    AVPlayerAudioDeviceProduceConvertedFrames(renderingBuffer, context->renderFormatConverter, bufferListInOut, framesToCopy, 2);
 
-        TPCircularBufferProduceAudioBufferList(renderingBuffer, NULL);
+    // Produce capturer buffers. We will perform a sample rate conversion if needed.
+    UInt32 bytesPerFrameOut = 2;
+    TPCircularBuffer *capturingBuffer = context->capturingBuffer;
+    if (context->capturingSampleRateConversion) {
+        AVPlayerAudioDeviceProduceFilledFrames(capturingBuffer, context->captureFormatConverter, bufferListInOut, context->sourceCache, &context->sourceCacheFrames, framesToCopy, bytesPerFrameOut);
+    } else {
+        AVPlayerAudioDeviceProduceConvertedFrames(capturingBuffer, context->captureFormatConverter, bufferListInOut, framesToCopy, 1);
     }
 
-    // Produce capturer buffers.
-    bytesToCopy = framesToCopy * 2;
-    AudioBufferList *capturerProducerBufferList = TPCircularBufferPrepareEmptyAudioBufferList(capturingBuffer, 1, bytesToCopy, NULL);
-    if (capturerProducerBufferList != NULL) {
-        status = AudioConverterConvertComplexBuffer(captureFormatConverter,
-                                                    framesToCopy, bufferListInOut, capturerProducerBufferList);
-        if (status != kCVReturnSuccess) {
-            // TODO: Do we still produce the buffer list?
-            return;
-        }
-
-        TPCircularBufferProduceAudioBufferList(capturingBuffer, NULL);
-    }
-
-    // Flush converter buffers on discontinuity.
+    // Flush converters on a discontinuity. This is especially important for priming a sample rate converter.
     if (*flagsOut & kMTAudioProcessingTapFlag_EndOfStream) {
-        AudioConverterReset(formatConverter);
-        AudioConverterReset(captureFormatConverter);
+        AudioConverterReset(context->renderFormatConverter);
+        AudioConverterReset(context->captureFormatConverter);
     }
 }
 
@@ -263,6 +445,14 @@ void process(MTAudioProcessingTapRef tap,
         _audioTapRenderingSemaphore = dispatch_semaphore_create(0);
         _wantsCapturing = NO;
         _wantsRendering = NO;
+
+        _audioTapContext = calloc(1, sizeof(ExampleAVPlayerAudioTapContext));
+        _audioTapContext->capturingBuffer = _audioTapCapturingBuffer;
+        _audioTapContext->capturingInitSemaphore = _audioTapCapturingSemaphore;
+        _audioTapContext->renderingBuffer = _audioTapRenderingBuffer;
+        _audioTapContext->renderingInitSemaphore = _audioTapRenderingSemaphore;
+        _audioTapContext->audioDevice = self;
+        _audioTapContext->audioTapPrepared = NO;
     }
     return self;
 }
@@ -315,27 +505,61 @@ void process(MTAudioProcessingTapRef tap,
     return _wantsCapturing || _wantsRendering;
 }
 
+- (void)audioTapDidPrepare:(const AudioStreamBasicDescription *)processingDescription {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+
+    // TODO: Multiple contexts.
+    @synchronized (self) {
+        TVIAudioDeviceContext *context = _capturingContext ? _capturingContext->deviceContext : _renderingContext ? _renderingContext->deviceContext : NULL;
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
+                [self restartAudioUnit];
+            });
+        }
+    }
+}
+
+- (void)restartAudioUnit {
+    BOOL restart = NO;
+    @synchronized (self) {
+        if (self.wantsAudio) {
+            restart = YES;
+            [self stopAudioUnit];
+            [self teardownAudioUnit];
+            if (self.renderingContext) {
+                self.renderingContext->playoutBuffer = _audioTapRenderingBuffer;
+            }
+            if (self.capturingContext) {
+                self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;
+            }
+            if ([self setupAudioUnitRendererContext:self.renderingContext
+                                    capturerContext:self.capturingContext]) {
+                if (self.capturingContext) {
+                    self.capturingContext->audioUnit = _voiceProcessingIO;
+                    self.capturingContext->audioConverter = _captureConverter;
+                }
+            } else {
+                return;
+            }
+        }
+    }
+
+    [self startAudioUnit];
+}
+
 - (MTAudioProcessingTapRef)createProcessingTap {
     if (_audioTap) {
         return _audioTap;
     }
 
-    if (!_audioTapContext) {
-        _audioTapContext = malloc(sizeof(ExampleAVPlayerAudioTapContext));
-        _audioTapContext->capturingBuffer = _audioTapCapturingBuffer;
-        _audioTapContext->capturingInitSemaphore = _audioTapCapturingSemaphore;
-        _audioTapContext->renderingBuffer = _audioTapRenderingBuffer;
-        _audioTapContext->renderingInitSemaphore = _audioTapRenderingSemaphore;
-    }
-
     MTAudioProcessingTapRef processingTap;
     MTAudioProcessingTapCallbacks callbacks;
     callbacks.version = kMTAudioProcessingTapCallbacksVersion_0;
-    callbacks.init = init;
-    callbacks.prepare = prepare;
-    callbacks.process = process;
-    callbacks.unprepare = unprepare;
-    callbacks.finalize = finalize;
+    callbacks.init = AVPlayerProcessingTapInit;
+    callbacks.prepare = AVPlayerProcessingTapPrepare;
+    callbacks.process = AVPlayerProcessingTapProcess;
+    callbacks.unprepare = AVPlayerProcessingTapUnprepare;
+    callbacks.finalize = AVPlayerProcessingTapFinalize;
     callbacks.clientInfo = (void *)(_audioTapContext);
 
     OSStatus status = MTAudioProcessingTapCreate(kCFAllocatorDefault,
@@ -346,8 +570,6 @@ void process(MTAudioProcessingTapRef tap,
         _audioTap = processingTap;
         return processingTap;
     } else {
-        free(_audioTapContext);
-        _audioTapContext = NULL;
         return NULL;
     }
 }
@@ -392,7 +614,7 @@ void process(MTAudioProcessingTapRef tap,
         self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
 
         // Ensure that we wait for the audio tap buffer to become ready.
-        if (_audioTapCapturingBuffer) {
+        if (self.audioTapContext->audioTapPrepared) {
             self.renderingContext->playoutBuffer = _audioTapRenderingBuffer;
         } else {
             self.renderingContext->playoutBuffer = NULL;
@@ -493,7 +715,7 @@ void process(MTAudioProcessingTapRef tap,
         self.capturingContext->audioBuffer = _captureBuffer;
 
         // Ensure that we wait for the audio tap buffer to become ready.
-        if (_audioTapCapturingBuffer) {
+        if (self.audioTapContext->audioTapPrepared) {
             self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;
         } else {
             self.capturingContext->recordingBuffer = NULL;
@@ -561,7 +783,7 @@ static void ExampleAVPlayerAudioDeviceDequeueFrames(TPCircularBuffer *buffer,
     format.mBytesPerFrame = format.mChannelsPerFrame * format.mBitsPerChannel / 8;
     format.mFormatID = kAudioFormatLinearPCM;
     format.mFormatFlags = kAudioFormatFlagIsPacked | kAudioFormatFlagIsSignedInteger;
-    format.mSampleRate = 44100;
+    format.mSampleRate = kPreferredSampleRate;
 
     UInt32 framesInOut = numFrames;
     if (buffer->buffer != NULL) {
@@ -591,6 +813,7 @@ static OSStatus ExampleAVPlayerAudioDeviceAudioTapPlaybackCallback(void *refCon,
     assert(bufferList->mBuffers[0].mNumberChannels > 0);
 
     ExampleAVPlayerRendererContext *context = (ExampleAVPlayerRendererContext *)refCon;
+    TPCircularBuffer *buffer = context->playoutBuffer;
     UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
 
     // Render silence if there are temporary mismatches between CoreAudio and our rendering format.
@@ -600,11 +823,13 @@ static OSStatus ExampleAVPlayerAudioDeviceAudioTapPlaybackCallback(void *refCon,
         int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
         memset(audioBuffer, 0, audioBufferSizeInBytes);
         return noErr;
+    } else if (buffer == nil) {
+        *actionFlags |= kAudioUnitRenderAction_OutputIsSilence;
+        memset(bufferList->mBuffers[0].mData, 0, audioBufferSizeInBytes);
+        return noErr;
     }
 
-    TPCircularBuffer *buffer = context->playoutBuffer;
     ExampleAVPlayerAudioDeviceDequeueFrames(buffer, numFrames, bufferList);
-
     return noErr;
 }
 
@@ -674,6 +899,16 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
         return status;
     }
 
+    // Early return with microphone only recording.
+    if (context->recordingBuffer == NULL) {
+        if (context->deviceContext) {
+            TVIAudioDeviceWriteCaptureData(context->deviceContext,
+                                           microphoneAudioBuffer->mData,
+                                           microphoneAudioBuffer->mDataByteSize);
+        }
+        return noErr;
+    }
+
     // Dequeue the AVPlayer audio.
     AudioBufferList playerBufferList;
     playerBufferList.mNumberBuffers = 1;
@@ -735,8 +970,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
      * to the `AVAudioSession.preferredIOBufferDuration` that we've requested.
      */
     const size_t sessionFramesPerBuffer = kMaximumFramesPerBuffer;
-//    const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
-    const double sessionSampleRate = 44100.;
+    const double sessionSampleRate = [AVAudioSession sharedInstance].sampleRate;
     const NSInteger sessionOutputChannels = [AVAudioSession sharedInstance].outputNumberOfChannels;
     size_t rendererChannels = sessionOutputChannels >= TVIAudioChannelsStereo ? TVIAudioChannelsStereo : TVIAudioChannelsMono;
 
@@ -917,6 +1151,10 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
 
     if (enableOutput) {
         AudioStreamBasicDescription renderingFormatDescription = self.renderingFormat.streamDescription;
+        AudioStreamBasicDescription playerFormatDescription = renderingFormatDescription;
+        if (self.renderingContext->playoutBuffer) {
+            playerFormatDescription.mSampleRate = self.audioTapContext->sourceFormat.mSampleRate;
+        }
 
         // Setup playback mixer.
         AudioComponentDescription mixerComponentDescription = [[self class] mixerAudioCompontentDescription];
@@ -941,7 +1179,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
 
         status = AudioUnitSetProperty(_playbackMixer, kAudioUnitProperty_StreamFormat,
                                       kAudioUnitScope_Input, 0,
-                                      &renderingFormatDescription, sizeof(renderingFormatDescription));
+                                      &playerFormatDescription, sizeof(playerFormatDescription));
         if (status != noErr) {
             NSLog(@"Could not set stream format on the mixer input bus 0!");
             AudioComponentInstanceDispose(_voiceProcessingIO);
@@ -1112,6 +1350,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
     AVAudioSessionInterruptionType type = [notification.userInfo[AVAudioSessionInterruptionTypeKey] unsignedIntegerValue];
 
     @synchronized(self) {
+        // TODO: Multiple contexts.
         // If the worker block is executed, then context is guaranteed to be valid.
         TVIAudioDeviceContext context = self.renderingContext ? self.renderingContext->deviceContext : NULL;
         if (context) {
