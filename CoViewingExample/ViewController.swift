@@ -490,9 +490,10 @@ extension ViewController : TVIRoomDelegate {
 
 
         stopVideoPlayer()
-        self.localVideoTrack = nil;
-        self.localAudioTrack = nil;
-        self.playerVideoTrack = nil;
+        self.localVideoTrack = nil
+        self.localAudioTrack = nil
+        self.playerVideoTrack = nil
+        self.videoPlayerSource = nil
         self.room = nil
         self.showRoomUI(inRoom: false)
         self.accessToken = "TWILIO_ACCESS_TOKEN"
@@ -502,8 +503,8 @@ extension ViewController : TVIRoomDelegate {
         logMessage(messageText: "Failed to connect to Room:\n\(error.localizedDescription)")
 
         self.room = nil
-        self.localVideoTrack = nil;
-        self.localAudioTrack = nil;
+        self.localVideoTrack = nil
+        self.localAudioTrack = nil
         self.showRoomUI(inRoom: false)
         self.accessToken = "TWILIO_ACCESS_TOKEN"
     }
