@@ -51,11 +51,11 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
             attributes = [
                 kCVPixelBufferWidthKey as String : Int(streamingRect.width),
                 kCVPixelBufferHeightKey as String : Int(streamingRect.height),
-                kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+                kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
                 ] as [String : Any]
         } else {
             attributes = [
-                kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+                kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
                 ] as [String : Any]
         }
 
