@@ -7,8 +7,8 @@
 
 #import "ExampleCoreAudioDevice.h"
 
-// We want to get as close to 10 msec buffers as possible because this is what the media engine prefers.
-static double const kPreferredIOBufferDuration = 0.01;
+// We want to get as close to 20 msec buffers as possible because this is what the media engine prefers.
+static double const kPreferredIOBufferDuration = 0.02;
 // We will use stereo playback where available. Some audio routes may be restricted to mono only.
 static size_t const kPreferredNumberOfChannels = 2;
 // An audio sample is a signed 16-bit integer.
@@ -245,7 +245,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     }
 
     /*
-     * We want to be as close as possible to the 10 millisecond buffer size that the media engine needs. If there is
+     * We will operate our graph at roughly double the duration that the media engine natively operates in. If there is
      * a mismatch then TwilioVideo will ensure that appropriately sized audio buffers are delivered.
      */
     if (![session setPreferredIOBufferDuration:kPreferredIOBufferDuration error:&error]) {
