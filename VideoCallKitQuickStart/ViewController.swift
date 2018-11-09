@@ -37,6 +37,7 @@ class ViewController: UIViewController {
     let callKitProvider: CXProvider
     let callKitCallController: CXCallController
     var callKitCompletionHandler: ((Bool)->Swift.Void?)? = nil
+    var userInitiatedDisconnect: Bool = false
 
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var connectButton: UIButton!
@@ -160,6 +161,7 @@ class ViewController: UIViewController {
     @IBAction func disconnect(sender: AnyObject) {
         if let room = room, let uuid = room.uuid {
             logMessage(messageText: "Attempting to disconnect from room \(room.name)")
+            userInitiatedDisconnect = true
             performEndCallAction(uuid: uuid)
         }
     }
@@ -309,11 +311,16 @@ extension ViewController : TVIRoomDelegate {
     
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
         logMessage(messageText: "Disconncted from room \(room.name), error = \(String(describing: error))")
-        
+
+        if !self.userInitiatedDisconnect, let uuid = room.uuid {
+            self.callKitProvider.reportCall(with: uuid, endedAt: nil, reason: .failed)
+        }
+
         self.cleanupRemoteParticipant()
         self.room = nil
         self.showRoomUI(inRoom: false)
         self.callKitCompletionHandler = nil
+        self.userInitiatedDisconnect = false
     }
     
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
