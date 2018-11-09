@@ -73,7 +73,7 @@ class ViewController: UIViewController {
         "Telecom ParisTech, GPAC (1080p30)" : URL(string: "https://download.tsi.telecom-paristech.fr/gpac/dataset/dash/uhd/mux_sources/hevcds_1080p30_6M.mp4")!,
         "Twilio: What is Cloud Communications? (1080p24, 44.1 kHz)" : URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
     ]
-    static let kRemoteContentURL = kRemoteContentUrls["BitDash - Parkour (1080p25, 48 kHz)"]!
+    static let kRemoteContentURL = kRemoteContentUrls["Mississippi Grind (720p24, 44.1 kHz)"]!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -223,9 +223,11 @@ class ViewController: UIViewController {
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             builder.roomName = "twilio"
 
-            // Restrict video bandwidth used by viewers to improve presenter video.
+            // Restrict video bandwidth used by viewers to improve presenter video. Use more bandwidth for presenter audio.
             if name == "viewer" {
                 builder.encodingParameters = TVIEncodingParameters(audioBitrate: 0, videoBitrate: 1024 * 900)
+            } else {
+                builder.encodingParameters = TVIEncodingParameters(audioBitrate: 1024 * 96, videoBitrate: 0)
             }
         }
 
