@@ -72,7 +72,7 @@ OSStatus AVPlayerAudioTapConverterInputDataProc(AudioConverterRef inAudioConvert
     ExampleAVPlayerAudioConverterContext *context = inUserData;
 
     assert(context->sourcePackets + context->cachePackets >= *ioNumberDataPackets);
-    printf("Convert at least %d input packets. We have %d source packets, %d cached packets.\n", *ioNumberDataPackets, context->sourcePackets, context->cachePackets);
+//    printf("Convert at least %d input packets. We have %d source packets, %d cached packets.\n", *ioNumberDataPackets, context->sourcePackets, context->cachePackets);
 //    minimumPackets = context->sourcePackets;
     AudioBufferList *sourceBufferList = (AudioBufferList *)context->sourceBuffers;
     AudioBufferList *cacheBufferList = (AudioBufferList *)context->cacheBuffers;
@@ -143,8 +143,7 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
         framesIn += *cachedSourceFrames;
     }
     UInt32 desiredIoBufferSize = framesIn * 4 * bufferListIn->mNumberBuffers;
-//    UInt32 desiredIoBufferSize = framesIn * 4;
-    printf("Input is %d bytes (%d total frames, %d cached frames).\n", desiredIoBufferSize, framesIn, *cachedSourceFrames);
+//    printf("Input is %d bytes (%d total frames, %d cached frames).\n", desiredIoBufferSize, framesIn, *cachedSourceFrames);
     UInt32 propertySizeIo = sizeof(desiredIoBufferSize);
     AudioConverterGetProperty(converter,
                               kAudioConverterPropertyCalculateOutputBufferSize,
@@ -155,8 +154,8 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
 //    UInt32 framesOut = (desiredIoBufferSize + (bytesPerFrameOut - 1)) / bytesPerFrameOut;
 //    framesOut += framesOut % 2;
     UInt32 bytesOut = framesOut * bytesPerFrameOut;
-    printf("Converter wants an output of %d bytes (%d frames, %d bytes per frames).\n",
-           desiredIoBufferSize, framesOut, bytesPerFrameOut);
+//    printf("Converter wants an output of %d bytes (%d frames, %d bytes per frames).\n",
+//           desiredIoBufferSize, framesOut, bytesPerFrameOut);
 
     AudioBufferList *producerBufferList = TPCircularBufferPrepareEmptyAudioBufferList(buffer, 1, bytesOut, NULL);
     if (producerBufferList == NULL) {
@@ -166,8 +165,8 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
 
     OSStatus status;
     UInt32 ioPacketSize = framesOut;
-    printf("Ready to fill output buffer of frames: %d, bytes: %d with input buffer of frames: %d, bytes: %d.\n",
-           framesOut, bytesOut, framesIn, framesIn * 4 * bufferListIn->mNumberBuffers);
+//    printf("Ready to fill output buffer of frames: %d, bytes: %d with input buffer of frames: %d, bytes: %d.\n",
+//           framesOut, bytesOut, framesIn, framesIn * 4 * bufferListIn->mNumberBuffers);
     ExampleAVPlayerAudioConverterContext context;
     context.sourceBuffers = bufferListIn;
     context.cacheBuffers = sourceCache;
@@ -182,8 +181,8 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
                                              NULL);
     // Adjust for what the format converter actually produced, in case it was different than what we asked for.
     producerBufferList->mBuffers[0].mDataByteSize = ioPacketSize * bytesPerFrameOut;
-    printf("Output was: %d packets / %d bytes. Consumed input packets: %d. Cached input packets: %d.\n",
-           ioPacketSize, ioPacketSize * bytesPerFrameOut, context.sourcePackets, context.cachePackets);
+//    printf("Output was: %d packets / %d bytes. Consumed input packets: %d. Cached input packets: %d.\n",
+//           ioPacketSize, ioPacketSize * bytesPerFrameOut, context.sourcePackets, context.cachePackets);
 
     // TODO: Do we still produce the buffer list after a failure?
     if (status == kCVReturnSuccess) {
