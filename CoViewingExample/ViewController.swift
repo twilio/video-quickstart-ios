@@ -73,7 +73,7 @@ class ViewController: UIViewController {
         "Telecom ParisTech, GPAC (1080p30)" : URL(string: "https://download.tsi.telecom-paristech.fr/gpac/dataset/dash/uhd/mux_sources/hevcds_1080p30_6M.mp4")!,
         "Twilio: What is Cloud Communications? (1080p24, 44.1 kHz)" : URL(string: "https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")!
     ]
-    static let kRemoteContentURL = kRemoteContentUrls["Interstellar Trailer 3 (720p24, 44.1 kHz)"]!
+    static let kRemoteContentURL = kRemoteContentUrls["BitDash - Parkour (1080p25, 48 kHz)"]!
 
     override func viewDidLoad() {
         super.viewDidLoad()
