@@ -16,12 +16,11 @@ typedef struct ExampleAVPlayerAudioTapContext {
 
     TPCircularBuffer *capturingBuffer;
     AudioConverterRef captureFormatConverter;
-    dispatch_semaphore_t capturingInitSemaphore;
     BOOL capturingSampleRateConversion;
+    BOOL captureFormatConvertIsPrimed;
 
     TPCircularBuffer *renderingBuffer;
     AudioConverterRef renderFormatConverter;
-    dispatch_semaphore_t renderingInitSemaphore;
 
     // Cached source audio, in case we need to perform a sample rate conversion and can't consume all the samples in one go.
     AudioBufferList *sourceCache;

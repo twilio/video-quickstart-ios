@@ -94,9 +94,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
         _audioTapContext = calloc(1, sizeof(ExampleAVPlayerAudioTapContext));
         _audioTapContext->capturingBuffer = _audioTapCapturingBuffer;
-        _audioTapContext->capturingInitSemaphore = _audioTapCapturingSemaphore;
         _audioTapContext->renderingBuffer = _audioTapRenderingBuffer;
-        _audioTapContext->renderingInitSemaphore = _audioTapRenderingSemaphore;
         _audioTapContext->audioDevice = self;
         _audioTapContext->audioTapPrepared = NO;
     }
