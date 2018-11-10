@@ -89,7 +89,7 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
                                                  itemTimeForDisplay: &presentationTimestamp)
         if let buffer = pixelBuffer {
             if let lastTime = lastPresentationTimestamp {
-                // TODO: Use this info to target our DispatchSource timestamps?
+                // TODO: Use this info for 3:2 pulldown to re-construct the proper timestamps without display cadence?
 //                let delta = presentationTimestamp - lastTime
 //                print("Frame delta was:", delta)
 //                let movieTime = CVBufferGetAttachment(buffer, kCVBufferMovieTimeKey, nil)
@@ -229,6 +229,6 @@ extension ExampleAVPlayerSource: AVPlayerItemOutputPullDelegate {
     func outputSequenceWasFlushed(_ output: AVPlayerItemOutput) {
         print(#function)
 
-        // TODO: Flush and output a black frame while we wait.
+        // TODO: Flush and output a black frame while we wait?
     }
 }
