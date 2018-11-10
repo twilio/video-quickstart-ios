@@ -37,12 +37,10 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
         print("Prepare for player item with size:", presentationSize, " pixels:", presentationPixels);
 
         /*
-         * We might request buffers downscaled for streaming. The output will be NV12, and backed by an IOSurface
-         * even though we dont explicitly include kCVPixelBufferIOSurfacePropertiesKey.
+         * We might request buffers downscaled for streaming. The output will be 8-bit 4:2:0 NV12.
          */
         let attributes: [String : Any]
 
-        // TODO: We need to interrogate the content and choose our range (video/full) appropriately.
         if (presentationSize.width > ExampleAVPlayerSource.kFrameOutputMaxDimension ||
             presentationSize.height > ExampleAVPlayerSource.kFrameOutputMaxDimension) {
             let streamingRect = AVMakeRect(aspectRatio: presentationSize, insideRect: ExampleAVPlayerSource.kFrameOutputMaxRect)
@@ -51,10 +49,12 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
             attributes = [
                 kCVPixelBufferWidthKey as String : Int(streamingRect.width),
                 kCVPixelBufferHeightKey as String : Int(streamingRect.height),
+                kCVPixelBufferIOSurfacePropertiesKey as String : [ : ],
                 kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
                 ] as [String : Any]
         } else {
             attributes = [
+                kCVPixelBufferIOSurfacePropertiesKey as String : [ : ],
                 kCVPixelBufferPixelFormatTypeKey as String : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
                 ] as [String : Any]
         }
