@@ -8,28 +8,47 @@
 import AVFoundation
 import TwilioVideo
 
+/*
+ * This capturer manages an AVPlayerVideoItemOutput, attempting to output each frame that becomes available
+ * for presentation. By default, a CADisplayLink timer is used to sample at the natural cadence of the display.
+ * When there is no more content to sample, the capturer suspends its timer and waits for callbacks via
+ * AVPlayerItemOutputPullDelegate to resume. In some cases, downscaling is used to reduce CPU and memory consumption.
+ *
+ * Please be aware that AVPlayer and its playback pipeline prepare content for presentation on your device, including
+ * mapping frames to the display. For example, when playing 23.976 or 24 fps content a technique known as 3:2 pulldown
+ * is used to time video samples for a 60 Hz iPhone display. Our capturer tags the frames with the best timing infromation
+ * that it has available - the presentation timestamps provided by AVPlayer's output.
+ */
 class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
 
     private var captureConsumer: TVIVideoCaptureConsumer? = nil
-    private let sampleQueue: DispatchQueue
+    // Track how often we are receiving content. If no new frames are coming there is no need to sample the output.
+    private var lastPresentationTimestamp: CMTime?
+    // Display timer which fires at the natural cadence of our display. Sampling typically occurs within these timer callbacks.
+    private var outputTimer: CADisplayLink? = nil
+    // Dispatch timer which fires at a pre-determined cadence `kFrameOutputInterval`.
     private var timerSource: DispatchSourceTimer? = nil
     private var videoOutput: AVPlayerItemVideoOutput? = nil
-    private var lastPresentationTimestamp: CMTime?
-    private var outputTimer: CADisplayLink? = nil
+    private let videoSampleQueue: DispatchQueue
 
-    // 60 Hz = 16667, 23.976 Hz = 41708
+    // Frame output/sampling interval for a DispatchSource. Note: 60 Hz = 16667, 23.976 Hz = 41708
     static let kFrameOutputInterval = DispatchTimeInterval.microseconds(16667)
     static let kFrameOutputLeeway = DispatchTimeInterval.milliseconds(0)
+    // How much time we will wait without receiving any frames before suspending output/sampling.
     static let kFrameOutputSuspendTimeout = Double(1.0)
+    // The largest dimension we will output for streaming using the Video SDK.
     static let kFrameOutputMaxDimension = CGFloat(960.0)
+    // A bounding box which represents the largest video we will output for streaming.
     static let kFrameOutputMaxRect = CGRect(x: 0, y: 0, width: kFrameOutputMaxDimension, height: kFrameOutputMaxDimension)
+
+    // Use a CADisplayLink, or a DispatchSourceTimer (experimental) for sampling.
     static private var useDisplayLinkTimer = true
 
     init(item: AVPlayerItem) {
-        sampleQueue = DispatchQueue(label: "com.twilio.avplayersource", qos: DispatchQoS.userInteractive,
-                                    attributes: DispatchQueue.Attributes(rawValue: 0),
-                                    autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.workItem,
-                                    target: nil)
+        videoSampleQueue = DispatchQueue(label: "com.twilio.avplayersource", qos: DispatchQoS.userInteractive,
+                                         attributes: DispatchQueue.Attributes(rawValue: 0),
+                                         autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.workItem,
+                                         target: nil)
         super.init()
 
         let presentationSize = item.presentationSize
@@ -37,7 +56,7 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
         print("Prepare for player item with size:", presentationSize, " pixels:", presentationPixels);
 
         /*
-         * We might request buffers downscaled for streaming. The output will be 8-bit 4:2:0 NV12.
+         * We might request buffers downscaled for streaming. The output will always be 8-bit 4:2:0 NV12.
          */
         let attributes: [String : Any]
 
@@ -60,7 +79,7 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
         }
 
         videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: attributes)
-        videoOutput?.setDelegate(self, queue: sampleQueue)
+        videoOutput?.setDelegate(self, queue: videoSampleQueue)
 
         if ExampleAVPlayerSource.useDisplayLinkTimer {
             addDisplayTimer()
@@ -117,7 +136,7 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
         print(#function)
 
         let source = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags.strict,
-                                                    queue: sampleQueue)
+                                                    queue: videoSampleQueue)
         timerSource = source
 
         source.setEventHandler(handler: {
@@ -207,6 +226,7 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
 }
 
 extension ExampleAVPlayerSource: AVPlayerItemOutputPullDelegate {
+
     func outputMediaDataWillChange(_ sender: AVPlayerItemOutput) {
         print(#function)
 
