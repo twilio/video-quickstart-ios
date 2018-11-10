@@ -19,15 +19,16 @@ class ViewController: UIViewController {
     // Configure remote URL to fetch token from
     var tokenUrl = "http://localhost:8000/token.php"
 
-    // Video SDK components
+    // Twilio Video classes.
     var room: TVIRoom?
     var camera: TVICameraCapturer?
     var localVideoTrack: TVILocalVideoTrack!
     var playerVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack!
 
-    let kPlayerTrackName = "player-track"
+    static let kPlayerTrackName = "player-track"
 
+    // AVPlayer Audio/Video.
     var audioDevice: ExampleAVPlayerAudioDevice?
     var videoPlayer: AVPlayer? = nil
     var videoPlayerAudioTap: ExampleAVPlayerAudioTap? = nil
@@ -42,17 +43,16 @@ class ViewController: UIViewController {
     @IBOutlet weak var remoteHeightConstraint: NSLayoutConstraint?
     @IBOutlet weak var remoteWidthConstraint: NSLayoutConstraint?
 
+    @IBOutlet weak var hangupButton: UIButton!
     @IBOutlet weak var presenterButton: UIButton!
     @IBOutlet weak var viewerButton: UIButton!
 
-    @IBOutlet weak var remoteView: TVIVideoView!
     @IBOutlet weak var localView: TVIVideoView!
-    @IBOutlet weak var remotePlayerView: TVIVideoView!
-    @IBOutlet weak var hangupButton: UIButton!
+    weak var remotePlayerView: TVIVideoView?
+    @IBOutlet weak var remoteView: TVIVideoView!
 
-    // http://movietrailers.apple.com/movies/paramount/interstellar/interstellar-tlr4_h720p.mov
     static let kRemoteContentUrls = [
-        // Nice stereo separation in the trailer music. We only record in mono at the moment.
+        // Nice stereo separation in the trailer music. We now record and playback in stereo.
         "American Animals Trailer 2 (720p24, 44.1 kHz)" : URL(string: "http://movietrailers.apple.com/movies/independent/american-animals/american-animals-trailer-2_h720p.mov")!,
         "Avengers: Infinity War Trailer 3 (720p24, 44.1 kHz)" : URL(string: "https://trailers.apple.com/movies/marvel/avengers-infinity-war/avengers-infinity-war-trailer-2_h720p.mov")!,
         // HLS stream which runs into the AVPlayer / AVAudioMix issue.
@@ -84,8 +84,6 @@ class ViewController: UIViewController {
                           alpha: 1.0)
 
         presenterButton.backgroundColor = red
-        self.remotePlayerView.contentMode = UIView.ContentMode.scaleAspectFit
-        self.remotePlayerView.isHidden = true
         self.hangupButton.backgroundColor = red
         self.hangupButton.titleLabel?.textColor = UIColor.white
         self.hangupButton.isHidden = true
@@ -117,6 +115,9 @@ class ViewController: UIViewController {
 
         if let playerView = videoPlayerView {
             playerView.frame = CGRect(origin: CGPoint.zero, size: self.view.bounds.size)
+        }
+        if let remotePlayerView = remotePlayerView {
+            remotePlayerView.frame = CGRect(origin: CGPoint.zero, size: self.view.bounds.size)
         }
     }
 
@@ -174,10 +175,6 @@ class ViewController: UIViewController {
             self.audioDevice = device
         }
         isPresenter = true
-        if self.remotePlayerView != nil {
-            self.remotePlayerView.removeFromSuperview()
-            self.remotePlayerView = nil
-        }
         connect(name: "presenter")
     }
 
@@ -268,20 +265,20 @@ class ViewController: UIViewController {
             // We use the front facing camera only. Set mirroring each time since the renderer might be reused.
             localView.shouldMirror = true
         }
+        #else
+        localAudioTrack.isEnabled = false
         #endif
     }
 
     func showRoomUI(inRoom: Bool) {
         self.hangupButton.isHidden = !inRoom
         self.localView.isHidden = !inRoom
-        if (self.isPresenter == false) {
-            self.remotePlayerView.isHidden = !inRoom
-        }
         self.remoteView.isHidden = !inRoom
         self.presenterButton.isHidden = inRoom
         self.viewerButton.isHidden = inRoom
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         self.setNeedsStatusBarAppearanceUpdate()
+        UIApplication.shared.isIdleTimerDisabled = inRoom
 
         if inRoom == false {
             UIView.animate(withDuration: 0.2) {
@@ -343,6 +340,20 @@ class ViewController: UIViewController {
         }
     }
 
+    func setupRemoteVideoPlayer(videoTrack: TVIRemoteVideoTrack) {
+        guard let view = TVIVideoView(frame: self.view.bounds, delegate: nil) else {
+            return
+        }
+        view.contentMode = UIView.ContentMode.scaleAspectFit
+        videoTrack.addRenderer(view)
+        self.remotePlayerView = view
+        self.view.insertSubview(view, at: 0)
+        self.view.setNeedsLayout()
+        UIView.animate(withDuration: 0.2) {
+            self.view.backgroundColor = UIColor.black
+        }
+    }
+
     func setupVideoSource(item: AVPlayerItem) {
         videoPlayerSource = ExampleAVPlayerSource(item: item)
 
@@ -350,7 +361,7 @@ class ViewController: UIViewController {
         if let track = TVILocalVideoTrack(capturer: videoPlayerSource!,
                                           enabled: true,
                                           constraints: nil,
-                                          name: kPlayerTrackName) {
+                                          name: ViewController.kPlayerTrackName) {
             playerVideoTrack = track
             self.room!.localParticipant!.publishVideoTrack(track)
         }
@@ -398,6 +409,8 @@ class ViewController: UIViewController {
     func stopVideoPlayer() {
         videoPlayer?.pause()
         videoPlayer = nil
+
+        // Remove observers?
 
         // Remove player UI
         videoPlayerView?.removeFromSuperview()
@@ -450,6 +463,7 @@ class ViewController: UIViewController {
                 setupAudioMix(player: videoPlayer!, playerItem: playerItem)
             } else {
                 // TODO: Possibly update the existing mix?
+                updateAudioMixParameters(playerItem: playerItem)
             }
         }
     }
@@ -481,7 +495,6 @@ extension ViewController : TVIRoomDelegate {
         } else {
             logMessage(messageText: "Disconnected from \(room.name)")
         }
-
 
         stopVideoPlayer()
         self.localVideoTrack = nil
@@ -563,13 +576,9 @@ extension ViewController : TVIRemoteParticipantDelegate {
 
         logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
 
-        // Start remote rendering, and add a touch handler.
-        if (videoTrack.name == self.kPlayerTrackName) {
-            self.remotePlayerView.isHidden = false
-            videoTrack.addRenderer(self.remotePlayerView)
-            UIView.animate(withDuration: 0.2) {
-                self.view.backgroundColor = UIColor.black
-            }
+        // Start remote rendering.
+        if (videoTrack.name == ViewController.kPlayerTrackName) {
+            setupRemoteVideoPlayer(videoTrack: videoTrack)
         } else {
             videoTrack.addRenderer(self.remoteView)
         }
@@ -584,8 +593,23 @@ extension ViewController : TVIRemoteParticipantDelegate {
 
         logMessage(messageText: "Unsubscribed from \(publication.trackName) video track for Participant \(participant.identity)")
 
-        // Stop remote rendering.
+        let renderers = videoTrack.renderers
+        let hasRemotePlayerView = renderers.contains { (renderer) -> Bool in
+            return renderer.isEqual(self.remotePlayerView)
+        }
+        let hasRemoteView = renderers.contains { (renderer) -> Bool in
+            return renderer.isEqual(self.remoteView)
+        }
 
+        // Stop remote rendering.
+        if hasRemotePlayerView,
+            let playerView = self.remotePlayerView {
+            videoTrack.removeRenderer(playerView)
+            playerView.removeFromSuperview()
+            self.remotePlayerView = nil
+        } else if hasRemoteView {
+            videoTrack.removeRenderer(self.remoteView)
+        }
     }
 
     func subscribed(to audioTrack: TVIRemoteAudioTrack,
