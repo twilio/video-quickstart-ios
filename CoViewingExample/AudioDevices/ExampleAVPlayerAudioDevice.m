@@ -53,15 +53,56 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 @interface ExampleAVPlayerAudioDevice()
 
+/**
+ Indicates that our AVAudioSession and audio graph have been interrupted. When an interruption ends we will take steps
+ to restart our audio graph.
+ */
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
+
+/**
+ A multi-channel mixer which takes as input:
+
+ 1. Decoded LPCM audio from Twilio. Remote audio is downmixed to `renderingFormat` by the media engine.
+ 2. Decoded, format converted LPCM audio from our MTAudioProcessingTap.
+
+ The mixer's output is connected to the input of the VoiceProcessingIO's output bus.
+ */
 @property (nonatomic, assign) AudioUnit playbackMixer;
+
+/**
+ A VoiceProcessingIO audio unit which performs several important functions.
+
+ Input Graph
+ 1. Record from the microphone.
+ 2. Echo cancellation of the loudspeaker output from the microphone input.
+ 3. Deliver mixed, recorded samples from the microphone and AVPlayer to Twilio.
+
+ Output Graph
+ 1. Pull audio from the output of `playbackMixer`.
+
+ The mixer's output is connected to the input of the VoiceProcessingIO's output bus.
+ */
 @property (nonatomic, assign) AudioUnit voiceProcessingIO;
 
+
+/**
+ The tap used to access audio samples from AVPlayer. This is where we produce audio for playback and recording.
+ */
 @property (nonatomic, assign, nullable) MTAudioProcessingTapRef audioTap;
+
+/**
+ A context which contains the state needed for the processing tap's C functions.
+ */
 @property (nonatomic, assign, nullable) ExampleAVPlayerAudioTapContext *audioTapContext;
-@property (nonatomic, strong, nullable) dispatch_semaphore_t audioTapCapturingSemaphore;
+
+/**
+ A circular buffer used to feed the recording side of the audio graph with frames produced by our processing tap.
+ */
 @property (nonatomic, assign, nullable) TPCircularBuffer *audioTapCapturingBuffer;
-@property (nonatomic, strong, nullable) dispatch_semaphore_t audioTapRenderingSemaphore;
+
+/**
+ A circular buffer used to feed the playback side of the audio graph with frames produced by our processing tap.
+ */
 @property (nonatomic, assign, nullable) TPCircularBuffer *audioTapRenderingBuffer;
 
 @property (nonatomic, assign) AudioConverterRef captureConverter;
@@ -70,8 +111,22 @@ static size_t kMaximumFramesPerBuffer = 1156;
 @property (nonatomic, assign, nullable) ExampleAVPlayerCapturerContext *capturingContext;
 @property (atomic, assign, nullable) ExampleAVPlayerRendererContext *renderingContext;
 @property (nonatomic, strong, nullable) TVIAudioFormat *renderingFormat;
+
+/**
+ A convenience getter that indicates if either `wantsCapturing` or `wantsRendering` are true.
+ */
 @property (nonatomic, assign, readonly) BOOL wantsAudio;
+
+/**
+ Indicates that our audio device has been requested to capture audio by Twilio. Capturing occurs when you publish
+ a TVILocalAudioTrack in a Group Room, or a Peer-to-Peer Room with 1 or more Participant.
+ */
 @property (nonatomic, assign) BOOL wantsCapturing;
+
+/**
+ Indicates that our audio device has been requested to render audio by Twilio. Rendering occurs when one or more Remote
+ Participants publish a TVIRemoteAudioTrack in a Room.
+ */
 @property (nonatomic, assign) BOOL wantsRendering;
 
 @end
