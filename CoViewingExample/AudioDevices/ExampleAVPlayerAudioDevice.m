@@ -142,8 +142,6 @@ static size_t kMaximumFramesPerBuffer = 1156;
     if (self) {
         _audioTapCapturingBuffer = calloc(1, sizeof(TPCircularBuffer));
         _audioTapRenderingBuffer = calloc(1, sizeof(TPCircularBuffer));
-        _audioTapCapturingSemaphore = dispatch_semaphore_create(0);
-        _audioTapRenderingSemaphore = dispatch_semaphore_create(0);
         _wantsCapturing = NO;
         _wantsRendering = NO;
 
@@ -755,20 +753,20 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
 }
 
 - (AudioStreamBasicDescription)microphoneInputStreamDescription {
-    AudioStreamBasicDescription capturingFormatDescription = self.capturingFormat.streamDescription;
-    capturingFormatDescription.mBytesPerFrame = 2;
-    capturingFormatDescription.mBytesPerPacket = 2;
-    capturingFormatDescription.mChannelsPerFrame = 1;
-    return capturingFormatDescription;
+    AudioStreamBasicDescription formatDescription = self.capturingFormat.streamDescription;
+    formatDescription.mBytesPerFrame = 2;
+    formatDescription.mBytesPerPacket = 2;
+    formatDescription.mChannelsPerFrame = 1;
+    return formatDescription;
 }
 
 - (AudioStreamBasicDescription)nonInterleavedStereoStreamDescription {
-    AudioStreamBasicDescription capturingFormatDescription = self.capturingFormat.streamDescription;
-    capturingFormatDescription.mBytesPerFrame = 2;
-    capturingFormatDescription.mBytesPerPacket = 2;
-    capturingFormatDescription.mChannelsPerFrame = 2;
-    capturingFormatDescription.mFormatFlags |= kAudioFormatFlagIsNonInterleaved;
-    return capturingFormatDescription;
+    AudioStreamBasicDescription formatDescription = self.capturingFormat.streamDescription;
+    formatDescription.mBytesPerFrame = 2;
+    formatDescription.mBytesPerPacket = 2;
+    formatDescription.mChannelsPerFrame = 2;
+    formatDescription.mFormatFlags |= kAudioFormatFlagIsNonInterleaved;
+    return formatDescription;
 }
 
 - (OSStatus)setupAudioCapturer:(ExampleAVPlayerCapturerContext *)capturerContext {

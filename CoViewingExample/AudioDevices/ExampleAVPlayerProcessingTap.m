@@ -73,7 +73,6 @@ OSStatus AVPlayerAudioTapConverterInputDataProc(AudioConverterRef inAudioConvert
 
     assert(context->sourcePackets + context->cachePackets >= *ioNumberDataPackets);
 //    printf("Convert at least %d input packets. We have %d source packets, %d cached packets.\n", *ioNumberDataPackets, context->sourcePackets, context->cachePackets);
-//    minimumPackets = context->sourcePackets;
     AudioBufferList *sourceBufferList = (AudioBufferList *)context->sourceBuffers;
     AudioBufferList *cacheBufferList = (AudioBufferList *)context->cacheBuffers;
     assert(sourceBufferList->mNumberBuffers == ioData->mNumberBuffers);
