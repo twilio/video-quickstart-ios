@@ -408,14 +408,6 @@ class ViewController: UIViewController {
                                of object: Any?,
                                change: [NSKeyValueChangeKey : Any]?,
                                context: UnsafeMutableRawPointer?) {
-        // Only handle observations for the playerItemContext
-//        if object != videoPlayer?.currentItem {
-//            super.observeValue(forKeyPath: keyPath,
-//                               of: object,
-//                               change: change,
-//                               context: context)
-//            return
-//        }
 
         if keyPath == #keyPath(AVPlayerItem.status) {
             let status: AVPlayerItem.Status
