@@ -379,7 +379,7 @@ class ViewController: UIViewController {
         let audioMix = AVMutableAudioMix()
 
         let inputParameters = AVMutableAudioMixInputParameters(track: audioAssetTrack)
-        // TODO: Memory management of the MTAudioProcessingTap.
+        // TODO: Is memory management of the MTAudioProcessingTap correct?
         inputParameters.audioTapProcessor = audioDevice!.createProcessingTap()?.takeUnretainedValue()
         audioMix.inputParameters = [inputParameters]
         playerItem.audioMix = audioMix
@@ -412,10 +412,17 @@ class ViewController: UIViewController {
     }
 
     func stopVideoPlayer() {
+        print(#function)
+        
         videoPlayer?.pause()
+        videoPlayer?.currentItem?.removeObserver(self, forKeyPath: #keyPath(AVPlayerItem.status))
+        videoPlayer?.currentItem?.removeObserver(self, forKeyPath: #keyPath(AVPlayerItem.tracks))
+        videoPlayer?.currentItem?.remove((videoPlayerSource?.videoOutput)!)
+        videoPlayer?.currentItem?.audioMix = nil
+        videoPlayer?.replaceCurrentItem(with: nil)
         videoPlayer = nil
 
-        // Remove observers?
+        // TODO: Unpublish player video.
 
         // Remove player UI
         videoPlayerView?.removeFromSuperview()
@@ -467,7 +474,8 @@ class ViewController: UIViewController {
                 firstAudioAssetTrack(playerItem: playerItem) != nil {
                 setupAudioMix(player: videoPlayer!, playerItem: playerItem)
             } else {
-                // TODO: Possibly update the existing mix?
+                // TODO: Possibly update the existing mix for HLS?
+                // This doesn't seem to fix the tap bug, nor does deferring mix creation.
 //                updateAudioMixParameters(playerItem: playerItem)
             }
         }

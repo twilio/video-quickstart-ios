@@ -28,7 +28,7 @@ class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
     private var outputTimer: CADisplayLink? = nil
     // Dispatch timer which fires at a pre-determined cadence `kFrameOutputInterval`.
     private var timerSource: DispatchSourceTimer? = nil
-    private var videoOutput: AVPlayerItemVideoOutput? = nil
+    var videoOutput: AVPlayerItemVideoOutput? = nil
     private let videoSampleQueue: DispatchQueue
 
     // Frame output/sampling interval for a DispatchSource. Note: 60 Hz = 16667, 23.976 Hz = 41708
