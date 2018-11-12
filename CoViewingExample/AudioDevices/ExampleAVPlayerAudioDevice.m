@@ -27,6 +27,8 @@ typedef struct ExampleAVPlayerRendererContext {
 
     // The buffer of AVPlayer content that we will consume.
     TPCircularBuffer *playoutBuffer;
+    AudioTimeStamp playoutStartTimestamp;
+    AudioTimeStamp playoutSampleTimestamp;
 } ExampleAVPlayerRendererContext;
 
 typedef struct ExampleAVPlayerCapturerContext {
@@ -205,13 +207,14 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 - (void)audioTapDidPrepare {
     NSLog(@"%s", __PRETTY_FUNCTION__);
+}
 
-    // TODO: Multiple contexts.
+- (void)startAudioTapAtTime:(CMTime)startTime {
     @synchronized (self) {
         TVIAudioDeviceContext *context = _capturingContext ? _capturingContext->deviceContext : _renderingContext ? _renderingContext->deviceContext : NULL;
         if (context) {
             TVIAudioDeviceExecuteWorkerBlock(context, ^{
-                [self restartAudioUnit];
+                [self restartAudioUnitAtTime:startTime];
             });
         }
     }
@@ -287,6 +290,9 @@ static size_t kMaximumFramesPerBuffer = 1156;
         if (self.audioTapContext->audioTapPrepared) {
             self.renderingContext->playoutBuffer = _audioTapRenderingBuffer;
         } else {
+            AudioTimeStamp start = {0};
+            start.mFlags = kAudioTimeStampNothingValid;
+            self.renderingContext->playoutStartTimestamp = start;
             self.renderingContext->playoutBuffer = NULL;
         }
 
@@ -443,11 +449,12 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 static void ExampleAVPlayerAudioDeviceDequeueFrames(TPCircularBuffer *buffer,
                                                     UInt32 numFrames,
+                                                    const AudioTimeStamp *timestamp,
                                                     AudioBufferList *bufferList) {
     int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
 
     // TODO: Include this format in the context? What if the formats are somehow not matched?
-    AudioStreamBasicDescription format;
+    AudioStreamBasicDescription format = {0};
     format.mBitsPerChannel = 16;
     format.mChannelsPerFrame = bufferList->mBuffers[0].mNumberChannels;
     format.mBytesPerFrame = format.mChannelsPerFrame * format.mBitsPerChannel / 8;
@@ -456,10 +463,13 @@ static void ExampleAVPlayerAudioDeviceDequeueFrames(TPCircularBuffer *buffer,
     format.mSampleRate = kPreferredSampleRate;
 
     UInt32 framesInOut = numFrames;
-    if (buffer->buffer != NULL) {
-        TPCircularBufferDequeueBufferListFrames(buffer, &framesInOut, bufferList, NULL, &format);
+    if (timestamp) {
+        AudioTimeStamp dequeuedTimestamp;
+        do {
+            TPCircularBufferDequeueBufferListFrames(buffer, &framesInOut, bufferList, &dequeuedTimestamp, &format);
+        } while (dequeuedTimestamp.mSampleTime < timestamp->mSampleTime);
     } else {
-        framesInOut = 0;
+        TPCircularBufferDequeueBufferListFrames(buffer, &framesInOut, bufferList, NULL, &format);
     }
 
     if (framesInOut != numFrames) {
@@ -483,6 +493,8 @@ static OSStatus ExampleAVPlayerAudioDeviceAudioTapPlaybackCallback(void *refCon,
     assert(bufferList->mBuffers[0].mNumberChannels > 0);
 
     ExampleAVPlayerRendererContext *context = (ExampleAVPlayerRendererContext *)refCon;
+    AudioTimeStamp startTimestamp = context->playoutStartTimestamp;
+    BOOL readyToPlay = (startTimestamp.mFlags & kAudioTimeStampHostTimeValid) && (timestamp->mHostTime >= startTimestamp.mHostTime);
     TPCircularBuffer *buffer = context->playoutBuffer;
     UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
 
@@ -493,13 +505,20 @@ static OSStatus ExampleAVPlayerAudioDeviceAudioTapPlaybackCallback(void *refCon,
         int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
         memset(audioBuffer, 0, audioBufferSizeInBytes);
         return noErr;
-    } else if (buffer == nil) {
+    } else if (buffer == nil ||
+               !readyToPlay) {
         *actionFlags |= kAudioUnitRenderAction_OutputIsSilence;
         memset(bufferList->mBuffers[0].mData, 0, audioBufferSizeInBytes);
         return noErr;
     }
 
-    ExampleAVPlayerAudioDeviceDequeueFrames(buffer, numFrames, bufferList);
+    if (readyToPlay && context->playoutStartTimestamp.mSampleTime == 0) {
+        ExampleAVPlayerAudioDeviceDequeueFrames(buffer, numFrames, &context->playoutStartTimestamp, bufferList);
+        context->playoutStartTimestamp.mSampleTime += 1;
+    } else {
+        ExampleAVPlayerAudioDeviceDequeueFrames(buffer, numFrames, NULL, bufferList);
+    }
+
     return noErr;
 }
 
@@ -587,7 +606,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
     playerAudioBuffer->mDataByteSize = (UInt32)numFrames * playerAudioBuffer->mNumberChannels * kAudioSampleSize;
     playerAudioBuffer->mData = context->audioBuffer;
 
-    ExampleAVPlayerAudioDeviceDequeueFrames(context->recordingBuffer, numFrames, &playerBufferList);
+    ExampleAVPlayerAudioDeviceDequeueFrames(context->recordingBuffer, numFrames, NULL, &playerBufferList);
 
     // Early return to test player audio.
     // Deliver the samples (via copying) to WebRTC.
@@ -695,9 +714,9 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
         NSLog(@"Error setting sample rate: %@", error);
     }
 
-    NSInteger preferredOutputChannels = session.outputNumberOfChannels >= kPreferredNumberOfChannels ? kPreferredNumberOfChannels : session.outputNumberOfChannels;
+    size_t preferredOutputChannels = session.outputNumberOfChannels >= kPreferredNumberOfChannels ? kPreferredNumberOfChannels : session.outputNumberOfChannels;
     if (![session setPreferredOutputNumberOfChannels:preferredOutputChannels error:&error]) {
-        NSLog(@"Error setting number of output channels: %@", error);
+        NSLog(@"Error setting number of output channels to %zu: %@", preferredOutputChannels, error);
     }
 
     /*
@@ -723,7 +742,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
     }
 
     if (![session setPreferredInputNumberOfChannels:kPreferredNumberOfInputChannels error:&error]) {
-        NSLog(@"Error setting preferred number of input channels: %@", error);
+        NSLog(@"Error setting preferred number of input channels to %zu: %@", kPreferredNumberOfChannels, error);
     }
 }
 
@@ -1005,8 +1024,19 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
     }
 }
 
-- (void)restartAudioUnit {
+- (void)restartAudioUnitAtTime:(CMTime)startTime {
     BOOL restart = NO;
+
+    AudioTimeStamp startTimestamp = {0};
+    startTimestamp.mFlags = kAudioTimeStampHostTimeValid;
+    startTimestamp.mHostTime = CMClockConvertHostTimeToSystemUnits(startTime);
+    self.renderingContext->playoutStartTimestamp = startTimestamp;
+
+    // TODO: Assumption, pass as an arg using the asset's current time and audio timescale?
+    AudioTimeStamp sampleTimestamp = {0};
+    sampleTimestamp.mFlags = kAudioTimeStampSampleTimeValid;
+    sampleTimestamp.mSampleTime = 0;
+
     @synchronized (self) {
         if (self.wantsAudio) {
             restart = YES;
@@ -1014,6 +1044,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
             [self teardownAudioUnit];
             if (self.renderingContext) {
                 self.renderingContext->playoutBuffer = _audioTapRenderingBuffer;
+                self.renderingContext->playoutSampleTimestamp = sampleTimestamp;
             }
             if (self.capturingContext) {
                 self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;

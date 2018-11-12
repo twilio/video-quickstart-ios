@@ -16,6 +16,8 @@
 
 - (void)audioTapDidPrepare;
 
+- (void)startAudioTapAtTime:(CMTime)startTime;
+
 /*
  * Creates a processing tap bound to the device instance.
  *

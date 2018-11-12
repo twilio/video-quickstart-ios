@@ -26,6 +26,8 @@ class ViewController: UIViewController {
     var playerVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack!
 
+    // How long we will spend in pre-roll, attempting to synchronize our AVPlayer and AudioUnit graph.
+    static let kPrerollDuration = Double(1.0)
     static let kPlayerTrackName = "player-track"
 
     // AVPlayer Audio/Video.
@@ -35,6 +37,7 @@ class ViewController: UIViewController {
     var videoPlayerSource: ExampleAVPlayerSource? = nil
     var videoPlayerView: ExampleAVPlayerView? = nil
     var videoPlayerUrl: URL? = nil
+    var videoPlayerPreroll: Bool = false
 
     var isPresenter:Bool?
 
@@ -317,6 +320,13 @@ class ViewController: UIViewController {
 
         let player = AVPlayer(playerItem: playerItem)
         player.volume = Float(0)
+        player.automaticallyWaitsToMinimizeStalling = false
+
+        var audioClock: CMClock? = nil
+        let status = CMAudioClockCreate(allocator: nil, clockOut: &audioClock)
+        if (status == noErr) {
+            player.masterClock = audioClock;
+        }
         videoPlayer = player
 
         let playerView = ExampleAVPlayerView(frame: CGRect.zero, player: player)
@@ -429,6 +439,36 @@ class ViewController: UIViewController {
         videoPlayerView = nil
     }
 
+    func prerollVideoPlayer() {
+        print("Preparing to play asset with Tracks:", videoPlayer?.currentItem?.asset.tracks as Any)
+
+        videoPlayerPreroll = true
+        videoPlayer?.preroll(atRate: 1.0, completionHandler: { (success) in
+            if (success) {
+                // Start audio and video playback at a time synchronized with both parties.
+                // let now = CMClockGetTime(CMClockGetHostTimeClock())
+                let now = CMClockGetTime((self.videoPlayer?.masterClock)!)
+                let start = now + CMTime(seconds: ViewController.kPrerollDuration, preferredTimescale: now.timescale)
+
+                let audioAssetTrack = self.firstAudioAssetTrack(playerItem: (self.videoPlayer?.currentItem)!)
+                var range = CMTimeRange.invalid
+                if let assetTrack = audioAssetTrack {
+                    range = assetTrack.timeRange
+                }
+
+                print("Pre-roll success for item:", self.videoPlayer?.currentItem as Any, "\n",
+                      "Current time:", self.videoPlayer?.currentItem?.currentTime() as Any, "\n",
+                      "Audio asset range:", range as Any, "\n",
+                      "\nStarting at:", start.seconds)
+                self.videoPlayer?.setRate(1.0, time: CMTime.invalid, atHostTime: start)
+                self.audioDevice?.startAudioTap(at: start)
+            } else {
+                print("Pre-roll failed, waiting to try again ...")
+                self.videoPlayerPreroll = false
+            }
+        })
+    }
+
     override func observeValue(forKeyPath keyPath: String?,
                                of object: Any?,
                                change: [NSKeyValueChangeKey : Any]?,
@@ -448,12 +488,16 @@ class ViewController: UIViewController {
             switch status {
             case .readyToPlay:
                 // Player item is ready to play.
-                print("Ready. Playing asset with tracks: ", videoPlayer?.currentItem?.asset.tracks as Any)
+                print("Ready to play asset.")
                 // Defer video source setup until we've loaded the asset so that we can determine downscaling for progressive streaming content.
                 if self.videoPlayerSource == nil {
                     setupVideoSource(item: object as! AVPlayerItem)
                 }
-                videoPlayer?.play()
+
+                if videoPlayer?.rate == 0 &&
+                    videoPlayerPreroll == false {
+                    self.prerollVideoPlayer()
+                }
                 break
             case .failed:
                 // Player item failed. See error.
@@ -462,7 +506,7 @@ class ViewController: UIViewController {
                 break
             case .unknown:
                 // Player item is not yet ready.
-                print("Player status unknown.")
+                print("Player item status is unknown.")
                 break
             }
         } else if keyPath == #keyPath(AVPlayerItem.tracks) {
