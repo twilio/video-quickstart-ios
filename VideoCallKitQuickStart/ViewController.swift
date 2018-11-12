@@ -312,8 +312,14 @@ extension ViewController : TVIRoomDelegate {
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
         logMessage(messageText: "Disconncted from room \(room.name), error = \(String(describing: error))")
 
-        if !self.userInitiatedDisconnect, let uuid = room.uuid {
-            self.callKitProvider.reportCall(with: uuid, endedAt: nil, reason: .failed)
+        if !self.userInitiatedDisconnect, let uuid = room.uuid, let error = error {
+            var reason = CXCallEndedReason.remoteEnded
+
+            if (error as NSError).code != TVIError.roomRoomCompletedError.rawValue {
+                reason = .failed
+            }
+
+            self.callKitProvider.reportCall(with: uuid, endedAt: nil, reason: reason)
         }
 
         self.cleanupRemoteParticipant()
