@@ -368,8 +368,13 @@ class ViewController: UIViewController {
     }
 
     func setupAudioMix(player: AVPlayer, playerItem: AVPlayerItem) {
-        let audioAssetTrack = firstAudioAssetTrack(playerItem: playerItem)
-        print("Setup audio mix with AssetTrack:", audioAssetTrack != nil ? audioAssetTrack as Any : " none")
+        guard let audioAssetTrack = firstAudioAssetTrack(playerItem: playerItem) else {
+            return
+        }
+        print("Setup audio mix with AudioAssetTrack, Id:", audioAssetTrack.trackID as Any, "\n",
+              "Asset:", audioAssetTrack.asset as Any, "\n",
+              "Audio Fallbacks:", audioAssetTrack.associatedTracks(ofType: AVAssetTrack.AssociationType.audioFallback), "\n",
+              "isPlayable:", audioAssetTrack.isPlayable)
 
         let audioMix = AVMutableAudioMix()
 

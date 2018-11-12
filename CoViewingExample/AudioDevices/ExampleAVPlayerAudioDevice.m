@@ -14,6 +14,7 @@
 static double const kPreferredIOBufferDuration = 0.02;
 // We will use stereo playback where available. Some audio routes may be restricted to mono only.
 static size_t const kPreferredNumberOfChannels = 2;
+static size_t const kPreferredNumberOfInputChannels = 1;
 // An audio sample is a signed 16-bit integer.
 static size_t const kAudioSampleSize = sizeof(SInt16);
 static uint32_t const kPreferredSampleRate = 48000;
@@ -721,7 +722,9 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
         NSLog(@"Error activating AVAudioSession: %@", error);
     }
 
-    // TODO: Set preferred input channels to 1?
+    if (![session setPreferredInputNumberOfChannels:kPreferredNumberOfInputChannels error:&error]) {
+        NSLog(@"Error setting preferred number of input channels: %@", error);
+    }
 }
 
 - (AudioStreamBasicDescription)microphoneInputStreamDescription {
