@@ -62,8 +62,8 @@ static size_t kMaximumFramesPerBuffer = 1156;
 /**
  A multi-channel mixer which takes as input:
 
- 1. Decoded LPCM audio from Twilio. Remote audio is downmixed to `renderingFormat` by the media engine.
- 2. Decoded, format converted LPCM audio from our MTAudioProcessingTap.
+ 1. Decoded LPCM audio from Twilio. Remote audio is mixed and pulled from the media engine in `renderingFormat`.
+ 2. Decoded, format converted LPCM audio consumed from our MTAudioProcessingTap.
 
  The mixer's output is connected to the input of the VoiceProcessingIO's output bus.
  */
@@ -214,34 +214,6 @@ static size_t kMaximumFramesPerBuffer = 1156;
             });
         }
     }
-}
-
-- (void)restartAudioUnit {
-    BOOL restart = NO;
-    @synchronized (self) {
-        if (self.wantsAudio) {
-            restart = YES;
-            [self stopAudioUnit];
-            [self teardownAudioUnit];
-            if (self.renderingContext) {
-                self.renderingContext->playoutBuffer = _audioTapRenderingBuffer;
-            }
-            if (self.capturingContext) {
-                self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;
-            }
-            if ([self setupAudioUnitRendererContext:self.renderingContext
-                                    capturerContext:self.capturingContext]) {
-                if (self.capturingContext) {
-                    self.capturingContext->audioUnit = _voiceProcessingIO;
-                    self.capturingContext->audioConverter = _captureConverter;
-                }
-            } else {
-                return;
-            }
-        }
-    }
-
-    [self startAudioUnit];
 }
 
 - (MTAudioProcessingTapRef)createProcessingTap {
@@ -1028,6 +1000,34 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
         AudioConverterDispose(_captureConverter);
         _captureConverter = NULL;
     }
+}
+
+- (void)restartAudioUnit {
+    BOOL restart = NO;
+    @synchronized (self) {
+        if (self.wantsAudio) {
+            restart = YES;
+            [self stopAudioUnit];
+            [self teardownAudioUnit];
+            if (self.renderingContext) {
+                self.renderingContext->playoutBuffer = _audioTapRenderingBuffer;
+            }
+            if (self.capturingContext) {
+                self.capturingContext->recordingBuffer = _audioTapCapturingBuffer;
+            }
+            if ([self setupAudioUnitRendererContext:self.renderingContext
+                                    capturerContext:self.capturingContext]) {
+                if (self.capturingContext) {
+                    self.capturingContext->audioUnit = _voiceProcessingIO;
+                    self.capturingContext->audioConverter = _captureConverter;
+                }
+            } else {
+                return;
+            }
+        }
+    }
+
+    [self startAudioUnit];
 }
 
 #pragma mark - NSNotification Observers

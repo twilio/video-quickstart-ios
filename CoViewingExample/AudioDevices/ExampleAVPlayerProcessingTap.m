@@ -144,9 +144,9 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
     UInt32 desiredIoBufferSize = framesIn * 4 * bufferListIn->mNumberBuffers;
 //    printf("Input is %d bytes (%d total frames, %d cached frames).\n", desiredIoBufferSize, framesIn, *cachedSourceFrames);
     UInt32 propertySizeIo = sizeof(desiredIoBufferSize);
-    AudioConverterGetProperty(converter,
-                              kAudioConverterPropertyCalculateOutputBufferSize,
-                              &propertySizeIo, &desiredIoBufferSize);
+    status = AudioConverterGetProperty(converter,
+                                       kAudioConverterPropertyCalculateOutputBufferSize,
+                                       &propertySizeIo, &desiredIoBufferSize);
 
     UInt32 bytesPerFrameOut = channelsOut * sizeof(SInt16);
     UInt32 framesOut = (desiredIoBufferSize) / bytesPerFrameOut;
@@ -162,7 +162,6 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
     }
     producerBufferList->mBuffers[0].mNumberChannels = channelsOut;
 
-    OSStatus status;
     UInt32 ioPacketSize = framesOut;
 //    printf("Ready to fill output buffer of frames: %d, bytes: %d with input buffer of frames: %d, bytes: %d.\n",
 //           framesOut, bytesOut, framesIn, framesIn * 4 * bufferListIn->mNumberBuffers);
@@ -357,10 +356,20 @@ void AVPlayerProcessingTapProcess(MTAudioProcessingTapRef tap,
     // Produce capturer buffers. We will perform a sample rate conversion if needed.
     TPCircularBuffer *capturingBuffer = context->capturingBuffer;
     if (context->capturingSampleRateConversion) {
-        AVPlayerAudioTapProduceFilledFrames(capturingBuffer, context->captureFormatConverter, context->captureFormatConvertIsPrimed, bufferListInOut, context->sourceCache, &context->sourceCacheFrames, framesToCopy, kPreferredNumberOfChannels);
+        AVPlayerAudioTapProduceFilledFrames(capturingBuffer,
+                                            context->captureFormatConverter,
+                                            context->captureFormatConvertIsPrimed,
+                                            bufferListInOut, context->sourceCache,
+                                            &context->sourceCacheFrames,
+                                            framesToCopy,
+                                            kPreferredNumberOfChannels);
         context->captureFormatConvertIsPrimed = YES;
     } else {
-        AVPlayerAudioTapProduceConvertedFrames(capturingBuffer, context->captureFormatConverter, bufferListInOut, framesToCopy, kPreferredNumberOfChannels);
+        AVPlayerAudioTapProduceConvertedFrames(capturingBuffer,
+                                               context->captureFormatConverter,
+                                               bufferListInOut,
+                                               framesToCopy,
+                                               kPreferredNumberOfChannels);
     }
 
     // Flush converters on a discontinuity. This is especially important for priming a sample rate converter.

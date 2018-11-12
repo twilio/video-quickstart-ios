@@ -463,7 +463,7 @@ class ViewController: UIViewController {
                 setupAudioMix(player: videoPlayer!, playerItem: playerItem)
             } else {
                 // TODO: Possibly update the existing mix?
-                updateAudioMixParameters(playerItem: playerItem)
+//                updateAudioMixParameters(playerItem: playerItem)
             }
         }
     }
