@@ -144,9 +144,9 @@ static inline void AVPlayerAudioTapProduceFilledFrames(TPCircularBuffer *buffer,
     UInt32 desiredIoBufferSize = framesIn * 4 * bufferListIn->mNumberBuffers;
 //    printf("Input is %d bytes (%d total frames, %d cached frames).\n", desiredIoBufferSize, framesIn, *cachedSourceFrames);
     UInt32 propertySizeIo = sizeof(desiredIoBufferSize);
-    status = AudioConverterGetProperty(converter,
-                                       kAudioConverterPropertyCalculateOutputBufferSize,
-                                       &propertySizeIo, &desiredIoBufferSize);
+    OSStatus status = AudioConverterGetProperty(converter,
+                                                kAudioConverterPropertyCalculateOutputBufferSize,
+                                                &propertySizeIo, &desiredIoBufferSize);
 
     UInt32 bytesPerFrameOut = channelsOut * sizeof(SInt16);
     UInt32 framesOut = (desiredIoBufferSize) / bytesPerFrameOut;
@@ -195,6 +195,7 @@ static inline void AVPlayerAudioTapProduceConvertedFrames(TPCircularBuffer *buff
                                                           AudioConverterRef converter,
                                                           AudioBufferList *bufferListIn,
                                                           UInt32 framesIn,
+                                                          CMTimeRange *sourceRangeIn,
                                                           UInt32 channelsOut) {
     UInt32 bytesOut = framesIn * channelsOut * 2;
     AudioBufferList *producerBufferList = TPCircularBufferPrepareEmptyAudioBufferList(buffer, 1, bytesOut, NULL);
@@ -210,7 +211,10 @@ static inline void AVPlayerAudioTapProduceConvertedFrames(TPCircularBuffer *buff
 
     // TODO: Do we still produce the buffer list after a failure?
     if (status == kCVReturnSuccess) {
-        TPCircularBufferProduceAudioBufferList(buffer, NULL);
+        AudioTimeStamp timestamp = {0};
+        timestamp.mFlags = kAudioTimeStampSampleTimeValid;
+        timestamp.mSampleTime = sourceRangeIn->start.value;
+        TPCircularBufferProduceAudioBufferList(buffer, &timestamp);
     } else {
         printf("Error converting buffers: %d\n", status);
     }
@@ -341,9 +345,11 @@ void AVPlayerProcessingTapProcess(MTAudioProcessingTapRef tap,
                                                          flagsOut,
                                                          &sourceRange,
                                                          numberFramesOut);
-
-    if (status != kCVReturnSuccess) {
-        // TODO
+    if (status != noErr) {
+        // TODO: It might be useful to fill zeros here.
+        return;
+    } else if(CMTIMERANGE_IS_EMPTY(sourceRange) ||
+              CMTIMERANGE_IS_INVALID(sourceRange)) {
         return;
     }
 
@@ -351,7 +357,12 @@ void AVPlayerProcessingTapProcess(MTAudioProcessingTapRef tap,
 
     // Produce renderer buffers. These are interleaved, signed integer frames in the source's sample rate.
     TPCircularBuffer *renderingBuffer = context->renderingBuffer;
-    AVPlayerAudioTapProduceConvertedFrames(renderingBuffer, context->renderFormatConverter, bufferListInOut, framesToCopy, 2);
+    AVPlayerAudioTapProduceConvertedFrames(renderingBuffer,
+                                           context->renderFormatConverter,
+                                           bufferListInOut,
+                                           framesToCopy,
+                                           &sourceRange,
+                                           kPreferredNumberOfChannels);
 
     // Produce capturer buffers. We will perform a sample rate conversion if needed.
     TPCircularBuffer *capturingBuffer = context->capturingBuffer;
@@ -369,6 +380,7 @@ void AVPlayerProcessingTapProcess(MTAudioProcessingTapRef tap,
                                                context->captureFormatConverter,
                                                bufferListInOut,
                                                framesToCopy,
+                                               &sourceRange,
                                                kPreferredNumberOfChannels);
     }
 
