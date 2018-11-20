@@ -12,7 +12,7 @@ import Dispatch
 import ReplayKit
 import TwilioVideo
 
-class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
+class ReplayKitVideoSource: NSObject, TVIVideoSource {
 
     /*
      * Streaming video content at 30 fps or lower is ideal. ReplayKit may produce buffers at up to 120 Hz on an iPad Pro.
@@ -36,7 +36,8 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     var downscaleBuffers: Bool = false
     var screencastUsage: Bool = false
-    weak var captureConsumer: TVIVideoCaptureConsumer?
+    weak var sink: TVIVideoSink?
+    var videoFormat: TVIVideoFormat?
 
     var downscaleYPlaneBuffer: UnsafeMutableRawPointer?
     var downscaleYPlaneSize: Int = 0
@@ -63,6 +64,25 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     init(isScreencast: Bool) {
         screencastUsage = isScreencast
+
+        let outputFormat = TVIVideoFormat()
+
+        if (!isScreencast) {
+            outputFormat.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
+            outputFormat.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
+            outputFormat.dimensions = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),
+                                                       height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
+        } else {
+            var screenSize = UIScreen.main.bounds.size
+            screenSize.width *= UIScreen.main.nativeScale
+            screenSize.height *= UIScreen.main.nativeScale
+            outputFormat.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
+            outputFormat.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
+            outputFormat.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
+        }
+
+        super.init()
+        requestOutputFormat(outputFormat)
     }
 
     public var isScreencast: Bool {
@@ -71,66 +91,37 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
     }
 
-    public var supportedFormats: [TVIVideoFormat] {
-        get {
-            /*
-             * Describe the supported formats.
-             * In this example we can deliver either original, or downscaled buffers.
-             */
-            var screenSize = UIScreen.main.bounds.size
-            screenSize.width *= UIScreen.main.nativeScale
-            screenSize.height *= UIScreen.main.nativeScale
-            let format = TVIVideoFormat()
-            format.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
-            format.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
-            format.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
+    func requestOutputFormat(_ outputFormat: TVIVideoFormat) {
+        downscaleBuffers = (outputFormat.dimensions.width == ReplayKitVideoSource.kDownScaledMaxWidthOrHeight &&
+                            outputFormat.dimensions.height == ReplayKitVideoSource.kDownScaledMaxWidthOrHeight)
+        videoFormat = outputFormat
 
-            // We will downscale buffers to a 640x640 box, if requested.
-            let downscaledFormat = TVIVideoFormat()
-            downscaledFormat.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
-            downscaledFormat.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
-            downscaledFormat.dimensions = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
-
-            return [format, downscaledFormat]
+        if let sink = sink {
+            sink.onVideoFormatRequest(videoFormat)
         }
     }
 
     deinit {
-        freeScalingBuffers()
-    }
-
-    func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
-        captureConsumer = consumer
-
-        if (format.dimensions.width == ReplayKitVideoSource.kDownScaledMaxWidthOrHeight &&
-            format.dimensions.height == ReplayKitVideoSource.kDownScaledMaxWidthOrHeight) {
-            downscaleBuffers = true
-        }
-
-        print("Start capturing with format:", format)
-    }
-
-    func stopCapture() {
-        print("Stop capturing.")
-
         // Perform teardown and free memory on the video queue to ensure that the resources will not be resurrected.
         if let captureQueue = self.videoQueue {
             captureQueue.sync {
-                self.captureConsumer = nil
                 self.timerSource?.cancel()
                 self.timerSource = nil
-                self.freeScalingBuffers()
             }
-        } else {
-            // Fallback in case we never captured any frames yet.
-            captureConsumer = nil
         }
+
+        freeScalingBuffers()
     }
 
     public func processVideoSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
-        guard let consumer = self.captureConsumer else {
+        guard let sink = self.sink else {
             return
         }
+
+        if sink.sourceRequirements == nil {
+            sink.onVideoFormatRequest(videoFormat)
+        }
+
         guard let sourcePixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             assertionFailure("SampleBuffer did not have an ImageBuffer")
             return
@@ -145,7 +136,6 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         // Discover the dispatch queue that we are operating on.
         if videoQueue == nil {
             videoQueue = ExampleCoreAudioDeviceGetCurrentQueue()
-            consumer.captureDidStart(true)
         }
 
         // Frame dropping logic.
@@ -173,7 +163,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
         // Return the original pixel buffer without downscaling.
         if (!downscaleBuffers) {
-            deliverFrame(to: consumer,
+            deliverFrame(to: sink,
                          timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
                          buffer: sourcePixelBuffer,
                          orientation: videoOrientation,
@@ -258,7 +248,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         status = CVPixelBufferUnlockBaseAddress(outPixelBuffer!, [])
         status = CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, CVPixelBufferLockFlags.readOnly)
 
-        deliverFrame(to: consumer,
+        deliverFrame(to: sink,
                      timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
                      buffer: destinationPixelBuffer,
                      orientation: videoOrientation,
@@ -312,14 +302,14 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
     }
 
-    func deliverFrame(to: TVIVideoCaptureConsumer, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation, forceReschedule: Bool) {
+    func deliverFrame(to: TVIVideoSink, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation, forceReschedule: Bool) {
         guard let frame = TVIVideoFrame(timestamp: timestamp,
                                         buffer: buffer,
                                         orientation: orientation) else {
                                             assertionFailure("We couldn't create a TVIVideoFrame with a valid CVPixelBuffer.")
                                             return
         }
-        to.consumeCapturedFrame(frame)
+        to.onVideoFrame(frame)
         lastTimestamp = timestamp
 
         // Frame retransmission logic.
@@ -349,7 +339,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         // Generally, this timer is invoked in kFrameRetransmitDispatchInterval when no frames are sent.
         source.setEventHandler(handler: {
             if let frame = self.lastFrameStorage,
-                let consumer = self.captureConsumer,
+                let sink = self.sink,
                 let lastHostTimestamp = self.lastTransmitTimestamp {
                 let currentTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
                 let delta = CMTimeSubtract(currentTimestamp, lastHostTimestamp)
@@ -357,7 +347,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                 if delta >= ReplayKitVideoSource.kFrameRetransmitTimeInterval {
                     print("Delivering frame since send-delta is greather than threshold. delta=", delta.seconds)
                     // Reconstruct a new timestamp, advancing by our relative read of host time.
-                    self.deliverFrame(to: consumer,
+                    self.deliverFrame(to: sink,
                                       timestamp: CMTimeAdd(frame.timestamp, delta),
                                       buffer: frame.imageBuffer,
                                       orientation: frame.orientation,

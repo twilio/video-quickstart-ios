@@ -37,13 +37,8 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
         // This source will attempt to produce smaller buffers with fluid motion.
         videoSource = ReplayKitVideoSource(isScreencast: false)
-        let constraints = TVIVideoConstraints.init { (builder) in
-            builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),
-                                                height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
-        }
-        screenTrack = TVILocalVideoTrack(capturer: videoSource!,
+        screenTrack = TVILocalVideoTrack(source: videoSource!,
                                          enabled: true,
-                                         constraints: constraints,
                                          name: "Screen")
 
         let localAudioTrack = TVILocalAudioTrack()
