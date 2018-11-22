@@ -194,6 +194,8 @@ class ViewController: UIViewController {
 
         // Preview our local camera track in the local video preview view.
         if let camera = TVICameraCapturer(source: .frontCamera, delegate: self, enablePreview: true) {
+            self.camera = camera
+
             localVideoTrack = TVILocalVideoTrack.init(capturer: camera, enabled: true, constraints: nil, name: "Camera")
             if (localVideoTrack == nil) {
                 logMessage(messageText: "Failed to create video track")
@@ -206,7 +208,7 @@ class ViewController: UIViewController {
 
                 // We will flip camera on tap.
                 let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
-                camera.previewView.addGestureRecognizer(tap)
+                self.previewView.addGestureRecognizer(tap)
             }
         }
     }
