@@ -31,7 +31,7 @@ class ViewController: UIViewController {
     // MARK: UI Element Outlets and handles
     
     // `TVIVideoView` created from a storyboard
-    @IBOutlet weak var previewView: TVIVideoView!
+    @IBOutlet weak var previewView: UIView!
 
     @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var disconnectButton: UIButton!
@@ -193,19 +193,21 @@ class ViewController: UIViewController {
         }
 
         // Preview our local camera track in the local video preview view.
-        camera = TVICameraCapturer(source: .frontCamera, delegate: self)
-        localVideoTrack = TVILocalVideoTrack.init(capturer: camera!, enabled: true, constraints: nil, name: "Camera")
-        if (localVideoTrack == nil) {
-            logMessage(messageText: "Failed to create video track")
-        } else {
-            // Add renderer to video track for local preview
-            localVideoTrack!.addRenderer(self.previewView)
+        if let camera = TVICameraCapturer(source: .frontCamera, delegate: self, enablePreview: true) {
+            localVideoTrack = TVILocalVideoTrack.init(capturer: camera, enabled: true, constraints: nil, name: "Camera")
+            if (localVideoTrack == nil) {
+                logMessage(messageText: "Failed to create video track")
+            } else {
+                // Add renderer to video track for local preview
+                camera.previewView.frame = self.previewView.bounds;
+                self.previewView.addSubview(camera.previewView)
 
-            logMessage(messageText: "Video track created")
+                logMessage(messageText: "Video track created")
 
-            // We will flip camera on tap.
-            let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
-            self.previewView.addGestureRecognizer(tap)
+                // We will flip camera on tap.
+                let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
+                camera.previewView.addGestureRecognizer(tap)
+            }
         }
     }
 
@@ -459,6 +461,7 @@ extension ViewController : TVIVideoViewDelegate {
 // MARK: TVICameraCapturerDelegate
 extension ViewController : TVICameraCapturerDelegate {
     func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
-        self.previewView.shouldMirror = (source == .frontCamera)
+        // mirror is not required when camera.previewView is used
+        // self.previewView.shouldMirror = (source == .frontCamera)
     }
 }
