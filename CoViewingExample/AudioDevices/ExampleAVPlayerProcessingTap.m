@@ -267,11 +267,13 @@ void AVPlayerProcessingTapPrepare(MTAudioProcessingTapRef tap,
     context->sourceCacheFrames = 0;
     context->sourceFormat = *processingFormat;
 
-    TVIAudioFormat *playbackFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
+    TVIAudioFormat *playbackFormat = [[TVIAudioFormat alloc] initWithChannels:processingFormat->mChannelsPerFrame
                                                                    sampleRate:processingFormat->mSampleRate
                                                               framesPerBuffer:maxFrames];
     AudioStreamBasicDescription preferredPlaybackDescription = [playbackFormat streamDescription];
     BOOL requiresFormatConversion = preferredPlaybackDescription.mFormatFlags != processingFormat->mFormatFlags;
+
+    context->renderingFormat = preferredPlaybackDescription;
 
     if (requiresFormatConversion) {
         OSStatus status = AudioConverterNew(processingFormat, &preferredPlaybackDescription, &context->renderFormatConverter);
@@ -281,7 +283,7 @@ void AVPlayerProcessingTapPrepare(MTAudioProcessingTapRef tap,
         }
     }
 
-    TVIAudioFormat *recordingFormat = [[TVIAudioFormat alloc] initWithChannels:2
+    TVIAudioFormat *recordingFormat = [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
                                                                     sampleRate:(Float64)kPreferredSampleRate
                                                                framesPerBuffer:maxFrames];
     AudioStreamBasicDescription preferredRecordingDescription = [recordingFormat streamDescription];

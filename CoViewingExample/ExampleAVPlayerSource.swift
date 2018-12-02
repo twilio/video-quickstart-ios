@@ -17,7 +17,7 @@ import TwilioVideo
  * Please be aware that AVPlayer and its playback pipeline prepare content for presentation on your device, including
  * mapping frames to the display. For example, when playing 23.976 or 24 fps content a technique known as 3:2 pulldown
  * is used to time video samples for a 60 Hz iPhone display. Our capturer tags the frames with the best timing infromation
- * that it has available - the presentation timestamps provided by AVPlayer's output.
+ * that it has available - the presentation timestamps provided by AVPlayerVideoItemOutput.
  */
 class ExampleAVPlayerSource: NSObject, TVIVideoCapturer {
 

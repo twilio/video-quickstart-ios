@@ -21,6 +21,7 @@ typedef struct ExampleAVPlayerAudioTapContext {
 
     TPCircularBuffer *renderingBuffer;
     AudioConverterRef renderFormatConverter;
+    AudioStreamBasicDescription renderingFormat;
 
     // Cached source audio, in case we need to perform a sample rate conversion and can't consume all the samples in one go.
     AudioBufferList *sourceCache;

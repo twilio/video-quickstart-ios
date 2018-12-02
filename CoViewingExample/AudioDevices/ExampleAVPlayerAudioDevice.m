@@ -355,7 +355,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
          * Assume that the AVAudioSession has already been configured and started and that the values
          * for sampleRate and IOBufferDuration are final.
          */
-        _capturingFormat = [[self class] activeFormat];
+        _capturingFormat = [[self class] capturingFormat];
     }
 
     return _capturingFormat;
@@ -661,6 +661,16 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
 
 #pragma mark - Private (AVAudioSession and CoreAudio)
 
++ (nonnull TVIAudioFormat *)capturingFormat {
+    /*
+     * Use the pre-determined maximum frame size. AudioUnit callbacks are variable, and in most sitations will be close
+     * to the `AVAudioSession.preferredIOBufferDuration` that we've requested.
+     */
+    return [[TVIAudioFormat alloc] initWithChannels:kPreferredNumberOfChannels
+                                         sampleRate:kPreferredSampleRate
+                                    framesPerBuffer:kMaximumFramesPerBuffer];
+}
+
 + (nullable TVIAudioFormat *)activeFormat {
     /*
      * Use the pre-determined maximum frame size. AudioUnit callbacks are variable, and in most sitations will be close
@@ -852,7 +862,7 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
         AudioStreamBasicDescription renderingFormatDescription = self.renderingFormat.streamDescription;
         AudioStreamBasicDescription playerFormatDescription = renderingFormatDescription;
         if (self.renderingContext->playoutBuffer) {
-            playerFormatDescription.mSampleRate = self.audioTapContext->sourceFormat.mSampleRate;
+            playerFormatDescription = self.audioTapContext->renderingFormat;
         }
 
         // Setup playback mixer.

@@ -39,7 +39,7 @@ class ViewController: UIViewController {
     var videoPlayerUrl: URL? = nil
     var videoPlayerPreroll: Bool = false
 
-    var isPresenter:Bool?
+    var isPresenter: Bool?
 
     @IBOutlet weak var localHeightConstraint: NSLayoutConstraint?
     @IBOutlet weak var localWidthConstraint: NSLayoutConstraint?
