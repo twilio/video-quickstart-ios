@@ -21,6 +21,9 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
+    // In order to save memory, we request that our source downscale its output.
+    static let kDownScaledMaxWidthOrHeight = 640
+
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
         TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer()
@@ -42,15 +45,13 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         screenSize.width *= UIScreen.main.nativeScale
         screenSize.height *= UIScreen.main.nativeScale
 
-        var adjustedSize: CGSize
+        let downscaledTarget = CGSize(width: SampleHandler.kDownScaledMaxWidthOrHeight,
+                                      height: SampleHandler.kDownScaledMaxWidthOrHeight)
+        let fitRect = AVMakeRect(aspectRatio: screenSize,
+                                 insideRect: CGRect(origin: CGPoint.zero, size: downscaledTarget)).integral
+        let outputSize = fitRect.size
 
-        if screenSize.height > screenSize.width {
-            adjustedSize = CGSize(width: 640 * screenSize.width / screenSize.height, height: 640)
-        } else {
-            adjustedSize = CGSize(width: 640, height: 640 * screenSize.height / screenSize.width)
-        }
-
-        outputFormat.dimensions = CMVideoDimensions(width: Int32(adjustedSize.width), height: Int32(adjustedSize.height))
+        outputFormat.dimensions = CMVideoDimensions(width: Int32(outputSize.width), height: Int32(outputSize.height))
 
         videoSource = ReplayKitVideoSource(isScreencast: false)
         screenTrack = TVILocalVideoTrack(source: videoSource!,
