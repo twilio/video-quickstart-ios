@@ -119,7 +119,10 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
                 = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation(rawValue: coreSampleOrientation)!)
         }
 
-        // Return the original pixel buffer without downscaling.
+        /*
+         * Return the original pixel buffer without any downscaling or cropping applied.
+         * You may use a format request to crop and/or scale the buffers produced by this class.
+         */
         deliverFrame(to: sink,
                      timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
                      buffer: sourcePixelBuffer,
