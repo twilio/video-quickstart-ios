@@ -36,10 +36,28 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         }
 
         // This source will attempt to produce smaller buffers with fluid motion.
+        let outputFormat = TVIVideoFormat()
+
+        var screenSize = UIScreen.main.bounds.size
+        screenSize.width *= UIScreen.main.nativeScale
+        screenSize.height *= UIScreen.main.nativeScale
+
+        var adjustedSize: CGSize
+
+        if screenSize.height > screenSize.width {
+            adjustedSize = CGSize(width: 640 * screenSize.width / screenSize.height, height: 640)
+        } else {
+            adjustedSize = CGSize(width: 640, height: 640 * screenSize.height / screenSize.width)
+        }
+
+        outputFormat.dimensions = CMVideoDimensions(width: Int32(adjustedSize.width), height: Int32(adjustedSize.height))
+
         videoSource = ReplayKitVideoSource(isScreencast: false)
         screenTrack = TVILocalVideoTrack(source: videoSource!,
                                          enabled: true,
                                          name: "Screen")
+
+        videoSource!.requestOutputFormat(outputFormat)
 
         let localAudioTrack = TVILocalAudioTrack()
         let connectOptions = TVIConnectOptions(token: accessToken) { (builder) in
