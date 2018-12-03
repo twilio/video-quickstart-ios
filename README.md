@@ -4,7 +4,7 @@
 
 # Twilio Video Quickstart for Swift
 
-> NOTE: These sample applications use the Twilio Video 2.x APIs. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
+> NOTE: These sample applications use the Twilio Video 2.x APIs. For examples using our 2.6.0-preview APIs, please see the [2.6.0-preview](https://github.com/twilio/video-quickstart-swift/tree/2.6.0-preview) branch, and for 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
 
 Get started with Video on iOS:
 
