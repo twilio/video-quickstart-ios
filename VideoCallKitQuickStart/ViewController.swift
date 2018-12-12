@@ -215,7 +215,7 @@ class ViewController: UIViewController {
     @objc func flipCamera() {
         var newDevice: AVCaptureDevice?
 
-        if let camera = camera, let captureDevice = camera.device {
+        if let camera = self.camera, let captureDevice = camera.device {
             if captureDevice.position == .front {
                 newDevice = TVICameraSource.captureDevice(for: .back)
             } else {
@@ -225,7 +225,7 @@ class ViewController: UIViewController {
             if let newDevice = newDevice {
                 camera.select(newDevice) { (captureDevice, error) in
                     if let error = error {
-                        self.logMessage(messageText: "Error selecting capture device: \(error.localizedDescription)")
+                        self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
                         self.previewView.shouldMirror = (captureDevice.position == .front)
                     }
