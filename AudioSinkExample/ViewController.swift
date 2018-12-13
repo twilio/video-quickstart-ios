@@ -401,17 +401,15 @@ class ViewController: UIViewController {
     }
 
     func prepareLocalMedia() {
-
         // Create an audio track.
         localAudioTrack = TVILocalAudioTrack.init()
+        if (localAudioTrack == nil) {
+            logMessage(messageText: "Failed to create audio track!")
+            return
+        }
 
         // Create a video track which captures from the front camera.
         guard let frontCamera = TVICameraSource.captureDevice(for: .front) else {
-            if (localAudioTrack == nil) {
-                logMessage(messageText: "Failed to create audio track!")
-                return
-            }
-
             logMessage(messageText: "Front camera is not available, using microphone only.")
             return
         }
@@ -421,21 +419,18 @@ class ViewController: UIViewController {
             builder.enablePreview = true
         }
 
-        camera = TVICameraSource(options: cameraSourceOptions, delegate: self)
-        localVideoTrack = TVILocalVideoTrack.init(source: camera!)
-
-        if (localVideoTrack == nil) {
-            logMessage(messageText: "Failed to create video track!")
-        } else {
+        self.camera = TVICameraSource(options: cameraSourceOptions, delegate: self)
+        if let camera = self.camera {
+            localVideoTrack = TVILocalVideoTrack.init(source: camera)
             logMessage(messageText: "Video track created.")
 
-            if let preview = camera?.previewView {
+            if let preview = camera.previewView {
                 let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeLocalAudio))
                 preview.addGestureRecognizer(tap)
                 view.addSubview(preview);
             }
 
-            camera!.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
+            camera.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
                 if let error = error {
                     self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     self.camera?.previewView?.removeFromSuperview()
