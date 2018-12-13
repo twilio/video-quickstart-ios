@@ -192,30 +192,34 @@ class ViewController: UIViewController {
             return
         }
 
-        // Preview our local camera track in the local video preview view.
-        camera = TVICameraSource(delegate: self)
-        localVideoTrack = TVILocalVideoTrack.init(source: camera!, enabled: true, name: "Camera")
-        if (localVideoTrack == nil) {
-            logMessage(messageText: "Failed to create video track")
-        } else {
+        let frontCamera = TVICameraSource.captureDevice(for: .front)
+        let backCamera = TVICameraSource.captureDevice(for: .back)
+
+        if (frontCamera != nil || backCamera != nil) {
+            // Preview our local camera track in the local video preview view.
+            camera = TVICameraSource(delegate: self)
+            localVideoTrack = TVILocalVideoTrack.init(source: camera!, enabled: true, name: "Camera")
+
             // Add renderer to video track for local preview
             localVideoTrack!.addRenderer(self.previewView)
-
             logMessage(messageText: "Video track created")
 
-            // We will flip camera on tap.
-            let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
-            self.previewView.addGestureRecognizer(tap)
+            if (frontCamera != nil && backCamera != nil) {
+                // We will flip camera on tap.
+                let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
+                self.previewView.addGestureRecognizer(tap)
+            }
 
-            if let frontCamera = TVICameraSource.captureDevice(for: .front) {
-                camera!.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
-                    if let error = error {
-                        self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
-                    } else {
-                        self.previewView.shouldMirror = (captureDevice.position == .front)
-                    }
+            camera!.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
+                if let error = error {
+                    self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                } else {
+                    self.previewView.shouldMirror = (captureDevice.position == .front)
                 }
             }
+        }
+        else {
+            self.logMessage(messageText:"No front or back capture device found!")
         }
     }
 
