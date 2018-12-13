@@ -208,7 +208,7 @@ class ViewController: UIViewController {
             self.previewView.addGestureRecognizer(tap)
 
             if let frontCamera = TVICameraSource.captureDevice(for: .front) {
-                camera!.startCapture(with: frontCamera) { (captureDevice, error) in
+                camera!.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
                     if let error = error {
                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
@@ -230,7 +230,7 @@ class ViewController: UIViewController {
             }
 
             if let newDevice = newDevice {
-                camera.select(newDevice) { (captureDevice, error) in
+                camera.select(newDevice) { (captureDevice, videoFormat, error) in
                     if let error = error {
                         self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {

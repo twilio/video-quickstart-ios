@@ -378,7 +378,7 @@ class ViewController: UIViewController {
                 view.addSubview(preview);
             }
 
-            camera!.startCapture(with: frontCamera) { (captureDevice, error) in
+            camera!.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
                 if let error = error {
                     self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     self.camera?.previewView?.removeFromSuperview()
@@ -612,6 +612,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
     }
 }
 
+// MARK: TVICameraSourceDelegate
 extension ViewController : TVICameraSourceDelegate {
     func cameraSource(_ source: TVICameraSource, didFailWithError error: Error) {
         logMessage(messageText: "Camera source failed with error: \(error.localizedDescription)")
