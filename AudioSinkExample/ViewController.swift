@@ -25,7 +25,7 @@ class ViewController: UIViewController {
 
     // Video SDK components
     var room: TVIRoom?
-    var camera: TVICameraCapturer?
+    var camera: TVICameraSource?
     var localAudioTrack: TVILocalAudioTrack!
     var localVideoTrack: TVILocalVideoTrack!
 
@@ -401,32 +401,44 @@ class ViewController: UIViewController {
     }
 
     func prepareLocalMedia() {
-
         // Create an audio track.
         localAudioTrack = TVILocalAudioTrack.init()
+        if (localAudioTrack == nil) {
+            logMessage(messageText: "Failed to create audio track!")
+            return
+        }
 
         // Create a video track which captures from the front camera.
-        if (TVICameraCapturer.isSourceAvailable(TVICameraCaptureSource.frontCamera)) {
+        guard let frontCamera = TVICameraSource.captureDevice(for: .front) else {
+            logMessage(messageText: "Front camera is not available, using microphone only.")
+            return
+        }
 
-            // We will render the camera using TVICameraPreviewView.
-            camera = TVICameraCapturer(source: .frontCamera, delegate: self, enablePreview: true)
-            localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
+        // We will render the camera using TVICameraPreviewView.
+        let cameraSourceOptions = TVICameraSourceOptions.init { (builder) in
+            builder.enablePreview = true
+        }
 
-            if (localVideoTrack == nil) {
-                logMessage(messageText: "Failed to create video track!")
-            } else {
-                logMessage(messageText: "Video track created.")
+        self.camera = TVICameraSource(options: cameraSourceOptions, delegate: self)
+        if let camera = self.camera {
+            localVideoTrack = TVILocalVideoTrack.init(source: camera)
+            logMessage(messageText: "Video track created.")
 
-                if let preview = camera?.previewView {
-                    let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeLocalAudio))
-                    preview.addGestureRecognizer(tap)
-                    view.addSubview(preview);
+            if let preview = camera.previewView {
+                let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recognizeLocalAudio))
+                preview.addGestureRecognizer(tap)
+                view.addSubview(preview);
+            }
+
+            camera.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
+                if let error = error {
+                    self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                    self.camera?.previewView?.removeFromSuperview()
+                } else {
+                    // Layout the camera preview with dimensions appropriate for our orientation.
+                    self.view.setNeedsLayout()
                 }
             }
-        } else if (localAudioTrack != nil) {
-            logMessage(messageText: "Front camera is not available, using microphone only.")
-        } else {
-            logMessage(messageText: "Failed to create audio track!")
         }
     }
 
@@ -702,15 +714,10 @@ extension ViewController : TVILocalParticipantDelegate {
     }
 }
 
-extension ViewController : TVICameraCapturerDelegate {
-    func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
-        // Layout the camera preview with dimensions appropriate for our orientation.
-        self.view.setNeedsLayout()
-    }
-
-    func cameraCapturer(_ capturer: TVICameraCapturer, didFailWithError error: Error) {
-        logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
-        capturer.previewView.removeFromSuperview()
+// MARK: TVICameraSourceDelegate
+extension ViewController : TVICameraSourceDelegate {
+    func cameraSource(_ source: TVICameraSource, didFailWithError error: Error) {
+        logMessage(messageText: "Camera source failed with error: \(error.localizedDescription)")
+        source.previewView?.removeFromSuperview()
     }
 }
-

@@ -27,7 +27,7 @@ class ViewController: UIViewController {
      * We will create an audio device and manage it's lifecycle in response to CallKit events.
      */
     var audioDevice: TVIDefaultAudioDevice = TVIDefaultAudioDevice()
-    var camera: TVICameraCapturer?
+    var camera: TVICameraSource?
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
     var remoteParticipant: TVIRemoteParticipant?
@@ -185,28 +185,56 @@ class ViewController: UIViewController {
             return
         }
 
-        // Preview our local camera track in the local video preview view.
-        camera = TVICameraCapturer(source: .frontCamera, delegate: self)
-        localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
-        if (localVideoTrack == nil) {
-            logMessage(messageText: "Failed to create video track")
-        } else {
+        let frontCamera = TVICameraSource.captureDevice(for: .front)
+        let backCamera = TVICameraSource.captureDevice(for: .back)
+
+        if (frontCamera != nil || backCamera != nil) {
+            // Preview our local camera track in the local video preview view.
+            camera = TVICameraSource(delegate: self)
+            localVideoTrack = TVILocalVideoTrack.init(source: camera!, enabled: true, name: "Camera")
+
             // Add renderer to video track for local preview
             localVideoTrack!.addRenderer(self.previewView)
-
             logMessage(messageText: "Video track created")
 
-            // We will flip camera on tap.
-            let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
-            self.previewView.addGestureRecognizer(tap)
+            if (frontCamera != nil && backCamera != nil) {
+                // We will flip camera on tap.
+                let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
+                self.previewView.addGestureRecognizer(tap)
+            }
+
+            camera!.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
+                if let error = error {
+                    self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                } else {
+                    self.previewView.shouldMirror = (captureDevice.position == .front)
+                }
+            }
+        }
+        else {
+            self.logMessage(messageText:"No front or back capture device found!")
         }
     }
 
     @objc func flipCamera() {
-        if (self.camera?.source == .frontCamera) {
-            self.camera?.selectSource(.backCameraWide)
-        } else {
-            self.camera?.selectSource(.frontCamera)
+        var newDevice: AVCaptureDevice?
+
+        if let camera = self.camera, let captureDevice = camera.device {
+            if captureDevice.position == .front {
+                newDevice = TVICameraSource.captureDevice(for: .back)
+            } else {
+                newDevice = TVICameraSource.captureDevice(for: .front)
+            }
+
+            if let newDevice = newDevice {
+                camera.select(newDevice) { (captureDevice, videoFormat, error) in
+                    if let error = error {
+                        self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                    } else {
+                        self.previewView.shouldMirror = (captureDevice.position == .front)
+                    }
+                }
+            }
         }
     }
 
@@ -479,9 +507,9 @@ extension ViewController : TVIVideoViewDelegate {
     }
 }
 
-// MARK: TVICameraCapturerDelegate
-extension ViewController : TVICameraCapturerDelegate {
-    func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
-        self.previewView.shouldMirror = (source == .frontCamera)
+// MARK: TVICameraSourceDelegate
+extension ViewController : TVICameraSourceDelegate {
+    func cameraSource(_ source: TVICameraSource, didFailWithError error: Error) {
+        logMessage(messageText: "Camera source failed with error: \(error.localizedDescription)")
     }
 }
