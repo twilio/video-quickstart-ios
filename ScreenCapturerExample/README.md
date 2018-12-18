@@ -2,7 +2,7 @@
 
 > NOTE: `TVIScreenCapturer` is deprecated on iOS 12.0 and above due to performance issues on wide-color devices. If you wish to share the contents of the entire screen we recommend that you use [ReplayKit](https://developer.apple.com/documentation/replaykit) instead. Take a look at our ReplayKit example [app](../ReplayKitExample) to get started.
 
-This project demonstrates how to implement your own `TVIVideoSource` to capture from the contents of a `WKWebView`. The approach is specific to the snasphotting APIs available in WebKit.framework since iOS 11.0
+This project demonstrates how to implement your own `TVIVideoSource` to capture from the contents of a `WKWebView`. The approach is specific to the snasphotting APIs available in WebKit.framework since iOS 11.0.
 
 `TVIScreenCapturer` is used on devices older than iOS 11.0, where the `UIGraphics` APIs do not suffer from the same performance issues as on iOS 12.0.
 
