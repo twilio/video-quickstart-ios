@@ -6,15 +6,16 @@
 //
 
 import TwilioVideo
+import WebKit
 
-class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
+class ExampleWebViewCapturer: NSObject, TVIVideoCapturer {
 
     public var isScreencast: Bool = true
     public var supportedFormats: [TVIVideoFormat]
 
     // Private variables
     weak var captureConsumer: TVIVideoCaptureConsumer?
-    weak var view: UIView?
+    weak var view: WKWebView?
     var displayTimer: CADisplayLink?
     var willEnterForegroundObserver: NSObjectProtocol?
     var didEnterBackgroundObserver: NSObjectProtocol?
@@ -24,7 +25,7 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
     let desiredFrameRate = 5
     let captureScaleFactor: CGFloat = 1.0
 
-    init(aView: UIView) {
+    init(aView: WKWebView) {
         captureConsumer = nil
         view = aView
 
@@ -69,7 +70,7 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
         invalidateTimer()
 
         // Use a CADisplayLink timer so that our drawing is synchronized to the display vsync.
-        displayTimer = CADisplayLink(target: self, selector: #selector(ExampleScreenCapturer.captureView))
+        displayTimer = CADisplayLink(target: self, selector: #selector(ExampleWebViewCapturer.captureView))
 
         // On iOS 10.0+ use preferredFramesPerSecond, otherwise fallback to intervals assuming a 60 hz display
         if #available(iOS 10.0, *) {
@@ -116,26 +117,38 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
     }
 
     @objc func captureView( timer: CADisplayLink ) {
+        if #available(iOS 11.0, *) {
+            guard let webView = self.view else {
+                return
+            }
 
-        // This is our main drawing loop. Start by using the UIGraphics APIs to draw the UIView we want to capture.
-        var contextImage: UIImage? = nil
-        autoreleasepool {
-            UIGraphicsBeginImageContextWithOptions((self.view?.bounds.size)!, true, captureScaleFactor)
-            self.view?.drawHierarchy(in: (self.view?.bounds)!, afterScreenUpdates: false)
-            contextImage = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
+            let configuration = WKSnapshotConfiguration()
+            // Configure a width appropriate for our scale factor.
+            configuration.snapshotWidth = NSNumber(value: Double(webView.bounds.width * captureScaleFactor))
+            webView.takeSnapshot(with:configuration, completionHandler: { (image, error) in
+                if let deliverableImage = image {
+                    // TODO: Neither BGRA or ARGB are correct, is this ABGR?
+                    self.deliverCapturedImage(image: deliverableImage,
+                                              format: TVIPixelFormat.format32BGRA,
+                                              orientation: TVIVideoOrientation.up,
+                                              timestamp: timer.timestamp)
+                } else if let theError = error {
+                    print("Snapshot error:", theError as Any)
+                }
+            })
         }
+    }
 
+    func deliverCapturedImage(image: UIImage, format: TVIPixelFormat, orientation: TVIVideoOrientation, timestamp: CFTimeInterval) {
         /*
          * Make a copy of the UIImage's underlying data. We do this by getting the CGImage, and its CGDataProvider.
          * Note that this technique is inefficient because it causes an extra malloc / copy to occur for every frame.
          * For a more performant solution, provide a pool of buffers and use them to back a CGBitmapContext.
          */
-        let image: CGImage? = contextImage?.cgImage
+        let image: CGImage? = image.cgImage
         let dataProvider: CGDataProvider? = image?.dataProvider
         let data: CFData? = dataProvider?.data
         let baseAddress = CFDataGetBytePtr(data!)
-        contextImage = nil
 
         /*
          * We own the copied CFData which will back the CVPixelBuffer, thus the data's lifetime is bound to the buffer.
@@ -146,22 +159,22 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
         let status = CVPixelBufferCreateWithBytes(nil,
                                                   (image?.width)!,
                                                   (image?.height)!,
-                                                  TVIPixelFormat.format32BGRA.rawValue,
+                                                  format.rawValue,
                                                   UnsafeMutableRawPointer( mutating: baseAddress!),
                                                   (image?.bytesPerRow)!,
                                                   { releaseContext, baseAddress in
                                                     let contextData = Unmanaged<CFData>.fromOpaque(releaseContext!)
                                                     contextData.release()
-                                                  },
+        },
                                                   unmanagedData.toOpaque(),
                                                   nil,
                                                   &pixelBuffer)
 
         if let buffer = pixelBuffer {
-            // Deliver a frame to the consumer. Images drawn by UIGraphics do not need any rotation tags.
-            let frame = TVIVideoFrame(timeInterval: timer.timestamp,
+            // Deliver a frame to the consumer.
+            let frame = TVIVideoFrame(timeInterval: timestamp,
                                       buffer: buffer,
-                                      orientation: TVIVideoOrientation.up)
+                                      orientation: orientation)
 
             // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
             captureConsumer?.consumeCapturedFrame(frame!)

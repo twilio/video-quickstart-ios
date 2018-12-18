@@ -18,8 +18,8 @@ class ViewController : UIViewController {
     var webView: WKWebView?
     var webNavigation: WKNavigation?
 
-    // Set this value to 'true' to use ExampleScreenCapturer instead of TVIScreenCapturer.
-    let useExampleCapturer = false
+    // Set this value to 'true' to force the use of `TVIScreenCapturer` on iOS 11.0+.
+    static let useDeprecatedScreenCapturer = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -80,10 +80,10 @@ class ViewController : UIViewController {
     func setupLocalMedia() {
         // Setup screen capturer
         let capturer: TVIVideoCapturer
-        if (useExampleCapturer) {
-            capturer = ExampleScreenCapturer.init(aView: self.webView!)
-        } else {
+        if (ViewController.useDeprecatedScreenCapturer) {
             capturer = TVIScreenCapturer.init(view: self.webView!)
+        } else {
+            capturer = ExampleWebViewCapturer.init(aView: self.webView!)
         }
 
         localVideoTrack = TVILocalVideoTrack.init(capturer: capturer, enabled: true, constraints: nil, name: "Screen")
