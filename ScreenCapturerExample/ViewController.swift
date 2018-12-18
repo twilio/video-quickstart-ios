@@ -109,7 +109,7 @@ class ViewController : UIViewController {
 
         guard let videoTrack = TVILocalVideoTrack(source: source, enabled: true, name: "Screen") else {
             presentError(message: "Failed to add ExampleWebViewSource video track!")
-            return;
+            return
         }
 
         self.localVideoTrack = videoTrack
@@ -120,12 +120,12 @@ class ViewController : UIViewController {
     func setupScreenCapturer() {
         guard let capturer = TVIScreenCapturer.init(view: self.webView!) else {
             presentError(message: "Failed to create TVIScreenCapturer!")
-            return;
+            return
         }
 
         guard let videoTrack = TVILocalVideoTrack(capturer: capturer, enabled: true, constraints: nil, name: "Screen") else {
             presentError(message: "Failed to add TVIScreenCapturer video track!")
-            return;
+            return
         }
 
         self.localVideoTrack = videoTrack
