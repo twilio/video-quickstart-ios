@@ -22,13 +22,17 @@ class ViewController: UIViewController {
     // at https://www.twilio.com/console/video/runtime/testing-tools
     var accessToken = "TWILIO_ACCESS_TOKEN"
     var room: TVIRoom?
-    weak var consumer: TVIVideoCaptureConsumer?
+    weak var sink: TVIVideoSink?
     var frame: TVIVideoFrame?
     var displayLink: CADisplayLink?
 
     var videoTrack: TVILocalVideoTrack?
     var audioTrack: TVILocalAudioTrack?
-    
+
+    deinit {
+        stop()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Configure the ARSCNView which will be used to display the AR content.
@@ -48,7 +52,16 @@ class ViewController: UIViewController {
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
         sceneView.scene = scene
 
-        self.videoTrack = TVILocalVideoTrack.init(capturer: self)
+        self.videoTrack = TVILocalVideoTrack.init(source: self)
+
+        let format = TVIVideoFormat.init()
+        format.frameRate = UInt(sceneView.preferredFramesPerSecond)
+        format.pixelFormat = TVIPixelFormat.format32BGRA
+        format.dimensions = CMVideoDimensions(width: Int32(UIScreen.main.bounds.size.width),
+                                              height: Int32(UIScreen.main.bounds.size.height))
+        self.requestOutputFormat(format);
+        start()
+
         self.audioTrack = TVILocalAudioTrack.init()
 
         let options = TVIConnectOptions.init(token: accessToken, block: {(builder: TVIConnectOptionsBuilder) -> Void in
@@ -90,13 +103,30 @@ class ViewController: UIViewController {
             return
         }
 
-        // As a TVIVideoCapturer, we must deliver CVPixelBuffers and not CGImages to the consumer.
+        // As a TVIVideoSource, we must deliver CVPixelBuffers and not CGImages to the consumer.
         if let pixelBuffer = self.copyPixelbufferFromCGImageProvider(image: imageRef) {
             self.frame = TVIVideoFrame(timeInterval: timer.timestamp,
                                        buffer: pixelBuffer,
                                        orientation: TVIVideoOrientation.up)
-            self.consumer?.consumeCapturedFrame(self.frame!)
+            self.sink!.onVideoFrame(self.frame!)
         }
+    }
+
+    func start() {
+        // Starting capture is a two step process. We need to start the ARSession and schedule the CADisplayLinkTimer.
+        let configuration = ARWorldTrackingConfiguration()
+        sceneView.session.run(configuration)
+
+        self.displayLink = CADisplayLink(target: self, selector: #selector(self.displayLinkDidFire))
+        self.displayLink?.preferredFramesPerSecond = self.sceneView.preferredFramesPerSecond
+
+        displayLink?.add(to: RunLoop.main, forMode: RunLoop.Mode.common)
+    }
+
+    func stop() {
+        self.sink = nil
+        self.displayLink?.invalidate()
+        self.sceneView.session.pause()
     }
 
     /**
@@ -196,39 +226,16 @@ extension ViewController: TVIRoomDelegate {
     }
 }
 
-// MARK: TVIVideoCapturer
-extension ViewController: TVIVideoCapturer {
+// MARK: TVIVideoSource
+extension ViewController: TVIVideoSource {
     var isScreencast: Bool {
         // We want fluid AR content, maintaining the original frame rate.
         return false
     }
 
-    var supportedFormats: [TVIVideoFormat] {
-        // We only support the single capture format that ARSession provides, and we rasterize the AR scene at 1x.
-        // Don't set any specific capture dimensions.
-        let format = TVIVideoFormat.init()
-        format.frameRate = UInt(sceneView.preferredFramesPerSecond)
-        format.pixelFormat = TVIPixelFormat.format32BGRA
-        return [format]
-    }
-
-    func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
-        self.consumer = consumer
-
-        // Starting capture is a two step process. We need to start the ARSession and schedule the CADisplayLinkTimer.
-        let configuration = ARWorldTrackingConfiguration()
-        sceneView.session.run(configuration)
-
-        self.displayLink = CADisplayLink(target: self, selector: #selector(self.displayLinkDidFire))
-        self.displayLink?.preferredFramesPerSecond = self.sceneView.preferredFramesPerSecond
-
-        displayLink?.add(to: RunLoop.main, forMode: RunLoop.Mode.common)
-        consumer.captureDidStart(true)
-    }
-
-    func stopCapture() {
-        self.consumer = nil
-        self.displayLink?.invalidate()
-        self.sceneView.session.pause()
+    func requestOutputFormat(_ outputFormat: TVIVideoFormat) {
+        if let sink = sink {
+            sink.onVideoFormatRequest(outputFormat)
+        }
     }
 }
