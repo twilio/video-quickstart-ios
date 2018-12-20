@@ -6,46 +6,33 @@
 //
 
 import TwilioVideo
+import WebKit
 
-class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
+@available(iOS 11.0, *)
+class ExampleWebViewSource: NSObject {
 
+    // TVIVideoSource
     public var isScreencast: Bool = true
-    public var supportedFormats: [TVIVideoFormat]
+    public weak var sink: TVIVideoSink? = nil
 
     // Private variables
-    weak var captureConsumer: TVIVideoCaptureConsumer?
-    weak var view: UIView?
+    weak var view: WKWebView?
     var displayTimer: CADisplayLink?
     var willEnterForegroundObserver: NSObjectProtocol?
     var didEnterBackgroundObserver: NSObjectProtocol?
 
     // Constants
-    let displayLinkFrameRate = 60
-    let desiredFrameRate = 5
-    let captureScaleFactor: CGFloat = 1.0
+    static let kCaptureFrameRate = 5
+    static let kCaptureScaleFactor: CGFloat = 1.0
 
-    init(aView: UIView) {
-        captureConsumer = nil
+    init(aView: WKWebView) {
+        sink = nil
         view = aView
-
-        /* 
-         * Describe the supported format.
-         * For this example we cheat and assume that we will be capturing the entire screen.
-         */
-        let screenSize = UIScreen.main.bounds.size
-        let format = TVIVideoFormat()
-        format.pixelFormat = TVIPixelFormat.format32BGRA
-        format.frameRate = UInt(desiredFrameRate)
-        format.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
-        supportedFormats = [format]
-
-        // We don't need to call startCapture, this method is invoked when a TVILocalVideoTrack is added with this capturer.
     }
 
-    func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
+    func startCapture() {
         if (view == nil || view?.superview == nil) {
             print("Can't capture from a nil view, or one with no superview:", view as Any)
-            consumer.captureDidStart(false)
             return
         }
 
@@ -53,9 +40,6 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
 
         startTimer()
         registerNotificationObservers()
-
-        captureConsumer = consumer;
-        captureConsumer?.captureDidStart(true)
     }
 
     func stopCapture() {
@@ -65,29 +49,22 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
         invalidateTimer()
     }
 
-    func startTimer() {
+    private func startTimer() {
         invalidateTimer()
 
         // Use a CADisplayLink timer so that our drawing is synchronized to the display vsync.
-        displayTimer = CADisplayLink(target: self, selector: #selector(ExampleScreenCapturer.captureView))
-
-        // On iOS 10.0+ use preferredFramesPerSecond, otherwise fallback to intervals assuming a 60 hz display
-        if #available(iOS 10.0, *) {
-            displayTimer?.preferredFramesPerSecond = desiredFrameRate
-        } else {
-            displayTimer?.frameInterval = displayLinkFrameRate / desiredFrameRate
-        };
-
+        displayTimer = CADisplayLink(target: self, selector: #selector(ExampleWebViewSource.captureView))
+        displayTimer?.preferredFramesPerSecond = ExampleWebViewSource.kCaptureFrameRate
         displayTimer?.add(to: RunLoop.main, forMode: RunLoop.Mode.common)
         displayTimer?.isPaused = UIApplication.shared.applicationState == UIApplication.State.background
     }
 
-    func invalidateTimer() {
+    private func invalidateTimer() {
         displayTimer?.invalidate()
         displayTimer = nil
     }
 
-    func registerNotificationObservers() {
+    private func registerNotificationObservers() {
         let notificationCenter = NotificationCenter.default;
 
         willEnterForegroundObserver = notificationCenter.addObserver(forName: UIApplication.willEnterForegroundNotification,
@@ -105,7 +82,7 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
         })
     }
 
-    func unregisterNotificationObservers() {
+    private func unregisterNotificationObservers() {
         let notificationCenter = NotificationCenter.default
 
         notificationCenter.removeObserver(willEnterForegroundObserver!)
@@ -116,11 +93,10 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
     }
 
     @objc func captureView( timer: CADisplayLink ) {
-
         // This is our main drawing loop. Start by using the UIGraphics APIs to draw the UIView we want to capture.
         var contextImage: UIImage? = nil
         autoreleasepool {
-            UIGraphicsBeginImageContextWithOptions((self.view?.bounds.size)!, true, captureScaleFactor)
+            UIGraphicsBeginImageContextWithOptions((self.view?.bounds.size)!, true, ExampleWebViewSource.kCaptureScaleFactor)
             self.view?.drawHierarchy(in: (self.view?.bounds)!, afterScreenUpdates: false)
             contextImage = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
@@ -152,7 +128,7 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
                                                   { releaseContext, baseAddress in
                                                     let contextData = Unmanaged<CFData>.fromOpaque(releaseContext!)
                                                     contextData.release()
-                                                  },
+        },
                                                   unmanagedData.toOpaque(),
                                                   nil,
                                                   &pixelBuffer)
@@ -164,9 +140,20 @@ class ExampleScreenCapturer: NSObject, TVIVideoCapturer {
                                       orientation: TVIVideoOrientation.up)
 
             // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
-            captureConsumer?.consumeCapturedFrame(frame!)
+            self.sink?.onVideoFrame(frame!)
         } else {
-            print("Capture failed with status code: \(status).")
+            print("Video source failed with status code: \(status).")
         }
+    }
+}
+
+@available(iOS 11.0, *)
+extension ExampleWebViewSource: TVIVideoSource {
+    func requestOutputFormat(_ outputFormat: TVIVideoFormat) {
+        /*
+         * This class doesn't explicitly support different scaling factors or frame rates.
+         * That being said, we won't disallow cropping and/or scaling if its absolutely needed.
+         */
+        self.sink?.onVideoFormatRequest(outputFormat)
     }
 }
