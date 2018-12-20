@@ -15,10 +15,10 @@ class ViewController : UIViewController {
     var localVideoTrack: TVILocalVideoTrack?
     var remoteView: TVIVideoView?
 
-    /// Deprecated capturer to use on older iOS versions where WKWebView snapshotting is not supported.
+    /// Deprecated capturer to use on older iOS versions.
     var screenCapturer: TVIScreenCapturer?
 
-    /// A source which uses snapshotting APIs to capture the contents of a WKWebView.
+    /// A custom video source to capture WKWebView.
     var webViewSource: TVIVideoSource?
 
     var webView: WKWebView?
