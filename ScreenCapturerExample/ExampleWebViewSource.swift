@@ -145,50 +145,6 @@ class ExampleWebViewSource: NSObject {
             print("Video source failed with status code: \(status).")
         }
     }
-
-    private func deliverCapturedImage(image: UIImage, format: TVIPixelFormat, orientation: TVIVideoOrientation, timestamp: CFTimeInterval) {
-        /*
-         * Make a copy of the UIImage's underlying data. We do this by getting the CGImage, and its CGDataProvider.
-         * Note that this technique is inefficient because it causes an extra malloc / copy to occur for every frame.
-         * For a more performant solution, provide a pool of buffers and use them to back a CGBitmapContext.
-         */
-        let image: CGImage? = image.cgImage
-        let dataProvider: CGDataProvider? = image?.dataProvider
-        let data: CFData? = dataProvider?.data
-        let baseAddress = CFDataGetBytePtr(data!)
-
-        /*
-         * We own the copied CFData which will back the CVPixelBuffer, thus the data's lifetime is bound to the buffer.
-         * We will use a CVPixelBufferReleaseBytesCallback callback in order to release the CFData when the buffer dies.
-         */
-        let unmanagedData = Unmanaged<CFData>.passRetained(data!)
-        var pixelBuffer: CVPixelBuffer?
-        let status = CVPixelBufferCreateWithBytes(nil,
-                                                  (image?.width)!,
-                                                  (image?.height)!,
-                                                  format.rawValue,
-                                                  UnsafeMutableRawPointer( mutating: baseAddress!),
-                                                  (image?.bytesPerRow)!,
-                                                  { releaseContext, baseAddress in
-                                                    let contextData = Unmanaged<CFData>.fromOpaque(releaseContext!)
-                                                    contextData.release()
-        },
-                                                  unmanagedData.toOpaque(),
-                                                  nil,
-                                                  &pixelBuffer)
-
-        if let buffer = pixelBuffer {
-            // Deliver a frame to the consumer.
-            let frame = TVIVideoFrame(timeInterval: timestamp,
-                                      buffer: buffer,
-                                      orientation: orientation)
-
-            // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
-            self.sink?.onVideoFrame(frame!)
-        } else {
-            print("Capture failed with status code: \(status).")
-        }
-    }
 }
 
 @available(iOS 11.0, *)
