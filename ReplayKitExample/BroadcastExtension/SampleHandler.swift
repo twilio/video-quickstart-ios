@@ -21,6 +21,9 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
+    // In order to save memory, we request that our source downscale its output.
+    static let kDownScaledMaxWidthOrHeight = 640
+
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
         TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer()
@@ -36,15 +39,26 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         }
 
         // This source will attempt to produce smaller buffers with fluid motion.
+        let outputFormat = TVIVideoFormat()
+
+        var screenSize = UIScreen.main.bounds.size
+        screenSize.width *= UIScreen.main.nativeScale
+        screenSize.height *= UIScreen.main.nativeScale
+
+        let downscaledTarget = CGSize(width: SampleHandler.kDownScaledMaxWidthOrHeight,
+                                      height: SampleHandler.kDownScaledMaxWidthOrHeight)
+        let fitRect = AVMakeRect(aspectRatio: screenSize,
+                                 insideRect: CGRect(origin: CGPoint.zero, size: downscaledTarget)).integral
+        let outputSize = fitRect.size
+
+        outputFormat.dimensions = CMVideoDimensions(width: Int32(outputSize.width), height: Int32(outputSize.height))
+
         videoSource = ReplayKitVideoSource(isScreencast: false)
-        let constraints = TVIVideoConstraints.init { (builder) in
-            builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),
-                                                height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
-        }
-        screenTrack = TVILocalVideoTrack(capturer: videoSource!,
+        screenTrack = TVILocalVideoTrack(source: videoSource!,
                                          enabled: true,
-                                         constraints: constraints,
                                          name: "Screen")
+
+        videoSource!.requestOutputFormat(outputFormat)
 
         let localAudioTrack = TVILocalAudioTrack()
         let connectOptions = TVIConnectOptions(token: accessToken) { (builder) in

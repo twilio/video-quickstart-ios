@@ -328,23 +328,8 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
         // Our source produces either downscaled buffers with smoother motion, or an HD screen recording.
         videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers)
-        let constraints = TVIVideoConstraints.init { (builder) in
-            if (ViewController.kDownscaleBuffers) {
-                builder.maxSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight),
-                                                    height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
-            } else {
-                builder.minSize = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight + 1),
-                                                    height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight + 1))
-                var screenSize = UIScreen.main.bounds.size
-                screenSize.width *= UIScreen.main.nativeScale
-                screenSize.height *= UIScreen.main.nativeScale
-                builder.maxSize = CMVideoDimensions(width: Int32(screenSize.width),
-                                                    height: Int32(screenSize.height))
-            }
-        }
-        screenTrack = TVILocalVideoTrack(capturer: videoSource!,
+        screenTrack = TVILocalVideoTrack(source: videoSource!,
                                          enabled: true,
-                                         constraints: constraints,
                                          name: "Screen")
 
         recorder.startCapture(handler: { (sampleBuffer, type, error) in

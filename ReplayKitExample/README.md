@@ -50,19 +50,16 @@ Tapping "Start Conference" begins capturing and sharing the screen from within t
 
 ### Betterments
 
-1. Use a faster resizing filter than Lancoz3. We spend a lot of CPU cycles resizing buffers from ReplayKit.
-2. Use a `CVPixelBufferPool` to constrain memory usage and to improve buffer reuse (fewer `CVPixelBuffer` allocations).
-3. Preserve color tags when downscaling `CVPixelBuffer`s.
-4. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
-5. Share the camera using ReplayKit (extension), or `TVIVideoCapturer` (in-process).
-6. Resolve tearing issues when scrolling vertically.
-7. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
+1. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
+2. Share the camera using ReplayKit (extension), or `TVICameraSource` (in-process).
+3. Resolve tearing issues when scrolling vertically.
+4. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
 
 ### Known Issues
 
 **1. Memory Usage**
 
-Memory usage in a ReplayKit Broadcast Extension is limited to 50 MB (as of iOS 12.0). There are cases where Twilio Video can use more than this amount, especially when capturing larger 2x and 3x retina screens. This example uses downscaling to reduce the amount of memory needed by our process.
+Memory usage in a ReplayKit Broadcast Extension is limited to 50 MB (as of iOS 12.0). There are cases where Twilio Video can use more than this amount, especially when capturing larger 2x and 3x retina screens. This example uses format requests to reduce the amount of memory needed by our process.
 
 <kbd><img width="400px" src="../images/quickstart/replaykit-extension-memory.png"/></kbd>
 

@@ -14,12 +14,18 @@ class ViewController : UIViewController {
 
     var localVideoTrack: TVILocalVideoTrack?
     var remoteView: TVIVideoView?
-    var screenCapturer: TVIVideoCapturer?
+
+    /// Deprecated capturer to use on older iOS versions.
+    var screenCapturer: TVIScreenCapturer?
+
+    /// A custom video source to capture WKWebView.
+    var webViewSource: TVIVideoSource?
+
     var webView: WKWebView?
     var webNavigation: WKNavigation?
 
-    // Set this value to 'true' to use ExampleScreenCapturer instead of TVIScreenCapturer.
-    let useExampleCapturer = false
+    // Set this value to 'true' to force the use of `TVIScreenCapturer` on iOS 11.0+.
+    static let useDeprecatedScreenCapturer = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,6 +42,14 @@ class ViewController : UIViewController {
         webNavigation = webView?.load(request)
 
         setupLocalMedia()
+
+        // Setup rendering
+        remoteView = TVIVideoView.init(frame: CGRect.zero, delegate: self)
+        localVideoTrack?.addRenderer(remoteView!)
+
+        remoteView!.isHidden = true
+        self.view.addSubview(self.remoteView!)
+        self.view.setNeedsLayout()
     }
 
     override func didReceiveMemoryWarning() {
@@ -78,30 +92,44 @@ class ViewController : UIViewController {
     }
 
     func setupLocalMedia() {
-        // Setup screen capturer
-        let capturer: TVIVideoCapturer
-        if (useExampleCapturer) {
-            capturer = ExampleScreenCapturer.init(aView: self.webView!)
+        if #available(iOS 11.0, *) {
+            if ViewController.useDeprecatedScreenCapturer {
+                setupScreenCapturer()
+            } else {
+                setupWebViewSource()
+            }
         } else {
-            capturer = TVIScreenCapturer.init(view: self.webView!)
+            setupScreenCapturer()
+        }
+    }
+
+    @available(iOS 11.0, *)
+    func setupWebViewSource() {
+        let source = ExampleWebViewSource.init(aView: self.webView!)
+
+        guard let videoTrack = TVILocalVideoTrack(source: source, enabled: true, name: "Screen") else {
+            presentError(message: "Failed to add ExampleWebViewSource video track!")
+            return
         }
 
-        localVideoTrack = TVILocalVideoTrack.init(capturer: capturer, enabled: true, constraints: nil, name: "Screen")
+        self.localVideoTrack = videoTrack
+        webViewSource = source
+        source.startCapture()
+    }
 
-        if (localVideoTrack == nil) {
-            presentError(message: "Failed to add screen capturer track!")
-            return;
+    func setupScreenCapturer() {
+        guard let capturer = TVIScreenCapturer.init(view: self.webView!) else {
+            presentError(message: "Failed to create TVIScreenCapturer!")
+            return
         }
 
+        guard let videoTrack = TVILocalVideoTrack(capturer: capturer, enabled: true, constraints: nil, name: "Screen") else {
+            presentError(message: "Failed to add TVIScreenCapturer video track!")
+            return
+        }
+
+        self.localVideoTrack = videoTrack
         screenCapturer = capturer;
-
-        // Setup rendering
-        remoteView = TVIVideoView.init(frame: CGRect.zero, delegate: self)
-        localVideoTrack?.addRenderer(remoteView!)
-
-        remoteView!.isHidden = true
-        self.view.addSubview(self.remoteView!)
-        self.view.setNeedsLayout()
     }
 
     func presentError( message: String) {

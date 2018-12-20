@@ -12,7 +12,7 @@ import Dispatch
 import ReplayKit
 import TwilioVideo
 
-class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
+class ReplayKitVideoSource: NSObject, TVIVideoSource {
 
     /*
      * Streaming video content at 30 fps or lower is ideal. ReplayKit may produce buffers at up to 120 Hz on an iPad Pro.
@@ -24,24 +24,9 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     static let kFormatFrameRate = UIScreen.main.maximumFramesPerSecond
 
-    // In order to save memory, our capturer may downscale the source to fit in a smaller rect.
-    static let kDownScaledMaxWidthOrHeight = 640
-
-    // Ensure that we have reasonable row alignment, especially if the downscaled width is not 640.
-    static let kPixelBufferBytesPerRowAlignment = 64
-
-    // ReplayKit provides planar NV12 CVPixelBuffers consisting of luma (Y) and chroma (UV) planes.
-    static let kYPlane = 0
-    static let kUVPlane = 1
-
-    var downscaleBuffers: Bool = false
     var screencastUsage: Bool = false
-    weak var captureConsumer: TVIVideoCaptureConsumer?
-
-    var downscaleYPlaneBuffer: UnsafeMutableRawPointer?
-    var downscaleYPlaneSize: Int = 0
-    var downscaleUVPlaneBuffer: UnsafeMutableRawPointer?
-    var downscaleUVPlaneSize: Int = 0
+    weak var sink: TVIVideoSink?
+    var videoFormat: TVIVideoFormat?
 
     var lastTimestamp: CMTime?
     var videoQueue: DispatchQueue?
@@ -63,6 +48,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
 
     init(isScreencast: Bool) {
         screencastUsage = isScreencast
+        super.init()
     }
 
     public var isScreencast: Bool {
@@ -71,66 +57,29 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         }
     }
 
-    public var supportedFormats: [TVIVideoFormat] {
-        get {
-            /*
-             * Describe the supported formats.
-             * In this example we can deliver either original, or downscaled buffers.
-             */
-            var screenSize = UIScreen.main.bounds.size
-            screenSize.width *= UIScreen.main.nativeScale
-            screenSize.height *= UIScreen.main.nativeScale
-            let format = TVIVideoFormat()
-            format.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
-            format.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
-            format.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
+    func requestOutputFormat(_ outputFormat: TVIVideoFormat) {
+        videoFormat = outputFormat
 
-            // We will downscale buffers to a 640x640 box, if requested.
-            let downscaledFormat = TVIVideoFormat()
-            downscaledFormat.frameRate = UInt(ReplayKitVideoSource.kFormatFrameRate)
-            downscaledFormat.pixelFormat = TVIPixelFormat.formatYUV420BiPlanarFullRange
-            downscaledFormat.dimensions = CMVideoDimensions(width: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight), height: Int32(ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
-
-            return [format, downscaledFormat]
+        if let sink = sink {
+            sink.onVideoFormatRequest(videoFormat)
         }
     }
 
     deinit {
-        freeScalingBuffers()
-    }
-
-    func startCapture(_ format: TVIVideoFormat, consumer: TVIVideoCaptureConsumer) {
-        captureConsumer = consumer
-
-        if (format.dimensions.width == ReplayKitVideoSource.kDownScaledMaxWidthOrHeight &&
-            format.dimensions.height == ReplayKitVideoSource.kDownScaledMaxWidthOrHeight) {
-            downscaleBuffers = true
-        }
-
-        print("Start capturing with format:", format)
-    }
-
-    func stopCapture() {
-        print("Stop capturing.")
-
         // Perform teardown and free memory on the video queue to ensure that the resources will not be resurrected.
         if let captureQueue = self.videoQueue {
             captureQueue.sync {
-                self.captureConsumer = nil
                 self.timerSource?.cancel()
                 self.timerSource = nil
-                self.freeScalingBuffers()
             }
-        } else {
-            // Fallback in case we never captured any frames yet.
-            captureConsumer = nil
         }
     }
 
     public func processVideoSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
-        guard let consumer = self.captureConsumer else {
+        guard let sink = self.sink else {
             return
         }
+
         guard let sourcePixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             assertionFailure("SampleBuffer did not have an ImageBuffer")
             return
@@ -145,7 +94,6 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         // Discover the dispatch queue that we are operating on.
         if videoQueue == nil {
             videoQueue = ExampleCoreAudioDeviceGetCurrentQueue()
-            consumer.captureDidStart(true)
         }
 
         // Frame dropping logic.
@@ -171,155 +119,25 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                 = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation(rawValue: coreSampleOrientation)!)
         }
 
-        // Return the original pixel buffer without downscaling.
-        if (!downscaleBuffers) {
-            deliverFrame(to: consumer,
-                         timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
-                         buffer: sourcePixelBuffer,
-                         orientation: videoOrientation,
-                         forceReschedule: false)
-            return
-        }
-
-        // Compute the downscaled rect for our destination (in whole pixels). Note: it would be better to round to even values.
-        let rect = AVMakeRect(aspectRatio: CGSize(width: CVPixelBufferGetWidth(sourcePixelBuffer),
-                                                  height: CVPixelBufferGetHeight(sourcePixelBuffer)),
-                              insideRect: CGRect(x: 0,
-                                                 y: 0,
-                                                 width: ReplayKitVideoSource.kDownScaledMaxWidthOrHeight,
-                                                 height: ReplayKitVideoSource.kDownScaledMaxWidthOrHeight))
-        let size = rect.integral.size
-
         /*
-         * We will allocate a CVPixelBuffer to hold the downscaled contents.
-         * TODO: Consider copying attributes such as CVImageBufferTransferFunction, CVImageBufferYCbCrMatrix and CVImageBufferColorPrimaries.
-         * On an iPhone X running iOS 12.0 these buffers are tagged with ITU_R_709_2 primaries and a ITU_R_601_4 matrix.
+         * Return the original pixel buffer without any downscaling or cropping applied.
+         * You may use a format request to crop and/or scale the buffers produced by this class.
          */
-        var outPixelBuffer: CVPixelBuffer? = nil
-        let attributes = NSDictionary(object: ReplayKitVideoSource.kPixelBufferBytesPerRowAlignment,
-                                      forKey: NSString(string: kCVPixelBufferBytesPerRowAlignmentKey))
-
-        var status = CVPixelBufferCreate(kCFAllocatorDefault,
-                                         Int(size.width),
-                                         Int(size.height),
-                                         pixelFormat,
-                                         attributes,
-                                         &outPixelBuffer);
-        if (status != kCVReturnSuccess) {
-            print("Failed to create pixel buffer");
-            return
-        }
-
-        let destinationPixelBuffer = outPixelBuffer!
-
-        status = CVPixelBufferLockBaseAddress(sourcePixelBuffer, CVPixelBufferLockFlags.readOnly);
-        status = CVPixelBufferLockBaseAddress(destinationPixelBuffer, []);
-
-        // Prepare source pointers.
-        var sourceImageY = vImage_Buffer(data: CVPixelBufferGetBaseAddressOfPlane(sourcePixelBuffer, ReplayKitVideoSource.kYPlane),
-                                         height: vImagePixelCount(CVPixelBufferGetHeightOfPlane(sourcePixelBuffer, ReplayKitVideoSource.kYPlane)),
-                                         width: vImagePixelCount(CVPixelBufferGetWidthOfPlane(sourcePixelBuffer, ReplayKitVideoSource.kYPlane)),
-                                         rowBytes: CVPixelBufferGetBytesPerRowOfPlane(sourcePixelBuffer, ReplayKitVideoSource.kYPlane))
-
-        var sourceImageUV = vImage_Buffer(data: CVPixelBufferGetBaseAddressOfPlane(sourcePixelBuffer, ReplayKitVideoSource.kUVPlane),
-                                          height: vImagePixelCount(CVPixelBufferGetHeightOfPlane(sourcePixelBuffer, ReplayKitVideoSource.kUVPlane)),
-                                          width:vImagePixelCount(CVPixelBufferGetWidthOfPlane(sourcePixelBuffer, ReplayKitVideoSource.kUVPlane)),
-                                          rowBytes: CVPixelBufferGetBytesPerRowOfPlane(sourcePixelBuffer, ReplayKitVideoSource.kUVPlane))
-
-        // Prepare destination pointers.
-        var destinationImageY = vImage_Buffer(data: CVPixelBufferGetBaseAddressOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kYPlane),
-                                              height: vImagePixelCount(CVPixelBufferGetHeightOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kYPlane)),
-                                              width: vImagePixelCount(CVPixelBufferGetWidthOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kYPlane)),
-                                              rowBytes: CVPixelBufferGetBytesPerRowOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kYPlane))
-
-        var destinationImageUV = vImage_Buffer(data: CVPixelBufferGetBaseAddressOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kUVPlane),
-                                               height: vImagePixelCount(CVPixelBufferGetHeightOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kUVPlane)),
-                                               width: vImagePixelCount( CVPixelBufferGetWidthOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kUVPlane)),
-                                               rowBytes: CVPixelBufferGetBytesPerRowOfPlane(destinationPixelBuffer, ReplayKitVideoSource.kUVPlane))
-
-        // Scale the Y and UV planes into the destination buffers, providing the intermediate scaling buffers to vImage.
-        preallocateScalingBuffers(sourceY: &sourceImageY,
-                                  sourceUV: &sourceImageUV,
-                                  destinationY: &destinationImageY,
-                                  destinationUV: &destinationImageUV)
-
-        var error = vImageScale_Planar8(&sourceImageY, &destinationImageY, downscaleYPlaneBuffer, vImage_Flags(kvImageEdgeExtend));
-        if (error != kvImageNoError) {
-            print("Failed to down scale luma plane.")
-            return;
-        }
-
-        error = vImageScale_CbCr8(&sourceImageUV, &destinationImageUV, downscaleUVPlaneBuffer, vImage_Flags(kvImageEdgeExtend));
-        if (error != kvImageNoError) {
-            print("Failed to down scale chroma plane.")
-            return;
-        }
-
-        status = CVPixelBufferUnlockBaseAddress(outPixelBuffer!, [])
-        status = CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, CVPixelBufferLockFlags.readOnly)
-
-        deliverFrame(to: consumer,
+        deliverFrame(to: sink,
                      timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
-                     buffer: destinationPixelBuffer,
+                     buffer: sourcePixelBuffer,
                      orientation: videoOrientation,
                      forceReschedule: false)
     }
 
-    func preallocateScalingBuffers(sourceY: UnsafePointer<vImage_Buffer>,
-                                   sourceUV: UnsafePointer<vImage_Buffer>,
-                                   destinationY: UnsafePointer<vImage_Buffer>,
-                                   destinationUV: UnsafePointer<vImage_Buffer>) {
-        // Size the buffers required for vImage scaling. As source requirements change, we might need to reallocate them.
-        let yBufferSize = vImageScale_Planar8(sourceY, destinationY, nil, vImage_Flags(kvImageGetTempBufferSize))
-        assert(yBufferSize > 0)
-
-        if (downscaleYPlaneBuffer == nil) {
-            downscaleYPlaneBuffer = malloc(yBufferSize)
-            downscaleYPlaneSize = yBufferSize
-        } else if (downscaleYPlaneBuffer != nil && yBufferSize > downscaleYPlaneSize) {
-            free(downscaleYPlaneBuffer)
-            downscaleYPlaneBuffer = malloc(yBufferSize)
-            downscaleYPlaneSize = yBufferSize
-        } else {
-            assert(downscaleYPlaneBuffer != nil)
-            assert(downscaleYPlaneSize > 0)
-        }
-
-        let uvBufferSize = vImageScale_CbCr8(sourceUV, destinationUV, nil, vImage_Flags(kvImageGetTempBufferSize))
-        if (downscaleUVPlaneBuffer == nil) {
-            downscaleUVPlaneBuffer = malloc(uvBufferSize)
-            downscaleUVPlaneSize = uvBufferSize
-        } else if (downscaleUVPlaneBuffer != nil && uvBufferSize > downscaleUVPlaneSize) {
-            free(downscaleUVPlaneBuffer)
-            downscaleUVPlaneBuffer = malloc(uvBufferSize)
-            downscaleUVPlaneSize = uvBufferSize
-        } else {
-            assert(downscaleUVPlaneBuffer != nil)
-            assert(downscaleUVPlaneSize > 0)
-        }
-    }
-
-    func freeScalingBuffers() {
-        if let yBuffer = downscaleYPlaneBuffer {
-            free(yBuffer)
-            downscaleYPlaneBuffer = nil
-            downscaleYPlaneSize = 0
-        }
-        if let uvBuffer = downscaleUVPlaneBuffer {
-            free(uvBuffer)
-            downscaleUVPlaneBuffer = nil
-            downscaleUVPlaneSize = 0
-        }
-    }
-
-    func deliverFrame(to: TVIVideoCaptureConsumer, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation, forceReschedule: Bool) {
+    func deliverFrame(to: TVIVideoSink, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation, forceReschedule: Bool) {
         guard let frame = TVIVideoFrame(timestamp: timestamp,
                                         buffer: buffer,
                                         orientation: orientation) else {
                                             assertionFailure("We couldn't create a TVIVideoFrame with a valid CVPixelBuffer.")
                                             return
         }
-        to.consumeCapturedFrame(frame)
+        to.onVideoFrame(frame)
         lastTimestamp = timestamp
 
         // Frame retransmission logic.
@@ -349,7 +167,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
         // Generally, this timer is invoked in kFrameRetransmitDispatchInterval when no frames are sent.
         source.setEventHandler(handler: {
             if let frame = self.lastFrameStorage,
-                let consumer = self.captureConsumer,
+                let sink = self.sink,
                 let lastHostTimestamp = self.lastTransmitTimestamp {
                 let currentTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
                 let delta = CMTimeSubtract(currentTimestamp, lastHostTimestamp)
@@ -357,7 +175,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoCapturer {
                 if delta >= ReplayKitVideoSource.kFrameRetransmitTimeInterval {
                     print("Delivering frame since send-delta is greather than threshold. delta=", delta.seconds)
                     // Reconstruct a new timestamp, advancing by our relative read of host time.
-                    self.deliverFrame(to: consumer,
+                    self.deliverFrame(to: sink,
                                       timestamp: CMTimeAdd(frame.timestamp, delta),
                                       buffer: frame.imageBuffer,
                                       orientation: frame.orientation,
