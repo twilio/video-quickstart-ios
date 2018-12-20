@@ -31,7 +31,7 @@ typedef NS_ENUM(NSUInteger, ViewControllerState) {
 NSString *const kVideoMovURL = @"https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov";
 NSString *const kStatusKey   = @"status";
 
-@interface ViewController () <UITextFieldDelegate, TVIRemoteParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraCapturerDelegate>
+@interface ViewController () <UITextFieldDelegate, TVIRemoteParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraSourceDelegate>
 
 // Configure access token manually for testing in `viewDidLoad`, if desired! Create one manually in the console.
 @property (nonatomic, strong) NSString *accessToken;
@@ -41,7 +41,7 @@ NSString *const kStatusKey   = @"status";
 
 @property (nonatomic, strong) TVIRoom *room;
 @property (nonatomic, strong) TVIDefaultAudioDevice *audioDevice;
-@property (nonatomic, strong) TVICameraCapturer *camera;
+@property (nonatomic, strong) TVICameraSource *camera;
 @property (nonatomic, strong) TVILocalVideoTrack *localVideoTrack;
 @property (nonatomic, strong) TVILocalAudioTrack *localAudioTrack;
 @property (nonatomic, strong) TVIRemoteParticipant *remoteParticipant;
@@ -157,31 +157,60 @@ NSString *const kStatusKey   = @"status";
 #pragma mark - Private
 
 - (void)startPreview {
+    // TVICameraSource is not supported with the Simulator.
     if ([PlatformUtils isSimulator]) {
+        [self.previewView removeFromSuperview];
         return;
     }
 
-    self.camera = [[TVICameraCapturer alloc] initWithSource:TVICameraCaptureSourceFrontCamera delegate:self];
-    self.localVideoTrack = [TVILocalVideoTrack trackWithCapturer:self.camera];
-    if (!self.localVideoTrack) {
-        [self logMessage:@"Failed to add video track"];
-    } else {
+    AVCaptureDevice *frontCamera = [TVICameraSource captureDeviceForPosition:AVCaptureDevicePositionFront];
+    AVCaptureDevice *backCamera = [TVICameraSource captureDeviceForPosition:AVCaptureDevicePositionBack];
+
+    if (frontCamera != nil || backCamera != nil) {
+        self.camera = [[TVICameraSource alloc] initWithDelegate:self];
+        self.localVideoTrack = [TVILocalVideoTrack trackWithSource:self.camera
+                                                           enabled:YES
+                                                              name:@"Cameara"];
         // Add renderer to video track for local preview
         [self.localVideoTrack addRenderer:self.previewView];
-
         [self logMessage:@"Video track created"];
 
-        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                                              action:@selector(flipCamera)];
-        [self.previewView addGestureRecognizer:tap];
+        if (frontCamera != nil && backCamera != nil) {
+            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                                  action:@selector(flipCamera)];
+            [self.previewView addGestureRecognizer:tap];
+        }
+
+        [self.camera startCaptureWithDevice:frontCamera != nil ? frontCamera : backCamera
+                                 completion:^(AVCaptureDevice *device, TVIVideoFormat *format, NSError *error) {
+                                     if (error != nil) {
+                                         [self logMessage:[NSString stringWithFormat:@"Start capture failed with error.\ncode = %lu error = %@", error.code, error.localizedDescription]];
+                                     } else {
+                                         self.previewView.mirror = (device.position == AVCaptureDevicePositionFront);
+                                     }
+                                 }];
+    } else {
+        [self logMessage:@"No front or back capture device found!"];
     }
 }
 
 - (void)flipCamera {
-    if (self.camera.source == TVICameraCaptureSourceFrontCamera) {
-        [self.camera selectSource:TVICameraCaptureSourceBackCameraWide];
+    AVCaptureDevice *newDevice = nil;
+
+    if (self.camera.device.position == AVCaptureDevicePositionFront) {
+        newDevice = [TVICameraSource captureDeviceForPosition:AVCaptureDevicePositionBack];
     } else {
-        [self.camera selectSource:TVICameraCaptureSourceFrontCamera];
+        newDevice = [TVICameraSource captureDeviceForPosition:AVCaptureDevicePositionFront];
+    }
+
+    if (newDevice != nil) {
+        [self.camera selectCaptureDevice:newDevice completion:^(AVCaptureDevice *device, TVIVideoFormat *format, NSError *error) {
+            if (error != nil) {
+                [self logMessage:[NSString stringWithFormat:@"Error selecting capture device.\ncode = %lu error = %@", error.code, error.localizedDescription]];
+            } else {
+                self.previewView.mirror = (device.position == AVCaptureDevicePositionFront);
+            }
+        }];
     }
 }
 
@@ -536,18 +565,19 @@ NSString *const kStatusKey   = @"status";
     [self.view setNeedsLayout];
 }
 
-#pragma mark - TVICameraCapturerDelegate
-
-- (void)cameraCapturer:(TVICameraCapturer *)capturer didStartWithSource:(TVICameraCaptureSource)source {
-    self.previewView.mirror = (source == TVICameraCaptureSourceFrontCamera);
-
-    self.localVideoTrack.enabled = YES;
+#pragma mark - TVICameraSourceDelegate
+- (void)cameraSource:(TVICameraSource *)source didFailWithError:(NSError *)error {
+    [self logMessage:[NSString stringWithFormat:@"Capture failed with error.\ncode = %lu error = %@", error.code, error.localizedDescription]];
 }
 
-- (void)cameraCapturerWasInterrupted:(TVICameraCapturer *)capturer reason:(AVCaptureSessionInterruptionReason)reason {
+- (void)cameraSourceWasInterrupted:(TVICameraSource *)source reason:(AVCaptureSessionInterruptionReason)reason {
     // We will disable `self.localVideoTrack` when the TVICameraCapturer is interrupted.
     // This prevents other Participants from seeing a frozen frame while the Client is backgrounded.
     self.localVideoTrack.enabled = NO;
+}
+
+- (void)cameraSourceInterruptionEnded:(TVICameraSource *)source {
+    self.localVideoTrack.enabled = YES;
 }
 
 @end
