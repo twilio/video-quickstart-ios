@@ -93,24 +93,57 @@ class ExampleWebViewSource: NSObject {
     }
 
     @objc func captureView( timer: CADisplayLink ) {
-        guard let webView = self.view else {
-            return
+        // This is our main drawing loop. Start by using the UIGraphics APIs to draw the UIView we want to capture.
+        var contextImage: UIImage? = nil
+        autoreleasepool {
+            UIGraphicsBeginImageContextWithOptions((self.view?.bounds.size)!, true, ExampleWebViewSource.kCaptureScaleFactor)
+            self.view?.drawHierarchy(in: (self.view?.bounds)!, afterScreenUpdates: false)
+            contextImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
         }
 
-        let configuration = WKSnapshotConfiguration()
-        // Configure a width appropriate for our scale factor.
-        configuration.snapshotWidth = NSNumber(value: Double(webView.bounds.width * ExampleWebViewSource.kCaptureScaleFactor))
-        webView.takeSnapshot(with:configuration, completionHandler: { (image, error) in
-            if let deliverableImage = image {
-                // TODO: Neither BGRA or ARGB are correct, is this ABGR?
-                self.deliverCapturedImage(image: deliverableImage,
-                                          format: TVIPixelFormat.format32BGRA,
-                                          orientation: TVIVideoOrientation.up,
-                                          timestamp: timer.timestamp)
-            } else if let theError = error {
-                print("Snapshot error:", theError as Any)
-            }
-        })
+        /*
+         * Make a copy of the UIImage's underlying data. We do this by getting the CGImage, and its CGDataProvider.
+         * Note that this technique is inefficient because it causes an extra malloc / copy to occur for every frame.
+         * For a more performant solution, provide a pool of buffers and use them to back a CGBitmapContext.
+         */
+        let image: CGImage? = contextImage?.cgImage
+        let dataProvider: CGDataProvider? = image?.dataProvider
+        let data: CFData? = dataProvider?.data
+        let baseAddress = CFDataGetBytePtr(data!)
+        contextImage = nil
+
+        /*
+         * We own the copied CFData which will back the CVPixelBuffer, thus the data's lifetime is bound to the buffer.
+         * We will use a CVPixelBufferReleaseBytesCallback callback in order to release the CFData when the buffer dies.
+         */
+        let unmanagedData = Unmanaged<CFData>.passRetained(data!)
+        var pixelBuffer: CVPixelBuffer?
+        let status = CVPixelBufferCreateWithBytes(nil,
+                                                  (image?.width)!,
+                                                  (image?.height)!,
+                                                  TVIPixelFormat.format32BGRA.rawValue,
+                                                  UnsafeMutableRawPointer( mutating: baseAddress!),
+                                                  (image?.bytesPerRow)!,
+                                                  { releaseContext, baseAddress in
+                                                    let contextData = Unmanaged<CFData>.fromOpaque(releaseContext!)
+                                                    contextData.release()
+        },
+                                                  unmanagedData.toOpaque(),
+                                                  nil,
+                                                  &pixelBuffer)
+
+        if let buffer = pixelBuffer {
+            // Deliver a frame to the consumer. Images drawn by UIGraphics do not need any rotation tags.
+            let frame = TVIVideoFrame(timeInterval: timer.timestamp,
+                                      buffer: buffer,
+                                      orientation: TVIVideoOrientation.up)
+
+            // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
+            self.sink?.onVideoFrame(frame!)
+        } else {
+            print("Video source failed with status code: \(status).")
+        }
     }
 
     private func deliverCapturedImage(image: UIImage, format: TVIPixelFormat, orientation: TVIVideoOrientation, timestamp: CFTimeInterval) {
