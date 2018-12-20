@@ -8,7 +8,7 @@
 #import "ExampleReplayKitAudioCapturer.h"
 
 // Our guess at the maximum slice size used by ReplayKit. We have observed 1024 in the field.
-static size_t kMaximumFramesPerBuffer = 2048;
+static size_t kMaximumFramesPerBuffer = 44256;
 
 static ExampleAudioContext *capturingContext;
 
@@ -62,6 +62,7 @@ static ExampleAudioContext *capturingContext;
         _capturingFormat = [[self class] activeCapturingFormat];
     }
 
+    NSLog (@"Capturing Format = %@", _capturingFormat);
     return _capturingFormat;
 }
 
@@ -116,6 +117,11 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
     }
 
     CMBlockBufferRef blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
+    if (blockBuffer == nil) {
+        NSLog(@"Empty buffer received");
+        return noErr;
+    }
+
     AudioBufferList bufferList;
     CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer,
                                                             NULL,
@@ -129,9 +135,21 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
     int8_t *audioBuffer = (int8_t *)bufferList.mBuffers[0].mData;
     UInt32 audioBufferSizeInBytes = bufferList.mBuffers[0].mDataByteSize;
 
+    CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
+    const AudioStreamBasicDescription *asbd = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
+
+    if (asbd->mFormatFlags & kAudioFormatFlagIsBigEndian) {
+        for (int i=0; i<(audioBufferSizeInBytes-1); i += 2) {
+            int8_t temp = audioBuffer[i];
+            audioBuffer[i] = audioBuffer[i+1];
+            audioBuffer[i+1] = temp;
+        }
+    }
+
     TVIAudioDeviceWriteCaptureData(capturingContext->deviceContext, (int8_t *)audioBuffer, audioBufferSizeInBytes);
 
     CFRelease(blockBuffer);
+
     return noErr;
 }
 

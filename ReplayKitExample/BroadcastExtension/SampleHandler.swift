@@ -110,14 +110,12 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         case RPSampleBufferType.video:
             videoSource?.processVideoSampleBuffer(sampleBuffer)
             break
+
         case RPSampleBufferType.audioApp:
-            /*
-             * TODO: We do not capture app audio at the moment. For some broadcast use cases it may make sense to capture both the
-             * application and microphone audio. Doing this requires down-mixing the resulting streams.
-             */
-            break
-        case RPSampleBufferType.audioMic:
             ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+            break
+
+        case RPSampleBufferType.audioMic:
             break
         }
     }
