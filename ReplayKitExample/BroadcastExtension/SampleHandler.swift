@@ -116,6 +116,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
             break
 
         case RPSampleBufferType.audioMic:
+            ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
             break
         }
     }
