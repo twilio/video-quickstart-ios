@@ -153,7 +153,7 @@ class ExampleWebViewSource: NSObject {
             // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
             self.sink?.onVideoFrame(frame!)
         } else {
-            print("Capture failed with status code: \(status).")
+            print("Video source failed with status code: \(status).")
         }
     }
 }
