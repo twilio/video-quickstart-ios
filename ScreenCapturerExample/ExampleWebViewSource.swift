@@ -118,7 +118,7 @@ class ExampleWebViewSource: NSObject {
                                       orientation: TVIVideoOrientation,
                                       timestamp: CFTimeInterval) {
         /*
-         * Make a (shallow) copy of the UIImage's underlying data. We do this by getting the CGImage, and its CGDataProvider.
+         * Make a (deep) copy of the UIImage's underlying data. We do this by getting the CGImage, and its CGDataProvider.
          * In some cases, the bitmap's pixel format is not compatible with CVPixelBuffer and we need to repack the pixels.
          */
         guard let cgImage = image.cgImage else {
@@ -130,9 +130,11 @@ class ExampleWebViewSource: NSObject {
         let dataProvider = cgImage.dataProvider
         let data = dataProvider?.data
         let baseAddress = CFDataGetBytePtr(data!)!
-        // The underlying data is marked as immutable, but we are the owner of this CGImage and can do as we please...
+        /*
+         * The underlying data is marked as immutable, but we are the sole owner and can do as we please ...
+         * Also, the CVPixelBuffer constructor will only accept a mutable pointer.
+         */
         let mutableBaseAddress = UnsafeMutablePointer<UInt8>(mutating: baseAddress)
-
         let pixelFormat: TVIPixelFormat
 
         switch byteOrderInfo {
