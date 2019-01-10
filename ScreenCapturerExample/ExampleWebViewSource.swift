@@ -102,7 +102,6 @@ class ExampleWebViewSource: NSObject {
         configuration.snapshotWidth = NSNumber(value: Double(webView.bounds.width * ExampleWebViewSource.kCaptureScaleFactor))
         webView.takeSnapshot(with:configuration, completionHandler: { (image, error) in
             if let deliverableImage = image {
-                // TODO: Neither BGRA or ARGB are correct, is this ABGR?
                 self.deliverCapturedImage(image: deliverableImage,
                                           orientation: TVIVideoOrientation.up,
                                           timestamp: timer.timestamp)
