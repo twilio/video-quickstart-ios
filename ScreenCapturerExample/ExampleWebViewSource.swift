@@ -104,7 +104,6 @@ class ExampleWebViewSource: NSObject {
             if let deliverableImage = image {
                 // TODO: Neither BGRA or ARGB are correct, is this ABGR?
                 self.deliverCapturedImage(image: deliverableImage,
-                                          format: TVIPixelFormat.format32BGRA,
                                           orientation: TVIVideoOrientation.up,
                                           timestamp: timer.timestamp)
             } else if let theError = error {
@@ -113,29 +112,76 @@ class ExampleWebViewSource: NSObject {
         })
     }
 
-    private func deliverCapturedImage(image: UIImage, format: TVIPixelFormat, orientation: TVIVideoOrientation, timestamp: CFTimeInterval) {
+    private func deliverCapturedImage(image: UIImage,
+                                      orientation: TVIVideoOrientation,
+                                      timestamp: CFTimeInterval) {
         /*
-         * Make a copy of the UIImage's underlying data. We do this by getting the CGImage, and its CGDataProvider.
-         * Note that this technique is inefficient because it causes an extra malloc / copy to occur for every frame.
-         * For a more performant solution, provide a pool of buffers and use them to back a CGBitmapContext.
+         * Make a (shallow) copy of the UIImage's underlying data. We do this by getting the CGImage, and its CGDataProvider.
+         * In some cases, the bitmap's pixel format is not compatible with CVPixelBuffer and we need to repack the pixels.
          */
-        let image: CGImage? = image.cgImage
-        let dataProvider: CGDataProvider? = image?.dataProvider
-        let data: CFData? = dataProvider?.data
-        let baseAddress = CFDataGetBytePtr(data!)
+        guard let cgImage = image.cgImage else {
+            return
+        }
+
+        let alphaInfo = cgImage.alphaInfo
+        let byteOrderInfo = CGBitmapInfo(rawValue: cgImage.bitmapInfo.rawValue & CGBitmapInfo.byteOrderMask.rawValue)
+        let dataProvider = cgImage.dataProvider
+        let data = dataProvider?.data
+        let baseAddress = CFDataGetBytePtr(data!)!
+        // The underlying data is marked as immutable, but we are the owner of this CGImage and can do as we please...
+        let mutableBaseAddress = UnsafeMutablePointer<UInt8>(mutating: baseAddress)
+
+        let pixelFormat: TVIPixelFormat
+
+        switch byteOrderInfo {
+        case .byteOrder32Little:
+            // Encountered on iOS simulators.
+            // Note: We do not account for the pre-multiplied alpha leaving the images too dim.
+            // This problem could be solved using vImageUnpremultiplyData_RGBA8888 to operate in-place on the pixels.
+            assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
+            pixelFormat = TVIPixelFormat.format32BGRA
+        case .byteOrder32Big:
+            // Never encountered with snapshots on iOS, but maybe on macOS?
+            assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
+            pixelFormat = TVIPixelFormat.format32ARGB
+        case .byteOrder16Little:
+            pixelFormat = TVIPixelFormat.format32BGRA
+            assert(false)
+        case .byteOrder16Big:
+            pixelFormat = TVIPixelFormat.format32BGRA
+            assert(false)
+        default:
+            // The pixels are formatted in the default order for CoreGraphics, which on iOS is kCVPixelFormatType_32RGBA.
+            // This format is included in Core Video for completeness, and creating a buffer returns kCVReturnInvalidPixelFormat.
+            // We will instead repack the memory from RGBA to BGRA, which is supported by Core Video (and Twilio Video).
+            // Note: While UIImages captured on a device claim to have pre-multiplied alpha, the alpha channel is always opaque (0xFF).
+            pixelFormat = TVIPixelFormat.format32BGRA
+            assert(alphaInfo == .premultipliedLast || alphaInfo == .noneSkipLast)
+
+            for row in 0 ..< cgImage.height {
+                let rowByteAddress = mutableBaseAddress.advanced(by: row * cgImage.bytesPerRow)
+
+                for pixel in stride(from: 0, to: cgImage.width * 4, by: 4) {
+                    // Swap the red and blue channels.
+                    let red = rowByteAddress[pixel]
+                    rowByteAddress[pixel] = rowByteAddress[pixel + 2]
+                    rowByteAddress[pixel+2] = red
+                }
+            }
+        }
 
         /*
          * We own the copied CFData which will back the CVPixelBuffer, thus the data's lifetime is bound to the buffer.
-         * We will use a CVPixelBufferReleaseBytesCallback callback in order to release the CFData when the buffer dies.
+         * We will use a CVPixelBufferReleaseBytesCallback in order to release the CFData when the buffer dies.
          */
         let unmanagedData = Unmanaged<CFData>.passRetained(data!)
         var pixelBuffer: CVPixelBuffer?
         let status = CVPixelBufferCreateWithBytes(nil,
-                                                  (image?.width)!,
-                                                  (image?.height)!,
-                                                  format.rawValue,
-                                                  UnsafeMutableRawPointer( mutating: baseAddress!),
-                                                  (image?.bytesPerRow)!,
+                                                  cgImage.width,
+                                                  cgImage.height,
+                                                  pixelFormat.rawValue,
+                                                  mutableBaseAddress,
+                                                  cgImage.bytesPerRow,
                                                   { releaseContext, baseAddress in
                                                     let contextData = Unmanaged<CFData>.fromOpaque(releaseContext!)
                                                     contextData.release()
