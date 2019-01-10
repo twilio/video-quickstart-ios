@@ -96,10 +96,13 @@ class ExampleWebViewSource: NSObject {
         guard let webView = self.view else {
             return
         }
+        guard let window = webView.window else {
+            return
+        }
 
         let configuration = WKSnapshotConfiguration()
-        // Configure a width appropriate for our scale factor.
-        configuration.snapshotWidth = NSNumber(value: Double(webView.bounds.width * ExampleWebViewSource.kCaptureScaleFactor))
+        // Configure a width (in points) appropriate for our desired scale factor.
+        configuration.snapshotWidth = NSNumber(value: Double(webView.bounds.width * ExampleWebViewSource.kCaptureScaleFactor / window.screen.scale))
         webView.takeSnapshot(with:configuration, completionHandler: { (image, error) in
             if let deliverableImage = image {
                 self.deliverCapturedImage(image: deliverableImage,
