@@ -145,10 +145,11 @@ class ExampleWebViewSource: NSObject {
 
         switch byteOrderInfo {
         case .byteOrder32Little:
-            // Encountered on iOS simulators.
-            // Note: We have observed that pre-multiplied images might contain non-opaque alpha.
+            // Pixel format encountered on iOS simulators.
+            // Note: We have observed that pre-multiplied images might contain non-opaque alpha on the simulator.
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
             if (alphaInfo == .premultipliedFirst) {
+                // TODO: This vImage call is crashing on the simulator.
 //                vImageUnpremultiplyData_ARGB8888(&imageBuffer, &imageBuffer, vImage_Flags(kvImageDoNotTile))
             }
         case .byteOrder32Big:
