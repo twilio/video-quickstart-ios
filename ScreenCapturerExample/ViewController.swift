@@ -13,7 +13,7 @@ import AVFoundation
 class ViewController : UIViewController {
 
     var localVideoTrack: TVILocalVideoTrack?
-    var remoteView: TVIVideoView?
+    weak var localView: TVIVideoView?
 
     /// Deprecated capturer to use on older iOS versions where WKWebView snapshotting is not supported.
     var screenCapturer: TVIScreenCapturer?
@@ -43,13 +43,19 @@ class ViewController : UIViewController {
 
         setupLocalMedia()
 
-        // Setup rendering
-        remoteView = TVIVideoView.init(frame: CGRect.zero, delegate: self)
-        localVideoTrack?.addRenderer(remoteView!)
+        // Setup a renderer to preview what we are capturing.
+        if let videoView = TVIVideoView(frame: CGRect.zero, delegate: self) {
+            self.localView = videoView
 
-        remoteView!.isHidden = true
-        self.view.addSubview(self.remoteView!)
-        self.view.setNeedsLayout()
+            localVideoTrack?.addRenderer(videoView)
+            videoView.isHidden = true
+            self.view.addSubview(videoView)
+            self.view.setNeedsLayout()
+        }
+    }
+
+    deinit {
+        teardownLocalMedia()
     }
 
     override func didReceiveMemoryWarning() {
@@ -66,7 +72,7 @@ class ViewController : UIViewController {
         webView?.frame = self.view.bounds
 
         // Layout the remote video using frame based techniques. It's also possible to do this using autolayout.
-        if let remoteView = self.remoteView {
+        if let remoteView = self.localView {
             if remoteView.hasVideoData {
                 var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
                 if #available(iOS 11.0, *) {
@@ -103,9 +109,24 @@ class ViewController : UIViewController {
         }
     }
 
+    func teardownLocalMedia() {
+        if #available(iOS 11.0, *) {
+            // ExampleWebViewSource has an explicit API to start and stop capturing. Stop to break the retain cycle.
+            if let source = self.webViewSource {
+                let webSource = source as! ExampleWebViewSource
+                webSource.stopCapture()
+            }
+        }
+
+        if let renderer = localView {
+            localVideoTrack?.removeRenderer(renderer)
+        }
+        localVideoTrack = nil
+    }
+
     @available(iOS 11.0, *)
     func setupWebViewSource() {
-        let source = ExampleWebViewSource.init(aView: self.webView!)
+        let source = ExampleWebViewSource(aView: self.webView!)
 
         guard let videoTrack = TVILocalVideoTrack(source: source, enabled: true, name: "Screen") else {
             presentError(message: "Failed to add ExampleWebViewSource video track!")
@@ -118,7 +139,7 @@ class ViewController : UIViewController {
     }
 
     func setupScreenCapturer() {
-        guard let capturer = TVIScreenCapturer.init(view: self.webView!) else {
+        guard let capturer = TVIScreenCapturer(view: self.webView!) else {
             presentError(message: "Failed to create TVIScreenCapturer!")
             return
         }
@@ -161,8 +182,8 @@ extension ViewController : WKNavigationDelegate {
 // MARK: TVIVideoViewDelegate
 extension ViewController : TVIVideoViewDelegate {
     func videoViewDidReceiveData(_ view: TVIVideoView) {
-        if (view == remoteView) {
-            remoteView?.isHidden = false
+        if (view == localView) {
+            localView?.isHidden = false
             self.view.setNeedsLayout()
         }
     }

@@ -136,7 +136,7 @@ class ExampleWebViewSource: NSObject {
          * Also, the CVPixelBuffer constructor will only accept a mutable pointer.
          */
         let mutableBaseAddress = UnsafeMutablePointer<UInt8>(mutating: baseAddress)
-        let pixelFormat: TVIPixelFormat
+        var pixelFormat = TVIPixelFormat.format32BGRA
 
         var imageBuffer = vImage_Buffer(data: mutableBaseAddress,
                                         height: vImagePixelCount(cgImage.height),
@@ -148,7 +148,6 @@ class ExampleWebViewSource: NSObject {
             // Encountered on iOS simulators.
             // Note: We have observed that pre-multiplied images might contain non-opaque alpha.
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
-            pixelFormat = TVIPixelFormat.format32BGRA
             if (alphaInfo == .premultipliedFirst) {
 //                vImageUnpremultiplyData_ARGB8888(&imageBuffer, &imageBuffer, vImage_Flags(kvImageDoNotTile))
             }
@@ -157,17 +156,16 @@ class ExampleWebViewSource: NSObject {
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
             pixelFormat = TVIPixelFormat.format32ARGB
         case .byteOrder16Little:
-            pixelFormat = TVIPixelFormat.format32BGRA
             assert(false)
         case .byteOrder16Big:
-            pixelFormat = TVIPixelFormat.format32BGRA
             assert(false)
         default:
-            // The pixels are formatted in the default order for CoreGraphics, which on iOS is kCVPixelFormatType_32RGBA.
-            // This pixel format is defined Core Video, but creating a buffer returns kCVReturnInvalidPixelFormat on an iOS device.
-            // We will instead repack the memory from RGBA to BGRA, which is supported by Core Video (and Twilio Video).
-            // Note: While UIImages captured on a device claim to have pre-multiplied alpha, the alpha channel is always opaque (0xFF).
-            pixelFormat = TVIPixelFormat.format32BGRA
+            /*
+             * The pixels are formatted in the default order for CoreGraphics, which on iOS is kCVPixelFormatType_32RGBA.
+             * This pixel format is defined Core Video, but creating a buffer returns kCVReturnInvalidPixelFormat on an iOS device.
+             * We will instead repack the memory from RGBA to BGRA, which is supported by Core Video (and Twilio Video).
+             * Note: While UIImages captured on a device claim to have pre-multiplied alpha, the alpha channel is always opaque (0xFF).
+             */
             assert(alphaInfo == .premultipliedLast || alphaInfo == .noneSkipLast)
 
             // Swap the red and blue channels.
