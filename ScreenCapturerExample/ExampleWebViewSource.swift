@@ -149,7 +149,7 @@ class ExampleWebViewSource: NSObject {
             // Note: We have observed that pre-multiplied images might contain non-opaque alpha on the simulator.
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
             if (alphaInfo == .premultipliedFirst) {
-                // TODO: This vImage call is crashing on the simulator.
+                // TODO: This vImage call is crashing.
 //                vImageUnpremultiplyData_ARGB8888(&imageBuffer, &imageBuffer, vImage_Flags(kvImageDoNotTile))
             }
         case .byteOrder32Big:
@@ -163,7 +163,7 @@ class ExampleWebViewSource: NSObject {
         default:
             /*
              * The pixels are formatted in the default order for CoreGraphics, which on iOS is kCVPixelFormatType_32RGBA.
-             * This pixel format is defined Core Video, but creating a buffer returns kCVReturnInvalidPixelFormat on an iOS device.
+             * This pixel format is defined by Core Video, but creating a buffer returns kCVReturnInvalidPixelFormat on an iOS device.
              * We will instead repack the memory from RGBA to BGRA, which is supported by Core Video (and Twilio Video).
              * Note: While UIImages captured on a device claim to have pre-multiplied alpha, the alpha channel is always opaque (0xFF).
              */
