@@ -21,4 +21,3 @@ If you only want to share a portion of the view hierarchy, and can accept some p
 ### Known Issues
 
 1. Snapshots captured on iOS simulators include pre-multiplied alpha. This example does not un-premultiply the color channels, though this could be accomplished using `vImageUnpremultiplyData_RGBA8888`.
-2. The pixel format conversion code, written in Swift 4, could be much more performant.

@@ -5,6 +5,7 @@
 //  Copyright © 2016-2019 Twilio, Inc. All rights reserved.
 //
 
+import Accelerate
 import TwilioVideo
 import WebKit
 
@@ -131,19 +132,26 @@ class ExampleWebViewSource: NSObject {
         let data = dataProvider?.data
         let baseAddress = CFDataGetBytePtr(data!)!
         /*
-         * The underlying data is marked as immutable, but we are the sole owner and can do as we please ...
+         * The underlying data is marked as immutable, but we are the sole owner and can do as we please.
          * Also, the CVPixelBuffer constructor will only accept a mutable pointer.
          */
         let mutableBaseAddress = UnsafeMutablePointer<UInt8>(mutating: baseAddress)
         let pixelFormat: TVIPixelFormat
 
+        var imageBuffer = vImage_Buffer(data: mutableBaseAddress,
+                                        height: vImagePixelCount(cgImage.height),
+                                        width: vImagePixelCount(cgImage.width),
+                                        rowBytes: cgImage.bytesPerRow)
+
         switch byteOrderInfo {
         case .byteOrder32Little:
             // Encountered on iOS simulators.
-            // Note: We do not account for the pre-multiplied alpha leaving the images too dim.
-            // This problem could be solved using vImageUnpremultiplyData_RGBA8888 to operate in-place on the pixels.
+            // Note: We have observed that pre-multiplied images might contain non-opaque alpha.
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
             pixelFormat = TVIPixelFormat.format32BGRA
+            if (alphaInfo == .premultipliedFirst) {
+//                vImageUnpremultiplyData_ARGB8888(&imageBuffer, &imageBuffer, vImage_Flags(kvImageDoNotTile))
+            }
         case .byteOrder32Big:
             // Never encountered with snapshots on iOS, but maybe on macOS?
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
@@ -156,22 +164,18 @@ class ExampleWebViewSource: NSObject {
             assert(false)
         default:
             // The pixels are formatted in the default order for CoreGraphics, which on iOS is kCVPixelFormatType_32RGBA.
-            // This format is included in Core Video for completeness, and creating a buffer returns kCVReturnInvalidPixelFormat.
+            // This pixel format is defined Core Video, but creating a buffer returns kCVReturnInvalidPixelFormat on an iOS device.
             // We will instead repack the memory from RGBA to BGRA, which is supported by Core Video (and Twilio Video).
             // Note: While UIImages captured on a device claim to have pre-multiplied alpha, the alpha channel is always opaque (0xFF).
             pixelFormat = TVIPixelFormat.format32BGRA
             assert(alphaInfo == .premultipliedLast || alphaInfo == .noneSkipLast)
 
-            for row in 0 ..< cgImage.height {
-                let rowByteAddress = mutableBaseAddress.advanced(by: row * cgImage.bytesPerRow)
-
-                for pixel in stride(from: 0, to: cgImage.width * 4, by: 4) {
-                    // Swap the red and blue channels.
-                    let red = rowByteAddress[pixel]
-                    rowByteAddress[pixel] = rowByteAddress[pixel + 2]
-                    rowByteAddress[pixel+2] = red
-                }
-            }
+            // Swap the red and blue channels.
+            var permuteMap = [UInt8(2), UInt8(1), UInt8(0), UInt8(3)]
+            vImagePermuteChannels_ARGB8888(&imageBuffer,
+                                           &imageBuffer,
+                                           &permuteMap,
+                                           vImage_Flags(kvImageDoNotTile))
         }
 
         /*
