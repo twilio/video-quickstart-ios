@@ -149,8 +149,8 @@ class ExampleWebViewSource: NSObject {
             // Note: We have observed that pre-multiplied images might contain non-opaque alpha on the simulator.
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
             if (alphaInfo == .premultipliedFirst) {
-                // TODO: This vImage call is crashing.
-//                vImageUnpremultiplyData_ARGB8888(&imageBuffer, &imageBuffer, vImage_Flags(kvImageDoNotTile))
+                // TODO: This vImage call is crashing, though it should be able to operate in place.
+                // vImageUnpremultiplyData_ARGB8888(&imageBuffer, &imageBuffer, vImage_Flags(kvImageDoNotTile))
             }
         case .byteOrder32Big:
             // Never encountered with snapshots on iOS, but maybe on macOS?
