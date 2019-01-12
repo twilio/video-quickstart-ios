@@ -20,4 +20,4 @@ If you only want to share a portion of the view hierarchy, and can accept some p
 
 ### Known Issues
 
-1. Snapshots captured on iOS simulators include pre-multiplied alpha. This example does not un-premultiply the color channels, though this could be accomplished using `vImageUnpremultiplyData_ARGB8888`.
+1. Snapshots captured on iOS simulators include appear to include pre-multiplied alpha, but the alpha channel is always opaque (0xFF). Without proper alpha information it is impossible to un-premultiply the data and the images look too dim. This issue does not occur on a real device.

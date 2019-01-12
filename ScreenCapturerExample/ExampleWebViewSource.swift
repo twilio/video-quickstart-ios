@@ -145,13 +145,12 @@ class ExampleWebViewSource: NSObject {
 
         switch byteOrderInfo {
         case .byteOrder32Little:
-            // Pixel format encountered on iOS simulators.
-            // Note: We have observed that pre-multiplied images might contain non-opaque alpha on the simulator.
+            /*
+             * Pixel format encountered on iOS simulators. Note: We have observed that pre-multiplied images
+             * do not contain any transparent alpha, but still appear to be too dim. This appears to be a simulator only bug.
+             * Without proper alpha information it is impossible to un-premultiply the data.
+             */
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
-            if (alphaInfo == .premultipliedFirst) {
-                // TODO: This vImage call is crashing, though it should be able to operate in place.
-                // vImageUnpremultiplyData_ARGB8888(&imageBuffer, &imageBuffer, vImage_Flags(kvImageDoNotTile))
-            }
         case .byteOrder32Big:
             // Never encountered with snapshots on iOS, but maybe on macOS?
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
