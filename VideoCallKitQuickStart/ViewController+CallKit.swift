@@ -102,7 +102,7 @@ extension ViewController : CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
         NSLog("provier:performSetMutedCallAction:")
         
-        toggleMic(sender: self)
+        muteAudio(isMuted: action.isMuted)
         
         action.fulfill()
     }

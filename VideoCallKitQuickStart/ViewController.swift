@@ -167,11 +167,27 @@ class ViewController: UIViewController {
     }
     
     @IBAction func toggleMic(sender: AnyObject) {
-        if (self.localAudioTrack != nil) {
-            self.localAudioTrack?.isEnabled = !(self.localAudioTrack?.isEnabled)!
-            
+        if let room = room, let uuid = room.uuid, let localAudioTrack = self.localAudioTrack {
+            let isMuted = localAudioTrack.isEnabled
+            let muteAction = CXSetMutedCallAction(call: uuid, muted: isMuted)
+            let transaction = CXTransaction(action: muteAction)
+
+            callKitCallController.request(transaction)  { error in
+                if let error = error {
+                    self.logMessage(messageText: "SetMutedCallAction transaction request failed: \(error.localizedDescription)")
+                    return
+                }
+                self.logMessage(messageText: "SetMutedCallAction transaction request successful")
+            }
+        }
+    }
+
+    func muteAudio(isMuted: Bool) {
+        if let localAudioTrack = self.localAudioTrack {
+            localAudioTrack.isEnabled = !isMuted
+
             // Update the button title
-            if (self.localAudioTrack?.isEnabled == true) {
+            if (!isMuted) {
                 self.micButton.setTitle("Mute", for: .normal)
             } else {
                 self.micButton.setTitle("Unmute", for: .normal)
