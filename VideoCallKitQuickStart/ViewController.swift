@@ -174,10 +174,10 @@ class ViewController: UIViewController {
 
             callKitCallController.request(transaction)  { error in
                 if let error = error {
-                    NSLog("SetMutedCallAction transaction request failed: \(error.localizedDescription)")
+                    self.logMessage(messageText: "SetMutedCallAction transaction request failed: \(error.localizedDescription)")
                     return
                 }
-                NSLog("SetMutedCallAction transaction request successful")
+                self.logMessage(messageText: "SetMutedCallAction transaction request successful")
             }
         }
     }
