@@ -7,14 +7,21 @@
 
 #import "ExampleReplayKitAudioCapturer.h"
 
-// Our guess at the maximum slice size used by ReplayKit. We have observed 1024 in the field.
-static size_t kMaximumFramesPerBuffer = 44256;
+// Our guess at the maximum slice size used by ReplayKit app audio. We have observed up to 22596 in the field.
+static size_t kMaximumFramesPerAppAudioBuffer = 45192;
+// Our guess at the maximum slice size used by ReplayKit mic audio. We have observed up to 1024 in the field.
+static size_t kMaximumFramesPerMicAudioBuffer = 2048;
 
 static ExampleAudioContext *capturingContext;
 
 @interface ExampleReplayKitAudioCapturer()
 
 @property (nonatomic, strong, nullable) TVIAudioFormat *capturingFormat;
+
+/**
+ The maximum number of frames that we will capture at a time. This is determined based upon the RPSampleBufferType.
+ */
+@property (nonatomic, assign, readonly) size_t maxFramesPerBuffer;
 
 @end
 
@@ -23,8 +30,16 @@ static ExampleAudioContext *capturingContext;
 #pragma mark - Init & Dealloc
 
 - (instancetype)init {
+    return [self initWithSampleType:RPSampleBufferTypeAudioMic];
+}
+
+- (instancetype)initWithSampleType:(RPSampleBufferType)type {
+    NSAssert(type == RPSampleBufferTypeAudioMic || type == RPSampleBufferTypeAudioApp, @"We only support capturing audio samples.");
+
     self = [super init];
     if (self) {
+        // Unfortunately, we need to spend more memory to capture application audio samples, which have some delay.
+        _maxFramesPerBuffer = type == RPSampleBufferTypeAudioMic ? kMaximumFramesPerMicAudioBuffer : kMaximumFramesPerAppAudioBuffer;
     }
     return self;
 }
@@ -59,7 +74,7 @@ static ExampleAudioContext *capturingContext;
          * Assume that the AVAudioSession has already been configured and started and that the values
          * for sampleRate and IOBufferDuration are final.
          */
-        _capturingFormat = [[self class] activeCapturingFormat];
+        _capturingFormat = [[self class] activeCapturingFormat:_maxFramesPerBuffer];
     }
 
     NSLog (@"Capturing Format = %@", _capturingFormat);
@@ -138,6 +153,9 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
     CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
     const AudioStreamBasicDescription *asbd = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
 
+    NSLog(@"%d audio frames.", audioBufferSizeInBytes / asbd->mBytesPerFrame);
+
+    // Perform an endianess conversion, if needed. A TVIAudioDevice should deliver little endian samples.
     if (asbd->mFormatFlags & kAudioFormatFlagIsBigEndian) {
         for (int i=0; i<(audioBufferSizeInBytes-1); i += 2) {
             int8_t temp = audioBuffer[i];
@@ -155,15 +173,14 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
 
 #pragma mark - Private
 
-+ (nullable TVIAudioFormat *)activeCapturingFormat {
-    // We are making some assumptions about the format received from ReplayKit.
-    const size_t sessionFramesPerBuffer = kMaximumFramesPerBuffer;
++ (nullable TVIAudioFormat *)activeCapturingFormat:(const size_t)framesPerBuffer {
+    // We are making some assumptions about the format received from ReplayKit. So far, only 1/44.1 kHz has been encountered.
     const double sessionSampleRate = 44100;
     size_t rendererChannels = 1;
 
     return [[TVIAudioFormat alloc] initWithChannels:rendererChannels
                                          sampleRate:sessionSampleRate
-                                    framesPerBuffer:sessionFramesPerBuffer];
+                                    framesPerBuffer:framesPerBuffer];
 }
 
 @end

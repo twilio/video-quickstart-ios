@@ -20,7 +20,7 @@ This `TVIVideoSource` produces `TVIVideoFrame`s from `CMSampleBuffer`s captured 
 
 **ExampleReplayKitAudioCapturer**
 
-Audio capture in an extension is handled by `ExampleReplayKitAudioCapturer`, which consumes audio samples delivered by ReplayKit. Unfortunately, since we can't operate an Audio Unit graph in an extension, playback is not allowed.
+Audio capture in an extension is handled by `ExampleReplayKitAudioCapturer`, which consumes either application or microphone audio samples delivered by ReplayKit. Unfortunately, since we can't operate an Audio Unit graph in an extension, playback is not allowed.
 
 ### Setup
 
@@ -51,7 +51,7 @@ Tapping "Start Conference" begins capturing and sharing the screen from within t
 ### Betterments
 
 1. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
-2. Share the camera using ReplayKit (extension), or `TVICameraSource` (in-process).
+2. Share the camera using ReplayKit, or `TVICameraSource`.
 3. Resolve tearing issues when scrolling vertically.
 4. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
 
@@ -65,7 +65,22 @@ Memory usage in a ReplayKit Broadcast Extension is limited to 50 MB (as of iOS 1
 
 We have observed that using the H.264 video codec, and a Group Room incurs the lowest memory cost.
 
-**2. RPScreenRecorder debugging**
+**2. Application Audio Delay**
+
+An `RPSampleHandler` may receive both application and microphone audio samples. We have found that, while microphone samples are suitable for realtime usage, application audio samples are significantly delayed.
+
+The following table shows what you can expect in the field (mesaured on iOS 12.1.3, and an iPhone X).
+
+| Sample Type | Format                          | Sample Size (Frames) | Period (milliseconds) |
+|-------------|---------------------------------|----------------------|-----------------------|
+| Application | 1ch, 44,100 Hz, Big Endian    | 22,596               | 512.3                 |
+| Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
+
+**3. Application Audio & Copy Protection**
+
+It is not possible to capture application audio produced by AVPlayer, or by a video playing back in Safari even if Fairplay DRM is not used.
+
+**4. RPScreenRecorder Debugging**
 
 It is possible to get ReplayKit into an inconsistent state when setting breakpoints in `RPScreenRecorder` callbacks. If you notice that capture is starting but no audio/video samples are being produced, then you should reset Media Services on your device.
 
@@ -75,7 +90,7 @@ First, end your debugging session and then navigate to:
 
 <kbd><img width="400px" src="../images/quickstart/replaykit-reset-media-services.png"/></kbd>
 
-**3. Extension Debugging**
+**5. Extension Debugging**
 
 It is possible to get ReplayKit into an inconsistent state when debugging `RPBroadcastSampleHandler` callbacks. If this occurs you may notice the following error:
 

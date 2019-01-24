@@ -25,12 +25,12 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     // In order to save memory, we request that our source downscale its output.
     static let kDownScaledMaxWidthOrHeight = 640
 
-    // Which kind of audio samples we will capture. At the moment we can only capture one sample type at a time.
+    // Which kind of audio samples we will capture. We do not mix multiple types of samples together.
     static let kAudioSampleType = RPSampleBufferType.audioMic
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
-        TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer()
+        TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {

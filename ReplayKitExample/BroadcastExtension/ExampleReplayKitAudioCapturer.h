@@ -5,6 +5,7 @@
 //  Copyright © 2018 Twilio, Inc. All rights reserved.
 //
 
+#import <ReplayKit/ReplayKit.h>
 #import <TwilioVideo/TwilioVideo.h>
 
 dispatch_queue_t ExampleCoreAudioDeviceGetCurrentQueue(void);
@@ -24,5 +25,7 @@ typedef struct ExampleAudioContext {
 @interface ExampleReplayKitAudioCapturer : NSObject <TVIAudioDevice>
 
 - (instancetype)init;
+
+- (instancetype)initWithSampleType:(RPSampleBufferType)type NS_DESIGNATED_INITIALIZER;
 
 @end
