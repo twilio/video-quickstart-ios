@@ -77,7 +77,6 @@ static ExampleAudioContext *capturingContext;
         _capturingFormat = [[self class] activeCapturingFormat:_maxFramesPerBuffer];
     }
 
-    NSLog (@"Capturing Format = %@", _capturingFormat);
     return _capturingFormat;
 }
 
@@ -152,8 +151,6 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
 
     CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
     const AudioStreamBasicDescription *asbd = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
-
-    NSLog(@"%d audio frames.", audioBufferSizeInBytes / asbd->mBytesPerFrame);
 
     // Perform an endianess conversion, if needed. A TVIAudioDevice should deliver little endian samples.
     if (asbd->mFormatFlags & kAudioFormatFlagIsBigEndian) {
