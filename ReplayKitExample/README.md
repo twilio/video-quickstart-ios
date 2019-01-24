@@ -16,7 +16,7 @@ An iOS 12.0 extension is not limited to capturing the screen of a single applica
 
 **ReplayKitVideoSource**
 
-This `TVIVideoCapturer` produces `TVIVideoFrame`s from `CMSampleBuffer`s captured by ReplayKit. In order to reduce memory usage, this class may be configured (via `TVIVideoConstraints`) to downscale the captured content.
+This `TVIVideoSource` produces `TVIVideoFrame`s from `CMSampleBuffer`s captured by ReplayKit. In order to reduce memory usage, this class may be configured (via a format request) to downscale the captured content.
 
 **ExampleReplayKitAudioCapturer**
 
