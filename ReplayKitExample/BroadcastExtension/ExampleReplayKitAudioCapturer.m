@@ -154,7 +154,7 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
 
     // Perform an endianess conversion, if needed. A TVIAudioDevice should deliver little endian samples.
     if (asbd->mFormatFlags & kAudioFormatFlagIsBigEndian) {
-        for (int i=0; i<(audioBufferSizeInBytes-1); i += 2) {
+        for (int i = 0; i < (audioBufferSizeInBytes - 1); i += 2) {
             int8_t temp = audioBuffer[i];
             audioBuffer[i] = audioBuffer[i+1];
             audioBuffer[i+1] = temp;
