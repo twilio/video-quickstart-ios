@@ -300,6 +300,7 @@ class ViewController: UIViewController {
     }
     
     func logMessage(messageText: String) {
+        NSLog(messageText)
         messageLabel.text = messageText
     }
 }
@@ -327,7 +328,7 @@ extension ViewController : TVIRoomDelegate {
     }
     
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
-        logMessage(messageText: "Disconncted from room \(room.name), error = \(String(describing: error))")
+        logMessage(messageText: "Disconnected from room \(room.name), error = \(String(describing: error))")
         
         self.cleanupRemoteParticipant()
         self.room = nil
@@ -340,6 +341,14 @@ extension ViewController : TVIRoomDelegate {
         self.room = nil
         
         self.showRoomUI(inRoom: false)
+    }
+
+    func room(_ room: TVIRoom, isReconnectingWithError error: Error?) {
+        logMessage(messageText: "Reconnecting to room \(room.name), error = \(String(describing: error))")
+    }
+
+    func didReconnect(to room: TVIRoom) {
+        logMessage(messageText: "Reconnected to room \(room.name)")
     }
     
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {

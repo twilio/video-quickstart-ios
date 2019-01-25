@@ -241,6 +241,14 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         }
     }
 
+    func room(_ room: TVIRoom, isReconnectingWithError error: Error?) {
+        print("Reconnecting to room \(room.name), error = \(String(describing: error))")
+    }
+
+    func didReconnect(to room: TVIRoom) {
+        print("Reconnected to room \(room.name)")
+    }
+
     //MARK: RPScreenRecorderDelegate
     func screenRecorderDidChangeAvailability(_ screenRecorder: RPScreenRecorder) {
         // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
