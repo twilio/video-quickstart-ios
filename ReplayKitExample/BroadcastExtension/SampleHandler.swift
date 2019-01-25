@@ -139,6 +139,14 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         }
     }
 
+    func room(_ room: TVIRoom, isReconnectingWithError error: Error?) {
+        print("Reconnecting to room \(room.name), error = \(String(describing: error))")
+    }
+
+    func didReconnect(to room: TVIRoom) {
+        print("Reconnected to room \(room.name)")
+    }
+
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
         print("participant: ", participant.identity, " didConnect")
     }
