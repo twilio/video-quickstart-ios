@@ -13,6 +13,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     // Video SDK components
     public var room: TVIRoom?
+    var audioTrack: TVILocalAudioTrack?
     var videoSource: ReplayKitVideoSource?
     var screenTrack: TVILocalVideoTrack?
 
@@ -24,9 +25,12 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     // In order to save memory, we request that our source downscale its output.
     static let kDownScaledMaxWidthOrHeight = 640
 
+    // Which kind of audio samples we will capture. We do not mix multiple types of samples together.
+    static let kAudioSampleType = RPSampleBufferType.audioMic
+
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
-        TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer()
+        TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
@@ -59,12 +63,12 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
                                          name: "Screen")
 
         videoSource!.requestOutputFormat(outputFormat)
+        audioTrack = TVILocalAudioTrack()
 
-        let localAudioTrack = TVILocalAudioTrack()
         let connectOptions = TVIConnectOptions(token: accessToken) { (builder) in
 
             // Use the local media that we prepared earlier.
-            builder.audioTracks = [localAudioTrack!]
+            builder.audioTracks = [self.audioTrack!]
             builder.videoTracks = [self.screenTrack!]
 
             // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
@@ -88,19 +92,20 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     override func broadcastPaused() {
         // User has requested to pause the broadcast. Samples will stop being delivered.
-        // TODO: Signal audio as well.
+        self.audioTrack?.isEnabled = false
         self.screenTrack?.isEnabled = false
     }
 
     override func broadcastResumed() {
         // User has requested to resume the broadcast. Samples delivery will resume.
-        // TODO: Signal audio as well
+        self.audioTrack?.isEnabled = true
         self.screenTrack?.isEnabled = true
     }
 
     override func broadcastFinished() {
         // User has requested to finish the broadcast.
         self.room?.disconnect()
+        self.audioTrack = nil
         self.videoSource = nil
         self.screenTrack = nil
     }
@@ -110,14 +115,17 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         case RPSampleBufferType.video:
             videoSource?.processVideoSampleBuffer(sampleBuffer)
             break
+
         case RPSampleBufferType.audioApp:
-            /*
-             * TODO: We do not capture app audio at the moment. For some broadcast use cases it may make sense to capture both the
-             * application and microphone audio. Doing this requires down-mixing the resulting streams.
-             */
+            if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioApp) {
+                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+            }
             break
+
         case RPSampleBufferType.audioMic:
-            ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+            if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioMic) {
+                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+            }
             break
         }
     }
