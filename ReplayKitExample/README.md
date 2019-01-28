@@ -78,7 +78,7 @@ The following table shows what you can expect in the field (mesaured on iOS 12.1
 
 **3. Application Audio & Copy Protection**
 
-It is not possible to capture application audio produced by AVPlayer, or by a video playing back in Safari even if Fairplay DRM is not used.
+It is not possible to capture application audio produced by AVPlayer, by Safari video playback (even if no Fairplay DRM is used), or by the Music app.
 
 **4. RPScreenRecorder Debugging**
 
