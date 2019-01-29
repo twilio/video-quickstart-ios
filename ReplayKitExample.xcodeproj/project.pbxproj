@@ -1,0 +1,707 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4B20000520E9CB9C00FE9F2C /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B20FFFA20E9CB9C00FE9F2C /* ReplayKit.framework */; };
+		4B20000720E9CB9C00FE9F2C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B20000620E9CB9C00FE9F2C /* UIKit.framework */; };
+		4B20000A20E9CB9C00FE9F2C /* BroadcastSetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B20000920E9CB9C00FE9F2C /* BroadcastSetupViewController.swift */; };
+		4B20000E20E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4B20000420E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4B20001120E9CB9C00FE9F2C /* BroadcastExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4B20FFF820E9CB9C00FE9F2C /* BroadcastExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4B20FFE320E9CB8500FE9F2C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B20FFE220E9CB8500FE9F2C /* AppDelegate.swift */; };
+		4B20FFE520E9CB8500FE9F2C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B20FFE420E9CB8500FE9F2C /* ViewController.swift */; };
+		4B20FFE820E9CB8500FE9F2C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B20FFE620E9CB8500FE9F2C /* Main.storyboard */; };
+		4B20FFEA20E9CB8600FE9F2C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B20FFE920E9CB8600FE9F2C /* Assets.xcassets */; };
+		4B20FFED20E9CB8600FE9F2C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B20FFEB20E9CB8600FE9F2C /* LaunchScreen.storyboard */; };
+		4B20FFFB20E9CB9C00FE9F2C /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B20FFFA20E9CB9C00FE9F2C /* ReplayKit.framework */; };
+		4B20FFFE20E9CB9C00FE9F2C /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B20FFFD20E9CB9C00FE9F2C /* SampleHandler.swift */; };
+		4BB0385920EB45950095CDA8 /* ExampleReplayKitAudioCapturer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BB0385820EB45940095CDA8 /* ExampleReplayKitAudioCapturer.m */; };
+		4BB0385C20EB45F50095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
+		4BB0385E20EB45FB0095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
+		4BB0386020EB46040095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
+		4BEA5E0820E9DB5900643AF1 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */; };
+		8A390D932161D4430013D6E5 /* ReplayKitVideoSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */; };
+		8A437271216350CA00436765 /* ReplayKitVideoSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */; };
+		8A50FEFE215DDC6100297C7A /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */; };
+		8A50FF00215DDC6100297C7A /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
+		8A50FF03215DDC6100297C7A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
+		8A59F6A3216B08F8003CA9A4 /* ExampleReplayKitAudioCapturer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BB0385820EB45940095CDA8 /* ExampleReplayKitAudioCapturer.m */; };
+		8ADE7A71215DE2D40092D17F /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */; };
+		8ADE7A72215DE2D70092D17F /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
+		8ADE7A74215DE3070092D17F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
+		8ADE7A75215DE3220092D17F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4B20000C20E9CB9C00FE9F2C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4B20FFD720E9CB8500FE9F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4B20000320E9CB9C00FE9F2C;
+			remoteInfo = BroadcastExtensionSetupUI;
+		};
+		4B20000F20E9CB9C00FE9F2C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4B20FFD720E9CB8500FE9F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4B20FFF720E9CB9C00FE9F2C;
+			remoteInfo = BroadcastExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4B20001820E9CB9C00FE9F2C /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4B20001120E9CB9C00FE9F2C /* BroadcastExtension.appex in Embed App Extensions */,
+				4B20000E20E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		4B20000420E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BroadcastExtensionSetupUI.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B20000620E9CB9C00FE9F2C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		4B20000920E9CB9C00FE9F2C /* BroadcastSetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastSetupViewController.swift; sourceTree = "<group>"; };
+		4B20000B20E9CB9C00FE9F2C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4B20FFDF20E9CB8500FE9F2C /* ReplayKitExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplayKitExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B20FFE220E9CB8500FE9F2C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		4B20FFE420E9CB8500FE9F2C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		4B20FFE720E9CB8500FE9F2C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		4B20FFE920E9CB8600FE9F2C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		4B20FFEC20E9CB8600FE9F2C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		4B20FFEE20E9CB8600FE9F2C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4B20FFF820E9CB9C00FE9F2C /* BroadcastExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BroadcastExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B20FFFA20E9CB9C00FE9F2C /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
+		4B20FFFD20E9CB9C00FE9F2C /* SampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
+		4B20FFFF20E9CB9C00FE9F2C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4BB0385720EB45940095CDA8 /* ExampleReplayKitAudioCapturer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExampleReplayKitAudioCapturer.h; sourceTree = "<group>"; };
+		4BB0385820EB45940095CDA8 /* ExampleReplayKitAudioCapturer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExampleReplayKitAudioCapturer.m; sourceTree = "<group>"; };
+		4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		4BB0385D20EB45FB0095CDA8 /* BroadcastExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BroadcastExtension.entitlements; sourceTree = "<group>"; };
+		4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainInterface.storyboard; sourceTree = "<group>"; };
+		8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayKitVideoSource.swift; sourceTree = "<group>"; };
+		8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		8A50FEFC215DDC6100297C7A /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		8A50FEFD215DDC6100297C7A /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		8A92FE2F2168006000DDD912 /* BroadcastExtension-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BroadcastExtension-Bridging-Header.h"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4B20000120E9CB9C00FE9F2C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B20000520E9CB9C00FE9F2C /* ReplayKit.framework in Frameworks */,
+				4B20000720E9CB9C00FE9F2C /* UIKit.framework in Frameworks */,
+				4BB0385C20EB45F50095CDA8 /* AudioToolbox.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4B20FFDC20E9CB8500FE9F2C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4BB0386020EB46040095CDA8 /* AudioToolbox.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4B20FFF520E9CB9C00FE9F2C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B20FFFB20E9CB9C00FE9F2C /* ReplayKit.framework in Frameworks */,
+				4BB0385E20EB45FB0095CDA8 /* AudioToolbox.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4B20000820E9CB9C00FE9F2C /* BroadcastExtensionSetupUI */ = {
+			isa = PBXGroup;
+			children = (
+				4B20000920E9CB9C00FE9F2C /* BroadcastSetupViewController.swift */,
+				4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */,
+				4B20000B20E9CB9C00FE9F2C /* Info.plist */,
+			);
+			name = BroadcastExtensionSetupUI;
+			path = ReplayKitExample/BroadcastExtensionSetupUI;
+			sourceTree = "<group>";
+		};
+		4B20FFD620E9CB8500FE9F2C = {
+			isa = PBXGroup;
+			children = (
+				8A50FEFA215DDC6100297C7A /* Utils */,
+				4B20FFE120E9CB8500FE9F2C /* ReplayKitExample */,
+				4B20FFFC20E9CB9C00FE9F2C /* BroadcastExtension */,
+				4B20000820E9CB9C00FE9F2C /* BroadcastExtensionSetupUI */,
+				4B20FFF920E9CB9C00FE9F2C /* Frameworks */,
+				4B20FFE020E9CB8500FE9F2C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4B20FFE020E9CB8500FE9F2C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4B20FFDF20E9CB8500FE9F2C /* ReplayKitExample.app */,
+				4B20FFF820E9CB9C00FE9F2C /* BroadcastExtension.appex */,
+				4B20000420E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4B20FFE120E9CB8500FE9F2C /* ReplayKitExample */ = {
+			isa = PBXGroup;
+			children = (
+				4B20FFE220E9CB8500FE9F2C /* AppDelegate.swift */,
+				8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */,
+				4B20FFE420E9CB8500FE9F2C /* ViewController.swift */,
+				4B20FFE620E9CB8500FE9F2C /* Main.storyboard */,
+				4B20FFE920E9CB8600FE9F2C /* Assets.xcassets */,
+				4B20FFEB20E9CB8600FE9F2C /* LaunchScreen.storyboard */,
+				4B20FFEE20E9CB8600FE9F2C /* Info.plist */,
+			);
+			name = ReplayKitExample;
+			path = ReplayKitExample/ReplayKitExample;
+			sourceTree = "<group>";
+		};
+		4B20FFF920E9CB9C00FE9F2C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */,
+				4B20FFFA20E9CB9C00FE9F2C /* ReplayKit.framework */,
+				4B20000620E9CB9C00FE9F2C /* UIKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4B20FFFC20E9CB9C00FE9F2C /* BroadcastExtension */ = {
+			isa = PBXGroup;
+			children = (
+				8A92FE2F2168006000DDD912 /* BroadcastExtension-Bridging-Header.h */,
+				4BB0385D20EB45FB0095CDA8 /* BroadcastExtension.entitlements */,
+				4B20FFFD20E9CB9C00FE9F2C /* SampleHandler.swift */,
+				4BB0385720EB45940095CDA8 /* ExampleReplayKitAudioCapturer.h */,
+				4BB0385820EB45940095CDA8 /* ExampleReplayKitAudioCapturer.m */,
+				4B20FFFF20E9CB9C00FE9F2C /* Info.plist */,
+			);
+			name = BroadcastExtension;
+			path = ReplayKitExample/BroadcastExtension;
+			sourceTree = "<group>";
+		};
+		8A50FEFA215DDC6100297C7A /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */,
+				8A50FEFC215DDC6100297C7A /* Settings.swift */,
+				8A50FEFD215DDC6100297C7A /* Utils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4B20000320E9CB9C00FE9F2C /* BroadcastExtensionSetupUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4B20001220E9CB9C00FE9F2C /* Build configuration list for PBXNativeTarget "BroadcastExtensionSetupUI" */;
+			buildPhases = (
+				4B20000020E9CB9C00FE9F2C /* Sources */,
+				4B20000120E9CB9C00FE9F2C /* Frameworks */,
+				4B20000220E9CB9C00FE9F2C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BroadcastExtensionSetupUI;
+			productName = BroadcastExtensionSetupUI;
+			productReference = 4B20000420E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		4B20FFDE20E9CB8500FE9F2C /* ReplayKitExample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4B20FFF120E9CB8600FE9F2C /* Build configuration list for PBXNativeTarget "ReplayKitExample" */;
+			buildPhases = (
+				4B20FFDB20E9CB8500FE9F2C /* Sources */,
+				4B20FFDC20E9CB8500FE9F2C /* Frameworks */,
+				4B20FFDD20E9CB8500FE9F2C /* Resources */,
+				4B20001820E9CB9C00FE9F2C /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4B20000D20E9CB9C00FE9F2C /* PBXTargetDependency */,
+				4B20001020E9CB9C00FE9F2C /* PBXTargetDependency */,
+			);
+			name = ReplayKitExample;
+			productName = ReplayKitExample;
+			productReference = 4B20FFDF20E9CB8500FE9F2C /* ReplayKitExample.app */;
+			productType = "com.apple.product-type.application";
+		};
+		4B20FFF720E9CB9C00FE9F2C /* BroadcastExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4B20001520E9CB9C00FE9F2C /* Build configuration list for PBXNativeTarget "BroadcastExtension" */;
+			buildPhases = (
+				4B20FFF420E9CB9C00FE9F2C /* Sources */,
+				4B20FFF520E9CB9C00FE9F2C /* Frameworks */,
+				4B20FFF620E9CB9C00FE9F2C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BroadcastExtension;
+			productName = BroadcastExtension;
+			productReference = 4B20FFF820E9CB9C00FE9F2C /* BroadcastExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4B20FFD720E9CB8500FE9F2C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1000;
+				LastUpgradeCheck = 1000;
+				ORGANIZATIONNAME = Twilio;
+				TargetAttributes = {
+					4B20000320E9CB9C00FE9F2C = {
+						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1000;
+						SystemCapabilities = {
+							com.apple.InterAppAudio = {
+								enabled = 1;
+							};
+						};
+					};
+					4B20FFDE20E9CB8500FE9F2C = {
+						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1000;
+						SystemCapabilities = {
+							com.apple.InterAppAudio = {
+								enabled = 1;
+							};
+						};
+					};
+					4B20FFF720E9CB9C00FE9F2C = {
+						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1000;
+						SystemCapabilities = {
+							com.apple.InterAppAudio = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = 4B20FFDA20E9CB8500FE9F2C /* Build configuration list for PBXProject "ReplayKitExample" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4B20FFD620E9CB8500FE9F2C;
+			productRefGroup = 4B20FFE020E9CB8500FE9F2C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4B20FFDE20E9CB8500FE9F2C /* ReplayKitExample */,
+				4B20FFF720E9CB9C00FE9F2C /* BroadcastExtension */,
+				4B20000320E9CB9C00FE9F2C /* BroadcastExtensionSetupUI */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4B20000220E9CB9C00FE9F2C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4BEA5E0820E9DB5900643AF1 /* MainInterface.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4B20FFDD20E9CB8500FE9F2C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B20FFED20E9CB8600FE9F2C /* LaunchScreen.storyboard in Resources */,
+				4B20FFEA20E9CB8600FE9F2C /* Assets.xcassets in Resources */,
+				4B20FFE820E9CB8500FE9F2C /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4B20FFF620E9CB9C00FE9F2C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4B20000020E9CB9C00FE9F2C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B20000A20E9CB9C00FE9F2C /* BroadcastSetupViewController.swift in Sources */,
+				8A50FF03215DDC6100297C7A /* Utils.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4B20FFDB20E9CB8500FE9F2C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8A59F6A3216B08F8003CA9A4 /* ExampleReplayKitAudioCapturer.m in Sources */,
+				8A390D932161D4430013D6E5 /* ReplayKitVideoSource.swift in Sources */,
+				8ADE7A75215DE3220092D17F /* Utils.swift in Sources */,
+				4B20FFE520E9CB8500FE9F2C /* ViewController.swift in Sources */,
+				4B20FFE320E9CB8500FE9F2C /* AppDelegate.swift in Sources */,
+				8A50FF00215DDC6100297C7A /* Settings.swift in Sources */,
+				8A50FEFE215DDC6100297C7A /* SettingsTableViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4B20FFF420E9CB9C00FE9F2C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8A437271216350CA00436765 /* ReplayKitVideoSource.swift in Sources */,
+				8ADE7A74215DE3070092D17F /* Utils.swift in Sources */,
+				4BB0385920EB45950095CDA8 /* ExampleReplayKitAudioCapturer.m in Sources */,
+				4B20FFFE20E9CB9C00FE9F2C /* SampleHandler.swift in Sources */,
+				8ADE7A72215DE2D70092D17F /* Settings.swift in Sources */,
+				8ADE7A71215DE2D40092D17F /* SettingsTableViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4B20000D20E9CB9C00FE9F2C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4B20000320E9CB9C00FE9F2C /* BroadcastExtensionSetupUI */;
+			targetProxy = 4B20000C20E9CB9C00FE9F2C /* PBXContainerItemProxy */;
+		};
+		4B20001020E9CB9C00FE9F2C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4B20FFF720E9CB9C00FE9F2C /* BroadcastExtension */;
+			targetProxy = 4B20000F20E9CB9C00FE9F2C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		4B20FFE620E9CB8500FE9F2C /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4B20FFE720E9CB8500FE9F2C /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		4B20FFEB20E9CB8600FE9F2C /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4B20FFEC20E9CB8600FE9F2C /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		4B20001320E9CB9C00FE9F2C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ReplayKitExample/BroadcastExtensionSetupUI/BroadcastExtensionSetupUI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
+				INFOPLIST_FILE = ReplayKitExample/BroadcastExtensionSetupUI/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4B20001420E9CB9C00FE9F2C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ReplayKitExample/BroadcastExtensionSetupUI/BroadcastExtensionSetupUI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
+				INFOPLIST_FILE = ReplayKitExample/BroadcastExtensionSetupUI/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4B20001620E9CB9C00FE9F2C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
+				INFOPLIST_FILE = ReplayKitExample/BroadcastExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4B20001720E9CB9C00FE9F2C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
+				INFOPLIST_FILE = ReplayKitExample/BroadcastExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample.BroadcastVideoExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4B20FFEF20E9CB8600FE9F2C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.2;
+			};
+			name = Debug;
+		};
+		4B20FFF020E9CB8600FE9F2C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 4.2;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		4B20FFF220E9CB8600FE9F2C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
+				INFOPLIST_FILE = ReplayKitExample/ReplayKitExample/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4B20FFF320E9CB8600FE9F2C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SX5J6BN2KX;
+				INFOPLIST_FILE = ReplayKitExample/ReplayKitExample/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4B20001220E9CB9C00FE9F2C /* Build configuration list for PBXNativeTarget "BroadcastExtensionSetupUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B20001320E9CB9C00FE9F2C /* Debug */,
+				4B20001420E9CB9C00FE9F2C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4B20001520E9CB9C00FE9F2C /* Build configuration list for PBXNativeTarget "BroadcastExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B20001620E9CB9C00FE9F2C /* Debug */,
+				4B20001720E9CB9C00FE9F2C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4B20FFDA20E9CB8500FE9F2C /* Build configuration list for PBXProject "ReplayKitExample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B20FFEF20E9CB8600FE9F2C /* Debug */,
+				4B20FFF020E9CB8600FE9F2C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4B20FFF120E9CB8600FE9F2C /* Build configuration list for PBXNativeTarget "ReplayKitExample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B20FFF220E9CB8600FE9F2C /* Debug */,
+				4B20FFF320E9CB8600FE9F2C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 4B20FFD720E9CB8500FE9F2C /* Project object */;
+}

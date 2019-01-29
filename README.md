@@ -1,10 +1,10 @@
 
-[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios-v2-getting-started#1-get-the-programmable-video-ios-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/2.3.0-preview1/index.html)
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 
 # Twilio Video Quickstart for Swift
 
-> NOTE: These sample applications use the Twilio Video 2.3.0-preview APIs. For examples using our 2.2 APIs, please see the [master](https://github.com/twilio/video-quickstart-swift/tree/master) branch, and for our 1.x APIs see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
+> NOTE: These sample applications use the Twilio Video 2.x APIs. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
 
 Get started with Video on iOS:
 
@@ -18,7 +18,7 @@ Get started with Video on iOS:
 
 ## Setup 
 
-This project uses Apple's Swift 3.2 programming language for iOS. 
+This project uses Apple's Swift 4.2 programming language for iOS. 
 
 If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 
@@ -83,7 +83,8 @@ You will also find additional examples that provide more advanced use cases of t
 - [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `TVIRoom` via a custom `TVIVideoCapturer` source. This app requires Xcode 9 & iOS 11.
 - [CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit](https://developer.apple.com/reference/callkit) framework.
 - [DataTrack](DataTrackExample) - Shows how to use the Data Track APIs for interactive drawing.
-- [Screen Capturer](ScreenCapturerExample) - Shows how to use `TVIScreenCapturer` to capture the contents of a `UIView`, and how a custom `TVIVideoCapturer` can be implemented to do the same.
+- [ReplayKit](ReplayKitExample) - Shows how to use ReplayKit to share the screen, and microphone via `TVIVideoCapturer` and `TVIAudioDevice`.
+- [Screen Capturer](ScreenCapturerExample) - Use a custom `TVIVideoSource` to capture the contents of a `WKWebView`, and fallback to `TVIScreenCapturer` on older versions of iOS.
 
 ## Setup an Access Token Server
 
@@ -121,7 +122,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/video/ios-v2-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/2.3.0-preview1/index.html)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 
 ## Issues and Support
 

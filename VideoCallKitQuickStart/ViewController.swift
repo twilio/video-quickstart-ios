@@ -27,7 +27,7 @@ class ViewController: UIViewController {
      * We will create an audio device and manage it's lifecycle in response to CallKit events.
      */
     var audioDevice: TVIDefaultAudioDevice = TVIDefaultAudioDevice()
-    var camera: TVICameraCapturer?
+    var camera: TVICameraSource?
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
     var remoteParticipant: TVIRemoteParticipant?
@@ -37,6 +37,7 @@ class ViewController: UIViewController {
     let callKitProvider: CXProvider
     let callKitCallController: CXCallController
     var callKitCompletionHandler: ((Bool)->Swift.Void?)? = nil
+    var userInitiatedDisconnect: Bool = false
 
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var connectButton: UIButton!
@@ -57,7 +58,7 @@ class ViewController: UIViewController {
         configuration.maximumCallsPerCallGroup = 1
         configuration.supportsVideo = true
         if let callKitIcon = UIImage(named: "iconMask80") {
-            configuration.iconTemplateImageData = UIImagePNGRepresentation(callKitIcon)
+            configuration.iconTemplateImageData = callKitIcon.pngData()
         }
 
         callKitProvider = CXProvider(configuration: configuration)
@@ -102,6 +103,10 @@ class ViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
         self.view.addGestureRecognizer(tap)
     }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return self.room != nil
+    }
     
     func setupRemoteVideoView() {
         // Creating `TVIVideoView` programmatically
@@ -114,34 +119,34 @@ class ViewController: UIViewController {
         self.remoteView!.contentMode = .scaleAspectFit;
         
         let centerX = NSLayoutConstraint(item: self.remoteView!,
-                                         attribute: NSLayoutAttribute.centerX,
-                                         relatedBy: NSLayoutRelation.equal,
+                                         attribute: NSLayoutConstraint.Attribute.centerX,
+                                         relatedBy: NSLayoutConstraint.Relation.equal,
                                          toItem: self.view,
-                                         attribute: NSLayoutAttribute.centerX,
+                                         attribute: NSLayoutConstraint.Attribute.centerX,
                                          multiplier: 1,
                                          constant: 0);
         self.view.addConstraint(centerX)
         let centerY = NSLayoutConstraint(item: self.remoteView!,
-                                         attribute: NSLayoutAttribute.centerY,
-                                         relatedBy: NSLayoutRelation.equal,
+                                         attribute: NSLayoutConstraint.Attribute.centerY,
+                                         relatedBy: NSLayoutConstraint.Relation.equal,
                                          toItem: self.view,
-                                         attribute: NSLayoutAttribute.centerY,
+                                         attribute: NSLayoutConstraint.Attribute.centerY,
                                          multiplier: 1,
                                          constant: 0);
         self.view.addConstraint(centerY)
         let width = NSLayoutConstraint(item: self.remoteView!,
-                                       attribute: NSLayoutAttribute.width,
-                                       relatedBy: NSLayoutRelation.equal,
+                                       attribute: NSLayoutConstraint.Attribute.width,
+                                       relatedBy: NSLayoutConstraint.Relation.equal,
                                        toItem: self.view,
-                                       attribute: NSLayoutAttribute.width,
+                                       attribute: NSLayoutConstraint.Attribute.width,
                                        multiplier: 1,
                                        constant: 0);
         self.view.addConstraint(width)
         let height = NSLayoutConstraint(item: self.remoteView!,
-                                        attribute: NSLayoutAttribute.height,
-                                        relatedBy: NSLayoutRelation.equal,
+                                        attribute: NSLayoutConstraint.Attribute.height,
+                                        relatedBy: NSLayoutConstraint.Relation.equal,
                                         toItem: self.view,
-                                        attribute: NSLayoutAttribute.height,
+                                        attribute: NSLayoutConstraint.Attribute.height,
                                         multiplier: 1,
                                         constant: 0);
         self.view.addConstraint(height)
@@ -156,16 +161,33 @@ class ViewController: UIViewController {
     @IBAction func disconnect(sender: AnyObject) {
         if let room = room, let uuid = room.uuid {
             logMessage(messageText: "Attempting to disconnect from room \(room.name)")
+            userInitiatedDisconnect = true
             performEndCallAction(uuid: uuid)
         }
     }
     
     @IBAction func toggleMic(sender: AnyObject) {
-        if (self.localAudioTrack != nil) {
-            self.localAudioTrack?.isEnabled = !(self.localAudioTrack?.isEnabled)!
-            
+        if let room = room, let uuid = room.uuid, let localAudioTrack = self.localAudioTrack {
+            let isMuted = localAudioTrack.isEnabled
+            let muteAction = CXSetMutedCallAction(call: uuid, muted: isMuted)
+            let transaction = CXTransaction(action: muteAction)
+
+            callKitCallController.request(transaction)  { error in
+                if let error = error {
+                    self.logMessage(messageText: "SetMutedCallAction transaction request failed: \(error.localizedDescription)")
+                    return
+                }
+                self.logMessage(messageText: "SetMutedCallAction transaction request successful")
+            }
+        }
+    }
+
+    func muteAudio(isMuted: Bool) {
+        if let localAudioTrack = self.localAudioTrack {
+            localAudioTrack.isEnabled = !isMuted
+
             // Update the button title
-            if (self.localAudioTrack?.isEnabled == true) {
+            if (!isMuted) {
                 self.micButton.setTitle("Mute", for: .normal)
             } else {
                 self.micButton.setTitle("Unmute", for: .normal)
@@ -179,28 +201,56 @@ class ViewController: UIViewController {
             return
         }
 
-        // Preview our local camera track in the local video preview view.
-        camera = TVICameraCapturer(source: .frontCamera, delegate: self)
-        localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
-        if (localVideoTrack == nil) {
-            logMessage(messageText: "Failed to create video track")
-        } else {
+        let frontCamera = TVICameraSource.captureDevice(for: .front)
+        let backCamera = TVICameraSource.captureDevice(for: .back)
+
+        if (frontCamera != nil || backCamera != nil) {
+            // Preview our local camera track in the local video preview view.
+            camera = TVICameraSource(delegate: self)
+            localVideoTrack = TVILocalVideoTrack.init(source: camera!, enabled: true, name: "Camera")
+
             // Add renderer to video track for local preview
             localVideoTrack!.addRenderer(self.previewView)
-
             logMessage(messageText: "Video track created")
 
-            // We will flip camera on tap.
-            let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
-            self.previewView.addGestureRecognizer(tap)
+            if (frontCamera != nil && backCamera != nil) {
+                // We will flip camera on tap.
+                let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
+                self.previewView.addGestureRecognizer(tap)
+            }
+
+            camera!.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
+                if let error = error {
+                    self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                } else {
+                    self.previewView.shouldMirror = (captureDevice.position == .front)
+                }
+            }
+        }
+        else {
+            self.logMessage(messageText:"No front or back capture device found!")
         }
     }
 
-    func flipCamera() {
-        if (self.camera?.source == .frontCamera) {
-            self.camera?.selectSource(.backCameraWide)
-        } else {
-            self.camera?.selectSource(.frontCamera)
+    @objc func flipCamera() {
+        var newDevice: AVCaptureDevice?
+
+        if let camera = self.camera, let captureDevice = camera.device {
+            if captureDevice.position == .front {
+                newDevice = TVICameraSource.captureDevice(for: .back)
+            } else {
+                newDevice = TVICameraSource.captureDevice(for: .front)
+            }
+
+            if let newDevice = newDevice {
+                camera.select(newDevice) { (captureDevice, videoFormat, error) in
+                    if let error = error {
+                        self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                    } else {
+                        self.previewView.shouldMirror = (captureDevice.position == .front)
+                    }
+                }
+            }
         }
     }
 
@@ -233,9 +283,14 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = !inRoom
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
         UIApplication.shared.isIdleTimerDisabled = inRoom
+
+        // Show / hide the automatic home indicator on modern iPhones.
+        if #available(iOS 11.0, *) {
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
     }
     
-    func dismissKeyboard() {
+    @objc func dismissKeyboard() {
         if (self.roomTextField.isFirstResponder) {
             self.roomTextField.resignFirstResponder()
         }
@@ -300,11 +355,22 @@ extension ViewController : TVIRoomDelegate {
     
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
         logMessage(messageText: "Disconncted from room \(room.name), error = \(String(describing: error))")
-        
+
+        if !self.userInitiatedDisconnect, let uuid = room.uuid, let error = error {
+            var reason = CXCallEndedReason.remoteEnded
+
+            if (error as NSError).code != TVIError.roomRoomCompletedError.rawValue {
+                reason = .failed
+            }
+
+            self.callKitProvider.reportCall(with: uuid, endedAt: nil, reason: reason)
+        }
+
         self.cleanupRemoteParticipant()
         self.room = nil
         self.showRoomUI(inRoom: false)
         self.callKitCompletionHandler = nil
+        self.userInitiatedDisconnect = false
     }
     
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
@@ -457,9 +523,9 @@ extension ViewController : TVIVideoViewDelegate {
     }
 }
 
-// MARK: TVICameraCapturerDelegate
-extension ViewController : TVICameraCapturerDelegate {
-    func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
-        self.previewView.shouldMirror = (source == .frontCamera)
+// MARK: TVICameraSourceDelegate
+extension ViewController : TVICameraSourceDelegate {
+    func cameraSource(_ source: TVICameraSource, didFailWithError error: Error) {
+        logMessage(messageText: "Camera source failed with error: \(error.localizedDescription)")
     }
 }

@@ -14,7 +14,8 @@
 @property (nonatomic, strong) AVAssetWriter *audioRecorder;
 @property (nonatomic, strong) AVAssetWriterInput *audioRecorderInput;
 @property (nonatomic, assign) CMTime recorderTimestamp;
-@property (nonatomic, assign) int numberOfChannels;
+@property (nonatomic, assign) UInt32 numberOfChannels;
+@property (nonatomic, assign) Float64 sampleRate;
 
 @property (nonatomic, weak) TVIAudioTrack *audioTrack;
 
@@ -23,22 +24,25 @@
 @implementation ExampleAudioRecorder
 
 - (instancetype)initWithAudioTrack:(TVIAudioTrack *)audioTrack identifier:(NSString *)identifier {
+    NSParameterAssert(audioTrack);
+    NSParameterAssert(identifier);
+
     self = [super init];
     if (self) {
         _recorderTimestamp = kCMTimeInvalid;
+        _audioTrack = audioTrack;
+        _identifier = identifier;
 
-        [self startRecordingAudioTrack:audioTrack withIdentifier:identifier];
+        // We will defer recording until the first audio sample is available.
+        [_audioTrack addSink:self];
     }
     return self;
 }
 
-- (void)startRecordingAudioTrack:(TVIAudioTrack *)audioTrack withIdentifier:(NSString *)identifier {
-    NSParameterAssert(audioTrack);
-    NSParameterAssert(identifier);
-
+- (void)startRecordingWithTimestamp:(CMTime)timestamp basicDescription:(const AudioStreamBasicDescription *)basicDescription {
     // Setup Recorder
     NSError *error = nil;
-    _audioRecorder = [[AVAssetWriter alloc] initWithURL:[[self class] recordingURLWithIdentifier:identifier]
+    _audioRecorder = [[AVAssetWriter alloc] initWithURL:[[self class] recordingURLWithIdentifier:_identifier]
                                                fileType:AVFileTypeWAVE
                                                   error:&error];
 
@@ -47,15 +51,16 @@
         return;
     }
 
-    // The iOS audio device captures in mono.
-    // In WebRTC 67 the channel count on the receiver side equals the sender side.
-    _numberOfChannels = 1;
+    _numberOfChannels = basicDescription->mChannelsPerFrame;
+    _sampleRate = basicDescription->mSampleRate;
 
-    // Assume that TVIAudioTrack will produce interleaved LPCM @ 16-bit / 48khz.
-    // If the sample rate differs AVAssetWriterInput will upsample to 48 khz.
+    NSLog(@"Recorder input is %d %@, %f Hz.",
+          _numberOfChannels, _numberOfChannels == 1 ? @"channel" : @"channels", _sampleRate);
+
+    // Assume that TVIAudioTrack will produce interleaved stereo LPCM @ 16-bit / 48khz
     NSDictionary<NSString *, id> *outputSettings = @{AVFormatIDKey : @(kAudioFormatLinearPCM),
-                                                     AVSampleRateKey : @(48000),
-                                                     AVNumberOfChannelsKey : @(self.numberOfChannels),
+                                                     AVSampleRateKey : @(_sampleRate),
+                                                     AVNumberOfChannelsKey : @(_numberOfChannels),
                                                      AVLinearPCMBitDepthKey : @(16),
                                                      AVLinearPCMIsFloatKey : @(NO),
                                                      AVLinearPCMIsBigEndianKey : @(NO),
@@ -70,12 +75,14 @@
 
         if (success) {
             NSLog(@"Started recording audio track to: %@", _audioRecorder.outputURL);
-            [audioTrack addSink:self];
-            _audioTrack = audioTrack;
-            _identifier = identifier;
+            [self.audioRecorder startSessionAtSourceTime:timestamp];
+            self.recorderTimestamp = timestamp;
         } else {
             NSLog(@"Couldn't start the AVAssetWriter: %@ error: %@", _audioRecorder, _audioRecorder.error);
         }
+    } else {
+        _audioRecorder = nil;
+        _audioRecorderInput = nil;
     }
 
     // This example does not support backgrounding. Now is a good point to consider kicking off a background
@@ -103,6 +110,31 @@
     }];
 }
 
+- (BOOL)detectSilence:(CMSampleBufferRef)audioSample {
+    // Get the audio samples. We count a corrupted buffer as silence.
+    CMBlockBufferRef blockBuffer = CMSampleBufferGetDataBuffer(audioSample);
+    size_t inputBytes = 0;
+    char *inputSamples = NULL;
+    OSStatus status = CMBlockBufferGetDataPointer(blockBuffer, 0, NULL, &inputBytes, &inputSamples);
+
+    if (status != kCMBlockBufferNoErr) {
+        NSLog(@"Failed to get data pointer: %d", status);
+        return YES;
+    }
+
+    // Check for silence. This technique is not efficient, it might be better to sum the values of the vector instead.
+    BOOL silence = YES;
+    for (size_t i = 0; i < inputBytes; i+=2) {
+        int16_t *sample = (int16_t *)(inputSamples + i);
+        if (*sample != 0) {
+            silence = NO;
+            break;
+        }
+    }
+
+    return silence;
+}
+
 + (NSURL *)recordingURLWithIdentifier:(NSString *)identifier {
     NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 
@@ -122,19 +154,23 @@
 
 - (void)renderSample:(CMSampleBufferRef)audioSample {
     CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(audioSample);
-
-    // Detect and discard the initial invalid samples...
-    // Waits for the track to start producing the expected number of channels, and for the timestamp to be reset.
-    if (CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription)->mChannelsPerFrame != _numberOfChannels) {
-        return;
-    }
-
+    const AudioStreamBasicDescription *basicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
     CMTime presentationTimestamp = CMSampleBufferGetPresentationTimeStamp(audioSample);
 
+    // We defer recording until the first sample in order to determine the appropriate channel layout and sample rate.
     if (CMTIME_IS_INVALID(self.recorderTimestamp)) {
-        NSLog(@"Received first valid sample. Starting recording session.");
-        [self.audioRecorder startSessionAtSourceTime:presentationTimestamp];
-        self.recorderTimestamp = presentationTimestamp;
+        // Detect and discard initial 16 kHz silence, before the first real samples are received from a remote source.
+        if (basicDescription->mSampleRate == 16000. && [self detectSilence:audioSample]) {
+            return;
+        } else {
+            [self startRecordingWithTimestamp:presentationTimestamp basicDescription:basicDescription];
+        }
+    } else {
+        // Sanity check on our assumptions.
+        NSAssert(basicDescription->mChannelsPerFrame == _numberOfChannels,
+                 @"Channel mismatch. was: %d now: %d", _numberOfChannels, basicDescription->mChannelsPerFrame);
+        NSAssert(basicDescription->mSampleRate == _sampleRate,
+                 @"Sample rate mismatch. was: %f now: %f", _sampleRate, basicDescription->mSampleRate);
     }
 
     BOOL success = [self.audioRecorderInput appendSampleBuffer:audioSample];

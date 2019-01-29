@@ -20,7 +20,7 @@ class SettingsTableViewController: UITableViewController {
     
     let disclaimers = [codecDisclaimerText, encodingParamsDisclaimerText]
     let settings = Settings.shared
-    let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFontTextStyle.footnote)
+    let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.footnote)
     var labels: [[String]] = [[SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
                              [SettingsTableViewController.maxAudioBitrate, SettingsTableViewController.maxVideoBitrate]]
 
@@ -35,8 +35,24 @@ class SettingsTableViewController: UITableViewController {
         return disclaimerString.boundingRect(with: CGSize(width: self.tableView.frame.width-20,
                                                           height: CGFloat.greatestFiniteMagnitude),
                                              options: NSStringDrawingOptions.usesLineFragmentOrigin,
-                                             attributes: [NSFontAttributeName: disclaimerFont],
+                                             attributes: [ NSAttributedString.Key.font: disclaimerFont ],
                                              context: nil).size
+    }
+
+    @objc func deselectSelectedRow() {
+        if let selectedRow = self.tableView.indexPathForSelectedRow {
+            self.tableView.deselectRow(at: selectedRow, animated: true)
+        }
+    }
+
+    @objc func reloadSelectedRowOrTableView() {
+        if let selectedRow = self.tableView.indexPathForSelectedRow {
+            self.tableView.reloadRows(at: [selectedRow], with: UITableView.RowAnimation.none)
+            self.tableView.selectRow(at: selectedRow, animated: false, scrollPosition: UITableView.ScrollPosition.none)
+            self.tableView.deselectRow(at: selectedRow, animated: true)
+        } else {
+            self.tableView.reloadData()
+        }
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -138,7 +154,7 @@ class SettingsTableViewController: UITableViewController {
         for codec in selectionArray {
             let selectionButton = UIAlertAction(title: codec.name, style: .default, handler: { (action) -> Void in
                 self.settings.audioCodec = codec
-                self.tableView.reloadData()
+                self.reloadSelectedRowOrTableView()
             })
             
             if (settings.audioCodec == codec) {
@@ -151,7 +167,7 @@ class SettingsTableViewController: UITableViewController {
         // The default action
         defaultButton = UIAlertAction(title: "Default", style: .default, handler: { (action) -> Void in
             self.settings.audioCodec = nil
-            self.tableView.reloadData()
+            self.reloadSelectedRowOrTableView()
         })
         
         if selectedButton == nil {
@@ -167,7 +183,9 @@ class SettingsTableViewController: UITableViewController {
             selectedButton?.setValue("true", forKey: "checked")
             
             // Adding the cancel action
-            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in })
+            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+                self.deselectSelectedRow()
+            })
             alertController.addAction(cancelButton)
         }
         self.navigationController!.present(alertController, animated: true, completion: nil)
@@ -178,7 +196,7 @@ class SettingsTableViewController: UITableViewController {
         
         let defaultButton = UIAlertAction(title: "Default", style: .default, handler: { (action) -> Void in
             self.settings.videoCodec = nil
-            self.tableView.reloadData()
+            self.reloadSelectedRowOrTableView()
         })
         
         let alertController = UIAlertController(title: self.labels[indexPath.section][indexPath.row], message: nil, preferredStyle: .actionSheet)
@@ -189,7 +207,7 @@ class SettingsTableViewController: UITableViewController {
                                                 style: .default,
                                                 handler: { (action) -> Void in
                 self.settings.videoCodec = codec
-                self.tableView.reloadData()
+                self.reloadSelectedRowOrTableView()
             })
             
             if (settings.videoCodec == codec) {
@@ -222,7 +240,9 @@ class SettingsTableViewController: UITableViewController {
             selectedButton?.setValue("true", forKey: "checked")
             
             // Adding the cancel action
-            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in })
+            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+                self.deselectSelectedRow()
+            })
             alertController.addAction(cancelButton)
         }
         self.navigationController!.present(alertController, animated: true, completion: nil)
@@ -232,7 +252,7 @@ class SettingsTableViewController: UITableViewController {
         let alertController = UIAlertController(title: self.labels[indexPath.section][indexPath.row], message: nil, preferredStyle: .alert)
         
         alertController.addTextField  { (textField : UITextField!) -> Void in
-            textField.text = String(self.settings.maxAudioBitrate)
+            textField.text = self.settings.maxAudioBitrate == 0 ? "" : String(self.settings.maxAudioBitrate)
             textField.placeholder = "Max audio bitrate"
             textField.keyboardType = .numberPad
         }
@@ -241,12 +261,14 @@ class SettingsTableViewController: UITableViewController {
             let maxAudioBitrate = alertController.textFields![0] as UITextField
             if maxAudioBitrate.text! != "" {
                 self.settings.maxAudioBitrate = UInt(maxAudioBitrate.text!)!
-                self.tableView.reloadData()
+                self.reloadSelectedRowOrTableView()
             }
         })
         alertController.addAction(okAction)
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in })
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+            self.deselectSelectedRow()
+        })
         alertController.addAction(cancelAction)
         
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -260,7 +282,7 @@ class SettingsTableViewController: UITableViewController {
         let alertController = UIAlertController(title: self.labels[indexPath.section][indexPath.row], message: nil, preferredStyle: .alert)
         
         alertController.addTextField  { (textField : UITextField!) -> Void in
-            textField.text = String(self.settings.maxVideoBitrate)
+            textField.text = self.settings.maxVideoBitrate == 0 ? "" : String(self.settings.maxVideoBitrate)
             textField.placeholder = "Max video bitrate"
             textField.keyboardType = .numberPad
         }
@@ -269,12 +291,14 @@ class SettingsTableViewController: UITableViewController {
             let maxVideoBitrate = alertController.textFields![0] as UITextField
             if maxVideoBitrate.text! != "" {
                 self.settings.maxVideoBitrate = UInt(maxVideoBitrate.text!)!
-                self.tableView.reloadData()
+                self.reloadSelectedRowOrTableView()
             }
         })
         alertController.addAction(okAction)
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in })
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+            self.deselectSelectedRow()
+        })
         alertController.addAction(cancelAction)
         
         if UIDevice.current.userInterfaceIdiom == .pad {

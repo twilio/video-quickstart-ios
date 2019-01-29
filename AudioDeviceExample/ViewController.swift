@@ -21,7 +21,7 @@ class ViewController: UIViewController {
 
     // Video SDK components
     var room: TVIRoom?
-    var camera: TVICameraCapturer?
+    var camera: TVICameraSource?
     var localVideoTrack: TVILocalVideoTrack!
     var localAudioTrack: TVILocalAudioTrack!
     var audioDevice: TVIAudioDevice = ExampleCoreAudioDevice()
@@ -233,21 +233,29 @@ class ViewController: UIViewController {
 
         // Layout the preview view.
         if let previewView = self.camera?.previewView {
+            var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
+            if #available(iOS 11.0, *) {
+                // Ensure the preview fits in the safe area.
+                let safeAreaGuide = self.view.safeAreaLayoutGuide
+                let layoutFrame = safeAreaGuide.layoutFrame
+                bottomRight.x = layoutFrame.origin.x + layoutFrame.width
+                bottomRight.y = layoutFrame.origin.y + layoutFrame.height
+            }
+
             let dimensions = previewView.videoDimensions
             var previewBounds = CGRect.init(origin: CGPoint.zero, size: CGSize.init(width: 160, height: 160))
-
-            previewBounds = AVMakeRect(aspectRatio: CGSize.init(width: CGFloat(dimensions.width), height: CGFloat(dimensions.height)),
+            previewBounds = AVMakeRect(aspectRatio: CGSize.init(width: CGFloat(dimensions.width),
+                                                                height: CGFloat(dimensions.height)),
                                        insideRect: previewBounds)
 
             previewBounds = previewBounds.integral
             previewView.bounds = previewBounds
-
-            previewView.center = CGPoint.init(x: view.bounds.width - previewBounds.width / 2 - kPreviewPadding,
-                                              y: view.bounds.height - previewBounds.height / 2 - kPreviewPadding)
+            previewView.center = CGPoint.init(x: bottomRight.x - previewBounds.width / 2 - kPreviewPadding,
+                                              y: bottomRight.y - previewBounds.height / 2 - kPreviewPadding)
         }
     }
 
-    override func prefersHomeIndicatorAutoHidden() -> Bool {
+    override var prefersHomeIndicatorAutoHidden: Bool {
         return self.room != nil
     }
 
@@ -314,7 +322,7 @@ class ViewController: UIViewController {
                                        selector: #selector(hideMessageLabel),
                                        userInfo: nil,
                                        repeats: false)
-        RunLoop.main.add(self.messageTimer, forMode: .commonModes)
+        RunLoop.main.add(self.messageTimer, forMode: RunLoop.Mode.common)
     }
 
     @objc func hideMessageLabel() {
@@ -348,23 +356,37 @@ class ViewController: UIViewController {
          * TVILocalAudioTrack will result in an exception being thrown. In this example we will only share video
          * (where available) and not audio.
          */
-        if (TVICameraCapturer.isSourceAvailable(TVICameraCaptureSource.frontCamera)) {
+        guard let frontCamera = TVICameraSource.captureDevice(for: .front) else {
+            logMessage(messageText: "Front camera is not available, using audio only.")
+            return
+        }
 
-            // We will render the camera using TVICameraPreviewView.
-            camera = TVICameraCapturer(source: .frontCamera, delegate: self, enablePreview: true)
-            localVideoTrack = TVILocalVideoTrack.init(capturer: camera!)
+        // We will render the camera using TVICameraPreviewView.
+        let cameraSourceOptions = TVICameraSourceOptions.init { (builder) in
+            builder.enablePreview = true
+        }
 
-            if (localVideoTrack == nil) {
-                logMessage(messageText: "Failed to create video track!")
-            } else {
-                logMessage(messageText: "Video track created.")
+        camera = TVICameraSource(options: cameraSourceOptions, delegate: self)
+        localVideoTrack = TVILocalVideoTrack.init(source: camera!)
 
-                if let preview = camera?.previewView {
-                    view.addSubview(preview);
+        if (localVideoTrack == nil) {
+            logMessage(messageText: "Failed to create video track!")
+        } else {
+            logMessage(messageText: "Video track created.")
+
+            if let preview = camera?.previewView {
+                view.addSubview(preview);
+            }
+
+            camera!.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
+                if let error = error {
+                    self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                    self.camera?.previewView?.removeFromSuperview()
+                } else {
+                    // Layout the camera preview with dimensions appropriate for our orientation.
+                    self.view.setNeedsLayout()
                 }
             }
-        } else {
-            logMessage(messageText: "Front camera is not available, using audio only.")
         }
     }
 
@@ -372,7 +394,7 @@ class ViewController: UIViewController {
         self.room = nil
         self.localAudioTrack = nil
         self.localVideoTrack = nil
-        self.camera?.previewView .removeFromSuperview()
+        self.camera?.previewView?.removeFromSuperview()
         self.camera = nil;
     }
 
@@ -407,7 +429,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
+    @objc func changeRemoteVideoAspect(gestureRecognizer: UIGestureRecognizer) {
         guard let remoteView = gestureRecognizer.view else {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;
@@ -590,15 +612,10 @@ extension ViewController : TVIRemoteParticipantDelegate {
     }
 }
 
-extension ViewController : TVICameraCapturerDelegate {
-    func cameraCapturer(_ capturer: TVICameraCapturer, didStartWith source: TVICameraCaptureSource) {
-        // Layout the camera preview with dimensions appropriate for our orientation.
-        self.view.setNeedsLayout()
-    }
-
-    func cameraCapturer(_ capturer: TVICameraCapturer, didFailWithError error: Error) {
-        logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
-        capturer.previewView.removeFromSuperview()
+// MARK: TVICameraSourceDelegate
+extension ViewController : TVICameraSourceDelegate {
+    func cameraSource(_ source: TVICameraSource, didFailWithError error: Error) {
+        logMessage(messageText: "Camera source failed with error: \(error.localizedDescription)")
+        source.previewView?.removeFromSuperview()
     }
 }
-

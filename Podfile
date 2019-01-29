@@ -3,7 +3,7 @@ source 'https://github.com/CocoaPods/Specs'
 workspace 'VideoQuickStart'
 
 abstract_target 'TwilioVideo' do
-  pod 'TwilioVideo', '2.3.0-preview1'
+  pod 'TwilioVideo', '~> 2.6'
 
   target 'ARKitExample' do
     platform :ios, '11.0'
@@ -33,6 +33,16 @@ abstract_target 'TwilioVideo' do
   target 'VideoRendererExample' do
     platform :ios, '9.0'
     project 'VideoRendererExample.xcproject'
+  end
+
+  target 'ReplayKitExample' do
+    platform :ios, '11.0'
+    project 'ReplayKitExample.xcodeproj'
+  end
+
+  target 'BroadcastExtension' do
+    platform :ios, '11.0'
+    project 'ReplayKitExample.xcodeproj'
   end
 
   target 'ScreenCapturerExample' do
