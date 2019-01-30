@@ -52,11 +52,11 @@ class ExampleSampleBufferView : UIView, TVIVideoRenderer {
         let center = NotificationCenter.default
 
         center.addObserver(self, selector: #selector(ExampleSampleBufferView.willEnterForeground),
-                           name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
+                           name: UIApplication.willEnterForegroundNotification, object: nil)
         center.addObserver(self, selector: #selector(ExampleSampleBufferView.didEnterBackground),
-                           name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
+                           name: UIApplication.didEnterBackgroundNotification, object: nil)
         center.addObserver(self, selector: #selector(ExampleSampleBufferView.willResignActive),
-                           name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
+                           name: UIApplication.willResignActiveNotification, object: nil)
 
 //        [_sampleView addObserver:self forKeyPath:@"layer.status" options:NSKeyValueObservingOptionNew context:NULL];
     }
@@ -81,7 +81,7 @@ class ExampleSampleBufferView : UIView, TVIVideoRenderer {
         }
     }
 
-    override var contentMode: UIViewContentMode {
+    override var contentMode: UIView.ContentMode {
         get {
             return super.contentMode
         }
@@ -89,13 +89,13 @@ class ExampleSampleBufferView : UIView, TVIVideoRenderer {
             // Map UIViewContentMode to AVLayerVideoGravity. The layer supports a subset of possible content modes.
             switch newValue {
             case .scaleAspectFill:
-                displayLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+                displayLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
             case .scaleAspectFit:
-                displayLayer.videoGravity = AVLayerVideoGravityResizeAspect
+                displayLayer.videoGravity = AVLayerVideoGravity.resizeAspect
             case .scaleToFill:
-                displayLayer.videoGravity = AVLayerVideoGravityResize
+                displayLayer.videoGravity = AVLayerVideoGravity.resize
             default:
-                displayLayer.videoGravity = AVLayerVideoGravityResize
+                displayLayer.videoGravity = AVLayerVideoGravity.resize
             }
             setNeedsLayout()
 
@@ -105,7 +105,7 @@ class ExampleSampleBufferView : UIView, TVIVideoRenderer {
 }
 
 extension ExampleSampleBufferView {
-    func willEnterForeground(_: NSNotification) {
+    @objc func willEnterForeground(_: NSNotification) {
 
         if (displayLayer.status == AVQueuedSampleBufferRenderingStatus.failed) {
             // TODO: Restore failed sample buffer view. AVErrorOperationInterrupted.
@@ -114,12 +114,12 @@ extension ExampleSampleBufferView {
         isRendering = true
     }
 
-    func didEnterBackground(_: NSNotification) {
+    @objc func didEnterBackground(_: NSNotification) {
         isRendering = false
         displayLayer.flushAndRemoveImage()
     }
 
-    func willResignActive(_: NSNotification) {
+    @objc func willResignActive(_: NSNotification) {
         // TODO: - Should we stop rendering when resigning active?
         // AVSampleBufferDisplayLayer seems capable of handling this case.
     }
@@ -190,8 +190,10 @@ extension ExampleSampleBufferView {
     func detectFormatChange(imageBuffer: CVPixelBuffer) -> Bool {
         var didChange = false
         if (self.outputFormatDescription == nil ||
-            CMVideoFormatDescriptionMatchesImageBuffer(self.outputFormatDescription!, imageBuffer) == false) {
-            let status = CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, imageBuffer, &self.outputFormatDescription)
+            CMVideoFormatDescriptionMatchesImageBuffer(self.outputFormatDescription!, imageBuffer: imageBuffer) == false) {
+            let status = CMVideoFormatDescriptionCreateForImageBuffer(allocator: kCFAllocatorDefault,
+                                                                      imageBuffer: imageBuffer,
+                                                                      formatDescriptionOut: &self.outputFormatDescription)
 
             if let format = self.outputFormatDescription {
                 let dimensions = CMVideoFormatDescriptionGetDimensions(format)
@@ -224,18 +226,18 @@ extension ExampleSampleBufferView {
 
         // Use the frame's timestamp as the presentation timestamp. We will display immediately.
         // Our uncompressed buffers do not need to be decoded.
-        var sampleTiming = CMSampleTimingInfo.init(duration: kCMTimeInvalid,
+        var sampleTiming = CMSampleTimingInfo.init(duration: CMTime.invalid,
                                                    presentationTimeStamp: frame.timestamp,
-                                                   decodeTimeStamp: kCMTimeInvalid)
+                                                   decodeTimeStamp: CMTime.invalid)
 
         // Create a CMSampleBuffer
         var sampleBuffer: CMSampleBuffer?
 
-        let status = CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault,
-                                                              imageBuffer,
-                                                              self.outputFormatDescription!,
-                                                              &sampleTiming,
-                                                              &sampleBuffer)
+        let status = CMSampleBufferCreateReadyWithImageBuffer(allocator: kCFAllocatorDefault,
+                                                              imageBuffer: imageBuffer,
+                                                              formatDescription: self.outputFormatDescription!,
+                                                              sampleTiming: &sampleTiming,
+                                                              sampleBufferOut: &sampleBuffer)
 
         // Enqueue the frame for display via AVSampleBufferDisplayLayer.
         if (status != kCVReturnSuccess) {
@@ -243,7 +245,7 @@ extension ExampleSampleBufferView {
             return
         } else if let sampleBuffer = sampleBuffer,
                   let displayLayer = cachedDisplayLayer,
-                  let sampleAttachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, true) as NSArray? {
+            let sampleAttachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: true) as NSArray? {
             // Force immediate display of the buffer, since our renderer receives them just in time.
             let firstAttachment  = sampleAttachments.firstObject as! NSMutableDictionary?
             firstAttachment?[kCMSampleAttachmentKey_DisplayImmediately] = true

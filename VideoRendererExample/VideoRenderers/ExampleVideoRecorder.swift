@@ -13,15 +13,16 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
     let identifier : String
     let videoTrack : TVIVideoTrack
 
-    var recorderTimestamp = kCMTimeInvalid
+    var recorderTimestamp = CMTime.invalid
     var videoFormatDescription: CMFormatDescription?
     var videoRecorder : AVAssetWriter?
     var videoRecorderInput : AVAssetWriterInput?
 
     // Register pixel formats that are known to work with AVAssetWriterInput.
-    var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue)]
+    var optionalPixelFormats: [NSNumber] = [NSNumber(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
+                                            NSNumber(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
+                                            NSNumber(value: TVIPixelFormat.format32BGRA.rawValue),
+                                            NSNumber(value: TVIPixelFormat.format32ARGB.rawValue)]
 
     init(videoTrack: TVIVideoTrack, identifier: String) {
         self.videoTrack = videoTrack
@@ -29,25 +30,37 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
 
         super.init()
 
-        startRecording()
+        initRecording()
     }
 
-    func startRecording() {
+    private func initRecording() {
         do {
-            self.videoRecorder = try AVAssetWriter.init(url:ExampleVideoRecorder.recordingURL(identifier: identifier) , fileType: AVFileTypeMPEG4)
+            self.videoRecorder = try AVAssetWriter.init(url:ExampleVideoRecorder.recordingURL(identifier: identifier),
+                                                        fileType: AVFileType.mp4)
         } catch {
             print("Could not create AVAssetWriter with error: \(error)")
             return
         }
 
-        // TODO: Determine width and height dynamically.
+        // The recorder will determine the asset's format as frames arrive.
+        videoTrack.addRenderer(self)
+
+        // This example does not support backgrounding. Now might be a good point to consider kicking off a background
+        // task, and handling failures.
+    }
+
+    private func startRecording(frame: TVIVideoFrame) {
+        self.recorderTimestamp = frame.timestamp
+        self.videoRecorder?.startSession(atSourceTime: self.recorderTimestamp)
+
+        // Determine width and height dynamically (based upon the first frame). This works well for local content.
         let outputSettings = [
-//            AVVideoCodecKey : AVVideoCodecType.h264,
-            AVVideoWidthKey : 640,
-            AVVideoHeightKey : 480,
+            // AVVideoCodecKey : AVVideoCodecType.h264,
+            AVVideoWidthKey : frame.width,
+            AVVideoHeightKey : frame.height,
             AVVideoScalingModeKey : AVVideoScalingModeResizeAspect] as [String : Any]
 
-        videoRecorderInput = AVAssetWriterInput.init(mediaType: AVMediaTypeVideo, outputSettings: outputSettings)
+        videoRecorderInput = AVAssetWriterInput(mediaType: AVMediaType.video, outputSettings: outputSettings)
         videoRecorderInput?.expectsMediaDataInRealTime = true
 
         if let videoRecorder = self.videoRecorder,
@@ -55,37 +68,46 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
             videoRecorder.canAdd(videoRecorderInput) {
             videoRecorder.add(videoRecorderInput)
 
-            if (videoRecorder.startWriting()) {
-                videoTrack.addRenderer(self)
+            if (!videoRecorder.startWriting()) {
             } else {
                 print("Could not start writing!")
             }
         } else {
             print("Could not add AVAssetWriterInput!")
         }
-
-        // This example does not support backgrounding. Now is a good point to consider kicking off a background
-        // task, and handling failures.
     }
 
-    func stopRecording() {
+    public func stopRecording() {
         videoTrack.removeRenderer(self)
         videoRecorderInput?.markAsFinished()
         videoRecorder?.finishWriting {
-            if (self.videoRecorder?.status == AVAssetWriterStatus.failed) {
+            if (self.videoRecorder?.status == AVAssetWriter.Status.failed) {
 
-            } else if (self.videoRecorder?.status == AVAssetWriterStatus.completed) {
+            } else if (self.videoRecorder?.status == AVAssetWriter.Status.completed) {
                 
             }
             self.videoRecorder = nil
             self.videoRecorderInput = nil
-            self.recorderTimestamp = kCMTimeInvalid
+            self.recorderTimestamp = CMTime.invalid
         }
     }
 
     class func recordingURL(identifier: String) -> URL {
-        // TODO
-        return (URL.init(string: ""))!
+        guard let documentsDirectory = FileManager.default.urls(for: FileManager.SearchPathDirectory.documentDirectory,
+                                                                 in: FileManager.SearchPathDomainMask.userDomainMask).last else {
+            return URL(fileURLWithPath: "")
+        }
+
+        // Choose a filename which will be unique if the `identifier` is reused (Append RFC3339 formatted date).
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "HHmmss"
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+
+        let dateComponent = dateFormatter.string(from: Date())
+        let filename = identifier + "-" + dateComponent + ".mp4"
+
+        return documentsDirectory.appendingPathComponent(filename)
     }
 
 //        + (NSURL *)recordingURLWithIdentifier:(NSString *)identifier {
@@ -110,28 +132,27 @@ extension ExampleVideoRecorder {
         // Frames are delivered with presentation timestamps. We will make do with this for our recorder.
         let timestamp = frame.timestamp
 
+        // Defer creating and configuring the input until a frame has arrived.
         if (CMTIME_IS_INVALID(recorderTimestamp)) {
             print("Received first video sample at: \(timestamp). Starting recording session.")
-            self.recorderTimestamp = timestamp
-            self.videoRecorder?.startSession(atSourceTime: timestamp)
+            startRecording(frame: frame)
         }
 
         detectFormatChange(imageBuffer: frame.imageBuffer)
 
         // Our uncompressed buffers do not need to be decoded.
-        var sampleTiming = CMSampleTimingInfo.init(duration: kCMTimeInvalid,
+        var sampleTiming = CMSampleTimingInfo.init(duration: CMTime(value: 1, timescale: 30),
                                                    presentationTimeStamp: timestamp,
-                                                   decodeTimeStamp: kCMTimeInvalid)
+                                                   decodeTimeStamp: CMTime.invalid)
 
-        // Create a CMSampleBuffer
-        // TODO: Support I420 inputs
-//        let pixelFormat = CVPixelBufferGetPixelFormatType(frame.imageBuffer)
+        // Append a CMSampleBuffer to the recorder's input.
+        // TODO: Support I420 inputs for recording of remote content.
         var sampleBuffer: CMSampleBuffer?
-        let status = CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault,
-                                                              frame.imageBuffer,
-                                                              self.videoFormatDescription!,
-                                                              &sampleTiming,
-                                                              &sampleBuffer)
+        let status = CMSampleBufferCreateReadyWithImageBuffer(allocator: kCFAllocatorDefault,
+                                                              imageBuffer: frame.imageBuffer,
+                                                              formatDescription: self.videoFormatDescription!,
+                                                              sampleTiming: &sampleTiming,
+                                                              sampleBufferOut: &sampleBuffer)
 
         if (status != kCVReturnSuccess) {
             print("Couldn't create a SampleBuffer. Status=\(status)")
@@ -146,8 +167,8 @@ extension ExampleVideoRecorder {
 
     func detectFormatChange(imageBuffer: CVPixelBuffer) {
         if (self.videoFormatDescription == nil ||
-            CMVideoFormatDescriptionMatchesImageBuffer(self.videoFormatDescription!, imageBuffer) == false) {
-            let status = CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, imageBuffer, &self.videoFormatDescription)
+            CMVideoFormatDescriptionMatchesImageBuffer(self.videoFormatDescription!, imageBuffer: imageBuffer) == false) {
+            let status = CMVideoFormatDescriptionCreateForImageBuffer(allocator: kCFAllocatorDefault, imageBuffer: imageBuffer, formatDescriptionOut: &self.videoFormatDescription)
 
             if let format = self.videoFormatDescription {
                 let dimensions = CMVideoFormatDescriptionGetDimensions(format)
@@ -166,5 +187,6 @@ extension ExampleVideoRecorder {
     }
 
     func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: TVIVideoOrientation) {
+        // The recorder inspects individual frames (including pixel format). As a result, there is nothing to do here.
     }
 }

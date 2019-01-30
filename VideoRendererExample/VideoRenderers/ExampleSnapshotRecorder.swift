@@ -5,8 +5,8 @@
 //  Copyright © 2017 Twilio Inc. All rights reserved.
 //
 
-import Foundation
 import CoreImage
+import Foundation
 import TwilioVideo
 
 class ExampleSnapshotRecorder : NSObject, TVIVideoRenderer {
@@ -33,8 +33,10 @@ class ExampleSnapshotRecorder : NSObject, TVIVideoRenderer {
     }
 
     class func convertPixelBufferToImage(buffer: CVPixelBuffer) -> UIImage? {
-        // Use CoreImage to convert a CVPixelBuffer which may be in RGB or video pixel formats to an RGB UIImage.
-        // This may be somewhat wasteful, but is sufficient considering we only need to process 1 frame at a time.
+        /*
+         * Use CoreImage to convert a CVPixelBuffer which may be in RGB or video pixel formats to an RGB UIImage.
+         * This may be somewhat wasteful, but is sufficient considering the recorder only needs a single frame at a time.
+         */
         let ciImage = CIImage.init(cvPixelBuffer: buffer)
         let context = CIContext.init()
         let rect = CGRect.init(x: 0,
