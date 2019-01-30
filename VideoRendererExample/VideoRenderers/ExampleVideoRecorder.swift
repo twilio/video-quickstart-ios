@@ -117,22 +117,6 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
 
         return documentsDirectory.appendingPathComponent(filename)
     }
-
-//        + (NSURL *)recordingURLWithIdentifier:(NSString *)identifier {
-//    NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
-//
-//    // Choose a filename which will be unique if the `identifier` is reused (Append RFC3339 formatted date).
-//    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-//    dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-//    dateFormatter.dateFormat = @"HHmmss";
-//    dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-//
-//    NSString *dateComponent = [dateFormatter stringFromDate:[NSDate date]];
-//    NSString *filename = [NSString stringWithFormat:@"%@-%@.wav", identifier, dateComponent];
-//
-//    return [documentsDirectory URLByAppendingPathComponent:filename];
-//    }
-
 }
 
 extension ExampleVideoRecorder {
