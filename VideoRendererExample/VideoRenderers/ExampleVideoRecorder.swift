@@ -149,6 +149,7 @@ extension ExampleVideoRecorder {
         detectFormatChange(imageBuffer: frame.imageBuffer)
 
         // Our uncompressed buffers do not need to be decoded.
+        // TODO: Assuming the duration might not be a good idea.
         var sampleTiming = CMSampleTimingInfo.init(duration: CMTime(value: 1, timescale: 30),
                                                    presentationTimeStamp: timestamp,
                                                    decodeTimeStamp: CMTime.invalid)
