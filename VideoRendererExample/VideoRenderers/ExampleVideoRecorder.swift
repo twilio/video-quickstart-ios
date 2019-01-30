@@ -51,14 +51,21 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
 
     private func startRecording(frame: TVIVideoFrame) {
         self.recorderTimestamp = frame.timestamp
-        self.videoRecorder?.startSession(atSourceTime: self.recorderTimestamp)
 
         // Determine width and height dynamically (based upon the first frame). This works well for local content.
-        let outputSettings = [
-            // AVVideoCodecKey : AVVideoCodecType.h264,
-            AVVideoWidthKey : frame.width,
-            AVVideoHeightKey : frame.height,
-            AVVideoScalingModeKey : AVVideoScalingModeResizeAspect] as [String : Any]
+        let outputSettings: [String : Any]
+        if #available(iOS 11.0, *) {
+            outputSettings = [
+                AVVideoCodecKey : AVVideoCodecType.h264,
+                AVVideoWidthKey : frame.width,
+                AVVideoHeightKey : frame.height,
+                AVVideoScalingModeKey : AVVideoScalingModeResizeAspect] as [String : Any]
+        } else {
+            outputSettings = [
+                AVVideoWidthKey : frame.width,
+                AVVideoHeightKey : frame.height,
+                AVVideoScalingModeKey : AVVideoScalingModeResizeAspect] as [String : Any]
+        }
 
         videoRecorderInput = AVAssetWriterInput(mediaType: AVMediaType.video, outputSettings: outputSettings)
         videoRecorderInput?.expectsMediaDataInRealTime = true
@@ -68,7 +75,8 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
             videoRecorder.canAdd(videoRecorderInput) {
             videoRecorder.add(videoRecorderInput)
 
-            if (!videoRecorder.startWriting()) {
+            if (videoRecorder.startWriting()) {
+                self.videoRecorder?.startSession(atSourceTime: self.recorderTimestamp)
             } else {
                 print("Could not start writing!")
             }
@@ -82,9 +90,9 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
         videoRecorderInput?.markAsFinished()
         videoRecorder?.finishWriting {
             if (self.videoRecorder?.status == AVAssetWriter.Status.failed) {
-
+                print("Failed to write asset.")
             } else if (self.videoRecorder?.status == AVAssetWriter.Status.completed) {
-                
+                print("Completed asset with URL:", self.videoRecorder?.outputURL.absoluteString)
             }
             self.videoRecorder = nil
             self.videoRecorderInput = nil
@@ -158,6 +166,7 @@ extension ExampleVideoRecorder {
             print("Couldn't create a SampleBuffer. Status=\(status)")
         } else if let buffer = sampleBuffer,
             let input = videoRecorderInput,
+            input.isReadyForMoreMediaData,
             input.append(buffer) {
             // Success.
         } else {

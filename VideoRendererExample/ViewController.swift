@@ -253,16 +253,29 @@ class ViewController: UIViewController {
                 view.addSubview(preview);
             }
 
-            camera.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
-                if let error = error {
-                    self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
-                    self.camera?.previewView?.removeFromSuperview()
-                } else {
-                    // Layout the camera preview with dimensions appropriate for our orientation.
-                    self.view.setNeedsLayout()
-                    self.prepareVideoRecording(track: self.localVideoTrack!)
-                }
+            camera.startCapture(with: frontCamera,
+                                format: TVICameraSource.supportedFormats(for: frontCamera).lastObject as! TVIVideoFormat) { (captureDevice, videoFormat, error) in
+                                    if let error = error {
+                                        self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                                        self.camera?.previewView?.removeFromSuperview()
+                                    } else {
+                                        // Double tap to stop recording.
+                                        let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recordingTap))
+                                        recognizerDoubleTap.numberOfTapsRequired = 2
+                                        self.camera?.previewView?.addGestureRecognizer(recognizerDoubleTap)
+
+                                        // Layout the camera preview with dimensions appropriate for our orientation.
+                                        self.view.setNeedsLayout()
+                                        self.prepareVideoRecording(track: self.localVideoTrack!)
+                                    }
             }
+        }
+    }
+
+    @objc func recordingTap(gestureRecognizer: UIGestureRecognizer) {
+        if let recorder = self.localVideoRecorder {
+            recorder.stopRecording()
+            self.localVideoRecorder = nil
         }
     }
 
