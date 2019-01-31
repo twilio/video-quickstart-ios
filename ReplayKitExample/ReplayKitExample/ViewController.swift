@@ -241,7 +241,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         }
     }
 
-    func room(_ room: TVIRoom, isReconnectingWithError error: Error?) {
+    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
         print("Reconnecting to room \(room.name), error = \(String(describing: error))")
     }
 

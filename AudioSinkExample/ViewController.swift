@@ -559,7 +559,7 @@ extension ViewController : TVIRoomDelegate {
         self.showRoomUI(inRoom: false)
     }
 
-    func room(_ room: TVIRoom, isReconnectingWithError error: Error?) {
+    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
         logMessage(messageText: "Reconnecting to room \(room.name), error = \(String(describing: error))")
     }
 

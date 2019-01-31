@@ -217,7 +217,7 @@ extension ViewController: TVIRoomDelegate {
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
     }
 
-    func room(_ room: TVIRoom, isReconnectingWithError error: Error?) {
+    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
         print("Reconnecting to room \(room.name), error = \(String(describing: error))")
     }
 
