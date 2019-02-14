@@ -129,7 +129,7 @@
         self.camera = [[TVICameraSource alloc] initWithDelegate:self];
         self.localVideoTrack = [TVILocalVideoTrack trackWithSource:self.camera
                                                            enabled:YES
-                                                              name:@"Cameara"];
+                                                              name:@"Camera"];
         // Add renderer to video track for local preview
         [self.localVideoTrack addRenderer:self.previewView];
         [self logMessage:@"Video track created"];
@@ -334,6 +334,15 @@
     self.room = nil;
     
     [self showRoomUI:NO];
+}
+
+- (void)room:(TVIRoom *)room isReconnectingWithError:(NSError *)error {
+    NSString *message = [NSString stringWithFormat:@"Reconnecting due to %@", error.localizedDescription];
+    [self logMessage:message];
+}
+
+- (void)didReconnectToRoom:(TVIRoom *)room {
+    [self logMessage:@"Reconnected to room"];
 }
 
 - (void)room:(TVIRoom *)room participantDidConnect:(TVIRemoteParticipant *)participant {
