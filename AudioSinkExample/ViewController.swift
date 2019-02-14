@@ -290,6 +290,7 @@ class ViewController: UIViewController {
     }
 
     func logMessage(messageText: String) {
+        NSLog(messageText)
         messageLabel.text = messageText
 
         if (messageLabel.alpha < 1.0) {
@@ -556,6 +557,14 @@ extension ViewController : TVIRoomDelegate {
         self.room = nil
 
         self.showRoomUI(inRoom: false)
+    }
+
+    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
+        logMessage(messageText: "Reconnecting to room \(room.name), error = \(String(describing: error))")
+    }
+
+    func didReconnect(to room: TVIRoom) {
+        logMessage(messageText: "Reconnected to room \(room.name)")
     }
 
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
