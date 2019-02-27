@@ -371,11 +371,13 @@ class ViewController: UIViewController {
             stopRecognizingAudio()
         } else if let audioTrack = self.localAudioTrack {
             // Known issue - local audio is not available in a Peer-to-Peer Room unless there are >= 1 RemoteParticipants.
-            
-            if (self.room?.state == TVIRoomState.connected) {
+
+            if let room = self.room,
+                room.state == .connected || room.state == .reconnecting {
+
                 if let view = self.camera?.previewView {
                     showSpeechRecognitionUI(view: view,
-                                            message: "Listening to \(room?.localParticipant?.identity ?? "yourself")...")
+                                            message: "Listening to \(room.localParticipant?.identity ?? "yourself")...")
                 }
 
                 recognizeAudio(audioTrack: audioTrack, identifier: audioTrack.name)
