@@ -50,4 +50,9 @@ abstract_target 'TwilioVideo' do
     project 'DataTrackExample.xcproject'
   end
 
+  target 'MultiPartyExample' do
+    platform :ios, '9.0'
+    project 'MultiPartyExample.xcproject'
+  end
+
 end
