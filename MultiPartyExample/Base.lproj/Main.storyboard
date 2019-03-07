@@ -101,7 +101,7 @@
                         <outlet property="roomLabel" destination="Lfr-EU-bvX" id="V5y-cp-uKw"/>
                         <outlet property="roomLine" destination="Ssx-To-aiU" id="A1I-O3-7Yy"/>
                         <outlet property="roomTextField" destination="lUc-YO-UmT" id="hRE-gv-H9b"/>
-                        <segue destination="euQ-Pb-8wg" kind="presentation" identifier="multiPartyViewSegue" id="yo7-vd-1q8"/>
+                        <segue destination="euQ-Pb-8wg" kind="show" identifier="multiPartyViewSegue" id="yo7-vd-1q8"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sde-kD-2tD" sceneMemberID="firstResponder"/>

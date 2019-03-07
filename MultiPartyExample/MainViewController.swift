@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import TwilioVideo
 
 class MainViewController: UIViewController {
 
@@ -34,6 +35,13 @@ class MainViewController: UIViewController {
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(MainViewController.dismissKeyboard))
         view.addGestureRecognizer(tap)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        logMessage(messageText: "TwilioVideo v(\(TwilioVideo.version()))")
+        roomTextField.text = ""
+        roomTextField.becomeFirstResponder()
     }
 
     @objc func dismissKeyboard() {
@@ -74,9 +82,12 @@ class MainViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "multiPartyViewSegue" {
             if let destinationVC = segue.destination as? MultiPartyViewController {
+                navigationItem.backBarButtonItem?.title = "Disconnect"
                 destinationVC.accessToken = accessToken
                 destinationVC.roomName = roomTextField.text
             }
+        } else {
+            navigationItem.backBarButtonItem?.title = "Back"
         }
     }
 }
