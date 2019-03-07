@@ -82,12 +82,9 @@ class MainViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "multiPartyViewSegue" {
             if let destinationVC = segue.destination as? MultiPartyViewController {
-                navigationItem.backBarButtonItem?.title = "Disconnect"
                 destinationVC.accessToken = accessToken
                 destinationVC.roomName = roomTextField.text
             }
-        } else {
-            navigationItem.backBarButtonItem?.title = "Back"
         }
     }
 }
