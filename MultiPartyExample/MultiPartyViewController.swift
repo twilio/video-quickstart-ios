@@ -6,13 +6,29 @@
 //
 
 import UIKit
+import TwilioVideo
 
 class MultiPartyViewController: UIViewController {
 
+    // MARK: View Controller Members
+
+    var roomName: String?
+    var accessToken: String?
+
+    // Video SDK components
+    var room: TVIRoom?
+    var camera: TVICameraSource?
+    var localVideoTrack: TVILocalVideoTrack?
+    var localAudioTrack: TVILocalAudioTrack?
+
+    // MARK: UI Element Outlets and handles
+
+
+    // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+
     }
     
 

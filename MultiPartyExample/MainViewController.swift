@@ -29,11 +29,11 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.title = "MultiPartyExample"
-        self.messageLabel.adjustsFontSizeToFitWidth = true;
-        self.messageLabel.minimumScaleFactor = 0.75;
+        title = "MultiPartyExample"
+        messageLabel.adjustsFontSizeToFitWidth = true;
+        messageLabel.minimumScaleFactor = 0.75;
 
-        if let navigationController = self.navigationController {
+        if let navigationController = navigationController {
             navigationController.navigationBar.barTintColor = UIColor.init(red: 226.0/255.0,
                                                                            green: 29.0/255.0,
                                                                            blue: 37.0/255.0,
@@ -42,16 +42,16 @@ class MainViewController: UIViewController {
             navigationController.navigationBar.barStyle = UIBarStyle.black
         }
 
-        self.roomTextField.autocapitalizationType = .none
-        self.roomTextField.delegate = self
+        roomTextField.autocapitalizationType = .none
+        roomTextField.delegate = self
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(MainViewController.dismissKeyboard))
-        self.view.addGestureRecognizer(tap)
+        view.addGestureRecognizer(tap)
     }
 
     @objc func dismissKeyboard() {
-        if (self.roomTextField.isFirstResponder) {
-            self.roomTextField.resignFirstResponder()
+        if roomTextField.isFirstResponder {
+            roomTextField.resignFirstResponder()
         }
     }
 
@@ -62,13 +62,15 @@ class MainViewController: UIViewController {
 
     @IBAction func connect(_ sender: Any) {
         guard let roomName = roomTextField.text, !roomName.isEmpty else {
-            self.roomTextField.becomeFirstResponder()
+            roomTextField.becomeFirstResponder()
             return
         }
 
+        dismissKeyboard()
+
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
-        if (accessToken == "TWILIO_ACCESS_TOKEN") {
+        if accessToken == "TWILIO_ACCESS_TOKEN" {
             do {
                 accessToken = try TokenUtils.fetchToken(url: tokenUrl)
             } catch {
@@ -78,15 +80,24 @@ class MainViewController: UIViewController {
             }
         }
 
-        print("Connecting to room \(roomName)")
+        logMessage(messageText: "Connecting to room \(roomName)")
+        performSegue(withIdentifier: "multiPartyViewSegue", sender: sender)
+    }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "multiPartyViewSegue" {
+            if let destinationVC = segue.destination as? MultiPartyViewController {
+                destinationVC.accessToken = accessToken
+                destinationVC.roomName = roomTextField.text
+            }
+        }
     }
 }
-
 
 // MARK: UITextFieldDelegate
 extension MainViewController : UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        self.connect(textField)
+        connect(textField)
         return true
     }
 }
