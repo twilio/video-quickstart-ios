@@ -23,6 +23,11 @@ class MultiPartyViewController: UIViewController {
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var messageLabel: UILabel!
 
+    @IBOutlet weak var localParticipantVideoView: TVIVideoView!
+    @IBOutlet weak var remoteParticipantVideoView1: TVIVideoView!
+    @IBOutlet weak var remoteParticipantVideoView2: TVIVideoView!
+    @IBOutlet weak var remoteParticipantVideoView3: TVIVideoView!
+
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,7 +36,10 @@ class MultiPartyViewController: UIViewController {
         messageLabel.minimumScaleFactor = 0.75;
         logMessage(messageText: "TwilioVideo v(\(TwilioVideo.version()))")
 
-        navigationItem.leftBarButtonItem = UIBarButtonItem.init(title: "Disconnect", style: .plain, target: self, action: #selector(leaveRoom(sender:)))
+        navigationItem.leftBarButtonItem = UIBarButtonItem.init(title: "Disconnect",
+                                                                style: .plain,
+                                                                target: self,
+                                                                action: #selector(leaveRoom(sender:)))
 
         connect()
     }
@@ -40,11 +48,43 @@ class MultiPartyViewController: UIViewController {
         return room != nil
     }
 
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+
+        let topY = (messageLabel.frame.origin.y + messageLabel.frame.height)
+
+        let totalHeight = view.frame.height - topY
+        let totalWidth = view.frame.width
+
+        let videoViewHeight = totalHeight / 2
+        let videoViewWidth = totalWidth / 2
+
+        let videoViewSize = CGSize.init(width: videoViewWidth, height: videoViewHeight)
+
+        localParticipantVideoView.frame = CGRect.init(origin: CGPoint.init(x: 0, y: topY),
+                                                      size: videoViewSize)
+        remoteParticipantVideoView1.frame = CGRect.init(origin: CGPoint.init(x: videoViewWidth, y: topY),
+                                                        size: videoViewSize)
+        remoteParticipantVideoView2.frame = CGRect.init(origin: CGPoint(x: 0, y: topY + videoViewHeight),
+                                                        size: videoViewSize)
+        remoteParticipantVideoView3.frame = CGRect.init(origin: CGPoint(x: videoViewWidth, y: topY + videoViewHeight),
+                                                        size: videoViewSize)
+    }
 
     // MARK: Private
     func logMessage(messageText: String) {
         NSLog(messageText)
         messageLabel.text = messageText
+    }
+    func prepareAudio() {
+        // Create an audio track.
+        guard let localAudioTrack = TVILocalAudioTrack.init(options: nil, enabled: true, name: "Microphone") else {
+            logMessage(messageText: "Failed to create audio track")
+            return
+        }
+
+        logMessage(messageText: "Video track created")
+        self.localAudioTrack = localAudioTrack
     }
 
     func prepareCamera() {
@@ -62,21 +102,27 @@ class MultiPartyViewController: UIViewController {
             if let camera = camera {
                 localVideoTrack = TVILocalVideoTrack.init(source: camera, enabled: true, name: "Camera")
 
-                // Add renderer to video track for local preview
-//                localVideoTrack!.addRenderer(self.previewView)
+                guard let localVideoTrack = self.localVideoTrack else {
+                    logMessage(messageText: "Failed to create video track")
+                    return
+                }
+
                 logMessage(messageText: "Video track created")
+
+                // Add renderer to video track for local preview
+                localVideoTrack.addRenderer(localParticipantVideoView)
 
                 if (frontCamera != nil && backCamera != nil) {
                     // We will flip camera on tap.
-//                    let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
-//                    self.previewView.addGestureRecognizer(tap)
+                    let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.flipCamera))
+                    localParticipantVideoView.addGestureRecognizer(tap)
                 }
 
                 camera.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
                     if let error = error {
                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
-//                        self.previewView.shouldMirror = (captureDevice.position == .front)
+                        self.localParticipantVideoView.shouldMirror = (captureDevice.position == .front)
                     }
                 }
             }
@@ -101,28 +147,10 @@ class MultiPartyViewController: UIViewController {
                     if let error = error {
                         self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
-//                        self.previewView.shouldMirror = (captureDevice.position == .front)
+                        self.localParticipantVideoView.shouldMirror = (captureDevice.position == .front)
                     }
                 }
             }
-        }
-    }
-
-    func prepareLocalMedia() {
-        // We will share local audio and video when we connect to the Room.
-
-        // Create an audio track.
-        if (localAudioTrack == nil) {
-            localAudioTrack = TVILocalAudioTrack.init(options: nil, enabled: true, name: "Microphone")
-
-            if (localAudioTrack == nil) {
-                logMessage(messageText: "Failed to create audio track")
-            }
-        }
-
-        // Create a video track which captures from the camera.
-        if (localVideoTrack == nil) {
-            prepareCamera()
         }
     }
 
@@ -134,7 +162,8 @@ class MultiPartyViewController: UIViewController {
         }
 
         // Prepare local media which we will share with Room Participants.
-        prepareLocalMedia()
+        prepareAudio()
+        prepareCamera()
 
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
@@ -184,6 +213,15 @@ class MultiPartyViewController: UIViewController {
         }
 
         // Do any necessary cleanup when leaving the room
+        if let localVideoTrack = localVideoTrack {
+            localVideoTrack.removeRenderer(localParticipantVideoView)
+            self.localVideoTrack = nil
+        }
+
+        if let camera = camera {
+            camera.stopCapture()
+            self.camera = nil
+        }
 
 
         navigationController?.popViewController(animated: true)
@@ -196,6 +234,9 @@ extension MultiPartyViewController : TVIRoomDelegate {
         logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
         NSLog("Room: \(room.name) SID: \(room.sid)")
 
+        if #available(iOS 11.0, *) {
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
     }
 
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
