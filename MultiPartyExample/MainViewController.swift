@@ -29,21 +29,8 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "MultiPartyExample"
         messageLabel.adjustsFontSizeToFitWidth = true;
         messageLabel.minimumScaleFactor = 0.75;
-
-        if let navigationController = navigationController {
-            navigationController.navigationBar.barTintColor = UIColor.init(red: 226.0/255.0,
-                                                                           green: 29.0/255.0,
-                                                                           blue: 37.0/255.0,
-                                                                           alpha: 1.0)
-            navigationController.navigationBar.tintColor = UIColor.white
-            navigationController.navigationBar.barStyle = UIBarStyle.black
-        }
-
-        roomTextField.autocapitalizationType = .none
-        roomTextField.delegate = self
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(MainViewController.dismissKeyboard))
         view.addGestureRecognizer(tap)

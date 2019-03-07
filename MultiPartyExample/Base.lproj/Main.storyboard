@@ -10,10 +10,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Main View Controller-->
+        <!--MainViewController-->
         <scene sceneID="cLs-4F-1sT">
             <objects>
-                <viewController storyboardIdentifier="ViewController" id="V09-c5-CmH" customClass="MainViewController" customModule="MultiPartyExample" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ViewController" id="V09-c5-CmH" userLabel="MainViewController" customClass="MainViewController" customModule="MultiPartyExample" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="uqm-hJ-xWL"/>
                         <viewControllerLayoutGuide type="bottom" id="cBx-Ol-9KL"/>
@@ -48,9 +48,9 @@
                                     <constraint firstAttribute="height" constant="30" id="nTR-q5-82o"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" returnKeyType="join"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="join"/>
                                 <connections>
-                                    <outlet property="delegate" destination="V09-c5-CmH" id="DhA-Ee-FHE"/>
+                                    <outlet property="delegate" destination="V09-c5-CmH" id="Pu6-YC-MGT"/>
                                 </connections>
                             </textField>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ssx-To-aiU" userLabel="Room Line">
@@ -87,7 +87,8 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="QEX-CO-QCj"/>
                     </view>
-                    <navigationItem key="navigationItem" id="GRt-cO-4qW">
+                    <navigationItem key="navigationItem" title="MultiPartyExample" id="GRt-cO-4qW">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="ULu-MK-Sb5"/>
                         <barButtonItem key="rightBarButtonItem" title="Settings" id="pCL-i3-e6b">
                             <connections>
                                 <segue destination="anu-X7-7ll" kind="show" id="E5f-84-w2P"/>
@@ -112,9 +113,11 @@
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="wWd-cJ-C20" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="4V8-bW-IpL">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" barStyle="black" id="4V8-bW-IpL">
                         <rect key="frame" x="0.0" y="20" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="barTintColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="calibratedRGB"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
