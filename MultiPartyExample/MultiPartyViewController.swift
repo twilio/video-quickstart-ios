@@ -298,6 +298,15 @@ class MultiPartyViewController: UIViewController {
 
         currentDominantSpeaker = dominantSpeaker
     }
+
+    func updateAudioState(hasAudio: Bool,
+                          for participant: TVIRemoteParticipant) {
+        let viewTag = participant.hashValue
+        if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
+            // Stop rendering
+            remoteView.hasAudio = hasAudio
+        }
+    }
 }
 
 // MARK: TVIRoomDelegate
@@ -436,6 +445,7 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
         // remote Participant's audio now.
 
         logMessage(messageText: "Subscribed to \(publication.trackName) audio track for Participant \(participant.identity)")
+        updateAudioState(hasAudio: true, for: participant)
     }
 
     func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
@@ -446,6 +456,7 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
         // remote Participant's audio.
 
         logMessage(messageText: "Unsubscribed from \(publication.trackName) audio track for Participant \(participant.identity)")
+        updateAudioState(hasAudio: false, for: participant)
     }
 
     func remoteParticipant(_ participant: TVIRemoteParticipant,
@@ -461,11 +472,13 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            enabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) enabled \(publication.trackName) audio track")
+        updateAudioState(hasAudio: true, for: participant)
     }
 
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) disabled \(publication.trackName) audio track")
+        updateAudioState(hasAudio: false, for: participant)
     }
 
     func failedToSubscribe(toAudioTrack publication: TVIRemoteAudioTrackPublication,

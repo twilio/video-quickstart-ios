@@ -12,6 +12,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="RemoteParticipantView" customModule="MultiPartyExample" customModuleProvider="target">
             <connections>
+                <outlet property="audioIndicator" destination="3ac-os-ZlJ" id="gNV-UE-QiB"/>
                 <outlet property="contentView" destination="xhF-bo-3wH" id="88w-ur-Khw"/>
                 <outlet property="noVideoImage" destination="C3c-00-Xd3" id="7vR-9f-3TW"/>
                 <outlet property="videoView" destination="DnR-nN-jn3" id="7vc-ps-4TM"/>
@@ -22,9 +23,11 @@
             <rect key="frame" x="0.0" y="0.0" width="207" height="328"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
-                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DnR-nN-jn3" customClass="TVIVideoView">
+                <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DnR-nN-jn3" customClass="TVIVideoView">
                     <rect key="frame" x="0.0" y="0.0" width="207" height="328"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <viewLayoutGuide key="safeArea" id="74F-mO-XNF"/>
                 </view>
                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="no-video-white" translatesAutoresizingMaskIntoConstraints="NO" id="C3c-00-Xd3">
                     <rect key="frame" x="73.5" y="134" width="60" height="60"/>
@@ -33,20 +36,25 @@
                         <constraint firstAttribute="height" constant="60" id="eUs-ka-Zxx"/>
                     </constraints>
                 </imageView>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="3ac-os-ZlJ" userLabel="Audio Indicator">
+                    <rect key="frame" x="171" y="288" width="20" height="20"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="20" id="Q4l-X8-oza"/>
+                        <constraint firstAttribute="height" constant="20" id="QE8-zu-utT"/>
+                    </constraints>
+                </imageView>
             </subviews>
             <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <color key="tintColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="calibratedRGB"/>
             <constraints>
-                <constraint firstItem="DnR-nN-jn3" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" id="0Wq-ZN-GVL"/>
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerX" secondItem="1Jt-2h-zap" secondAttribute="centerX" id="9VO-v0-ICD"/>
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerY" secondItem="1Jt-2h-zap" secondAttribute="centerY" id="Itq-ad-ycO"/>
-                <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="DnR-nN-jn3" secondAttribute="trailing" id="ilZ-6e-aRp"/>
-                <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="DnR-nN-jn3" secondAttribute="bottom" id="paB-TM-Z7g"/>
-                <constraint firstItem="DnR-nN-jn3" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" id="vli-QG-cUG"/>
+                <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="3ac-os-ZlJ" secondAttribute="trailing" constant="16" id="d2g-U2-hAI"/>
+                <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="3ac-os-ZlJ" secondAttribute="bottom" constant="20" id="o4l-sF-0vd"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <viewLayoutGuide key="safeArea" id="1Jt-2h-zap"/>
-            <point key="canvasLocation" x="-820" y="-149.32533733133434"/>
+            <point key="canvasLocation" x="-686" y="-122"/>
         </view>
     </objects>
     <resources>

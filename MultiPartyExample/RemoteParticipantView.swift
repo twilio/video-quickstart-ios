@@ -2,7 +2,6 @@
 //  RemoteParticipantView.swift
 //  MultiPartyExample
 //
-//  Created by Ryan Payne on 3/8/19.
 //  Copyright © 2019 Twilio, Inc. All rights reserved.
 //
 
@@ -15,6 +14,7 @@ class RemoteParticipantView: UIView {
     @IBOutlet var contentView: UIView!
     @IBOutlet weak var videoView: TVIVideoView!
     @IBOutlet weak var noVideoImage: UIImageView!
+    @IBOutlet weak var audioIndicator: UIImageView!
 
     var isDominantSpeaker: Bool = false {
         willSet {
@@ -25,6 +25,16 @@ class RemoteParticipantView: UIView {
                                                  alpha: 1.0).cgColor
             } else {
                 layer.borderColor = UIColor.white.cgColor
+            }
+        }
+    }
+
+    var hasAudio: Bool = false {
+        willSet {
+            if newValue == true {
+                audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-unmuted-white")
+            } else {
+                audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-muted-white")
             }
         }
     }
@@ -54,6 +64,10 @@ class RemoteParticipantView: UIView {
 
         layer.borderColor = UIColor.white.cgColor
         layer.borderWidth = 2
+
+        audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
+        audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-muted-white")
 
         // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
         // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
