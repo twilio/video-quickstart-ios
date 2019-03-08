@@ -33,7 +33,7 @@ class MultiPartyViewController: UIViewController {
         super.viewDidLoad()
 
         localParticipantVideoView.layer.borderColor = UIColor.white.cgColor
-        localParticipantVideoView.layer.borderWidth = 2
+        localParticipantVideoView.layer.borderWidth = 4
 
         messageLabel.adjustsFontSizeToFitWidth = true;
         messageLabel.minimumScaleFactor = 0.75;
@@ -247,6 +247,7 @@ class MultiPartyViewController: UIViewController {
 
         // We will bet that a hash collision between two unique SIDs is very rare.
         remoteView.tag = remoteParticipant.hashValue
+        remoteView.identity = remoteParticipant.identity
         view.addSubview(remoteView)
         remoteParticipantViews.append(remoteView)
     }

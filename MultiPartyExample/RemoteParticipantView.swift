@@ -15,6 +15,13 @@ class RemoteParticipantView: UIView {
     @IBOutlet weak var videoView: TVIVideoView!
     @IBOutlet weak var noVideoImage: UIImageView!
     @IBOutlet weak var audioIndicator: UIImageView!
+    @IBOutlet weak var identityLabel : UILabel!
+
+    var identity: String? {
+        willSet {
+            identityLabel.text = newValue
+        }
+    }
 
     var isDominantSpeaker: Bool = false {
         willSet {
@@ -63,7 +70,9 @@ class RemoteParticipantView: UIView {
         contentView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
 
         layer.borderColor = UIColor.white.cgColor
-        layer.borderWidth = 2
+        layer.borderWidth = 4
+
+        identityLabel.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
         audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
@@ -72,6 +81,7 @@ class RemoteParticipantView: UIView {
         // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
         // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
         videoView.contentMode = .scaleAspectFill
+        contentView.sendSubviewToBack(videoView)
         videoView.isHidden = true
         videoView.delegate = self
 
