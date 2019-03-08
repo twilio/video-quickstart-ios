@@ -296,7 +296,13 @@ extension MultiPartyViewController : TVIRoomDelegate {
         NSLog("Room: \(room.name) SID: \(room.sid)")
 
         // Iterate over the current room participants and display them
+        for remoteParticipant in room.remoteParticipants {
+            remoteParticipant.delegate = self
 
+            if remoteParticipantViews.count < kMaxRemoteParticipants {
+                setupRemoteParticipantView(remoteParticipant: remoteParticipant)
+            }
+        }
 
         if #available(iOS 11.0, *) {
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
