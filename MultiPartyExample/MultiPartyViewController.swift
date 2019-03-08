@@ -13,7 +13,7 @@ class MultiPartyViewController: UIViewController {
     // MARK: View Controller Members
     var roomName: String?
     var accessToken: String?
-    var remoteParticipantViews: [TVIVideoView] = []
+    var remoteParticipantViews: [RemoteParticipantView] = []
     let kMaxRemoteParticipants = 3
 
     // Video SDK components
@@ -22,6 +22,8 @@ class MultiPartyViewController: UIViewController {
     var localVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack?
 
+    var currentDominantSpeaker: TVIRemoteParticipant?
+
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var localParticipantVideoView: TVIVideoView!
@@ -29,6 +31,9 @@ class MultiPartyViewController: UIViewController {
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        localParticipantVideoView.layer.borderColor = UIColor.white.cgColor
+        localParticipantVideoView.layer.borderWidth = 2
 
         messageLabel.adjustsFontSizeToFitWidth = true;
         messageLabel.minimumScaleFactor = 0.75;
@@ -233,28 +238,17 @@ class MultiPartyViewController: UIViewController {
             self.camera = nil
         }
 
-
         navigationController?.popViewController(animated: true)
     }
 
     func setupRemoteParticipantView(remoteParticipant: TVIRemoteParticipant) {
         // Create a `TVIVideoView` programmatically
-        if let remoteView = TVIVideoView.init(frame: CGRect.zero, delegate:self) {
-            // We will bet that a hash collision between two unique SIDs is very rare.
-            remoteView.tag = remoteParticipant.hashValue
+        let remoteView = RemoteParticipantView.init(frame: CGRect.zero)
 
-            // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
-            // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
-            remoteView.contentMode = .scaleAspectFill;
-
-            // Double tap to change the content mode.
-//            let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.changeRemoteVideoAspect))
-//            recognizerDoubleTap.numberOfTapsRequired = 2
-//            remoteView.addGestureRecognizer(recognizerDoubleTap)
-
-            view.addSubview(remoteView)
-            remoteParticipantViews.append(remoteView)
-        }
+        // We will bet that a hash collision between two unique SIDs is very rare.
+        remoteView.tag = remoteParticipant.hashValue
+        view.addSubview(remoteView)
+        remoteParticipantViews.append(remoteView)
     }
 
     func removeRemoteParticipantView(remoteParticipant: TVIRemoteParticipant) {
@@ -267,24 +261,42 @@ class MultiPartyViewController: UIViewController {
         }
     }
 
-    func addVideoTrack(from publication: TVIRemoteVideoTrackPublication,
-                       for participant: TVIRemoteParticipant) {
+    func displayVideoTrack(_ videoTrack: TVIRemoteVideoTrack,
+                           for participant: TVIRemoteParticipant) {
         let viewTag = participant.hashValue
-        if let remoteView = view.viewWithTag(viewTag) as? TVIVideoRenderer,
-            let remoteTrack = publication.remoteTrack {
+        if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
             // Start rendering
-            remoteTrack.addRenderer(remoteView);
+            videoTrack.addRenderer(remoteView.videoView);
+            remoteView.hasVideo = true
         }
     }
 
-    func removeVideoTrack(from publication: TVIRemoteVideoTrackPublication,
+    func removeVideoTrack(_ videoTrack: TVIRemoteVideoTrack,
                           for participant: TVIRemoteParticipant) {
         let viewTag = participant.hashValue
-        if let remoteView = view.viewWithTag(viewTag) as? TVIVideoRenderer,
-            let remoteTrack = publication.remoteTrack {
+        if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
             // Stop rendering
-            remoteTrack.removeRenderer(remoteView);
+            videoTrack.removeRenderer(remoteView.videoView);
+            remoteView.hasVideo = false
         }
+    }
+
+    func updateDominantSpeaker(dominantSpeaker: TVIRemoteParticipant?) {
+        if let currentDominantSpeaker = currentDominantSpeaker {
+            let viewTag = currentDominantSpeaker.hashValue
+            if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
+                remoteView.isDominantSpeaker = false
+            }
+        }
+
+        if let dominantSpeaker = dominantSpeaker {
+            let viewTag = dominantSpeaker.hashValue
+            if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
+                remoteView.isDominantSpeaker = true
+            }
+        }
+
+        currentDominantSpeaker = dominantSpeaker
     }
 }
 
@@ -330,7 +342,7 @@ extension MultiPartyViewController : TVIRoomDelegate {
     }
 
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
-
+        // TODO: If we disconnected due to an error, display the message, and then dismiss once it is dismissed
     }
 
     func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
@@ -356,7 +368,7 @@ extension MultiPartyViewController : TVIRoomDelegate {
     }
 
     func room(_ room: TVIRoom, dominantSpeakerDidChange participant: TVIRemoteParticipant?) {
-
+        updateDominantSpeaker(dominantSpeaker: participant)
     }
 }
 
@@ -402,7 +414,7 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
         // remote Participant's video frames now.
 
         logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
-        addVideoTrack(from: publication, for: participant)
+        displayVideoTrack(videoTrack, for: participant)
     }
 
     func unsubscribed(from videoTrack: TVIRemoteVideoTrack,
@@ -413,7 +425,7 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
         // remote Participant's video.
 
         logMessage(messageText: "Unsubscribed from \(publication.trackName) video track for Participant \(participant.identity)")
-        removeVideoTrack(from: publication, for: participant)
+        removeVideoTrack(videoTrack, for: participant)
     }
 
     func subscribed(to audioTrack: TVIRemoteAudioTrack,
@@ -466,13 +478,6 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
                            error: Error,
                            for participant: TVIRemoteParticipant) {
         logMessage(messageText: "FailedToSubscribe \(publication.trackName) video track, error = \(String(describing: error))")
-    }
-}
-
-// MARK: TVIVideoViewDelegate
-extension MultiPartyViewController : TVIVideoViewDelegate {
-    func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
-        self.view.setNeedsLayout()
     }
 }
 

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="RemoteParticipantView" customModule="MultiPartyExample" customModuleProvider="target">
+            <connections>
+                <outlet property="contentView" destination="xhF-bo-3wH" id="88w-ur-Khw"/>
+                <outlet property="noVideoImage" destination="C3c-00-Xd3" id="7vR-9f-3TW"/>
+                <outlet property="videoView" destination="DnR-nN-jn3" id="7vc-ps-4TM"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="xhF-bo-3wH">
+            <rect key="frame" x="0.0" y="0.0" width="207" height="328"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DnR-nN-jn3" customClass="TVIVideoView">
+                    <rect key="frame" x="0.0" y="0.0" width="207" height="328"/>
+                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                </view>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="no-video-white" translatesAutoresizingMaskIntoConstraints="NO" id="C3c-00-Xd3">
+                    <rect key="frame" x="73.5" y="134" width="60" height="60"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="60" id="ZYz-Mq-BD8"/>
+                        <constraint firstAttribute="height" constant="60" id="eUs-ka-Zxx"/>
+                    </constraints>
+                </imageView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <color key="tintColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstItem="DnR-nN-jn3" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" id="0Wq-ZN-GVL"/>
+                <constraint firstItem="C3c-00-Xd3" firstAttribute="centerX" secondItem="1Jt-2h-zap" secondAttribute="centerX" id="9VO-v0-ICD"/>
+                <constraint firstItem="C3c-00-Xd3" firstAttribute="centerY" secondItem="1Jt-2h-zap" secondAttribute="centerY" id="Itq-ad-ycO"/>
+                <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="DnR-nN-jn3" secondAttribute="trailing" id="ilZ-6e-aRp"/>
+                <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="DnR-nN-jn3" secondAttribute="bottom" id="paB-TM-Z7g"/>
+                <constraint firstItem="DnR-nN-jn3" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" id="vli-QG-cUG"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="1Jt-2h-zap"/>
+            <point key="canvasLocation" x="-820" y="-149.32533733133434"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="no-video-white" width="120" height="120"/>
+    </resources>
+</document>
