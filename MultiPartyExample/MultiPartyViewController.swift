@@ -260,7 +260,6 @@ class MultiPartyViewController: UIViewController {
     func removeRemoteParticipantView(remoteParticipant: TVIRemoteParticipant) {
         let viewTag = remoteParticipant.hashValue
         if let remoteView = view.viewWithTag(viewTag) {
-            // Automatically removes us from the UIStackView's arranged subviews.
             remoteView.removeFromSuperview()
             remoteParticipantViews.removeAll { (item) -> Bool in
                 return item == remoteView
