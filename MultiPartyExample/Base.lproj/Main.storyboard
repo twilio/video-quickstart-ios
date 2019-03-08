@@ -114,7 +114,6 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="wWd-cJ-C20" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" barStyle="black" id="4V8-bW-IpL">
-                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <color key="barTintColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="calibratedRGB"/>
@@ -189,22 +188,7 @@
                             <view contentMode="scaleAspectFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DRz-yJ-sNq" userLabel="Local Video View" customClass="TVIVideoView">
                                 <rect key="frame" x="0.0" y="88" width="186" height="270"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </view>
-                            <view contentMode="scaleAspectFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fTK-Fz-1S1" userLabel="Remote Participant 1" customClass="TVIVideoView">
-                                <rect key="frame" x="194" y="88" width="181" height="270"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </view>
-                            <view contentMode="scaleAspectFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pJN-PP-TZy" userLabel="Remote Participant 3" customClass="TVIVideoView">
-                                <rect key="frame" x="194" y="366" width="181" height="301"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </view>
-                            <view contentMode="scaleAspectFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="14I-Ku-2uo" userLabel="Remote Participant 2" customClass="TVIVideoView">
-                                <rect key="frame" x="0.0" y="366" width="186" height="301"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -218,9 +202,6 @@
                     <connections>
                         <outlet property="localParticipantVideoView" destination="DRz-yJ-sNq" id="JPA-az-wGF"/>
                         <outlet property="messageLabel" destination="oYW-94-dxs" id="Xcl-uW-tx6"/>
-                        <outlet property="remoteParticipantVideoView1" destination="fTK-Fz-1S1" id="Kg8-E5-dGu"/>
-                        <outlet property="remoteParticipantVideoView2" destination="14I-Ku-2uo" id="NEj-iy-h5v"/>
-                        <outlet property="remoteParticipantVideoView3" destination="pJN-PP-TZy" id="L09-uq-lm3"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8C1-Uf-Nke" userLabel="First Responder" sceneMemberID="firstResponder"/>

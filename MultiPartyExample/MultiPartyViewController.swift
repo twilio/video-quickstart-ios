@@ -13,6 +13,8 @@ class MultiPartyViewController: UIViewController {
     // MARK: View Controller Members
     var roomName: String?
     var accessToken: String?
+    var remoteParticipantViews: [TVIVideoView] = []
+    let kMaxRemoteParticipants = 3
 
     // Video SDK components
     var room: TVIRoom?
@@ -22,11 +24,7 @@ class MultiPartyViewController: UIViewController {
 
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var messageLabel: UILabel!
-
     @IBOutlet weak var localParticipantVideoView: TVIVideoView!
-    @IBOutlet weak var remoteParticipantVideoView1: TVIVideoView!
-    @IBOutlet weak var remoteParticipantVideoView2: TVIVideoView!
-    @IBOutlet weak var remoteParticipantVideoView3: TVIVideoView!
 
     // MARK: UIViewController
     override func viewDidLoad() {
@@ -63,19 +61,31 @@ class MultiPartyViewController: UIViewController {
 
         localParticipantVideoView.frame = CGRect.init(origin: CGPoint.init(x: 0, y: topY),
                                                       size: videoViewSize)
-        remoteParticipantVideoView1.frame = CGRect.init(origin: CGPoint.init(x: videoViewWidth, y: topY),
-                                                        size: videoViewSize)
-        remoteParticipantVideoView2.frame = CGRect.init(origin: CGPoint(x: 0, y: topY + videoViewHeight),
-                                                        size: videoViewSize)
-        remoteParticipantVideoView3.frame = CGRect.init(origin: CGPoint(x: videoViewWidth, y: topY + videoViewHeight),
-                                                        size: videoViewSize)
+
+        var index = 0
+        for remoteParticipantView in remoteParticipantViews {
+            switch index {
+            case 0:
+                remoteParticipantView.frame = CGRect.init(origin: CGPoint.init(x: videoViewWidth, y: topY),
+                                                          size: videoViewSize)
+            case 1:
+                remoteParticipantView.frame = CGRect.init(origin: CGPoint(x: 0, y: topY + videoViewHeight),
+                                                          size: videoViewSize)
+            case 2:
+                remoteParticipantView.frame = CGRect.init(origin: CGPoint(x: videoViewWidth, y: topY + videoViewHeight),
+                                                          size: videoViewSize)
+            default:
+                break
+            }
+            index += 1
+        }
     }
 
-    // MARK: Private
     func logMessage(messageText: String) {
         NSLog(messageText)
         messageLabel.text = messageText
     }
+
     func prepareAudio() {
         // Create an audio track.
         guard let localAudioTrack = TVILocalAudioTrack.init(options: nil, enabled: true, name: "Microphone") else {
@@ -83,7 +93,7 @@ class MultiPartyViewController: UIViewController {
             return
         }
 
-        logMessage(messageText: "Video track created")
+        logMessage(messageText: "Audio track created")
         self.localAudioTrack = localAudioTrack
     }
 
@@ -226,6 +236,57 @@ class MultiPartyViewController: UIViewController {
 
         navigationController?.popViewController(animated: true)
     }
+
+    func setupRemoteParticipantView(remoteParticipant: TVIRemoteParticipant) {
+        // Create a `TVIVideoView` programmatically
+        if let remoteView = TVIVideoView.init(frame: CGRect.zero, delegate:self) {
+            // We will bet that a hash collision between two unique SIDs is very rare.
+            remoteView.tag = remoteParticipant.hashValue
+
+            // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
+            // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
+            remoteView.contentMode = .scaleAspectFill;
+
+            // Double tap to change the content mode.
+//            let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.changeRemoteVideoAspect))
+//            recognizerDoubleTap.numberOfTapsRequired = 2
+//            remoteView.addGestureRecognizer(recognizerDoubleTap)
+
+            view.addSubview(remoteView)
+            remoteParticipantViews.append(remoteView)
+        }
+    }
+
+    func removeRemoteParticipantView(remoteParticipant: TVIRemoteParticipant) {
+        let viewTag = remoteParticipant.hashValue
+        if let remoteView = view.viewWithTag(viewTag) {
+            // Automatically removes us from the UIStackView's arranged subviews.
+            remoteView.removeFromSuperview()
+            remoteParticipantViews.removeAll { (item) -> Bool in
+                return item == remoteView
+            }
+        }
+    }
+
+    func addVideoTrack(from publication: TVIRemoteVideoTrackPublication,
+                       for participant: TVIRemoteParticipant) {
+        let viewTag = participant.hashValue
+        if let remoteView = view.viewWithTag(viewTag) as? TVIVideoRenderer,
+            let remoteTrack = publication.remoteTrack {
+            // Start rendering
+            remoteTrack.addRenderer(remoteView);
+        }
+    }
+
+    func removeVideoTrack(from publication: TVIRemoteVideoTrackPublication,
+                          for participant: TVIRemoteParticipant) {
+        let viewTag = participant.hashValue
+        if let remoteView = view.viewWithTag(viewTag) as? TVIVideoRenderer,
+            let remoteTrack = publication.remoteTrack {
+            // Stop rendering
+            remoteTrack.removeRenderer(remoteView);
+        }
+    }
 }
 
 // MARK: TVIRoomDelegate
@@ -233,6 +294,9 @@ extension MultiPartyViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
         logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
         NSLog("Room: \(room.name) SID: \(room.sid)")
+
+        // Iterate over the current room participants and display them
+
 
         if #available(iOS 11.0, *) {
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
@@ -265,23 +329,138 @@ extension MultiPartyViewController : TVIRoomDelegate {
     }
 
     func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
-
+        logMessage(messageText: "Reconnecting to room \(room.name), error = \(String(describing: error))")
     }
 
     func didReconnect(to room: TVIRoom) {
-
+        logMessage(messageText: "Reconnected to room \(room.name)")
     }
 
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
+        logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
+        participant.delegate = self
 
+        if remoteParticipantViews.count < kMaxRemoteParticipants {
+            setupRemoteParticipantView(remoteParticipant: participant)
+        }
     }
 
     func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
-
+        removeRemoteParticipantView(remoteParticipant: participant)
+        logMessage(messageText: "Room \(room.name), Participant \(participant.identity) disconnected")
     }
 
     func room(_ room: TVIRoom, dominantSpeakerDidChange participant: TVIRemoteParticipant?) {
 
+    }
+}
+
+// MARK: TVIRemoteParticipantDelegate
+extension MultiPartyViewController : TVIRemoteParticipantDelegate {
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           publishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
+
+        // Remote Participant has offered to share the video Track.
+
+        logMessage(messageText: "Participant \(participant.identity) published \(publication.trackName) video track")
+    }
+
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           unpublishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
+
+        // Remote Participant has stopped sharing the video Track.
+
+        logMessage(messageText: "Participant \(participant.identity) unpublished \(publication.trackName) video track")
+    }
+
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           publishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
+
+        // Remote Participant has offered to share the audio Track.
+
+        logMessage(messageText: "Participant \(participant.identity) published \(publication.trackName) audio track")
+    }
+
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           unpublishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
+
+        // Remote Participant has stopped sharing the audio Track.
+
+        logMessage(messageText: "Participant \(participant.identity) unpublished \(publication.trackName) audio track")
+    }
+
+    func subscribed(to videoTrack: TVIRemoteVideoTrack,
+                    publication: TVIRemoteVideoTrackPublication,
+                    for participant: TVIRemoteParticipant) {
+
+        // We are subscribed to the remote Participant's video Track. We will start receiving the
+        // remote Participant's video frames now.
+
+        logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
+        addVideoTrack(from: publication, for: participant)
+    }
+
+    func unsubscribed(from videoTrack: TVIRemoteVideoTrack,
+                      publication: TVIRemoteVideoTrackPublication,
+                      for participant: TVIRemoteParticipant) {
+
+        // We are unsubscribed from the remote Participant's video Track. We will no longer receive the
+        // remote Participant's video.
+
+        logMessage(messageText: "Unsubscribed from \(publication.trackName) video track for Participant \(participant.identity)")
+        removeVideoTrack(from: publication, for: participant)
+    }
+
+    func subscribed(to audioTrack: TVIRemoteAudioTrack,
+                    publication: TVIRemoteAudioTrackPublication,
+                    for participant: TVIRemoteParticipant) {
+
+        // We are subscribed to the remote Participant's audio Track. We will start receiving the
+        // remote Participant's audio now.
+
+        logMessage(messageText: "Subscribed to \(publication.trackName) audio track for Participant \(participant.identity)")
+    }
+
+    func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
+                      publication: TVIRemoteAudioTrackPublication,
+                      for participant: TVIRemoteParticipant) {
+
+        // We are unsubscribed from the remote Participant's audio Track. We will no longer receive the
+        // remote Participant's audio.
+
+        logMessage(messageText: "Unsubscribed from \(publication.trackName) audio track for Participant \(participant.identity)")
+    }
+
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           enabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) enabled \(publication.trackName) video track")
+    }
+
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           disabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) disabled \(publication.trackName) video track")
+    }
+
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           enabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) enabled \(publication.trackName) audio track")
+    }
+
+    func remoteParticipant(_ participant: TVIRemoteParticipant,
+                           disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
+        logMessage(messageText: "Participant \(participant.identity) disabled \(publication.trackName) audio track")
+    }
+
+    func failedToSubscribe(toAudioTrack publication: TVIRemoteAudioTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) audio track, error = \(String(describing: error))")
+    }
+
+    func failedToSubscribe(toVideoTrack publication: TVIRemoteVideoTrackPublication,
+                           error: Error,
+                           for participant: TVIRemoteParticipant) {
+        logMessage(messageText: "FailedToSubscribe \(publication.trackName) video track, error = \(String(describing: error))")
     }
 }
 
