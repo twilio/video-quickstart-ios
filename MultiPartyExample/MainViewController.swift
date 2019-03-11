@@ -39,7 +39,7 @@ class MainViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        logMessage(messageText: "TwilioVideo v(\(TwilioVideo.version()))")
+        logMessage(messageText: "TwilioVideo v\(TwilioVideo.version())")
         roomTextField.text = ""
         roomTextField.becomeFirstResponder()
     }
