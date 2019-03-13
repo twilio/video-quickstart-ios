@@ -14,6 +14,7 @@ class MultiPartyViewController: UIViewController {
     var roomName: String?
     var accessToken: String?
     var remoteParticipantViews: [RemoteParticipantView] = []
+
     static let kMaxRemoteParticipants = 3
 
     // Video SDK components
@@ -484,13 +485,13 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
     func failedToSubscribe(toAudioTrack publication: TVIRemoteAudioTrackPublication,
                            error: Error,
                            for participant: TVIRemoteParticipant) {
-        logMessage(messageText: "FailedToSubscribe \(publication.trackName) audio track, error = \(String(describing: error))")
+        logMessage(messageText: "Failed to subscribe \(publication.trackName) audio track, error = \(String(describing: error))")
     }
 
     func failedToSubscribe(toVideoTrack publication: TVIRemoteVideoTrackPublication,
                            error: Error,
                            for participant: TVIRemoteParticipant) {
-        logMessage(messageText: "FailedToSubscribe \(publication.trackName) video track, error = \(String(describing: error))")
+        logMessage(messageText: "Failed to subscribe \(publication.trackName) video track, error = \(String(describing: error))")
     }
 }
 

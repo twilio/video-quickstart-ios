@@ -19,6 +19,9 @@ class MainViewController: UIViewController {
     // Configure remote URL to fetch token from
     var tokenUrl = "http://localhost:8000/token.php"
 
+    // Maximum bitrate (in kbps) used to send video.
+    static let kMaxVideoBitrate = UInt(1500)
+
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var connectButton: UIButton?
     @IBOutlet weak var roomTextField: UITextField?
@@ -39,6 +42,14 @@ class MainViewController: UIViewController {
 
         logMessage(messageText: "Twilio Video v\(TwilioVideo.version())")
         roomTextField?.becomeFirstResponder()
+
+        /*
+         * Choose default settings that are appropriate for a multi-party Group Room.
+         * In order to ensure good quality of service for all users, the Client selects VP8 simulcast.
+         * Since the video being shared is VGA the Client restricts the amount of bandwidth used for publishing video.
+         */
+        Settings.shared.videoCodec = TVIVp8Codec(simulcast: true)
+        Settings.shared.maxVideoBitrate = 1024 * MainViewController.kMaxVideoBitrate
     }
 
     override func viewWillAppear(_ animated: Bool) {
