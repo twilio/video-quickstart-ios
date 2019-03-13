@@ -20,45 +20,49 @@ class MainViewController: UIViewController {
     var tokenUrl = "http://localhost:8000/token.php"
 
     // MARK: UI Element Outlets and handles
-    @IBOutlet weak var connectButton: UIButton!
-    @IBOutlet weak var roomTextField: UITextField!
-    @IBOutlet weak var roomLine: UIView!
-    @IBOutlet weak var roomLabel: UILabel!
-    @IBOutlet weak var messageLabel: UILabel!
+    @IBOutlet weak var connectButton: UIButton?
+    @IBOutlet weak var roomTextField: UITextField?
+    @IBOutlet weak var roomLine: UIView?
+    @IBOutlet weak var roomLabel: UILabel?
+    @IBOutlet weak var messageLabel: UILabel?
 
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        messageLabel.adjustsFontSizeToFitWidth = true;
-        messageLabel.minimumScaleFactor = 0.75;
+        messageLabel?.adjustsFontSizeToFitWidth = true
+        messageLabel?.minimumScaleFactor = 0.75
+        connectButton?.layer.cornerRadius = 4
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(MainViewController.dismissKeyboard))
         view.addGestureRecognizer(tap)
+
+        logMessage(messageText: "Twilio Video v\(TwilioVideo.version())")
+        roomTextField?.becomeFirstResponder()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        logMessage(messageText: "TwilioVideo v\(TwilioVideo.version())")
-        roomTextField.text = ""
-        roomTextField.becomeFirstResponder()
+        roomTextField?.text = ""
+        logMessage(messageText: "Twilio Video v\(TwilioVideo.version())")
     }
 
     @objc func dismissKeyboard() {
-        if roomTextField.isFirstResponder {
-            roomTextField.resignFirstResponder()
+        if let textField = self.roomTextField,
+            textField.isFirstResponder {
+            textField.resignFirstResponder()
         }
     }
 
     func logMessage(messageText: String) {
         NSLog(messageText)
-        messageLabel.text = messageText
+        messageLabel?.text = messageText
     }
 
     @IBAction func connect(_ sender: Any) {
         // An empty name is allowed, to support tokens which are scoped to a single Room.
-        guard let roomName = roomTextField.text else {
-            roomTextField.becomeFirstResponder()
+        guard let roomName = roomTextField?.text else {
+            roomTextField?.becomeFirstResponder()
             return
         }
 
@@ -67,6 +71,7 @@ class MainViewController: UIViewController {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if accessToken == "TWILIO_ACCESS_TOKEN" {
+            logMessage(messageText: "Authorizing ...")
             do {
                 accessToken = try TokenUtils.fetchToken(url: tokenUrl)
             } catch {
@@ -84,7 +89,7 @@ class MainViewController: UIViewController {
         if segue.identifier == "multiPartyViewSegue" {
             if let destinationVC = segue.destination as? MultiPartyViewController {
                 destinationVC.accessToken = accessToken
-                destinationVC.roomName = roomTextField.text
+                destinationVC.roomName = roomTextField?.text
             }
         }
     }
