@@ -56,7 +56,8 @@ class MainViewController: UIViewController {
     }
 
     @IBAction func connect(_ sender: Any) {
-        guard let roomName = roomTextField.text, !roomName.isEmpty else {
+        // An empty name is allowed, to support tokens which are scoped to a single Room.
+        guard let roomName = roomTextField.text else {
             roomTextField.becomeFirstResponder()
             return
         }
