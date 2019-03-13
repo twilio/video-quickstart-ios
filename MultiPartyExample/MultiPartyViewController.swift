@@ -14,7 +14,7 @@ class MultiPartyViewController: UIViewController {
     var roomName: String?
     var accessToken: String?
     var remoteParticipantViews: [RemoteParticipantView] = []
-    let kMaxRemoteParticipants = 3
+    static let kMaxRemoteParticipants = 3
 
     // Video SDK components
     var room: TVIRoom?
@@ -313,14 +313,14 @@ class MultiPartyViewController: UIViewController {
 // MARK: TVIRoomDelegate
 extension MultiPartyViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
-        logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
+        logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "").")
         NSLog("Room: \(room.name) SID: \(room.sid)")
 
         // Iterate over the current room participants and display them
         for remoteParticipant in room.remoteParticipants {
             remoteParticipant.delegate = self
 
-            if remoteParticipantViews.count < kMaxRemoteParticipants {
+            if remoteParticipantViews.count < MultiPartyViewController.kMaxRemoteParticipants {
                 setupRemoteParticipantView(remoteParticipant: remoteParticipant)
             }
         }
@@ -367,7 +367,7 @@ extension MultiPartyViewController : TVIRoomDelegate {
         logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
         participant.delegate = self
 
-        if remoteParticipantViews.count < kMaxRemoteParticipants {
+        if remoteParticipantViews.count < MultiPartyViewController.kMaxRemoteParticipants {
             setupRemoteParticipantView(remoteParticipant: participant)
         }
     }
