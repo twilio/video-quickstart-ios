@@ -80,7 +80,7 @@ class RemoteParticipantView: UIView {
 
         // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
         // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
-        videoView.contentMode = .scaleAspectFill
+        videoView.contentMode = .scaleAspectFit
         contentView.sendSubviewToBack(videoView)
         videoView.isHidden = true
         videoView.delegate = self

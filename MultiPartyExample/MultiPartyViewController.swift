@@ -93,7 +93,7 @@ class MultiPartyViewController: UIViewController {
 
     func prepareAudio() {
         // Create an audio track.
-        guard let localAudioTrack = TVILocalAudioTrack.init(options: nil, enabled: true, name: "Microphone") else {
+        guard let localAudioTrack = TVILocalAudioTrack(options: nil, enabled: true, name: "Microphone") else {
             logMessage(messageText: "Failed to create audio track")
             return
         }
@@ -115,7 +115,7 @@ class MultiPartyViewController: UIViewController {
             camera = TVICameraSource(delegate: self)
 
             if let camera = camera {
-                localVideoTrack = TVILocalVideoTrack.init(source: camera, enabled: true, name: "Camera")
+                localVideoTrack = TVILocalVideoTrack(source: camera, enabled: true, name: "Camera")
 
                 guard let localVideoTrack = self.localVideoTrack else {
                     logMessage(messageText: "Failed to create video track")
@@ -127,11 +127,9 @@ class MultiPartyViewController: UIViewController {
                 // Add renderer to video track for local preview
                 localVideoTrack.addRenderer(localParticipantVideoView)
 
-                if (frontCamera != nil && backCamera != nil) {
-                    // We will flip camera on tap.
-                    let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.flipCamera))
-                    localParticipantVideoView.addGestureRecognizer(tap)
-                }
+                // We will flip camera on tap.
+                let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.flipCamera))
+                localParticipantVideoView.addGestureRecognizer(tap)
 
                 camera.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
                     if let error = error {
@@ -228,14 +226,15 @@ class MultiPartyViewController: UIViewController {
         }
 
         // Do any necessary cleanup when leaving the room
-        if let localVideoTrack = localVideoTrack {
-            localVideoTrack.removeRenderer(localParticipantVideoView)
-            self.localVideoTrack = nil
-        }
 
         if let camera = camera {
             camera.stopCapture()
             self.camera = nil
+        }
+
+        if let localVideoTrack = localVideoTrack {
+            localVideoTrack.removeRenderer(localParticipantVideoView)
+            self.localVideoTrack = nil
         }
 
         navigationController?.popViewController(animated: true)
