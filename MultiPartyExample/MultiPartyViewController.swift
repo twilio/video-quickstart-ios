@@ -16,6 +16,7 @@ class MultiPartyViewController: UIViewController {
     var remoteParticipantViews: [RemoteParticipantView] = []
 
     static let kMaxRemoteParticipants = 3
+    static let kAudioIndicatorPadding = CGFloat(20)
 
     // Video SDK components
     var room: TVIRoom?
@@ -28,6 +29,7 @@ class MultiPartyViewController: UIViewController {
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var localParticipantVideoView: TVIVideoView!
+    @IBOutlet weak var localParticipantAudioIndicator: UIImageView!
 
     // MARK: UIViewController
     override func viewDidLoad() {
@@ -35,6 +37,8 @@ class MultiPartyViewController: UIViewController {
 
         localParticipantVideoView.layer.borderColor = UIColor.white.cgColor
         localParticipantVideoView.layer.borderWidth = 4
+        localParticipantAudioIndicator.layer.cornerRadius = localParticipantAudioIndicator.bounds.size.width / 2.0
+        localParticipantAudioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
 
         messageLabel.adjustsFontSizeToFitWidth = true;
         messageLabel.minimumScaleFactor = 0.75;
@@ -60,13 +64,19 @@ class MultiPartyViewController: UIViewController {
         let totalHeight = view.frame.height - topY
         let totalWidth = view.frame.width
 
-        let videoViewHeight = totalHeight / 2
-        let videoViewWidth = totalWidth / 2
+        let videoViewHeight = round(totalHeight / 2)
+        let videoViewWidth = round(totalWidth / 2)
 
-        let videoViewSize = CGSize.init(width: videoViewWidth, height: videoViewHeight)
+        let videoViewSize = CGSize(width: videoViewWidth, height: videoViewHeight)
 
-        localParticipantVideoView.frame = CGRect.init(origin: CGPoint.init(x: 0, y: topY),
-                                                      size: videoViewSize)
+        localParticipantVideoView.frame = CGRect(origin: CGPoint(x: 0, y: topY),
+                                                 size: videoViewSize)
+
+        let audioIndicatorSize = localParticipantAudioIndicator.intrinsicContentSize
+        let audioIndicatorOrigin = CGPoint(x: videoViewWidth - audioIndicatorSize.width - MultiPartyViewController.kAudioIndicatorPadding,
+                                           y: videoViewHeight + topY - audioIndicatorSize.height - MultiPartyViewController.kAudioIndicatorPadding)
+
+        localParticipantAudioIndicator.frame = CGRect(origin: audioIndicatorOrigin, size: audioIndicatorSize)
 
         var index = 0
         for remoteParticipantView in remoteParticipantViews {
@@ -102,9 +112,11 @@ class MultiPartyViewController: UIViewController {
         logMessage(messageText: "Audio track created")
         self.localAudioTrack = localAudioTrack
 
-        // We will enable/disable audio on a single tap.
+        // The Local Participant can enable/disable audio using a single tap.
         let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.toggleAudioEnabled))
         localParticipantVideoView.addGestureRecognizer(tap)
+
+        updateLocalAudioState(hasAudio: localAudioTrack.isEnabled)
     }
 
     func prepareCamera() {
@@ -140,9 +152,9 @@ class MultiPartyViewController: UIViewController {
                 }
                 localParticipantVideoView.addGestureRecognizer(tap)
 
-                let format = TVIVideoFormat()
-                format.dimensions = CMVideoDimensions(width: 480, height: 480)
-                camera.requestOutputFormat(format)
+//                let format = TVIVideoFormat()
+//                format.dimensions = CMVideoDimensions(width: 480, height: 480)
+//                camera.requestOutputFormat(format)
 
                 camera.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
                     if let error = error {
@@ -182,8 +194,8 @@ class MultiPartyViewController: UIViewController {
     @objc func toggleAudioEnabled() {
         if let localAudioTrack = self.localAudioTrack {
             localAudioTrack.isEnabled = !localAudioTrack.isEnabled
+            updateLocalAudioState(hasAudio: localAudioTrack.isEnabled)
         }
-        // TODO: Update the UI for the LocalParticipant to reflect the Track's state.
     }
 
     func connect() {
@@ -331,6 +343,10 @@ class MultiPartyViewController: UIViewController {
             // Stop rendering
             remoteView.hasAudio = hasAudio
         }
+    }
+
+    func updateLocalAudioState(hasAudio: Bool) {
+        localParticipantAudioIndicator.isHidden = hasAudio;
     }
 }
 

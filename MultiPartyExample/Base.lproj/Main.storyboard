@@ -187,6 +187,10 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="audio-muted-white" translatesAutoresizingMaskIntoConstraints="NO" id="Xva-V6-bPo" userLabel="Audio Indicator">
+                                <rect key="frame" x="124" y="313" width="20" height="20"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -197,6 +201,7 @@
                         <viewLayoutGuide key="safeArea" id="V8I-HZ-or6"/>
                     </view>
                     <connections>
+                        <outlet property="localParticipantAudioIndicator" destination="Xva-V6-bPo" id="weV-wb-aJ7"/>
                         <outlet property="localParticipantVideoView" destination="DRz-yJ-sNq" id="JPA-az-wGF"/>
                         <outlet property="messageLabel" destination="oYW-94-dxs" id="Xcl-uW-tx6"/>
                     </connections>
@@ -206,5 +211,8 @@
             <point key="canvasLocation" x="197.59999999999999" y="486.20689655172418"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="audio-muted-white" width="24" height="24"/>
+    </resources>
     <color key="tintColor" red="0.88627450980392153" green="0.11372549019607843" blue="0.14509803921568626" alpha="1" colorSpace="calibratedRGB"/>
 </document>
