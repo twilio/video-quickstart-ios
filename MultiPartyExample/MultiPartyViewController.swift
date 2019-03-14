@@ -401,14 +401,27 @@ extension MultiPartyViewController : TVIRoomDelegate {
 
         self.present(alertController, animated: true) {
             self.room = nil
-            if #available(iOS 11.0, *) {
-                self.setNeedsUpdateOfHomeIndicatorAutoHidden()
-            }
         }
     }
 
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
-        // TODO: If we disconnected due to an error, display the message, and then dismiss once it is dismissed
+        guard let error = error else {
+            return
+        }
+
+        NSLog("The Client was disconnected: \(error).")
+
+        let alertController = UIAlertController.init(title: "Connection Failed",
+                                                     message: "Disconnected from Room \(room.name). code:\(error._code) \(error.localizedDescription)",
+            preferredStyle: .alert)
+
+        let cancelAction = UIAlertAction.init(title: "Okay", style: .default) { (alertAction) in
+            self.leaveRoom(sender: self)
+        }
+
+        alertController.addAction(cancelAction)
+
+        self.present(alertController, animated: true)
     }
 
     func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
