@@ -36,8 +36,6 @@ class MultiPartyViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-//        localParticipantVideoView.layer.borderColor = UIColor.gray.cgColor
-//        localParticipantVideoView.layer.borderWidth = 4
         localParticipantAudioIndicator.layer.cornerRadius = localParticipantAudioIndicator.bounds.size.width / 2.0
         localParticipantAudioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
 
@@ -167,10 +165,6 @@ class MultiPartyViewController: UIViewController {
                     tap.require(toFail: recongnizer)
                 }
                 localParticipantVideoView.addGestureRecognizer(tap)
-
-//                let format = TVIVideoFormat()
-//                format.dimensions = CMVideoDimensions(width: 480, height: 480)
-//                camera.requestOutputFormat(format)
 
                 camera.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
                     if let error = error {
