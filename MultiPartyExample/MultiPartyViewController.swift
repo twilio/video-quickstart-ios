@@ -101,6 +101,10 @@ class MultiPartyViewController: UIViewController {
 
         logMessage(messageText: "Audio track created")
         self.localAudioTrack = localAudioTrack
+
+        // We will enable/disable audio on a single tap.
+        let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.toggleAudioEnabled))
+        localParticipantVideoView.addGestureRecognizer(tap)
     }
 
     func prepareCamera() {
@@ -128,9 +132,17 @@ class MultiPartyViewController: UIViewController {
                 // Add renderer to video track for local preview
                 localVideoTrack.addRenderer(localParticipantVideoView)
 
-                // We will flip camera on tap.
+                // We will flip camera on double tap.
                 let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.flipCamera))
+                tap.numberOfTouchesRequired = 2;
+                if let recongnizer = localParticipantVideoView.gestureRecognizers?.first {
+                    tap.require(toFail: recongnizer)
+                }
                 localParticipantVideoView.addGestureRecognizer(tap)
+
+                let format = TVIVideoFormat()
+                format.dimensions = CMVideoDimensions(width: 480, height: 480)
+                camera.requestOutputFormat(format)
 
                 camera.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
                     if let error = error {
@@ -140,8 +152,7 @@ class MultiPartyViewController: UIViewController {
                     }
                 }
             }
-        }
-        else {
+        } else {
             self.logMessage(messageText:"No front or back capture source found!")
         }
     }
@@ -166,6 +177,13 @@ class MultiPartyViewController: UIViewController {
                 }
             }
         }
+    }
+
+    @objc func toggleAudioEnabled() {
+        if let localAudioTrack = self.localAudioTrack {
+            localAudioTrack.isEnabled = !localAudioTrack.isEnabled
+        }
+        // TODO: Update the UI for the LocalParticipant to reflect the Track's state.
     }
 
     func connect() {
