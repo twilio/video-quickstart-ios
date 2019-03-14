@@ -47,9 +47,8 @@
                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DnR-nN-jn3" customClass="TVIVideoView">
-                    <rect key="frame" x="0.0" y="0.0" width="207" height="328"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DnR-nN-jn3" customClass="TVIVideoView">
+                    <rect key="frame" x="4" y="4" width="199" height="320"/>
                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <viewLayoutGuide key="safeArea" id="74F-mO-XNF"/>
                 </view>
@@ -63,7 +62,11 @@
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerY" secondItem="1Jt-2h-zap" secondAttribute="centerY" id="Itq-ad-ycO"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="3ac-os-ZlJ" secondAttribute="trailing" constant="16" id="d2g-U2-hAI"/>
                 <constraint firstItem="pSL-dN-LvB" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" id="fKI-9b-0Vd"/>
+                <constraint firstItem="DnR-nN-jn3" firstAttribute="trailing" secondItem="1Jt-2h-zap" secondAttribute="trailing" constant="-4" id="gOU-oq-DmQ"/>
+                <constraint firstItem="DnR-nN-jn3" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="4" id="gtz-kF-0ud"/>
+                <constraint firstItem="DnR-nN-jn3" firstAttribute="bottom" secondItem="1Jt-2h-zap" secondAttribute="bottom" constant="-4" id="ime-fL-zDK"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="3ac-os-ZlJ" secondAttribute="bottom" constant="20" id="o4l-sF-0vd"/>
+                <constraint firstItem="DnR-nN-jn3" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="4" id="qWW-yu-rmW"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <viewLayoutGuide key="safeArea" id="1Jt-2h-zap"/>
@@ -71,6 +74,6 @@
         </view>
     </objects>
     <resources>
-        <image name="no-video-white" width="120" height="120"/>
+        <image name="no-video-white" width="60" height="60"/>
     </resources>
 </document>

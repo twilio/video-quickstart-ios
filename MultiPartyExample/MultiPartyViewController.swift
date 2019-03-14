@@ -17,7 +17,7 @@ class MultiPartyViewController: UIViewController {
 
     static let kMaxRemoteParticipants = 3
     static let kAudioIndicatorPadding = CGFloat(20)
-    static let kTextPadding = CGFloat(10)
+    static let kTextPadding = CGFloat(4)
 
     // Video SDK components
     var room: TVIRoom?
@@ -36,8 +36,8 @@ class MultiPartyViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        localParticipantVideoView.layer.borderColor = UIColor.white.cgColor
-        localParticipantVideoView.layer.borderWidth = 4
+//        localParticipantVideoView.layer.borderColor = UIColor.gray.cgColor
+//        localParticipantVideoView.layer.borderWidth = 4
         localParticipantAudioIndicator.layer.cornerRadius = localParticipantAudioIndicator.bounds.size.width / 2.0
         localParticipantAudioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
 
@@ -60,22 +60,19 @@ class MultiPartyViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
-        var layoutFrame = view.bounds
+        var layoutFrame = self.view.bounds
         if #available(iOS 11.0, *) {
             // Ensure the preview fits in the safe area.
             let safeAreaGuide = self.view.safeAreaLayoutGuide
             layoutFrame = safeAreaGuide.layoutFrame
-            bottomRight.x = layoutFrame.origin.x + layoutFrame.width
-            bottomRight.y = layoutFrame.origin.y + layoutFrame.height
         }
 
         // Layout the message label.
-        messageLabel.preferredMaxLayoutWidth = layoutFrame.width - (MultiPartyViewController.kTextPadding * 2)
+        messageLabel.preferredMaxLayoutWidth = layoutFrame.width - (MultiPartyViewController.kTextPadding * 4)
         messageLabel.frame = CGRect(x: layoutFrame.minX + MultiPartyViewController.kTextPadding,
                                     y: layoutFrame.minY + MultiPartyViewController.kTextPadding,
-                                    width: layoutFrame.width - (MultiPartyViewController.kTextPadding * 2),
-                                    height: 20).integral
+                                    width: layoutFrame.width - (MultiPartyViewController.kTextPadding * 4),
+                                    height: 18).integral
 
         let topY = messageLabel.frame.maxY
         let totalHeight = layoutFrame.height - topY
@@ -86,13 +83,15 @@ class MultiPartyViewController: UIViewController {
 
         let videoViewSize = CGSize(width: videoViewWidth, height: videoViewHeight)
 
+        // Layout local Participant
         localParticipantVideoView.frame = CGRect(origin: CGPoint(x: layoutFrame.minX, y: topY),
-                                                 size: videoViewSize)
+                                                 size: videoViewSize).insetBy(dx: 4, dy: 4)
 
         let audioIndicatorSize = localParticipantAudioIndicator.intrinsicContentSize
         let audioIndicatorOrigin = CGPoint(x: layoutFrame.minX + videoViewWidth - audioIndicatorSize.width - MultiPartyViewController.kAudioIndicatorPadding,
                                            y: videoViewHeight + topY - audioIndicatorSize.height - MultiPartyViewController.kAudioIndicatorPadding)
 
+        // Layout remote Participants
         localParticipantAudioIndicator.frame = CGRect(origin: audioIndicatorOrigin, size: audioIndicatorSize)
 
         var index = 0
