@@ -17,6 +17,7 @@ class MultiPartyViewController: UIViewController {
 
     static let kMaxRemoteParticipants = 3
     static let kAudioIndicatorPadding = CGFloat(20)
+    static let kTextPadding = CGFloat(10)
 
     // Video SDK components
     var room: TVIRoom?
@@ -59,21 +60,37 @@ class MultiPartyViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        let topY = (messageLabel.frame.origin.y + messageLabel.frame.height)
+        var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
+        var layoutFrame = view.bounds
+        if #available(iOS 11.0, *) {
+            // Ensure the preview fits in the safe area.
+            let safeAreaGuide = self.view.safeAreaLayoutGuide
+            layoutFrame = safeAreaGuide.layoutFrame
+            bottomRight.x = layoutFrame.origin.x + layoutFrame.width
+            bottomRight.y = layoutFrame.origin.y + layoutFrame.height
+        }
 
-        let totalHeight = view.frame.height - topY
-        let totalWidth = view.frame.width
+        // Layout the message label.
+        messageLabel.preferredMaxLayoutWidth = layoutFrame.width - (MultiPartyViewController.kTextPadding * 2)
+        messageLabel.frame = CGRect(x: layoutFrame.minX + MultiPartyViewController.kTextPadding,
+                                    y: layoutFrame.minY + MultiPartyViewController.kTextPadding,
+                                    width: layoutFrame.width - (MultiPartyViewController.kTextPadding * 2),
+                                    height: 20).integral
+
+        let topY = messageLabel.frame.maxY
+        let totalHeight = layoutFrame.height - topY
+        let totalWidth = layoutFrame.width
 
         let videoViewHeight = round(totalHeight / 2)
         let videoViewWidth = round(totalWidth / 2)
 
         let videoViewSize = CGSize(width: videoViewWidth, height: videoViewHeight)
 
-        localParticipantVideoView.frame = CGRect(origin: CGPoint(x: 0, y: topY),
+        localParticipantVideoView.frame = CGRect(origin: CGPoint(x: layoutFrame.minX, y: topY),
                                                  size: videoViewSize)
 
         let audioIndicatorSize = localParticipantAudioIndicator.intrinsicContentSize
-        let audioIndicatorOrigin = CGPoint(x: videoViewWidth - audioIndicatorSize.width - MultiPartyViewController.kAudioIndicatorPadding,
+        let audioIndicatorOrigin = CGPoint(x: layoutFrame.minX + videoViewWidth - audioIndicatorSize.width - MultiPartyViewController.kAudioIndicatorPadding,
                                            y: videoViewHeight + topY - audioIndicatorSize.height - MultiPartyViewController.kAudioIndicatorPadding)
 
         localParticipantAudioIndicator.frame = CGRect(origin: audioIndicatorOrigin, size: audioIndicatorSize)
@@ -82,13 +99,13 @@ class MultiPartyViewController: UIViewController {
         for remoteParticipantView in remoteParticipantViews {
             switch index {
             case 0:
-                remoteParticipantView.frame = CGRect.init(origin: CGPoint.init(x: videoViewWidth, y: topY),
+                remoteParticipantView.frame = CGRect.init(origin: CGPoint.init(x: layoutFrame.minX + videoViewWidth, y: topY),
                                                           size: videoViewSize)
             case 1:
-                remoteParticipantView.frame = CGRect.init(origin: CGPoint(x: 0, y: topY + videoViewHeight),
+                remoteParticipantView.frame = CGRect.init(origin: CGPoint(x: layoutFrame.minX, y: topY + videoViewHeight),
                                                           size: videoViewSize)
             case 2:
-                remoteParticipantView.frame = CGRect.init(origin: CGPoint(x: videoViewWidth, y: topY + videoViewHeight),
+                remoteParticipantView.frame = CGRect.init(origin: CGPoint(x: layoutFrame.minX + videoViewWidth, y: topY + videoViewHeight),
                                                           size: videoViewSize)
             default:
                 break
