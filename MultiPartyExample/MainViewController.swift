@@ -42,7 +42,7 @@ class MainViewController: UIViewController {
 
         /*
          * Choose default settings that are appropriate for a multi-party Group Room.
-         * In order to ensure good quality of service for all users, the Client selects VP8 simulcast.
+         * In order to ensure good quality of service for all users, the Client prefers VP8 simulcast.
          * Since the video being shared is VGA the Client restricts the amount of bandwidth used for publishing video.
          */
         Settings.shared.videoCodec = TVIVp8Codec(simulcast: true)
@@ -70,7 +70,7 @@ class MainViewController: UIViewController {
     }
 
     @IBAction func connect(_ sender: Any) {
-        // An empty name is allowed, to support tokens which are scoped to a single Room.
+        // An empty name is allowed, in order to support tokens which are scoped to a single Room.
         guard let roomName = roomTextField?.text else {
             roomTextField?.becomeFirstResponder()
             return
@@ -78,8 +78,7 @@ class MainViewController: UIViewController {
 
         dismissKeyboard()
 
-        // Configure access token either from server or manually.
-        // If the default wasn't changed, try fetching from server.
+        // Authenticate the Client. If a token wasn't provided, try fetching one from the Server.
         if accessToken == "TWILIO_ACCESS_TOKEN" {
             logMessage(messageText: "Authorizing ...")
             do {

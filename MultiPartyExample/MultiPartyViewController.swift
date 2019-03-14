@@ -217,6 +217,9 @@ class MultiPartyViewController: UIViewController {
         // Connect to the Room using the options we provided.
         room = TwilioVideo.connect(with: connectOptions, delegate: self)
 
+        // Sometimes a Participant might not interact with their device for a long time in a conference.
+        UIApplication.shared.isIdleTimerDisabled = true
+
         logMessage(messageText: "Attempting to connect to room: \(roomName)")
     }
 
@@ -237,6 +240,9 @@ class MultiPartyViewController: UIViewController {
             localVideoTrack.removeRenderer(localParticipantVideoView)
             self.localVideoTrack = nil
         }
+
+        // The Client is no longer in a conference, allow the Participant's device to idle.
+        UIApplication.shared.isIdleTimerDisabled = false
 
         navigationController?.popViewController(animated: true)
     }
