@@ -40,9 +40,6 @@ class MainViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(MainViewController.dismissKeyboard))
         view.addGestureRecognizer(tap)
 
-        logMessage(messageText: "Twilio Video v\(TwilioVideo.version())")
-        roomTextField?.becomeFirstResponder()
-
         /*
          * Choose default settings that are appropriate for a multi-party Group Room.
          * In order to ensure good quality of service for all users, the Client selects VP8 simulcast.
@@ -50,6 +47,8 @@ class MainViewController: UIViewController {
          */
         Settings.shared.videoCodec = TVIVp8Codec(simulcast: true)
         Settings.shared.maxVideoBitrate = 1024 * MainViewController.kMaxVideoBitrate
+
+        roomTextField?.becomeFirstResponder()
     }
 
     override func viewWillAppear(_ animated: Bool) {

@@ -180,7 +180,7 @@ class MultiPartyViewController: UIViewController {
         prepareCamera()
 
         // Preparing the connect options with the access token that we fetched (or hardcoded).
-        let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
+        let connectOptions = TVIConnectOptions(token: accessToken) { (builder) in
 
             // Enable Dominant Speaker functionality
             builder.isDominantSpeakerEnabled = true
