@@ -84,7 +84,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="QEX-CO-QCj"/>
                     </view>
-                    <navigationItem key="navigationItem" title="MultiPartyExample" id="GRt-cO-4qW">
+                    <navigationItem key="navigationItem" title="Multi-Party Example" id="GRt-cO-4qW">
                         <barButtonItem key="backBarButtonItem" title="Back" id="ULu-MK-Sb5"/>
                         <barButtonItem key="rightBarButtonItem" title="Settings" id="pCL-i3-e6b">
                             <connections>
