@@ -12,6 +12,7 @@ import TwilioVideo
 class RemoteParticipantView: UIView {
 
     @IBOutlet var contentView: UIView!
+    @IBOutlet weak var containerView: UIView!
     @IBOutlet weak var videoView: TVIVideoView!
     @IBOutlet weak var noVideoImage: UIImageView!
     @IBOutlet weak var audioIndicator: UIImageView!
@@ -26,12 +27,9 @@ class RemoteParticipantView: UIView {
     var isDominantSpeaker: Bool = false {
         willSet {
             if newValue == true {
-                layer.borderColor = UIColor.init(red: 226.0/255.0,
-                                                 green: 29.0/255.0,
-                                                 blue: 37.0/255.0,
-                                                 alpha: 1.0).cgColor
+                contentView.backgroundColor = UIColor.red
             } else {
-                layer.borderColor = UIColor.white.cgColor
+                contentView.backgroundColor = UIColor.white
             }
         }
     }
@@ -70,9 +68,6 @@ class RemoteParticipantView: UIView {
         contentView.frame = self.bounds
         contentView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
 
-        layer.borderColor = UIColor.white.cgColor
-        layer.borderWidth = 4
-
         identityLabel.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
@@ -84,7 +79,6 @@ class RemoteParticipantView: UIView {
         // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
         // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
         videoView.contentMode = .scaleAspectFit
-        contentView.sendSubviewToBack(videoView)
         videoView.isHidden = true
         videoView.alpha = 0.0
         videoView.delegate = self
