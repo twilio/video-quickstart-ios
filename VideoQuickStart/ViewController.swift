@@ -406,7 +406,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
                     publication: TVIRemoteVideoTrackPublication,
                     for participant: TVIRemoteParticipant) {
         
-        // We are subscribed to the remote Participant's audio Track. We will start receiving the
+        // We are subscribed to the remote Participant's video Track. We will start receiving the
         // remote Participant's video frames now.
         
         logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
