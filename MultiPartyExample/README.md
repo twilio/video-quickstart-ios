@@ -39,11 +39,9 @@ This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device or si
 
 Once you have setup your access token, install and run the example. You will be presented with the following screen:
 
-**TODO: Update with a screenshot of the actual UI**
+<kbd><img width="360px" src="../images/quickstart/multi-party-home-screen.png"/></kbd>
 
-<kbd><img width="360px" src="../images/quickstart/replaykit-launch-ios12.png"/></kbd>
-
-Tapping "Connect" will authorize your Client, and then connect to a Room sharing audio and video. Once you've connected, video from up to 3 Remote Participants is shown, and the most recent dominant speaker is highlighted.
+Tapping "Connect" will authorize your Client, and then connect to a Room sharing audio and video. Once you've connected, video from up to 3 Remote Participants is shown, and the most recent dominant speaker is highlighted. Single tap on your Participant to mute and un-mute audio. Double tap on your Participant to switch the camera from front to back.
 
 ### Known Issues
 
