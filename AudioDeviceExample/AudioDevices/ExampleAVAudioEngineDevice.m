@@ -332,16 +332,28 @@ static size_t kMaximumFramesPerBuffer = 3072;
 }
 
 - (void)playMusic {
-    [self attachMusicNodeToEngine:_recordEngine player:_recordFilePlayer reverb:_recordReverb];
-    [self attachMusicNodeToEngine:_playoutEngine player:_playoutFilePlayer reverb:_playoutReverb];
+    [self attachMusicNodeToEngine:_recordEngine];
+    [self attachMusicNodeToEngine:_playoutEngine];
 }
 
-- (void)attachMusicNodeToEngine:(AVAudioEngine *)engine
-                         player:(AVAudioPlayerNode *)player
-                         reverb:(AVAudioUnitReverb *)reverb {
-    if (!_playoutEngine) {
+- (void)attachMusicNodeToEngine:(AVAudioEngine *)engine {
+    if (!engine) {
         NSLog(@"Cannot play music. AudioEngine has not been created yet.");
         return;
+    }
+
+    AVAudioPlayerNode *player = nil;
+    AVAudioUnitReverb *reverb = nil;
+
+    BOOL isPlayoutEngine = YES;
+    if (self.recordEngine == engine) {
+        isPlayoutEngine = NO;
+        player = self.recordFilePlayer;
+        reverb = self.recordReverb;
+    } else {
+        isPlayoutEngine = YES;
+        player = self.playoutFilePlayer;
+        reverb = self.playoutReverb;
     }
 
     if (player.isPlaying) {
@@ -368,8 +380,18 @@ static size_t kMaximumFramesPerBuffer = 3072;
     [engine connect:player to:reverb format:file.processingFormat];
     [engine connect:reverb to:engine.mainMixerNode format:file.processingFormat];
 
-    [player scheduleFile:file atTime:nil completionHandler:^{}];
+    [player scheduleFile:file atTime:nil completionHandler:^{
+        NSLog(@"Finished file playing");
+    }];
     [player play];
+
+    if (isPlayoutEngine) {
+        self.playoutReverb = reverb;
+        self.playoutFilePlayer = player;
+    } else {
+        self.recordReverb = reverb;
+        self.recordFilePlayer = player;
+    }
 }
 
 - (void)teardownPlayer {
@@ -631,7 +653,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     }
 
     for(int i = 0; i < audioBufferList->mNumberBuffers; i++) {
-        free(mixedAudioBufferList->mBuffers[i].mData = malloc(audioBufferList->mBuffers[i].mDataByteSize));
+        free(mixedAudioBufferList->mBuffers[i].mData);
     }
     free(mixedAudioBufferList);
 
