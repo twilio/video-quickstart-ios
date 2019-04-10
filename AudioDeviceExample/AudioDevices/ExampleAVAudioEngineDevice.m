@@ -52,6 +52,12 @@ typedef struct AudioCapturerContext {
 
     // Core Audio's VoiceProcessingIO audio unit.
     AudioUnit audioUnit;
+
+    /*
+     * Points to AVAudioEngine's manualRenderingBlock. This block is called from within the VoiceProcessingIO playout
+     * callback in order to receive mixed audio data from AVAudioEngine in real time.
+     */
+    void *renderBlock;
 } AudioCapturerContext;
 
 // The VoiceProcessingIO audio unit uses bus 0 for ouptut, and bus 1 for input.
@@ -74,9 +80,13 @@ static size_t kMaximumFramesPerBuffer = 3072;
 @property (nonatomic, assign) AudioCapturerContext *capturingContext;
 
 // AudioEngine properties
-@property (nonatomic, strong) AVAudioEngine *engine;
-@property (nonatomic, strong) AVAudioPlayerNode *player;
-@property (nonatomic, strong) AVAudioUnitReverb *reverb;
+@property (nonatomic, strong) AVAudioEngine *playoutEngine;
+@property (nonatomic, strong) AVAudioPlayerNode *playoutFilePlayer;
+@property (nonatomic, strong) AVAudioUnitReverb *playoutReverb;
+
+@property (nonatomic, strong) AVAudioEngine *recordEngine;
+@property (nonatomic, strong) AVAudioPlayerNode *recordFilePlayer;
+@property (nonatomic, strong) AVAudioUnitReverb *recordReverb;
 
 @end
 
@@ -100,17 +110,25 @@ static size_t kMaximumFramesPerBuffer = 3072;
         memset(self.renderingContext, 0, sizeof(AudioRendererContext));
 
         // Setup the AVAudioEngine along with the rendering context
-        if (![self setupAudioEngine]) {
+        if (![self setupPlayoutAudioEngine]) {
             NSLog(@"Failed to setup AVAudioEngine");
         }
 
         // The manual rendering block (called in Core Audio's VoiceProcessingIO's playout callback at real time)
-        self.renderingContext->renderBlock = (__bridge void *)(_engine.manualRenderingBlock);
+        self.renderingContext->renderBlock = (__bridge void *)(_playoutEngine.manualRenderingBlock);
 
         // Initialize the capturing context
         self.capturingContext = malloc(sizeof(AudioCapturerContext));
         memset(self.capturingContext, 0, sizeof(AudioCapturerContext));
         self.capturingContext->bufferList = &_captureBufferList;
+
+        // Setup the AVAudioEngine along with the rendering context
+        if (![self setupRecordAudioEngine]) {
+            NSLog(@"Failed to setup AVAudioEngine");
+        }
+
+        // The manual rendering block (called in Core Audio's VoiceProcessingIO's playout callback at real time)
+        self.capturingContext->renderBlock = (__bridge void *)(_recordEngine.manualRenderingBlock);
     }
 
     return self;
@@ -165,13 +183,17 @@ static size_t kMaximumFramesPerBuffer = 3072;
 #pragma mark - Private (AVAudioEngine)
 
 - (BOOL)setupAudioEngine {
-    NSAssert(_engine == nil, @"AVAudioEngine is already configured");
+    return [self setupPlayoutAudioEngine] && [self setupRecordAudioEngine];
+}
+
+- (BOOL)setupRecordAudioEngine {
+    NSAssert(_recordEngine == nil, @"AVAudioEngine is already configured");
 
     /*
      * By default AVAudioEngine will render to/from the audio device, and automatically establish connections between
      * nodes, e.g. inputNode -> effectNode -> outputNode.
      */
-    _engine = [AVAudioEngine new];
+    _recordEngine = [AVAudioEngine new];
 
     // AVAudioEngine operates on the same format as the Core Audio output bus.
     NSError *error = nil;
@@ -179,11 +201,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
     AVAudioFormat *format = [[AVAudioFormat alloc] initWithStreamDescription:&asbd];
 
     // Switch to manual rendering mode
-    [_engine stop];
-    BOOL success = [_engine enableManualRenderingMode:AVAudioEngineManualRenderingModeRealtime
-                                               format:format
-                                    maximumFrameCount:(uint32_t)kMaximumFramesPerBuffer
-                                                error:&error];
+    [_recordEngine stop];
+    BOOL success = [_recordEngine enableManualRenderingMode:AVAudioEngineManualRenderingModeRealtime
+                                                      format:format
+                                           maximumFrameCount:(uint32_t)kMaximumFramesPerBuffer
+                                                       error:&error];
     if (!success) {
         NSLog(@"Failed to setup manual rendering mode, error = %@", error);
         return NO;
@@ -194,13 +216,70 @@ static size_t kMaximumFramesPerBuffer = 3072;
      * audio data from the Video SDK and mix it in MainMixerNode. Here we connect the input node to the main mixer node.
      * InputNode -> MainMixer -> OutputNode
      */
-    [_engine connect:_engine.inputNode to:_engine.mainMixerNode format:format];
+    [_recordEngine connect:_recordEngine.inputNode to:_recordEngine.mainMixerNode format:format];
 
-    _renderingContext->renderBlock = (__bridge void *)(_engine.manualRenderingBlock);
+    _capturingContext->renderBlock = (__bridge void *)(_recordEngine.manualRenderingBlock);
+
+    // Set the block to provide input data to engine
+    AudioRendererContext *context = _capturingContext;
+    AVAudioInputNode *inputNode = _recordEngine.inputNode;
+    AudioBufferList *captureBufferList = &_captureBufferList;
+    success = [inputNode setManualRenderingInputPCMFormat:format
+                                               inputBlock: ^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
+                                                   assert(inNumberOfFrames <= kMaximumFramesPerBuffer);
+                                                   return captureBufferList;
+                                               }];
+    if (!success) {
+        NSLog(@"Failed to set the manual rendering block");
+        return NO;
+    }
+
+    success = [_recordEngine startAndReturnError:&error];
+    if (!success) {
+        NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)setupPlayoutAudioEngine {
+    NSAssert(_playoutEngine == nil, @"AVAudioEngine is already configured");
+
+    /*
+     * By default AVAudioEngine will render to/from the audio device, and automatically establish connections between
+     * nodes, e.g. inputNode -> effectNode -> outputNode.
+     */
+    _playoutEngine = [AVAudioEngine new];
+
+    // AVAudioEngine operates on the same format as the Core Audio output bus.
+    NSError *error = nil;
+    const AudioStreamBasicDescription asbd = [[[self class] activeFormat] streamDescription];
+    AVAudioFormat *format = [[AVAudioFormat alloc] initWithStreamDescription:&asbd];
+
+    // Switch to manual rendering mode
+    [_playoutEngine stop];
+    BOOL success = [_playoutEngine enableManualRenderingMode:AVAudioEngineManualRenderingModeRealtime
+                                                   format:format
+                                         maximumFrameCount:(uint32_t)kMaximumFramesPerBuffer
+                                                    error:&error];
+    if (!success) {
+        NSLog(@"Failed to setup manual rendering mode, error = %@", error);
+        return NO;
+    }
+
+    /*
+     * In manual rendering mode, AVAudioEngine won't receive audio from the microhpone. Instead, it will receive the
+     * audio data from the Video SDK and mix it in MainMixerNode. Here we connect the input node to the main mixer node.
+     * InputNode -> MainMixer -> OutputNode
+     */
+    [_playoutEngine connect:_playoutEngine.inputNode to:_playoutEngine.mainMixerNode format:format];
+
+    _renderingContext->renderBlock = (__bridge void *)(_playoutEngine.manualRenderingBlock);
 
     // Set the block to provide input data to engine
     AudioRendererContext *context = _renderingContext;
-    AVAudioInputNode *inputNode = _engine.inputNode;
+    AVAudioInputNode *inputNode = _playoutEngine.inputNode;
     success = [inputNode setManualRenderingInputPCMFormat:format
                                                inputBlock: ^const AudioBufferList * _Nullable(AVAudioFrameCount inNumberOfFrames) {
                                                    assert(inNumberOfFrames <= kMaximumFramesPerBuffer);
@@ -234,7 +313,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
         return NO;
     }
 
-    success = [_engine startAndReturnError:&error];
+    success = [_playoutEngine startAndReturnError:&error];
     if (!success) {
         NSLog(@"Failed to start AVAudioEngine, error = %@", error);
         return NO;
@@ -245,18 +324,28 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
 - (void)teardownAudioEngine {
     [self teardownPlayer];
-    [_engine stop];
-    _engine = nil;
+    [_playoutEngine stop];
+    _playoutEngine = nil;
+
+    [_recordEngine stop];
+    _recordEngine = nil;
 }
 
 - (void)playMusic {
-    if (!_engine) {
+    [self attachMusicNodeToEngine:_recordEngine player:_recordFilePlayer reverb:_recordReverb];
+    [self attachMusicNodeToEngine:_playoutEngine player:_playoutFilePlayer reverb:_playoutReverb];
+}
+
+- (void)attachMusicNodeToEngine:(AVAudioEngine *)engine
+                         player:(AVAudioPlayerNode *)player
+                         reverb:(AVAudioUnitReverb *)reverb {
+    if (!_playoutEngine) {
         NSLog(@"Cannot play music. AudioEngine has not been created yet.");
         return;
     }
 
-    if (_player.isPlaying) {
-        [_player stop];
+    if (player.isPlaying) {
+        [player stop];
     }
 
     /*
@@ -268,30 +357,38 @@ static size_t kMaximumFramesPerBuffer = 3072;
     NSURL *url = [NSURL fileURLWithPath:fileName];
     AVAudioFile *file = [[AVAudioFile alloc] initForReading:url error:nil];
 
-    _player = [[AVAudioPlayerNode alloc] init];
-    _reverb = [[AVAudioUnitReverb alloc] init];
+    player = [[AVAudioPlayerNode alloc] init];
+    reverb = [[AVAudioUnitReverb alloc] init];
 
-    [_reverb loadFactoryPreset:AVAudioUnitReverbPresetMediumHall];
-    _reverb.wetDryMix = 50;
+    [reverb loadFactoryPreset:AVAudioUnitReverbPresetMediumHall];
+    reverb.wetDryMix = 50;
 
-    [_engine attachNode:_player];
-    [_engine attachNode:_reverb];
+    [engine attachNode:player];
+    [engine attachNode:reverb];
+    [engine connect:player to:reverb format:file.processingFormat];
+    [engine connect:reverb to:engine.mainMixerNode format:file.processingFormat];
 
-    [_engine connect:_player to:_reverb format:file.processingFormat];
-    [_engine connect:_reverb to:_engine.mainMixerNode format:file.processingFormat];
-
-    [_player scheduleFile:file atTime:nil completionHandler:^{}];
-    [_player play];
+    [player scheduleFile:file atTime:nil completionHandler:^{}];
+    [player play];
 }
 
 - (void)teardownPlayer {
-    if (self.player) {
-        if (_player.isPlaying) {
-            [_player stop];
+    if (self.recordFilePlayer) {
+        if (self.recordFilePlayer.isPlaying) {
+            [self.recordFilePlayer stop];
         }
-        [self.engine detachNode:self.player];
-        [self.engine detachNode:_reverb];
-        self.player = nil;
+        [self.recordEngine detachNode:self.recordFilePlayer];
+        [self.recordEngine detachNode:self.recordReverb];
+        self.recordReverb = nil;
+    }
+
+    if (self.playoutFilePlayer) {
+        if (self.playoutFilePlayer.isPlaying) {
+            [self.playoutFilePlayer stop];
+        }
+        [self.playoutEngine detachNode:self.playoutFilePlayer];
+        [self.playoutEngine detachNode:self.playoutReverb];
+        self.playoutReverb = nil;
     }
 }
 
@@ -486,6 +583,12 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                                                          UInt32 numFrames,
                                                          AudioBufferList *bufferList) {
 
+    if (bufferList == NULL) {
+        NSLog(@"BufferList is nil");
+    } else {
+        NSLog(@"BufferList is NOT nil");
+    }
+
     if (numFrames > kMaximumFramesPerBuffer) {
         NSLog(@"Expected %u frames but got %u.", (unsigned int)kMaximumFramesPerBuffer, (unsigned int)numFrames);
         return noErr;
@@ -510,12 +613,33 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                              numFrames,
                              audioBufferList);
 
-    int8_t *audioBuffer = (int8_t *)audioBufferList->mBuffers[0].mData;
-    UInt32 audioBufferSizeInBytes = audioBufferList->mBuffers[0].mDataByteSize;
+    AudioBufferList *mixedAudioBufferList = (AudioBufferList*)malloc(sizeof(AudioBufferList));
+    mixedAudioBufferList->mNumberBuffers = audioBufferList->mNumberBuffers;
+    for(int i = 0; i < audioBufferList->mNumberBuffers; i++) {
+        mixedAudioBufferList->mBuffers[i].mNumberChannels = audioBufferList->mBuffers[i].mNumberChannels;
+        mixedAudioBufferList->mBuffers[i].mDataByteSize = audioBufferList->mBuffers[i].mDataByteSize;
+        mixedAudioBufferList->mBuffers[i].mData = malloc(audioBufferList->mBuffers[i].mDataByteSize);
+    }
+
+    OSStatus outputStatus = noErr;
+    AVAudioEngineManualRenderingBlock renderBlock = (__bridge AVAudioEngineManualRenderingBlock)(context->renderBlock);
+    const AVAudioEngineManualRenderingStatus ret = renderBlock(numFrames, mixedAudioBufferList, &outputStatus);
+
+    if (ret != AVAudioEngineManualRenderingStatusSuccess) {
+        NSLog(@"AVAudioEngine failed mix audio");
+    }
+
+    int8_t *audioBuffer = (int8_t *)mixedAudioBufferList->mBuffers[0].mData;
+    UInt32 audioBufferSizeInBytes = mixedAudioBufferList->mBuffers[0].mDataByteSize;
 
     if (context->deviceContext && audioBuffer) {
         TVIAudioDeviceWriteCaptureData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
     }
+
+    for(int i = 0; i < audioBufferList->mNumberBuffers; i++) {
+        free(mixedAudioBufferList->mBuffers[i].mData = malloc(audioBufferList->mBuffers[i].mDataByteSize));
+    }
+    free(mixedAudioBufferList);
 
     return noErr;
 }
