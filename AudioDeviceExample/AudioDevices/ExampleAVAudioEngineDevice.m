@@ -583,12 +583,6 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                                                          UInt32 numFrames,
                                                          AudioBufferList *bufferList) {
 
-    if (bufferList == NULL) {
-        NSLog(@"BufferList is nil");
-    } else {
-        NSLog(@"BufferList is NOT nil");
-    }
-
     if (numFrames > kMaximumFramesPerBuffer) {
         NSLog(@"Expected %u frames but got %u.", (unsigned int)kMaximumFramesPerBuffer, (unsigned int)numFrames);
         return noErr;
