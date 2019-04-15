@@ -18,6 +18,7 @@ class MultiPartyViewController: UIViewController {
     static let kMaxRemoteParticipants = 3
     static let kAudioIndicatorPadding = CGFloat(20)
     static let kTextPadding = CGFloat(4)
+    static let kNetworkQualityIndicatorPadding = CGFloat(10)
 
     // Video SDK components
     var room: TVIRoom?
@@ -31,7 +32,8 @@ class MultiPartyViewController: UIViewController {
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var localParticipantVideoView: TVIVideoView!
     @IBOutlet weak var localParticipantAudioIndicator: UIImageView!
-
+    @IBOutlet weak var networkQualityLevelIndicator: UIImageView!
+    
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,9 +91,15 @@ class MultiPartyViewController: UIViewController {
         let audioIndicatorOrigin = CGPoint(x: layoutFrame.minX + videoViewWidth - audioIndicatorSize.width - MultiPartyViewController.kAudioIndicatorPadding,
                                            y: videoViewHeight + topY - audioIndicatorSize.height - MultiPartyViewController.kAudioIndicatorPadding)
 
-        // Layout remote Participants
         localParticipantAudioIndicator.frame = CGRect(origin: audioIndicatorOrigin, size: audioIndicatorSize)
 
+        let networkQualityLevelIndicatorSize = networkQualityLevelIndicator.intrinsicContentSize
+        let networkQualityLevelIndicatorOrigin = CGPoint(x: layoutFrame.minX + videoViewWidth - networkQualityLevelIndicatorSize.width - MultiPartyViewController.kNetworkQualityIndicatorPadding,
+                                                         y: topY + MultiPartyViewController.kNetworkQualityIndicatorPadding)
+
+        networkQualityLevelIndicator.frame = CGRect(origin: networkQualityLevelIndicatorOrigin, size: networkQualityLevelIndicatorSize)
+
+        // Layout remote Participants
         var index = 0
         for remoteParticipantView in remoteParticipantViews {
             switch index {
@@ -224,6 +232,9 @@ class MultiPartyViewController: UIViewController {
 
             // Enable Dominant Speaker functionality
             builder.isDominantSpeakerEnabled = true
+
+            // Enable Network Quality
+            builder.isNetworkQualityEnabled = true
 
             // Use the local media that we prepared earlier.
             if let localAudioTrack = self.localAudioTrack {
@@ -358,6 +369,35 @@ class MultiPartyViewController: UIViewController {
     func updateLocalAudioState(hasAudio: Bool) {
         localParticipantAudioIndicator.isHidden = hasAudio;
     }
+
+    func updateLocalNetworkQualityLevel(networkQualityLevel: TVINetworkQualityLevel) {
+        logMessage(messageText: "Network Quality Level: \(networkQualityLevel.rawValue)")
+        var networkQualityLevelImage: UIImage?
+
+        switch networkQualityLevel {
+        case .unknown:
+            break
+        case .zero:
+            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-0")
+        case .one:
+            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-1")
+        case .two:
+            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-2")
+        case .three:
+            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-3")
+        case .four:
+            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-4")
+        case .five:
+            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-5")
+        }
+
+        if let networkQualityLevelImage = networkQualityLevelImage {
+            networkQualityLevelIndicator.isHidden = false
+            networkQualityLevelIndicator.image = networkQualityLevelImage
+        } else {
+            networkQualityLevelIndicator.isHidden = true
+        }
+    }
 }
 
 // MARK: TVIRoomDelegate
@@ -365,6 +405,8 @@ extension MultiPartyViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
         logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "").")
         NSLog("Room: \(room.name) SID: \(room.sid)")
+
+        room.localParticipant?.delegate = self
 
         // Iterate over the current room participants and display them
         for remoteParticipant in room.remoteParticipants {
@@ -442,6 +484,16 @@ extension MultiPartyViewController : TVIRoomDelegate {
 
     func room(_ room: TVIRoom, dominantSpeakerDidChange participant: TVIRemoteParticipant?) {
         updateDominantSpeaker(dominantSpeaker: participant)
+    }
+}
+
+// MARK: TVILocalParticipantDelegate
+extension MultiPartyViewController : TVILocalParticipantDelegate {
+    func localParticipant(_ participant: TVILocalParticipant,
+                          didChange networkQualityLevel: TVINetworkQualityLevel) {
+        // Local Participant netwrk quality level has changed
+        
+        updateLocalNetworkQualityLevel(networkQualityLevel: networkQualityLevel)
     }
 }
 
