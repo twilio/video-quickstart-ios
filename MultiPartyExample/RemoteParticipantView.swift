@@ -74,7 +74,7 @@ class RemoteParticipantView: UIView {
         audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
         audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-muted-white")
 
-        noVideoImage.isHidden = true
+        noVideoImage.isHidden = false
 
         // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
         // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
