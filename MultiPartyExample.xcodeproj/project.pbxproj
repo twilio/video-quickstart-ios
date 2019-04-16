@@ -12,6 +12,7 @@
 		24064FA3222EE48900BBA411 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 24064FA1222EE48900BBA411 /* Main.storyboard */; };
 		24064FA5222EE48B00BBA411 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 24064FA4222EE48B00BBA411 /* Assets.xcassets */; };
 		24064FA8222EE48B00BBA411 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 24064FA6222EE48B00BBA411 /* LaunchScreen.storyboard */; };
+		243CDB482266580900637B6B /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 243CDB472266580900637B6B /* Colors.swift */; };
 		24B231222232D7C0002FD387 /* RemoteParticipantView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 24B231212232D7C0002FD387 /* RemoteParticipantView.xib */; };
 		24B231242232D822002FD387 /* RemoteParticipantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B231232232D822002FD387 /* RemoteParticipantView.swift */; };
 		24C934CF22315E66006D7657 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C934CC22315E66006D7657 /* SettingsTableViewController.swift */; };
@@ -28,6 +29,7 @@
 		24064FA4222EE48B00BBA411 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		24064FA7222EE48B00BBA411 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		24064FA9222EE48B00BBA411 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		243CDB472266580900637B6B /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		24B231212232D7C0002FD387 /* RemoteParticipantView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RemoteParticipantView.xib; sourceTree = "<group>"; };
 		24B231232232D822002FD387 /* RemoteParticipantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteParticipantView.swift; sourceTree = "<group>"; };
 		24C934CC22315E66006D7657 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
@@ -98,8 +100,9 @@
 		24C934CB22315E66006D7657 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				24C934CC22315E66006D7657 /* SettingsTableViewController.swift */,
+				243CDB472266580900637B6B /* Colors.swift */,
 				24C934CD22315E66006D7657 /* Settings.swift */,
+				24C934CC22315E66006D7657 /* SettingsTableViewController.swift */,
 				24C934CE22315E66006D7657 /* Utils.swift */,
 			);
 			path = Utils;
@@ -195,6 +198,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				24C934D122315E66006D7657 /* Utils.swift in Sources */,
+				243CDB482266580900637B6B /* Colors.swift in Sources */,
 				24D52666223169E900455F6B /* MultiPartyViewController.swift in Sources */,
 				24064FA0222EE48900BBA411 /* MainViewController.swift in Sources */,
 				24064F9E222EE48900BBA411 /* AppDelegate.swift in Sources */,
