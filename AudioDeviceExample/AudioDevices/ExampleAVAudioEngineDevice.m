@@ -120,6 +120,9 @@ static size_t kMaximumFramesPerBuffer = 3072;
         // The manual rendering block (called in Core Audio's VoiceProcessingIO's playout callback at real time)
         self.renderingContext->renderBlock = (__bridge void *)(_playoutEngine.manualRenderingBlock);
 
+        // Attach music node to plaoyt engine
+        [self attachMusicNodeToEngine:_playoutEngine];
+
         // Initialize the capturing context
         self.capturingContext = malloc(sizeof(AudioCapturerContext));
         memset(self.capturingContext, 0, sizeof(AudioCapturerContext));
@@ -132,6 +135,9 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
         // The manual rendering block (called in Core Audio's VoiceProcessingIO's playout callback at real time)
         self.capturingContext->renderBlock = (__bridge void *)(_recordEngine.manualRenderingBlock);
+
+        // Attach music node to record engine
+        [self attachMusicNodeToEngine:_recordEngine];
     }
 
     return self;
@@ -355,11 +361,24 @@ static size_t kMaximumFramesPerBuffer = 3072;
         return;
     }
 
-    [self attachMusicNodeToEngine:_recordEngine buffer:buffer];
-    [self attachMusicNodeToEngine:_playoutEngine buffer:buffer];
+    [self.playoutFilePlayer scheduleBuffer:buffer
+                                    atTime:nil
+                                   options:AVAudioPlayerNodeBufferInterrupts
+                         completionHandler:^{
+        NSLog(@"Finished buffer playing");
+    }];
+    [self.playoutFilePlayer play];
+
+    [self.recordFilePlayer scheduleBuffer:buffer
+                                   atTime:nil
+                                  options:AVAudioPlayerNodeBufferInterrupts
+                        completionHandler:^{
+        NSLog(@"Finished buffer playing");
+    }];
+    [self.recordFilePlayer play];
 }
 
-- (void)attachMusicNodeToEngine:(AVAudioEngine *)engine buffer:(AVAudioPCMBuffer *)buffer{
+- (void)attachMusicNodeToEngine:(AVAudioEngine *)engine {
     if (!engine) {
         NSLog(@"Cannot play music. AudioEngine has not been created yet.");
         return;
@@ -368,20 +387,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
     AVAudioPlayerNode *player = nil;
     AVAudioUnitReverb *reverb = nil;
 
-    BOOL isPlayoutEngine = YES;
-    if (self.recordEngine == engine) {
-        isPlayoutEngine = NO;
-        player = self.recordFilePlayer;
-        reverb = self.recordReverb;
-    } else {
-        isPlayoutEngine = YES;
-        player = self.playoutFilePlayer;
-        reverb = self.playoutReverb;
-    }
-
-    if (player.isPlaying) {
-        [player stop];
-    }
+    BOOL isPlayoutEngine = [self.playoutEngine isEqual:engine];
 
     /*
      * Attach an AVAudioPlayerNode as an input to the main mixer.
@@ -402,11 +408,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
     [engine attachNode:reverb];
     [engine connect:player to:reverb format:file.processingFormat];
     [engine connect:reverb to:engine.mainMixerNode format:file.processingFormat];
-
-    [player scheduleBuffer:buffer completionHandler:^{
-        NSLog(@"Finished buffer playing");
-    }];
-    [player play];
 
     if (isPlayoutEngine) {
         self.playoutReverb = reverb;
