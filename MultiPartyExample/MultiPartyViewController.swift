@@ -372,39 +372,53 @@ class MultiPartyViewController: UIViewController {
 
     func updateLocalNetworkQualityLevel(networkQualityLevel: TVINetworkQualityLevel) {
         logMessage(messageText: "Network Quality Level: \(networkQualityLevel.rawValue)")
-        var networkQualityLevelImage: UIImage?
-        var tintColor: UIColor?
+
+        let info = networkQualityLevelIndicatorInfo(networkQualityLevel)
+
+        guard let networkQualityLevelImage = info.networkQualityLevelImage,
+            let tintColor = info.tintColor else {
+                networkQualityLevelIndicator.isHidden = true
+                return
+        }
+
+        networkQualityLevelIndicator.image = networkQualityLevelImage
+        networkQualityLevelIndicator.tintColor = tintColor
+        networkQualityLevelIndicator.isHidden = false
+    }
+
+    func networkQualityLevelIndicatorInfo(_ networkQualityLevel: TVINetworkQualityLevel) -> (networkQualityLevelImage: UIImage?, tintColor: UIColor?) {
+        var tempImageName: String?
+        var tempTintColor: UIColor?
 
         switch networkQualityLevel {
-        case .unknown:
-            networkQualityLevelIndicator.isHidden = true
         case .zero:
-            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-0").withRenderingMode(.alwaysTemplate)
-            tintColor = UIColor.Twilio.Status.Red
+            tempImageName = "network-quality-level-0"
+            tempTintColor = UIColor.Twilio.Status.Red
         case .one:
-            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-1").withRenderingMode(.alwaysTemplate)
-            tintColor = UIColor.Twilio.Status.Red
+            tempImageName = "network-quality-level-1"
+            tempTintColor = UIColor.Twilio.Status.Red
         case .two:
-            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-2").withRenderingMode(.alwaysTemplate)
-            tintColor = UIColor.Twilio.Status.Orange
+            tempImageName = "network-quality-level-2"
+            tempTintColor = UIColor.Twilio.Status.Orange
         case .three:
-            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-3").withRenderingMode(.alwaysTemplate)
-            tintColor = UIColor.Twilio.Status.Orange
+            tempImageName = "network-quality-level-3"
+            tempTintColor = UIColor.Twilio.Status.Orange
         case .four:
-            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-4").withRenderingMode(.alwaysTemplate)
-            tintColor = UIColor.Twilio.Status.Green
+            tempImageName = "network-quality-level-4"
+            tempTintColor = UIColor.Twilio.Status.Green
         case .five:
-            networkQualityLevelImage = UIImage.init(imageLiteralResourceName: "network-quality-level-5").withRenderingMode(.alwaysTemplate)
-            tintColor = UIColor.Twilio.Status.Green
+            tempImageName = "network-quality-level-5"
+            tempTintColor = UIColor.Twilio.Status.Green
+        case .unknown:
+            break
         }
 
-        if let networkQualityLevelImage = networkQualityLevelImage {
-            networkQualityLevelIndicator.isHidden = false
-            networkQualityLevelIndicator.image = networkQualityLevelImage
-            networkQualityLevelIndicator.tintColor = tintColor
-        } else {
-            networkQualityLevelIndicator.isHidden = true
+        guard let imageName = tempImageName, let tintColor = tempTintColor else {
+                return (nil, nil)
         }
+
+        return (UIImage.init(imageLiteralResourceName: imageName).withRenderingMode(.alwaysTemplate),
+                tintColor)
     }
 }
 
