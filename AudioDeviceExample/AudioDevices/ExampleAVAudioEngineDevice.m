@@ -145,6 +145,13 @@ static size_t kMaximumFramesPerBuffer = 3072;
     free(self.renderingContext);
     self.renderingContext = NULL;
 
+    AudioBufferList *mixedAudioBufferList = self.capturingContext->mixedAudioBufferList;
+    if (mixedAudioBufferList) {
+        for (size_t i = 0; i < mixedAudioBufferList->mNumberBuffers; i++) {
+            free(mixedAudioBufferList->mBuffers[i].mData);
+        }
+        free(mixedAudioBufferList);
+    }
     free(self.capturingContext);
     self.capturingContext = NULL;
 }
