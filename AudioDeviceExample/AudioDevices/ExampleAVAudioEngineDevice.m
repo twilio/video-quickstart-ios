@@ -50,6 +50,9 @@ typedef struct AudioCapturerContext {
     // Preallocated buffer list. Please note the buffer itself will be provided by Core Audio's VoiceProcessingIO audio unit.
     AudioBufferList *bufferList;
 
+    // Preallocated mixed (AudioUnit mic + AVAudioPlayerNode file) audio buffer list.
+    AudioBufferList *mixedAudioBufferList;
+
     // Core Audio's VoiceProcessingIO audio unit.
     AudioUnit audioUnit;
 
@@ -506,6 +509,17 @@ static size_t kMaximumFramesPerBuffer = 3072;
     _captureBufferList.mNumberBuffers = 1;
     _captureBufferList.mBuffers[0].mNumberChannels = kPreferredNumberOfChannels;
 
+    AudioBufferList *mixedAudioBufferList = self.capturingContext->mixedAudioBufferList;
+    if (mixedAudioBufferList == NULL) {
+        mixedAudioBufferList = (AudioBufferList*)malloc(sizeof(AudioBufferList));
+        mixedAudioBufferList->mNumberBuffers = 1;
+        mixedAudioBufferList->mBuffers[0].mNumberChannels = kPreferredNumberOfChannels;
+        mixedAudioBufferList->mBuffers[0].mDataByteSize = 0;
+        mixedAudioBufferList->mBuffers[0].mData = malloc(kMaximumFramesPerBuffer * kPreferredNumberOfChannels * kAudioSampleSize);
+
+        self.capturingContext->mixedAudioBufferList = mixedAudioBufferList;
+    }
+
     return YES;
 }
 
@@ -629,12 +643,12 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                              numFrames,
                              audioBufferList);
 
-    AudioBufferList *mixedAudioBufferList = (AudioBufferList*)malloc(sizeof(AudioBufferList));
-    mixedAudioBufferList->mNumberBuffers = audioBufferList->mNumberBuffers;
+    AudioBufferList *mixedAudioBufferList = context->mixedAudioBufferList;
+    assert(mixedAudioBufferList != NULL);
+    assert(mixedAudioBufferList->mNumberBuffers == audioBufferList->mNumberBuffers);
     for(int i = 0; i < audioBufferList->mNumberBuffers; i++) {
         mixedAudioBufferList->mBuffers[i].mNumberChannels = audioBufferList->mBuffers[i].mNumberChannels;
         mixedAudioBufferList->mBuffers[i].mDataByteSize = audioBufferList->mBuffers[i].mDataByteSize;
-        mixedAudioBufferList->mBuffers[i].mData = malloc(audioBufferList->mBuffers[i].mDataByteSize);
     }
 
     OSStatus outputStatus = noErr;
@@ -651,11 +665,6 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     if (context->deviceContext && audioBuffer) {
         TVIAudioDeviceWriteCaptureData(context->deviceContext, audioBuffer, audioBufferSizeInBytes);
     }
-
-    for(int i = 0; i < audioBufferList->mNumberBuffers; i++) {
-        free(mixedAudioBufferList->mBuffers[i].mData);
-    }
-    free(mixedAudioBufferList);
 
     return noErr;
 }
