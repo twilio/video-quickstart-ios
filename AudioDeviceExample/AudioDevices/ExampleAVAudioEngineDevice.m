@@ -335,11 +335,24 @@ static size_t kMaximumFramesPerBuffer = 3072;
 }
 
 - (void)playMusic {
-    [self attachMusicNodeToEngine:_recordEngine];
-    [self attachMusicNodeToEngine:_playoutEngine];
+    NSString *fileName = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], @"mixLoop.caf"];
+    NSURL *url = [NSURL fileURLWithPath:fileName];
+    AVAudioFile *file = [[AVAudioFile alloc] initForReading:url error:nil];
+
+    AVAudioPCMBuffer *buffer = [[AVAudioPCMBuffer alloc] initWithPCMFormat:file.processingFormat
+                                                             frameCapacity:(AVAudioFrameCount)file.length];
+    NSError *error = nil;
+    BOOL success = [file readIntoBuffer:buffer error:&error];
+    if (!success) {
+        NSLog(@"Failed to read audio file into buffer. error = %@", error);
+        return;
+    }
+
+    [self attachMusicNodeToEngine:_recordEngine buffer:buffer];
+    [self attachMusicNodeToEngine:_playoutEngine buffer:buffer];
 }
 
-- (void)attachMusicNodeToEngine:(AVAudioEngine *)engine {
+- (void)attachMusicNodeToEngine:(AVAudioEngine *)engine buffer:(AVAudioPCMBuffer *)buffer{
     if (!engine) {
         NSLog(@"Cannot play music. AudioEngine has not been created yet.");
         return;
@@ -383,8 +396,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
     [engine connect:player to:reverb format:file.processingFormat];
     [engine connect:reverb to:engine.mainMixerNode format:file.processingFormat];
 
-    [player scheduleFile:file atTime:nil completionHandler:^{
-        NSLog(@"Finished file playing");
+    [player scheduleBuffer:buffer completionHandler:^{
+        NSLog(@"Finished buffer playing");
     }];
     [player play];
 
