@@ -237,7 +237,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
     _capturingContext->renderBlock = (__bridge void *)(_recordEngine.manualRenderingBlock);
 
     // Set the block to provide input data to engine
-    AudioRendererContext *context = _capturingContext;
     AVAudioInputNode *inputNode = _recordEngine.inputNode;
     AudioBufferList *captureBufferList = &_captureBufferList;
     success = [inputNode setManualRenderingInputPCMFormat:format
