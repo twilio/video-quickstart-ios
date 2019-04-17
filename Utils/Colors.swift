@@ -22,7 +22,7 @@ extension UIColor {
     struct Twilio {
         struct Status {
             static let Blue = UIColor(hex: 0x0070CC)
-            static let Green = UIColor(hex: 0x29BB4f)
+            static let Green = UIColor(hex: 0x29BB4F)
             static let Orange = UIColor(hex: 0xFF9800)
             static let Red = UIColor(hex: 0xC41025)
         }
