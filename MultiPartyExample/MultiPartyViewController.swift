@@ -414,6 +414,7 @@ extension MultiPartyViewController : TVIRoomDelegate {
         logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "").")
         NSLog("Room: \(room.name) SID: \(room.sid)")
 
+        // Set the delegate of the local participant in the `didConnect` callback to ensure that no events are missed
         room.localParticipant?.delegate = self
 
         // Iterate over the current room participants and display them
