@@ -29,18 +29,14 @@ class RemoteParticipantView: UIView {
             if newValue == true {
                 contentView.backgroundColor = UIColor.red
             } else {
-                contentView.backgroundColor = UIColor.white
+                contentView.backgroundColor = UIColor.black
             }
         }
     }
 
     var hasAudio: Bool = false {
         willSet {
-            if newValue == true {
-                audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-unmuted-white")
-            } else {
-                audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-muted-white")
-            }
+            audioIndicator.isHidden = newValue
         }
     }
 
@@ -72,7 +68,6 @@ class RemoteParticipantView: UIView {
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
         audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
-        audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-muted-white")
 
         noVideoImage.isHidden = false
 

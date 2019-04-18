@@ -14,6 +14,7 @@
             <connections>
                 <outlet property="audioIndicator" destination="eLV-re-ffH" id="OVB-vR-gKi"/>
                 <outlet property="contentView" destination="xhF-bo-3wH" id="Ehh-0H-R5q"/>
+                <outlet property="networkQualityLevelContainerView" destination="aHV-wJ-CDy" id="Om1-we-zsz"/>
                 <outlet property="networkQualityLevelIndicator" destination="cFq-2D-bKN" id="DmO-ch-0CC"/>
                 <outlet property="noVideoImage" destination="C3c-00-Xd3" id="5UA-E6-XlL"/>
                 <outlet property="videoView" destination="DnR-nN-jn3" id="dsj-up-2rO"/>
@@ -25,7 +26,7 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WfB-wR-6NP" userLabel="Container View">
-                    <rect key="frame" x="4" y="4" width="199" height="320"/>
+                    <rect key="frame" x="2" y="2" width="203" height="324"/>
                     <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DnR-nN-jn3" userLabel="VideoView" customClass="TVIVideoView">
@@ -33,14 +34,24 @@
                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <viewLayoutGuide key="safeArea" id="74F-mO-XNF"/>
                 </view>
-                <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="network-quality-level-0" translatesAutoresizingMaskIntoConstraints="NO" id="cFq-2D-bKN" userLabel="Network Quality Level Indicator">
-                    <rect key="frame" x="151" y="20" width="40" height="40"/>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aHV-wJ-CDy" userLabel="NQL Container View">
+                    <rect key="frame" x="165" y="12" width="30" height="30"/>
+                    <subviews>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="network-quality-level-0" translatesAutoresizingMaskIntoConstraints="NO" id="cFq-2D-bKN" userLabel="Network Quality Level Indicator">
+                            <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
+                        </imageView>
+                    </subviews>
+                    <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
-                        <constraint firstAttribute="width" constant="40" id="AOO-F7-3bv"/>
-                        <constraint firstAttribute="height" constant="40" id="l39-2w-Quh"/>
+                        <constraint firstItem="cFq-2D-bKN" firstAttribute="width" secondItem="aHV-wJ-CDy" secondAttribute="width" id="4Go-d5-2XE"/>
+                        <constraint firstItem="cFq-2D-bKN" firstAttribute="centerY" secondItem="aHV-wJ-CDy" secondAttribute="centerY" id="9g1-zc-FX5"/>
+                        <constraint firstItem="cFq-2D-bKN" firstAttribute="centerX" secondItem="aHV-wJ-CDy" secondAttribute="centerX" id="N67-Jn-Sx9"/>
+                        <constraint firstAttribute="height" constant="30" id="NlE-SW-SOX"/>
+                        <constraint firstItem="cFq-2D-bKN" firstAttribute="height" secondItem="aHV-wJ-CDy" secondAttribute="height" id="bSA-kk-5Th"/>
+                        <constraint firstAttribute="width" constant="30" id="kDB-8I-QKr"/>
                     </constraints>
-                </imageView>
-                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="eLV-re-ffH" userLabel="Audio Indicator">
+                </view>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="audio-muted-white" translatesAutoresizingMaskIntoConstraints="NO" id="eLV-re-ffH" userLabel="Audio Indicator">
                     <rect key="frame" x="171" y="288" width="20" height="20"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="20" id="EXt-Tn-CQI"/>
@@ -55,23 +66,23 @@
                     </constraints>
                 </imageView>
             </subviews>
-            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <color key="tintColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="calibratedRGB"/>
             <constraints>
-                <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="WfB-wR-6NP" secondAttribute="trailing" constant="4" id="77B-dg-PQ9"/>
-                <constraint firstItem="WfB-wR-6NP" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="4" id="8pT-x9-i5I"/>
+                <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="WfB-wR-6NP" secondAttribute="trailing" constant="2" id="77B-dg-PQ9"/>
+                <constraint firstItem="WfB-wR-6NP" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="2" id="8pT-x9-i5I"/>
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerX" secondItem="1Jt-2h-zap" secondAttribute="centerX" id="9VO-v0-ICD"/>
+                <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="aHV-wJ-CDy" secondAttribute="trailing" constant="12" id="CTm-d5-TF1"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="eLV-re-ffH" secondAttribute="bottom" constant="20" id="E4e-Bl-gtV"/>
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerY" secondItem="1Jt-2h-zap" secondAttribute="centerY" id="Itq-ad-ycO"/>
-                <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="WfB-wR-6NP" secondAttribute="bottom" constant="4" id="IyB-bf-Fze"/>
+                <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="WfB-wR-6NP" secondAttribute="bottom" constant="2" id="IyB-bf-Fze"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="eLV-re-ffH" secondAttribute="trailing" constant="16" id="UKW-Ot-1e0"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="trailing" secondItem="1Jt-2h-zap" secondAttribute="trailing" constant="-4" id="gOU-oq-DmQ"/>
+                <constraint firstItem="aHV-wJ-CDy" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="12" id="gaA-9b-hGJ"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="4" id="gtz-kF-0ud"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="bottom" secondItem="1Jt-2h-zap" secondAttribute="bottom" constant="-4" id="ime-fL-zDK"/>
-                <constraint firstItem="cFq-2D-bKN" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="20" id="mL6-jm-B12"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="DnR-nN-jn3" secondAttribute="trailing" constant="4" id="o5u-yj-PYx"/>
-                <constraint firstItem="WfB-wR-6NP" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="4" id="oGt-fZ-JaK"/>
-                <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="cFq-2D-bKN" secondAttribute="trailing" constant="16" id="pZT-M2-KMe"/>
+                <constraint firstItem="WfB-wR-6NP" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="2" id="oGt-fZ-JaK"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="4" id="qWW-yu-rmW"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
@@ -80,6 +91,7 @@
         </view>
     </objects>
     <resources>
+        <image name="audio-muted-white" width="24" height="24"/>
         <image name="network-quality-level-0" width="40" height="40"/>
         <image name="no-video-white" width="60" height="60"/>
     </resources>

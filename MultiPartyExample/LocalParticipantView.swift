@@ -16,17 +16,14 @@ class LocalParticipantView: UIView {
     @IBOutlet weak var videoView: TVIVideoView!
     @IBOutlet weak var noVideoImage: UIImageView!
     @IBOutlet weak var audioIndicator: UIImageView!
+    @IBOutlet weak var networkQualityLevelContainerView: UIView!
     @IBOutlet weak var networkQualityLevelIndicator: UIImageView!
 
     var recognizerDoubleTap: UITapGestureRecognizer?
 
     var hasAudio: Bool = false {
         willSet {
-            if newValue == true {
-                audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-unmuted-white")
-            } else {
-                audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-muted-white")
-            }
+            audioIndicator.isHidden = newValue
         }
     }
 
@@ -44,13 +41,13 @@ class LocalParticipantView: UIView {
 
             guard let networkQualityLevelImage = info.networkQualityLevelImage,
                 let tintColor = info.tintColor else {
-                    networkQualityLevelIndicator.isHidden = true
+                    networkQualityLevelContainerView.isHidden = true
                     return
             }
 
+            networkQualityLevelContainerView.isHidden = false
             networkQualityLevelIndicator.image = networkQualityLevelImage
             networkQualityLevelIndicator.tintColor = tintColor
-            networkQualityLevelIndicator.isHidden = false
         }
     }
 
@@ -73,10 +70,10 @@ class LocalParticipantView: UIView {
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
         audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
-        audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-muted-white")
 
         noVideoImage.isHidden = false
-        networkQualityLevelIndicator.isHidden = true
+        networkQualityLevelContainerView.isHidden = true
+        networkQualityLevelContainerView.layer.backgroundColor = UIColor.black.withAlphaComponent(0.75).cgColor
 
         // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
         // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.

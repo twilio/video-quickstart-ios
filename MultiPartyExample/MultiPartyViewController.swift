@@ -26,21 +26,16 @@ class MultiPartyViewController: UIViewController {
     var currentDominantSpeaker: TVIRemoteParticipant?
 
     // MARK: UI Element Outlets and handles
-    @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var localParticipantView: LocalParticipantView!
     
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        messageLabel.adjustsFontSizeToFitWidth = true;
-        messageLabel.minimumScaleFactor = 0.75;
         logMessage(messageText: "TwilioVideo v(\(TwilioVideo.version()))")
 
-        navigationItem.leftBarButtonItem = UIBarButtonItem.init(title: "Disconnect",
-                                                                style: .plain,
-                                                                target: self,
-                                                                action: #selector(leaveRoom(sender:)))
+        title = roomName
+        navigationItem.setHidesBackButton(true, animated: false)
 
         connect()
     }
@@ -59,8 +54,8 @@ class MultiPartyViewController: UIViewController {
             layoutFrame = safeAreaGuide.layoutFrame
         }
 
-        let topY = messageLabel.frame.maxY
-        let totalHeight = layoutFrame.height - topY
+        let topY = layoutFrame.origin.y
+        let totalHeight = layoutFrame.height
         let totalWidth = layoutFrame.width
 
         let videoViewHeight = round(totalHeight / 2)
@@ -94,7 +89,6 @@ class MultiPartyViewController: UIViewController {
 
     func logMessage(messageText: String) {
         NSLog(messageText)
-        messageLabel.text = messageText
     }
 
     func prepareAudio() {

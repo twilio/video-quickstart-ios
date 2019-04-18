@@ -26,8 +26,13 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zAB-WR-1Ya" userLabel="ContainerView">
-                    <rect key="frame" x="4" y="4" width="199" height="320"/>
+                    <rect key="frame" x="2" y="2" width="203" height="324"/>
                     <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DnR-nN-jn3" customClass="TVIVideoView">
+                    <rect key="frame" x="4" y="4" width="199" height="320"/>
+                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <viewLayoutGuide key="safeArea" id="74F-mO-XNF"/>
                 </view>
                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="no-video-white" translatesAutoresizingMaskIntoConstraints="NO" id="C3c-00-Xd3">
                     <rect key="frame" x="73.5" y="134" width="60" height="60"/>
@@ -36,7 +41,7 @@
                         <constraint firstAttribute="height" constant="60" id="eUs-ka-Zxx"/>
                     </constraints>
                 </imageView>
-                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="3ac-os-ZlJ" userLabel="Audio Indicator">
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="audio-muted-white" translatesAutoresizingMaskIntoConstraints="NO" id="3ac-os-ZlJ" userLabel="Audio Indicator">
                     <rect key="frame" x="171" y="288" width="20" height="20"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="20" id="Q4l-X8-oza"/>
@@ -52,28 +57,23 @@
                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DnR-nN-jn3" customClass="TVIVideoView">
-                    <rect key="frame" x="4" y="4" width="199" height="320"/>
-                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                    <viewLayoutGuide key="safeArea" id="74F-mO-XNF"/>
-                </view>
             </subviews>
-            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <color key="tintColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="calibratedRGB"/>
             <constraints>
-                <constraint firstItem="zAB-WR-1Ya" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="4" id="5im-cf-bvF"/>
+                <constraint firstItem="zAB-WR-1Ya" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="2" id="5im-cf-bvF"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="pSL-dN-LvB" secondAttribute="trailing" constant="4" id="5uj-wx-dcx"/>
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerX" secondItem="1Jt-2h-zap" secondAttribute="centerX" id="9VO-v0-ICD"/>
-                <constraint firstItem="zAB-WR-1Ya" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="4" id="CWT-6Z-VVR"/>
+                <constraint firstItem="zAB-WR-1Ya" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="2" id="CWT-6Z-VVR"/>
                 <constraint firstItem="pSL-dN-LvB" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="4" id="DBe-sx-jcd"/>
-                <constraint firstItem="zAB-WR-1Ya" firstAttribute="trailing" secondItem="1Jt-2h-zap" secondAttribute="trailing" constant="-4" id="EdF-nd-UsZ"/>
+                <constraint firstItem="zAB-WR-1Ya" firstAttribute="trailing" secondItem="1Jt-2h-zap" secondAttribute="trailing" constant="-2" id="EdF-nd-UsZ"/>
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerY" secondItem="1Jt-2h-zap" secondAttribute="centerY" id="Itq-ad-ycO"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="3ac-os-ZlJ" secondAttribute="trailing" constant="16" id="d2g-U2-hAI"/>
                 <constraint firstItem="pSL-dN-LvB" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="4" id="fKI-9b-0Vd"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="trailing" secondItem="1Jt-2h-zap" secondAttribute="trailing" constant="-4" id="gOU-oq-DmQ"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="4" id="gtz-kF-0ud"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="bottom" secondItem="1Jt-2h-zap" secondAttribute="bottom" constant="-4" id="ime-fL-zDK"/>
-                <constraint firstItem="zAB-WR-1Ya" firstAttribute="bottom" secondItem="1Jt-2h-zap" secondAttribute="bottom" constant="-4" id="liP-N1-iRf"/>
+                <constraint firstItem="zAB-WR-1Ya" firstAttribute="bottom" secondItem="1Jt-2h-zap" secondAttribute="bottom" constant="-2" id="liP-N1-iRf"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="3ac-os-ZlJ" secondAttribute="bottom" constant="20" id="o4l-sF-0vd"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="4" id="qWW-yu-rmW"/>
             </constraints>
@@ -83,6 +83,7 @@
         </view>
     </objects>
     <resources>
+        <image name="audio-muted-white" width="24" height="24"/>
         <image name="no-video-white" width="60" height="60"/>
     </resources>
 </document>
