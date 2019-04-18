@@ -73,6 +73,9 @@ class LocalParticipantView: UIView {
 
         noVideoImage.isHidden = false
         networkQualityLevelContainerView.isHidden = true
+
+        // Note: Both the image and the containing view have transparency. Ideally this would be combined into a single
+        // image to only cause one blending operation over top of the video view.
         networkQualityLevelContainerView.layer.backgroundColor = UIColor.black.withAlphaComponent(0.75).cgColor
 
         // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
