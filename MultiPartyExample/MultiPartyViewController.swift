@@ -16,9 +16,6 @@ class MultiPartyViewController: UIViewController {
     var remoteParticipantViews: [RemoteParticipantView] = []
 
     static let kMaxRemoteParticipants = 3
-    static let kAudioIndicatorPadding = CGFloat(20)
-    static let kTextPadding = CGFloat(4)
-    static let kNetworkQualityIndicatorPadding = CGFloat(10)
 
     // Video SDK components
     var room: TVIRoom?
@@ -30,16 +27,11 @@ class MultiPartyViewController: UIViewController {
 
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var messageLabel: UILabel!
-    @IBOutlet weak var localParticipantVideoView: TVIVideoView!
-    @IBOutlet weak var localParticipantAudioIndicator: UIImageView!
-    @IBOutlet weak var networkQualityLevelIndicator: UIImageView!
+    @IBOutlet weak var localParticipantView: LocalParticipantView!
     
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        localParticipantAudioIndicator.layer.cornerRadius = localParticipantAudioIndicator.bounds.size.width / 2.0
-        localParticipantAudioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
 
         messageLabel.adjustsFontSizeToFitWidth = true;
         messageLabel.minimumScaleFactor = 0.75;
@@ -67,13 +59,6 @@ class MultiPartyViewController: UIViewController {
             layoutFrame = safeAreaGuide.layoutFrame
         }
 
-        // Layout the message label.
-        messageLabel.preferredMaxLayoutWidth = layoutFrame.width - (MultiPartyViewController.kTextPadding * 4)
-        messageLabel.frame = CGRect(x: layoutFrame.minX + MultiPartyViewController.kTextPadding,
-                                    y: layoutFrame.minY + MultiPartyViewController.kTextPadding,
-                                    width: layoutFrame.width - (MultiPartyViewController.kTextPadding * 4),
-                                    height: 18).integral
-
         let topY = messageLabel.frame.maxY
         let totalHeight = layoutFrame.height - topY
         let totalWidth = layoutFrame.width
@@ -84,20 +69,8 @@ class MultiPartyViewController: UIViewController {
         let videoViewSize = CGSize(width: videoViewWidth, height: videoViewHeight)
 
         // Layout local Participant
-        localParticipantVideoView.frame = CGRect(origin: CGPoint(x: layoutFrame.minX, y: topY),
-                                                 size: videoViewSize).insetBy(dx: 4, dy: 4)
-
-        let audioIndicatorSize = localParticipantAudioIndicator.intrinsicContentSize
-        let audioIndicatorOrigin = CGPoint(x: layoutFrame.minX + videoViewWidth - audioIndicatorSize.width - MultiPartyViewController.kAudioIndicatorPadding,
-                                           y: videoViewHeight + topY - audioIndicatorSize.height - MultiPartyViewController.kAudioIndicatorPadding)
-
-        localParticipantAudioIndicator.frame = CGRect(origin: audioIndicatorOrigin, size: audioIndicatorSize)
-
-        let networkQualityLevelIndicatorSize = networkQualityLevelIndicator.intrinsicContentSize
-        let networkQualityLevelIndicatorOrigin = CGPoint(x: layoutFrame.minX + videoViewWidth - networkQualityLevelIndicatorSize.width - MultiPartyViewController.kNetworkQualityIndicatorPadding,
-                                                         y: topY + MultiPartyViewController.kNetworkQualityIndicatorPadding)
-
-        networkQualityLevelIndicator.frame = CGRect(origin: networkQualityLevelIndicatorOrigin, size: networkQualityLevelIndicatorSize)
+        localParticipantView.frame = CGRect(origin: CGPoint(x: layoutFrame.minX, y: topY),
+                                            size: videoViewSize)
 
         // Layout remote Participants
         var index = 0
@@ -134,10 +107,6 @@ class MultiPartyViewController: UIViewController {
         logMessage(messageText: "Audio track created")
         self.localAudioTrack = localAudioTrack
 
-        // The Local Participant can enable/disable audio using a single tap.
-        let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.toggleAudioEnabled))
-        localParticipantVideoView.addGestureRecognizer(tap)
-
         updateLocalAudioState(hasAudio: localAudioTrack.isEnabled)
     }
 
@@ -164,21 +133,22 @@ class MultiPartyViewController: UIViewController {
                 logMessage(messageText: "Video track created")
 
                 // Add renderer to video track for local preview
-                localVideoTrack.addRenderer(localParticipantVideoView)
+                localParticipantView.hasVideo = true
+                localVideoTrack.addRenderer(localParticipantView.videoView)
 
-                // We will flip camera on double tap.
-                let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.flipCamera))
-                tap.numberOfTouchesRequired = 2;
-                if let recongnizer = localParticipantVideoView.gestureRecognizers?.first {
-                    tap.require(toFail: recongnizer)
+                let recognizerSingleTap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.flipCamera))
+                recognizerSingleTap.numberOfTapsRequired = 1
+                localParticipantView.videoView.addGestureRecognizer(recognizerSingleTap)
+
+                if let recognizerDoubleTap = localParticipantView.recognizerDoubleTap {
+                    recognizerSingleTap.require(toFail: recognizerDoubleTap)
                 }
-                localParticipantVideoView.addGestureRecognizer(tap)
 
                 camera.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
                     if let error = error {
                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
-                        self.localParticipantVideoView.shouldMirror = (captureDevice.position == .front)
+                        self.localParticipantView.videoView.shouldMirror = (captureDevice.position == .front)
                     }
                 }
             }
@@ -202,7 +172,7 @@ class MultiPartyViewController: UIViewController {
                     if let error = error {
                         self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
-                        self.localParticipantVideoView.shouldMirror = (captureDevice.position == .front)
+                        self.localParticipantView.videoView.shouldMirror = (captureDevice.position == .front)
                     }
                 }
             }
@@ -288,7 +258,8 @@ class MultiPartyViewController: UIViewController {
         }
 
         if let localVideoTrack = localVideoTrack {
-            localVideoTrack.removeRenderer(localParticipantVideoView)
+            localParticipantView.hasVideo = false
+            localVideoTrack.removeRenderer(localParticipantView.videoView)
             self.localVideoTrack = nil
         }
 
@@ -367,58 +338,12 @@ class MultiPartyViewController: UIViewController {
     }
 
     func updateLocalAudioState(hasAudio: Bool) {
-        localParticipantAudioIndicator.isHidden = hasAudio;
+        self.localParticipantView.hasAudio = hasAudio
     }
 
     func updateLocalNetworkQualityLevel(networkQualityLevel: TVINetworkQualityLevel) {
         logMessage(messageText: "Network Quality Level: \(networkQualityLevel.rawValue)")
-
-        let info = networkQualityLevelIndicatorInfo(networkQualityLevel)
-
-        guard let networkQualityLevelImage = info.networkQualityLevelImage,
-            let tintColor = info.tintColor else {
-                networkQualityLevelIndicator.isHidden = true
-                return
-        }
-
-        networkQualityLevelIndicator.image = networkQualityLevelImage
-        networkQualityLevelIndicator.tintColor = tintColor
-        networkQualityLevelIndicator.isHidden = false
-    }
-
-    func networkQualityLevelIndicatorInfo(_ networkQualityLevel: TVINetworkQualityLevel) -> (networkQualityLevelImage: UIImage?, tintColor: UIColor?) {
-        var tempImageName: String?
-        var tempTintColor: UIColor?
-
-        switch networkQualityLevel {
-        case .zero:
-            tempImageName = "network-quality-level-0"
-            tempTintColor = UIColor.Twilio.Status.Red
-        case .one:
-            tempImageName = "network-quality-level-1"
-            tempTintColor = UIColor.Twilio.Status.Red
-        case .two:
-            tempImageName = "network-quality-level-2"
-            tempTintColor = UIColor.Twilio.Status.Orange
-        case .three:
-            tempImageName = "network-quality-level-3"
-            tempTintColor = UIColor.Twilio.Status.Orange
-        case .four:
-            tempImageName = "network-quality-level-4"
-            tempTintColor = UIColor.Twilio.Status.Green
-        case .five:
-            tempImageName = "network-quality-level-5"
-            tempTintColor = UIColor.Twilio.Status.Green
-        case .unknown:
-            break
-        }
-
-        guard let imageName = tempImageName, let tintColor = tempTintColor else {
-                return (nil, nil)
-        }
-
-        return (UIImage.init(imageLiteralResourceName: imageName).withRenderingMode(.alwaysTemplate),
-                tintColor)
+        localParticipantView.networkQualityLevel = networkQualityLevel
     }
 }
 
