@@ -47,6 +47,8 @@ class MultiPartyViewController: UIViewController {
 
         containerView.addSubview(localParticipantView)
 
+        videoMuteButton.isEnabled = !PlatformUtils.isSimulator
+
         connect()
     }
 
