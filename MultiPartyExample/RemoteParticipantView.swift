@@ -27,7 +27,7 @@ class RemoteParticipantView: UIView {
     var isDominantSpeaker: Bool = false {
         willSet {
             if newValue == true {
-                contentView.backgroundColor = UIColor.red
+                contentView.backgroundColor = UIColor.Twilio.Status.Orange
             } else {
                 contentView.backgroundColor = UIColor.black
             }
