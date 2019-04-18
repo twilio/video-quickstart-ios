@@ -385,9 +385,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
     [self.recordFilePlayer play];
 
     /*
-     * TODO: Since the upstream AVAudioPlayerNode and downstream AVAudioPlayerNode schedule to playout the buffer
-     * atTime "now", in order to ensure the ensure synchronization, should we schedule to play the buffer in a near
-     * future?
+     * TODO: The upstream AVAudioPlayerNode and downstream AVAudioPlayerNode schedule playout of the buffer
+     * "now". In order to ensure full synchronization, choose a time in the near future when scheduling playback.
      */
 }
 
