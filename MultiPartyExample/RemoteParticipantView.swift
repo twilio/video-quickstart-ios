@@ -27,20 +27,16 @@ class RemoteParticipantView: UIView {
     var isDominantSpeaker: Bool = false {
         willSet {
             if newValue == true {
-                contentView.backgroundColor = UIColor.red
+                contentView.backgroundColor = UIColor.Twilio.Status.Orange
             } else {
-                contentView.backgroundColor = UIColor.white
+                contentView.backgroundColor = UIColor.black
             }
         }
     }
 
     var hasAudio: Bool = false {
         willSet {
-            if newValue == true {
-                audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-unmuted-white")
-            } else {
-                audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-muted-white")
-            }
+            audioIndicator.isHidden = newValue
         }
     }
 
@@ -71,10 +67,9 @@ class RemoteParticipantView: UIView {
         identityLabel.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
-        audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
-        audioIndicator.image = UIImage.init(imageLiteralResourceName: "audio-muted-white")
+        audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.75).cgColor
 
-        noVideoImage.isHidden = true
+        noVideoImage.isHidden = false
 
         // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
         // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.

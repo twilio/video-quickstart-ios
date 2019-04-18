@@ -18,8 +18,9 @@ Coordinates a Video conference in a Room, including:
 2. Connecting to the Room.
 3. Rendering local and remote video.
 4. Routing dominant speaker events to the appropriate subviews.
-5. Raising fatal errors to the developer.
-6. Disconnecting from the Room, and stopping `TVICameraSource`.
+5. Displaying the Local Participant's [Network Quality Level](https://www.twilio.com/docs/video/using-network-quality-api).
+6. Raising fatal errors to the developer.
+7. Disconnecting from the Room, and stopping `TVICameraSource`.
 
 **RemoteParticipantView**
 
@@ -29,7 +30,7 @@ Displays a single `TVIRemoteParticipant`, with up to one `TVIRemoteVideoTrack` a
 
 See the master [README](https://github.com/twilio/video-quickstart-swift/blob/master/README.md) for instructions on how to generate access tokens that are needed to connect to a Room.
 
-You will need to provide a hardcoded token, or token server URL in [MainViewController.swift](MultiPartyExample/MainViewController.swift). Please note that this example is designed to work in a Group Room, including the usage of [VP8 Simulcast](https://www.twilio.com/docs/video/tutorials/working-with-vp8-simulcast) and [Dominant Speaker](https://www.twilio.com/docs/video/detecting-dominant-speaker) events. You can create Group Rooms using the [REST API](https://www.twilio.com/docs/video/api/rooms-resource), or by selecting them as the default type in the [console](https://www.twilio.com/console/video/configure).
+You will need to provide a hardcoded token, or token server URL in [MainViewController.swift](MultiPartyExample/MainViewController.swift). Please note that this example is designed to work in a Group Room, including the usage of [VP8 Simulcast](https://www.twilio.com/docs/video/tutorials/working-with-vp8-simulcast), [Dominant Speaker](https://www.twilio.com/docs/video/detecting-dominant-speaker) and [Network Quality](https://www.twilio.com/docs/video/using-network-quality-api) events. You can create Group Rooms using the [REST API](https://www.twilio.com/docs/video/api/rooms-resource), or by selecting them as the default type in the [console](https://www.twilio.com/console/video/configure).
 
 <kbd><img src="../images/quickstart/console-room-topology-group.png"/></kbd>
 

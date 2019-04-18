@@ -14,10 +14,9 @@ class MultiPartyViewController: UIViewController {
     var roomName: String?
     var accessToken: String?
     var remoteParticipantViews: [RemoteParticipantView] = []
+    var localParticipantView: LocalParticipantView = LocalParticipantView.init(frame: CGRect.zero)
 
     static let kMaxRemoteParticipants = 3
-    static let kAudioIndicatorPadding = CGFloat(20)
-    static let kTextPadding = CGFloat(4)
 
     // Video SDK components
     var room: TVIRoom?
@@ -28,25 +27,29 @@ class MultiPartyViewController: UIViewController {
     var currentDominantSpeaker: TVIRemoteParticipant?
 
     // MARK: UI Element Outlets and handles
-    @IBOutlet weak var messageLabel: UILabel!
-    @IBOutlet weak var localParticipantVideoView: TVIVideoView!
-    @IBOutlet weak var localParticipantAudioIndicator: UIImageView!
+    @IBOutlet weak var containerView: UIView!
+    @IBOutlet weak var audioMuteButton: UIButton!
+    @IBOutlet weak var videoMuteButton: UIButton!
+    @IBOutlet weak var hangupButton: UIButton!
 
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        localParticipantAudioIndicator.layer.cornerRadius = localParticipantAudioIndicator.bounds.size.width / 2.0
-        localParticipantAudioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
-
-        messageLabel.adjustsFontSizeToFitWidth = true;
-        messageLabel.minimumScaleFactor = 0.75;
         logMessage(messageText: "TwilioVideo v(\(TwilioVideo.version()))")
 
-        navigationItem.leftBarButtonItem = UIBarButtonItem.init(title: "Disconnect",
-                                                                style: .plain,
-                                                                target: self,
-                                                                action: #selector(leaveRoom(sender:)))
+        title = roomName
+        navigationItem.setHidesBackButton(true, animated: false)
+
+        audioMuteButton.layer.cornerRadius = audioMuteButton.bounds.size.width / 2.0
+        videoMuteButton.layer.cornerRadius = videoMuteButton.bounds.size.width / 2.0
+        hangupButton.layer.cornerRadius = hangupButton.bounds.size.width / 2.0
+
+        containerView.addSubview(localParticipantView)
+
+        videoMuteButton.isEnabled = !PlatformUtils.isSimulator
+
+        navigationController?.hidesBarsWhenVerticallyCompact = true
 
         connect()
     }
@@ -58,22 +61,15 @@ class MultiPartyViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        var layoutFrame = self.view.bounds
+        var layoutFrame = self.containerView.bounds
         if #available(iOS 11.0, *) {
             // Ensure the preview fits in the safe area.
-            let safeAreaGuide = self.view.safeAreaLayoutGuide
+            let safeAreaGuide = self.containerView.safeAreaLayoutGuide
             layoutFrame = safeAreaGuide.layoutFrame
         }
 
-        // Layout the message label.
-        messageLabel.preferredMaxLayoutWidth = layoutFrame.width - (MultiPartyViewController.kTextPadding * 4)
-        messageLabel.frame = CGRect(x: layoutFrame.minX + MultiPartyViewController.kTextPadding,
-                                    y: layoutFrame.minY + MultiPartyViewController.kTextPadding,
-                                    width: layoutFrame.width - (MultiPartyViewController.kTextPadding * 4),
-                                    height: 18).integral
-
-        let topY = messageLabel.frame.maxY
-        let totalHeight = layoutFrame.height - topY
+        let topY = layoutFrame.origin.y
+        let totalHeight = layoutFrame.height
         let totalWidth = layoutFrame.width
 
         let videoViewHeight = round(totalHeight / 2)
@@ -82,16 +78,10 @@ class MultiPartyViewController: UIViewController {
         let videoViewSize = CGSize(width: videoViewWidth, height: videoViewHeight)
 
         // Layout local Participant
-        localParticipantVideoView.frame = CGRect(origin: CGPoint(x: layoutFrame.minX, y: topY),
-                                                 size: videoViewSize).insetBy(dx: 4, dy: 4)
-
-        let audioIndicatorSize = localParticipantAudioIndicator.intrinsicContentSize
-        let audioIndicatorOrigin = CGPoint(x: layoutFrame.minX + videoViewWidth - audioIndicatorSize.width - MultiPartyViewController.kAudioIndicatorPadding,
-                                           y: videoViewHeight + topY - audioIndicatorSize.height - MultiPartyViewController.kAudioIndicatorPadding)
+        localParticipantView.frame = CGRect(origin: CGPoint(x: layoutFrame.minX, y: topY),
+                                            size: videoViewSize)
 
         // Layout remote Participants
-        localParticipantAudioIndicator.frame = CGRect(origin: audioIndicatorOrigin, size: audioIndicatorSize)
-
         var index = 0
         for remoteParticipantView in remoteParticipantViews {
             switch index {
@@ -113,7 +103,6 @@ class MultiPartyViewController: UIViewController {
 
     func logMessage(messageText: String) {
         NSLog(messageText)
-        messageLabel.text = messageText
     }
 
     func prepareAudio() {
@@ -125,10 +114,6 @@ class MultiPartyViewController: UIViewController {
 
         logMessage(messageText: "Audio track created")
         self.localAudioTrack = localAudioTrack
-
-        // The Local Participant can enable/disable audio using a single tap.
-        let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.toggleAudioEnabled))
-        localParticipantVideoView.addGestureRecognizer(tap)
 
         updateLocalAudioState(hasAudio: localAudioTrack.isEnabled)
     }
@@ -156,21 +141,22 @@ class MultiPartyViewController: UIViewController {
                 logMessage(messageText: "Video track created")
 
                 // Add renderer to video track for local preview
-                localVideoTrack.addRenderer(localParticipantVideoView)
+                localParticipantView.hasVideo = true
+                localVideoTrack.addRenderer(localParticipantView.videoView)
 
-                // We will flip camera on double tap.
-                let tap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.flipCamera))
-                tap.numberOfTouchesRequired = 2;
-                if let recongnizer = localParticipantVideoView.gestureRecognizers?.first {
-                    tap.require(toFail: recongnizer)
+                let recognizerSingleTap = UITapGestureRecognizer(target: self, action: #selector(MultiPartyViewController.flipCamera))
+                recognizerSingleTap.numberOfTapsRequired = 1
+                localParticipantView.videoView.addGestureRecognizer(recognizerSingleTap)
+
+                if let recognizerDoubleTap = localParticipantView.recognizerDoubleTap {
+                    recognizerSingleTap.require(toFail: recognizerDoubleTap)
                 }
-                localParticipantVideoView.addGestureRecognizer(tap)
 
                 camera.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
                     if let error = error {
                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
-                        self.localParticipantVideoView.shouldMirror = (captureDevice.position == .front)
+                        self.localParticipantView.videoView.shouldMirror = (captureDevice.position == .front)
                     }
                 }
             }
@@ -194,17 +180,24 @@ class MultiPartyViewController: UIViewController {
                     if let error = error {
                         self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
-                        self.localParticipantVideoView.shouldMirror = (captureDevice.position == .front)
+                        self.localParticipantView.videoView.shouldMirror = (captureDevice.position == .front)
                     }
                 }
             }
         }
     }
 
-    @objc func toggleAudioEnabled() {
+    @IBAction func toggleAudio(_ sender: Any) {
         if let localAudioTrack = self.localAudioTrack {
             localAudioTrack.isEnabled = !localAudioTrack.isEnabled
             updateLocalAudioState(hasAudio: localAudioTrack.isEnabled)
+        }
+    }
+
+    @IBAction func toggleVideo(_ sender: Any) {
+        if let localVideoTrack = self.localVideoTrack {
+            localVideoTrack.isEnabled = !localVideoTrack.isEnabled
+            updateLocalVideoState(hasVideo: localVideoTrack.isEnabled)
         }
     }
 
@@ -224,6 +217,9 @@ class MultiPartyViewController: UIViewController {
 
             // Enable Dominant Speaker functionality
             builder.isDominantSpeakerEnabled = true
+
+            // Enable Network Quality
+            builder.isNetworkQualityEnabled = true
 
             // Use the local media that we prepared earlier.
             if let localAudioTrack = self.localAudioTrack {
@@ -263,7 +259,7 @@ class MultiPartyViewController: UIViewController {
         logMessage(messageText: "Attempting to connect to room: \(roomName)")
     }
 
-    @objc func leaveRoom(sender: AnyObject) {
+    @IBAction func leaveRoom(_ sender: Any) {
         if let room = room {
             room.disconnect()
             self.room = nil
@@ -277,7 +273,8 @@ class MultiPartyViewController: UIViewController {
         }
 
         if let localVideoTrack = localVideoTrack {
-            localVideoTrack.removeRenderer(localParticipantVideoView)
+            localParticipantView.hasVideo = false
+            localVideoTrack.removeRenderer(localParticipantView.videoView)
             self.localVideoTrack = nil
         }
 
@@ -294,7 +291,7 @@ class MultiPartyViewController: UIViewController {
         // We will bet that a hash collision between two unique SIDs is very rare.
         remoteView.tag = remoteParticipant.hashValue
         remoteView.identity = remoteParticipant.identity
-        view.addSubview(remoteView)
+        containerView.addSubview(remoteView)
         remoteParticipantViews.append(remoteView)
     }
 
@@ -356,7 +353,18 @@ class MultiPartyViewController: UIViewController {
     }
 
     func updateLocalAudioState(hasAudio: Bool) {
-        localParticipantAudioIndicator.isHidden = hasAudio;
+        self.localParticipantView.hasAudio = hasAudio
+        audioMuteButton.isSelected = !hasAudio
+    }
+
+    func updateLocalVideoState(hasVideo: Bool) {
+        self.localParticipantView.hasVideo = hasVideo
+        videoMuteButton.isSelected = !hasVideo
+    }
+
+    func updateLocalNetworkQualityLevel(networkQualityLevel: TVINetworkQualityLevel) {
+        logMessage(messageText: "Network Quality Level: \(networkQualityLevel.rawValue)")
+        localParticipantView.networkQualityLevel = networkQualityLevel
     }
 }
 
@@ -365,6 +373,10 @@ extension MultiPartyViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
         logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "").")
         NSLog("Room: \(room.name) SID: \(room.sid)")
+        title = room.name
+
+        // Set the delegate of the local participant in the `didConnect` callback to ensure that no events are missed
+        room.localParticipant?.delegate = self
 
         // Iterate over the current room participants and display them
         for remoteParticipant in room.remoteParticipants {
@@ -388,7 +400,7 @@ extension MultiPartyViewController : TVIRoomDelegate {
             preferredStyle: .alert)
 
         let cancelAction = UIAlertAction.init(title: "Okay", style: .default) { (alertAction) in
-            self.leaveRoom(sender: self)
+            self.leaveRoom(self)
         }
 
         alertController.addAction(cancelAction)
@@ -410,7 +422,7 @@ extension MultiPartyViewController : TVIRoomDelegate {
             preferredStyle: .alert)
 
         let cancelAction = UIAlertAction.init(title: "Okay", style: .default) { (alertAction) in
-            self.leaveRoom(sender: self)
+            self.leaveRoom(self)
         }
 
         alertController.addAction(cancelAction)
@@ -442,6 +454,16 @@ extension MultiPartyViewController : TVIRoomDelegate {
 
     func room(_ room: TVIRoom, dominantSpeakerDidChange participant: TVIRemoteParticipant?) {
         updateDominantSpeaker(dominantSpeaker: participant)
+    }
+}
+
+// MARK: TVILocalParticipantDelegate
+extension MultiPartyViewController : TVILocalParticipantDelegate {
+    func localParticipant(_ participant: TVILocalParticipant,
+                          didChange networkQualityLevel: TVINetworkQualityLevel) {
+        // Local Participant netwrk quality level has changed
+        
+        updateLocalNetworkQualityLevel(networkQualityLevel: networkQualityLevel)
     }
 }
 
