@@ -49,6 +49,8 @@ class MultiPartyViewController: UIViewController {
 
         videoMuteButton.isEnabled = !PlatformUtils.isSimulator
 
+        navigationController?.hidesBarsWhenVerticallyCompact = true
+
         connect()
     }
 
@@ -371,6 +373,7 @@ extension MultiPartyViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
         logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "").")
         NSLog("Room: \(room.name) SID: \(room.sid)")
+        title = room.name
 
         // Set the delegate of the local participant in the `didConnect` callback to ensure that no events are missed
         room.localParticipant?.delegate = self
