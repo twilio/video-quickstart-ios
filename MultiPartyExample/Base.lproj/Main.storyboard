@@ -188,6 +188,7 @@
                                     <constraint firstAttribute="height" constant="48" id="7ug-tl-cXP"/>
                                     <constraint firstAttribute="width" constant="48" id="ZFg-6c-W9s"/>
                                 </constraints>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <state key="normal" image="mute-video"/>
                                 <state key="selected" image="unmute-audio"/>
                             </button>
@@ -200,6 +201,9 @@
                                 </constraints>
                                 <state key="normal" image="hangup"/>
                                 <state key="selected" image="unmute-audio"/>
+                                <connections>
+                                    <action selector="leaveRoom:" destination="euQ-Pb-8wg" eventType="touchUpInside" id="DGV-Xo-d1Z"/>
+                                </connections>
                             </button>
                             <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PSd-57-jFM" userLabel="Audio Mute Button">
                                 <rect key="frame" x="199" y="599" width="48" height="48"/>
@@ -208,8 +212,12 @@
                                     <constraint firstAttribute="width" constant="48" id="iGh-Ie-U46"/>
                                     <constraint firstAttribute="height" constant="48" id="pLv-ye-cTp"/>
                                 </constraints>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <state key="normal" image="mute-audio"/>
                                 <state key="selected" image="unmute-audio"/>
+                                <connections>
+                                    <action selector="toggleAudio:" destination="euQ-Pb-8wg" eventType="touchUpInside" id="oMZ-h3-WPH"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

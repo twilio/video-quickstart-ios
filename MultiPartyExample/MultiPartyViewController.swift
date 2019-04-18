@@ -183,7 +183,7 @@ class MultiPartyViewController: UIViewController {
         }
     }
 
-    @objc func toggleAudioEnabled() {
+    @IBAction func toggleAudio(_ sender: Any) {
         if let localAudioTrack = self.localAudioTrack {
             localAudioTrack.isEnabled = !localAudioTrack.isEnabled
             updateLocalAudioState(hasAudio: localAudioTrack.isEnabled)
@@ -248,7 +248,7 @@ class MultiPartyViewController: UIViewController {
         logMessage(messageText: "Attempting to connect to room: \(roomName)")
     }
 
-    @objc func leaveRoom(sender: AnyObject) {
+    @IBAction func leaveRoom(_ sender: Any) {
         if let room = room {
             room.disconnect()
             self.room = nil
@@ -343,6 +343,7 @@ class MultiPartyViewController: UIViewController {
 
     func updateLocalAudioState(hasAudio: Bool) {
         self.localParticipantView.hasAudio = hasAudio
+        audioMuteButton.isSelected = !hasAudio
     }
 
     func updateLocalNetworkQualityLevel(networkQualityLevel: TVINetworkQualityLevel) {
@@ -382,7 +383,7 @@ extension MultiPartyViewController : TVIRoomDelegate {
             preferredStyle: .alert)
 
         let cancelAction = UIAlertAction.init(title: "Okay", style: .default) { (alertAction) in
-            self.leaveRoom(sender: self)
+            self.leaveRoom(self)
         }
 
         alertController.addAction(cancelAction)
@@ -404,7 +405,7 @@ extension MultiPartyViewController : TVIRoomDelegate {
             preferredStyle: .alert)
 
         let cancelAction = UIAlertAction.init(title: "Okay", style: .default) { (alertAction) in
-            self.leaveRoom(sender: self)
+            self.leaveRoom(self)
         }
 
         alertController.addAction(cancelAction)
