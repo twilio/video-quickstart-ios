@@ -117,12 +117,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
             NSLog(@"Failed to setup AVAudioEngine");
         }
 
-        // The manual rendering block (called in Core Audio's VoiceProcessingIO's playout callback at real time)
-        self.renderingContext->renderBlock = (__bridge void *)(_playoutEngine.manualRenderingBlock);
-
-        // Attach music node to plaoyt engine
-        [self attachMusicNodeToEngine:_playoutEngine];
-
         // Initialize the capturing context
         self.capturingContext = malloc(sizeof(AudioCapturerContext));
         memset(self.capturingContext, 0, sizeof(AudioCapturerContext));
@@ -132,12 +126,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
         if (![self setupRecordAudioEngine]) {
             NSLog(@"Failed to setup AVAudioEngine");
         }
-
-        // The manual rendering block (called in Core Audio's VoiceProcessingIO's playout callback at real time)
-        self.capturingContext->renderBlock = (__bridge void *)(_recordEngine.manualRenderingBlock);
-
-        // Attach music node to record engine
-        [self attachMusicNodeToEngine:_recordEngine];
     }
 
     return self;
@@ -234,7 +222,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
      */
     [_recordEngine connect:_recordEngine.inputNode to:_recordEngine.mainMixerNode format:format];
 
-    _capturingContext->renderBlock = (__bridge void *)(_recordEngine.manualRenderingBlock);
+    /*
+     * Attach AVAudioPlayerNode node to play music from a file.
+     * AVAudioPlayerNode -> ReverbNode -> MainMixer -> OutputNode (note: ReverbNode is optional)
+     */
+    [self attachMusicNodeToEngine:_recordEngine];
 
     // Set the block to provide input data to engine
     AVAudioInputNode *inputNode = _recordEngine.inputNode;
@@ -248,6 +240,9 @@ static size_t kMaximumFramesPerBuffer = 3072;
         NSLog(@"Failed to set the manual rendering block");
         return NO;
     }
+
+    // The manual rendering block (called in Core Audio's VoiceProcessingIO's playout callback at real time)
+    self.capturingContext->renderBlock = (__bridge void *)(_recordEngine.manualRenderingBlock);
 
     success = [_recordEngine startAndReturnError:&error];
     if (!success) {
@@ -275,9 +270,9 @@ static size_t kMaximumFramesPerBuffer = 3072;
     // Switch to manual rendering mode
     [_playoutEngine stop];
     BOOL success = [_playoutEngine enableManualRenderingMode:AVAudioEngineManualRenderingModeRealtime
-                                                   format:format
-                                         maximumFrameCount:(uint32_t)kMaximumFramesPerBuffer
-                                                    error:&error];
+                                                      format:format
+                                           maximumFrameCount:(uint32_t)kMaximumFramesPerBuffer
+                                                       error:&error];
     if (!success) {
         NSLog(@"Failed to setup manual rendering mode, error = %@", error);
         return NO;
@@ -290,7 +285,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
      */
     [_playoutEngine connect:_playoutEngine.inputNode to:_playoutEngine.mainMixerNode format:format];
 
-    _renderingContext->renderBlock = (__bridge void *)(_playoutEngine.manualRenderingBlock);
+    /*
+     * Attach AVAudioPlayerNode node to play music from a file.
+     * AVAudioPlayerNode -> ReverbNode -> MainMixer -> OutputNode (note: ReverbNode is optional)
+     */
+    [self attachMusicNodeToEngine:_playoutEngine];
 
     // Set the block to provide input data to engine
     AudioRendererContext *context = _renderingContext;
@@ -328,6 +327,9 @@ static size_t kMaximumFramesPerBuffer = 3072;
         return NO;
     }
 
+    // The manual rendering block (called in Core Audio's VoiceProcessingIO's playout callback at real time)
+    self.renderingContext->renderBlock = (__bridge void *)(_playoutEngine.manualRenderingBlock);
+
     success = [_playoutEngine startAndReturnError:&error];
     if (!success) {
         NSLog(@"Failed to start AVAudioEngine, error = %@", error);
@@ -354,6 +356,12 @@ static size_t kMaximumFramesPerBuffer = 3072;
     AVAudioPCMBuffer *buffer = [[AVAudioPCMBuffer alloc] initWithPCMFormat:file.processingFormat
                                                              frameCapacity:(AVAudioFrameCount)file.length];
     NSError *error = nil;
+
+    /*
+     * The sample app plays a small in size file `mixLoop.caf`, but if you are playing a bigger file, to unblock the
+     * calling (main) thread, you should execute `[file readIntoBuffer:buffer error:&error]` on a background thread,
+     * and once the read is completed, schedule buffer playout from the calling (main) thread.
+     */
     BOOL success = [file readIntoBuffer:buffer error:&error];
     if (!success) {
         NSLog(@"Failed to read audio file into buffer. error = %@", error);
@@ -364,7 +372,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
                                     atTime:nil
                                    options:AVAudioPlayerNodeBufferInterrupts
                          completionHandler:^{
-        NSLog(@"Finished buffer playing");
+        NSLog(@"Upstream file player finished buffer playing");
     }];
     [self.playoutFilePlayer play];
 
@@ -372,9 +380,15 @@ static size_t kMaximumFramesPerBuffer = 3072;
                                    atTime:nil
                                   options:AVAudioPlayerNodeBufferInterrupts
                         completionHandler:^{
-        NSLog(@"Finished buffer playing");
+        NSLog(@"Downstream file player finished buffer playing");
     }];
     [self.recordFilePlayer play];
+
+    /*
+     * TODO: Since the upstream AVAudioPlayerNode and downstream AVAudioPlayerNode schedule to playout the buffer
+     * atTime "now", in order to ensure the ensure synchronization, should we schedule to play the buffer in a near
+     * future?
+     */
 }
 
 - (void)attachMusicNodeToEngine:(AVAudioEngine *)engine {
@@ -637,7 +651,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                                                          const AudioTimeStamp *timestamp,
                                                          UInt32 busNumber,
                                                          UInt32 numFrames,
-                                                         AudioBufferList *bufferList) {
+                                                         AudioBufferList *bufferList) NS_AVAILABLE(NA, 11_0) {
 
     if (numFrames > kMaximumFramesPerBuffer) {
         NSLog(@"Expected %u frames but got %u.", (unsigned int)kMaximumFramesPerBuffer, (unsigned int)numFrames);

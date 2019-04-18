@@ -12,8 +12,8 @@ Uses a RemoteIO audio unit to playback stereo audio at up to 48 kHz. In contrast
 
 Uses CoreAudio's VoiceProcessingIO audio unit to playback and record audio at up to 48KHz with built-in echo cancellation. The example uses two AVAudioEngine in manual rendering mode:
 
-1. The upstream AVAudioEngine is used for mixing the Remote Participant's audio and audio from a file. The CoreAudio receives the mixed audio samples from the AVAudioEngines's output node.
-2. The downstream AVAudioEngine is used for mixing the microphone audio and audio from a file. The Video SDK receives the mixed audio samples from the AVAudioEngine's output node
+1. The upstream AVAudioEngine is used for mixing the Remote Participant's audio with audio from a file. The AudioUnit receives mixed audio samples from AVAudioEngine's output node.
+2. The downstream AVAudioEngine is used for mixing the Local Participant's microphone audio with audio from a file. The Video SDK receives the mixed audio samples from the AVAudioEngine's output node.
 
 This diagram describes how ExampleAVAudioEngineDevice uses TwilioVideo, AVAudioEngine, and CoreAudio -
 
