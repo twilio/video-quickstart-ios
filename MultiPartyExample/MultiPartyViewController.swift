@@ -29,7 +29,7 @@ class MultiPartyViewController: UIViewController {
     // MARK: UI Element Outlets and handles
     @IBOutlet weak var containerView: UIView!
     @IBOutlet weak var audioMuteButton: UIButton!
-    @IBOutlet weak var muteVideoButton: UIButton!
+    @IBOutlet weak var videoMuteButton: UIButton!
     @IBOutlet weak var hangupButton: UIButton!
 
     // MARK: UIViewController
@@ -42,7 +42,7 @@ class MultiPartyViewController: UIViewController {
         navigationItem.setHidesBackButton(true, animated: false)
 
         audioMuteButton.layer.cornerRadius = audioMuteButton.bounds.size.width / 2.0
-        muteVideoButton.layer.cornerRadius = muteVideoButton.bounds.size.width / 2.0
+        videoMuteButton.layer.cornerRadius = videoMuteButton.bounds.size.width / 2.0
         hangupButton.layer.cornerRadius = hangupButton.bounds.size.width / 2.0
 
         containerView.addSubview(localParticipantView)
@@ -187,6 +187,13 @@ class MultiPartyViewController: UIViewController {
         if let localAudioTrack = self.localAudioTrack {
             localAudioTrack.isEnabled = !localAudioTrack.isEnabled
             updateLocalAudioState(hasAudio: localAudioTrack.isEnabled)
+        }
+    }
+
+    @IBAction func toggleVideo(_ sender: Any) {
+        if let localVideoTrack = self.localVideoTrack {
+            localVideoTrack.isEnabled = !localVideoTrack.isEnabled
+            updateLocalVideoState(hasVideo: localVideoTrack.isEnabled)
         }
     }
 
@@ -344,6 +351,11 @@ class MultiPartyViewController: UIViewController {
     func updateLocalAudioState(hasAudio: Bool) {
         self.localParticipantView.hasAudio = hasAudio
         audioMuteButton.isSelected = !hasAudio
+    }
+
+    func updateLocalVideoState(hasVideo: Bool) {
+        self.localParticipantView.hasVideo = hasVideo
+        videoMuteButton.isSelected = !hasVideo
     }
 
     func updateLocalNetworkQualityLevel(networkQualityLevel: TVINetworkQualityLevel) {

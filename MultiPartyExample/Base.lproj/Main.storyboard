@@ -190,7 +190,10 @@
                                 </constraints>
                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <state key="normal" image="mute-video"/>
-                                <state key="selected" image="unmute-audio"/>
+                                <state key="selected" image="unmute-video"/>
+                                <connections>
+                                    <action selector="toggleVideo:" destination="euQ-Pb-8wg" eventType="touchUpInside" id="n1w-Ag-df9"/>
+                                </connections>
                             </button>
                             <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1GW-Z5-z4H" userLabel="Hangup Button">
                                 <rect key="frame" x="311" y="600" width="48" height="48"/>
@@ -239,7 +242,7 @@
                         <outlet property="audioMuteButton" destination="PSd-57-jFM" id="QlA-Uf-IYS"/>
                         <outlet property="containerView" destination="nWq-aL-doG" id="p6Z-A4-Zkx"/>
                         <outlet property="hangupButton" destination="1GW-Z5-z4H" id="w1g-SC-bPY"/>
-                        <outlet property="muteVideoButton" destination="2BF-4T-kN8" id="WNw-sp-LkC"/>
+                        <outlet property="videoMuteButton" destination="2BF-4T-kN8" id="iMz-X3-eSi"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8C1-Uf-Nke" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -252,6 +255,7 @@
         <image name="mute-audio" width="14" height="19"/>
         <image name="mute-video" width="18" height="12"/>
         <image name="unmute-audio" width="20" height="21"/>
+        <image name="unmute-video" width="18" height="18"/>
     </resources>
     <color key="tintColor" red="0.88627450980392153" green="0.11372549019607843" blue="0.14509803921568626" alpha="1" colorSpace="calibratedRGB"/>
 </document>
