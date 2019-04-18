@@ -486,6 +486,21 @@ static size_t kMaximumFramesPerBuffer = 3072;
             [self teardownAudioUnit];
         }
 
+        // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (self.playoutFilePlayer.isPlaying) {
+                [self.playoutFilePlayer stop];
+            }
+            if (self.playoutEngine.isRunning) {
+                [self.playoutEngine stop];
+            }
+
+            NSError *error = nil;
+            if (![self.playoutEngine startAndReturnError:&error]) {
+                NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+            }
+        });
+
         self.renderingContext->deviceContext = context;
 
         if (![self setupAudioUnitWithRenderContext:self.renderingContext
@@ -504,12 +519,15 @@ static size_t kMaximumFramesPerBuffer = 3072;
     @synchronized(self) {
         // If the capturer is runnning, we will not stop the audio unit.
         if (!self.capturingContext->deviceContext) {
-            /*
-             * Teardown the audio player if along with the Core Audio's VoiceProcessingIO audio unit.
-             * We will make sure player is AVAudioPlayer is accessed on the main queue.
-             */
+
+            // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
             dispatch_async(dispatch_get_main_queue(), ^{
-                [self teardownPlayer];
+                if (self.playoutFilePlayer.isPlaying) {
+                    [self.playoutFilePlayer stop];
+                }
+                if (self.playoutEngine.isRunning) {
+                    [self.playoutEngine stop];
+                }
             });
 
             [self stopAudioUnit];
@@ -565,6 +583,21 @@ static size_t kMaximumFramesPerBuffer = 3072;
             [self teardownAudioUnit];
         }
 
+        // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (self.recordFilePlayer.isPlaying) {
+                [self.recordFilePlayer stop];
+            }
+            if (self.recordEngine.isRunning) {
+                [self.recordEngine stop];
+            }
+
+            NSError *error = nil;
+            if (![self.recordEngine startAndReturnError:&error]) {
+                NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+            }
+        });
+
         self.capturingContext->deviceContext = context;
 
         if (![self setupAudioUnitWithRenderContext:self.renderingContext
@@ -585,12 +618,14 @@ static size_t kMaximumFramesPerBuffer = 3072;
         // If the renderer is runnning, we will not stop the audio unit.
         if (!self.renderingContext->deviceContext) {
 
-            /*
-             * Teardown the audio player along with the Core Audio's VoiceProcessingIO audio unit.
-             * We will make sure AVAudioPlayerNode is accessed on the main queue.
-             */
+            // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
             dispatch_async(dispatch_get_main_queue(), ^{
-                [self teardownPlayer];
+                if (self.recordFilePlayer.isPlaying) {
+                    [self.recordFilePlayer stop];
+                }
+                if (self.recordEngine.isRunning) {
+                    [self.recordEngine stop];
+                }
             });
 
             [self stopAudioUnit];
