@@ -14,6 +14,7 @@ class MultiPartyViewController: UIViewController {
     var roomName: String?
     var accessToken: String?
     var remoteParticipantViews: [RemoteParticipantView] = []
+    var localParticipantView: LocalParticipantView = LocalParticipantView.init(frame: CGRect.zero)
 
     static let kMaxRemoteParticipants = 3
 
@@ -26,8 +27,11 @@ class MultiPartyViewController: UIViewController {
     var currentDominantSpeaker: TVIRemoteParticipant?
 
     // MARK: UI Element Outlets and handles
-    @IBOutlet weak var localParticipantView: LocalParticipantView!
-    
+    @IBOutlet weak var containerView: UIView!
+    @IBOutlet weak var audioMuteButton: UIButton!
+    @IBOutlet weak var muteVideoButton: UIButton!
+    @IBOutlet weak var hangupButton: UIButton!
+
     // MARK: UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,6 +40,12 @@ class MultiPartyViewController: UIViewController {
 
         title = roomName
         navigationItem.setHidesBackButton(true, animated: false)
+
+        audioMuteButton.layer.cornerRadius = audioMuteButton.bounds.size.width / 2.0
+        muteVideoButton.layer.cornerRadius = muteVideoButton.bounds.size.width / 2.0
+        hangupButton.layer.cornerRadius = hangupButton.bounds.size.width / 2.0
+
+        containerView.addSubview(localParticipantView)
 
         connect()
     }
@@ -47,10 +57,10 @@ class MultiPartyViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        var layoutFrame = self.view.bounds
+        var layoutFrame = self.containerView.bounds
         if #available(iOS 11.0, *) {
             // Ensure the preview fits in the safe area.
-            let safeAreaGuide = self.view.safeAreaLayoutGuide
+            let safeAreaGuide = self.containerView.safeAreaLayoutGuide
             layoutFrame = safeAreaGuide.layoutFrame
         }
 
@@ -270,7 +280,7 @@ class MultiPartyViewController: UIViewController {
         // We will bet that a hash collision between two unique SIDs is very rare.
         remoteView.tag = remoteParticipant.hashValue
         remoteView.identity = remoteParticipant.identity
-        view.addSubview(remoteView)
+        containerView.addSubview(remoteView)
         remoteParticipantViews.append(remoteView)
     }
 

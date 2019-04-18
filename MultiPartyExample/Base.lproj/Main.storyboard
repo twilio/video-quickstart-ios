@@ -177,17 +177,61 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KpN-Rc-bDX" customClass="LocalParticipantView" customModule="MultiPartyExample" customModuleProvider="target">
-                                <rect key="frame" x="33" y="194" width="240" height="128"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nWq-aL-doG" userLabel="Container View">
+                                <rect key="frame" x="0.0" y="64" width="375" height="527"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
+                            <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2BF-4T-kN8" userLabel="Video Mute Button">
+                                <rect key="frame" x="255" y="599" width="48" height="48"/>
+                                <color key="backgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="48" id="7ug-tl-cXP"/>
+                                    <constraint firstAttribute="width" constant="48" id="ZFg-6c-W9s"/>
+                                </constraints>
+                                <state key="normal" image="mute-video"/>
+                                <state key="selected" image="unmute-audio"/>
+                            </button>
+                            <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1GW-Z5-z4H" userLabel="Hangup Button">
+                                <rect key="frame" x="311" y="600" width="48" height="48"/>
+                                <color key="backgroundColor" red="0.80000000000000004" green="0.16862745100000001" blue="0.20000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="48" id="kEN-NZ-ouP"/>
+                                    <constraint firstAttribute="height" constant="48" id="kxz-yT-oPv"/>
+                                </constraints>
+                                <state key="normal" image="hangup"/>
+                                <state key="selected" image="unmute-audio"/>
+                            </button>
+                            <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PSd-57-jFM" userLabel="Audio Mute Button">
+                                <rect key="frame" x="199" y="599" width="48" height="48"/>
+                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="48" id="iGh-Ie-U46"/>
+                                    <constraint firstAttribute="height" constant="48" id="pLv-ye-cTp"/>
+                                </constraints>
+                                <state key="normal" image="mute-audio"/>
+                                <state key="selected" image="unmute-audio"/>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="V8I-HZ-or6" firstAttribute="bottom" secondItem="PSd-57-jFM" secondAttribute="bottom" constant="20" id="0C0-Kd-wU2"/>
+                            <constraint firstItem="V8I-HZ-or6" firstAttribute="trailing" secondItem="nWq-aL-doG" secondAttribute="trailing" id="3Vw-k8-EEy"/>
+                            <constraint firstItem="V8I-HZ-or6" firstAttribute="trailing" secondItem="1GW-Z5-z4H" secondAttribute="trailing" constant="16" id="8C9-RB-S6S"/>
+                            <constraint firstItem="V8I-HZ-or6" firstAttribute="bottom" secondItem="2BF-4T-kN8" secondAttribute="bottom" constant="20" id="8gO-O8-r1n"/>
+                            <constraint firstItem="2BF-4T-kN8" firstAttribute="leading" secondItem="PSd-57-jFM" secondAttribute="trailing" constant="8" id="CGJ-Iw-K1Y"/>
+                            <constraint firstItem="nWq-aL-doG" firstAttribute="bottom" secondItem="PSd-57-jFM" secondAttribute="top" constant="-8" id="EMI-7p-3uD"/>
+                            <constraint firstItem="nWq-aL-doG" firstAttribute="top" secondItem="V8I-HZ-or6" secondAttribute="top" id="Ge7-lM-Inc"/>
+                            <constraint firstItem="nWq-aL-doG" firstAttribute="leading" secondItem="V8I-HZ-or6" secondAttribute="leading" id="p2h-lR-T51"/>
+                            <constraint firstItem="V8I-HZ-or6" firstAttribute="bottom" secondItem="1GW-Z5-z4H" secondAttribute="bottom" constant="19" id="vBw-BE-CrU"/>
+                            <constraint firstItem="1GW-Z5-z4H" firstAttribute="leading" secondItem="2BF-4T-kN8" secondAttribute="trailing" constant="8" id="ws7-Xh-v1T"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="V8I-HZ-or6"/>
                     </view>
                     <connections>
-                        <outlet property="localParticipantView" destination="KpN-Rc-bDX" id="Gsk-jA-lD4"/>
+                        <outlet property="audioMuteButton" destination="PSd-57-jFM" id="QlA-Uf-IYS"/>
+                        <outlet property="containerView" destination="nWq-aL-doG" id="p6Z-A4-Zkx"/>
+                        <outlet property="hangupButton" destination="1GW-Z5-z4H" id="w1g-SC-bPY"/>
+                        <outlet property="muteVideoButton" destination="2BF-4T-kN8" id="WNw-sp-LkC"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8C1-Uf-Nke" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -195,5 +239,11 @@
             <point key="canvasLocation" x="197.59999999999999" y="486.20689655172418"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="hangup" width="26" height="10"/>
+        <image name="mute-audio" width="14" height="19"/>
+        <image name="mute-video" width="18" height="12"/>
+        <image name="unmute-audio" width="20" height="21"/>
+    </resources>
     <color key="tintColor" red="0.88627450980392153" green="0.11372549019607843" blue="0.14509803921568626" alpha="1" colorSpace="calibratedRGB"/>
 </document>

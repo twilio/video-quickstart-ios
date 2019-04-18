@@ -69,7 +69,7 @@ class LocalParticipantView: UIView {
         contentView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
-        audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.75).cgColor
 
         noVideoImage.isHidden = false
         networkQualityLevelContainerView.isHidden = true

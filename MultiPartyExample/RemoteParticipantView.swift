@@ -67,7 +67,7 @@ class RemoteParticipantView: UIView {
         identityLabel.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
-        audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.75).cgColor
 
         noVideoImage.isHidden = false
 
