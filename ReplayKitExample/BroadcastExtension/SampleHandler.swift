@@ -16,6 +16,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     var audioTrack: TVILocalAudioTrack?
     var videoSource: ReplayKitVideoSource?
     var screenTrack: TVILocalVideoTrack?
+    var disconnectSemaphore: DispatchSemaphore?
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
     let accessTokenUrl = "http://127.0.0.1:5000/"
@@ -23,7 +24,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
     // In order to save memory, we request that our source downscale its output.
-    static let kDownScaledMaxWidthOrHeight = 640
+    static let kDownScaledMaxWidthOrHeight = 960
 
     // Which kind of audio samples we will capture. We do not mix multiple types of samples together.
     static let kAudioSampleType = RPSampleBufferType.audioMic
@@ -74,6 +75,13 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
             // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
             builder.preferredVideoCodecs = [TVIH264Codec()]
 
+            /*
+             * A broadcast extension has no need to subscribe to Tracks, and connects as a publish-only
+             * Participant. In a Group Room, this options saves memory and bandwidth since decoders and receivers are
+             * no longer needed. Note that subscription events will not be raised for remote publications.
+             */
+            builder.isAutomaticSubscriptionEnabled = false
+
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             if #available(iOS 12.0, *) {
@@ -104,10 +112,15 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     override func broadcastFinished() {
         // User has requested to finish the broadcast.
-        self.room?.disconnect()
-        self.audioTrack = nil
-        self.videoSource = nil
-        self.screenTrack = nil
+        DispatchQueue.main.async {
+            self.room?.disconnect()
+        }
+        self.disconnectSemaphore?.wait()
+        DispatchQueue.main.sync {
+            self.audioTrack = nil
+            self.videoSource = nil
+            self.screenTrack = nil
+        }
     }
 
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
@@ -133,6 +146,8 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     // MARK:- TVIRoomDelegate
     func didConnect(to room: TVIRoom) {
         print("didConnectToRoom: ", room)
+
+        disconnectSemaphore = DispatchSemaphore(value: 0)
     }
 
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
@@ -141,6 +156,9 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     }
 
     func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
+        if let semaphore = self.disconnectSemaphore {
+            semaphore.signal()
+        }
         if let theError = error {
             print("room: ", room, "didDisconnectWithError: ", theError)
             finishBroadcastWithError(theError)
