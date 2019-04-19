@@ -14,7 +14,7 @@ Use an `RPBroadcastSampleHandler` to receive audio and video samples. Video samp
 
 An iOS 12.0 extension is not limited to capturing the screen of a single application. In fact, it is possible to capture video from any application including the home screen.
 
-In order to reduce memory usage, the extension configures `ReplayKitVideoSource` to downscsale incoming video frames, and prefers the H.264 video codec. In a Group Room, the extension connects as a publish-only Participant ([ConnectOptionsBuilder.isAutomaticSubscriptionEnabled]()) to further reduce bandwidth, memory, and CPU requirements.
+In order to reduce memory usage, the extension configures `ReplayKitVideoSource` to downscsale incoming video frames, and prefers the H.264 video codec. In a Group Room, the extension connects as a publish-only Participant ([TVIConnectOptionsBuilder.automaticSubscriptionEnabled](https://twilio.github.io/twilio-video-ios/docs/latest/Classes/TVIConnectOptionsBuilder.html#//api/name/automaticSubscriptionEnabled)) to further reduce bandwidth, memory, and CPU requirements.
 
 **ReplayKitVideoSource**
 
