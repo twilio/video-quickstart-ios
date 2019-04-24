@@ -4,15 +4,17 @@ The project demonstrates how to integrate Twilio's Programmable Video SDK with `
 
 **Conferencing (In-App)**
 
-Use `RPScreenRecorder` to capture the screen and play/record audio using `TVIDefaultAudioDevice`. After joining a Room you will be able to hear other Participants, and they will be able to hear you, and see the contents of your screen.
+Use an `RPScreenRecorder` to capture the screen and play/record audio using `TVIDefaultAudioDevice`. After joining a Room you will be able to hear other Participants, and they will be able to hear you, and see the contents of your screen.
 
 When using the in-process `RPScreenRecorder` APIs, you may only capture content from your own application. Screen capture is suspended upon entering the backround. Once you being capturing, your application is locked to its current interface orientation.
 
 **Broadcast (Extension)**
 
-Use an `RPBroadcastSampleHandler` to receive audio and video samples. Video samples are routed to `ReplayKitVideoSource`, while `ExampleReplayKitAudioCapturer` handles audio. In order to reduce memory usage, the extension configures the capturer to downscsale the incoming video frames and prefers the use of the H.264 codec.
+Use an `RPBroadcastSampleHandler` to receive audio and video samples. Video samples are routed to `ReplayKitVideoSource`, while `ExampleReplayKitAudioCapturer` handles audio.
 
 An iOS 12.0 extension is not limited to capturing the screen of a single application. In fact, it is possible to capture video from any application including the home screen.
+
+In order to reduce memory usage, the extension configures `ReplayKitVideoSource` to downscsale incoming video frames, and prefers the H.264 video codec. In a Group Room, the extension connects as a publish-only Participant ([TVIConnectOptionsBuilder.automaticSubscriptionEnabled](https://twilio.github.io/twilio-video-ios/docs/latest/Classes/TVIConnectOptionsBuilder.html#//api/name/automaticSubscriptionEnabled)) to further reduce bandwidth, memory, and CPU requirements.
 
 **ReplayKitVideoSource**
 
@@ -52,18 +54,18 @@ Tapping "Start Conference" begins capturing and sharing the screen from within t
 
 1. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
 2. Share the camera using ReplayKit, or `TVICameraSource`.
-3. Resolve tearing issues when scrolling vertically.
+3. Resolve tearing issues when scrolling vertically, and image corruption when sharing video. (ISDK-2478)
 4. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
 
 ### Known Issues
 
 **1. Memory Usage**
 
-Memory usage in a ReplayKit Broadcast Extension is limited to 50 MB (as of iOS 12.0). There are cases where Twilio Video can use more than this amount, especially when capturing larger 2x and 3x retina screens. This example uses format requests to reduce the amount of memory needed by our process.
+The memory usage of a ReplayKit Broadcast Extension is limited to 50 MB (as of iOS 12.2). There are cases where Twilio Video can use more than this amount, especially when capturing larger 2x and 3x retina screens in a Peer-to-Peer Room. This example uses format requests, and H.264 to reduce the amount of memory needed by the extension.
 
 <kbd><img width="400px" src="../images/quickstart/replaykit-extension-memory.png"/></kbd>
 
-We have observed that using the H.264 video codec, and a Group Room incurs the lowest memory cost.
+It is highly recommended that you use Group Rooms with your ReplayKit extension, because the extension may connect without subscribing to Tracks.
 
 **2. Application Audio Delay**
 

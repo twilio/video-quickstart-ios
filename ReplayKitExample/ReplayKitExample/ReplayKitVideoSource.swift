@@ -84,7 +84,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
             assertionFailure("SampleBuffer did not have an ImageBuffer")
             return
         }
-        // We only support NV12 (full-range) buffers.
+        // The source only supports NV12 (full-range) buffers.
         let pixelFormat = CVPixelBufferGetPixelFormatType(sourcePixelBuffer);
         if (pixelFormat != kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) {
             assertionFailure("Extension assumes the incoming frames are of type NV12")
@@ -203,7 +203,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
     static func imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation) -> TVIVideoOrientation {
         let videoOrientation: TVIVideoOrientation
 
-        // Note: We do not attempt to "undo" mirroring. So far I have not encountered mirrored tags from ReplayKit sources.
+        // Note: The source does not attempt to "undo" mirroring. So far I have not encountered mirrored tags from ReplayKit sources.
         switch imageOrientation {
         case .up:
             videoOrientation = TVIVideoOrientation.up
