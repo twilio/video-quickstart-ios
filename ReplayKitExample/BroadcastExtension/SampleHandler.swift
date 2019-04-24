@@ -24,9 +24,12 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
     // In order to save memory, we request that our source downscale its output.
-    static let kDownScaledMaxWidthOrHeight = 960
+    static let kDownScaledMaxWidthOrHeight = 720
 
-    // Which kind of audio samples we will capture. We do not mix multiple types of samples together.
+    // Maximum bitrate (in kbps) used to send video.
+    static let kMaxVideoBitrate = UInt(1400)
+
+    // Which kind of audio samples we will capture. The example does not mix multiple types of samples together.
     static let kAudioSampleType = RPSampleBufferType.audioMic
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
@@ -74,6 +77,13 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
             // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
             builder.preferredVideoCodecs = [TVIH264Codec()]
+
+            /*
+             * Constrain the bitrate to improve QoS for subscribers when simulcast is not used, and to reduce overall
+             * bandwidth usage for the broadcaster.
+             */
+            builder.encodingParameters = TVIEncodingParameters(audioBitrate: 0,
+                                                               videoBitrate: UInt(1024) * SampleHandler.kMaxVideoBitrate)
 
             /*
              * A broadcast extension has no need to subscribe to Tracks, and connects as a publish-only
