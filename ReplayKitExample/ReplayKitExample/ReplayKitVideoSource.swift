@@ -33,6 +33,9 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
     var timerSource: DispatchSourceTimer?
     var lastTransmitTimestamp: CMTime?
     private var lastFrameStorage: TVIVideoFrame?
+    // ReplayKit reuses the underlying CVPixelBuffer if you release the CMSampleBuffer back to their pool.
+    // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
+    private var lastSampleBuffer: CMSampleBuffer?
 
     /*
      * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
@@ -71,6 +74,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
             captureQueue.sync {
                 self.timerSource?.cancel()
                 self.timerSource = nil
+                self.lastSampleBuffer = nil
             }
         }
     }
@@ -84,14 +88,14 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
             assertionFailure("SampleBuffer did not have an ImageBuffer")
             return
         }
-        // The source only supports NV12 (full-range) buffers.
+        // The source only supports NV12 (full-range) buffers produced by ReplayKit
         let pixelFormat = CVPixelBufferGetPixelFormatType(sourcePixelBuffer);
         if (pixelFormat != kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) {
             assertionFailure("Extension assumes the incoming frames are of type NV12")
             return
         }
 
-        // Discover the dispatch queue that we are operating on.
+        // Discover the dispatch queue that the source is operating on.
         if videoQueue == nil {
             videoQueue = ExampleCoreAudioDeviceGetCurrentQueue()
         }
@@ -128,6 +132,9 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
                      buffer: sourcePixelBuffer,
                      orientation: videoOrientation,
                      forceReschedule: false)
+
+        // Hold on to the previous sample buffer to prevent tearing.
+        lastSampleBuffer = sampleBuffer
     }
 
     func deliverFrame(to: TVIVideoSink, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation, forceReschedule: Bool) {
@@ -174,7 +181,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
 
                 if delta >= ReplayKitVideoSource.kFrameRetransmitTimeInterval {
                     print("Delivering frame since send-delta is greather than threshold. delta=", delta.seconds)
-                    // Reconstruct a new timestamp, advancing by our relative read of host time.
+                    // Reconstruct a new timestamp, advancing by the source's relative read of host time.
                     self.deliverFrame(to: sink,
                                       timestamp: CMTimeAdd(frame.timestamp, delta),
                                       buffer: frame.imageBuffer,

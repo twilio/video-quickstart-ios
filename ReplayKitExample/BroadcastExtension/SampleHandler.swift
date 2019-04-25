@@ -87,7 +87,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
             /*
              * A broadcast extension has no need to subscribe to Tracks, and connects as a publish-only
-             * Participant. In a Group Room, this options saves memory and bandwidth since decoders and receivers are
+             * Participant. In a Group Room, this option saves memory and bandwidth since decoders and receivers are
              * no longer needed. Note that subscription events will not be raised for remote publications.
              */
             builder.isAutomaticSubscriptionEnabled = false

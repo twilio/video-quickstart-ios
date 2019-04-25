@@ -54,8 +54,7 @@ Tapping "Start Conference" begins capturing and sharing the screen from within t
 
 1. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
 2. Share the camera using ReplayKit, or `TVICameraSource`.
-3. Resolve tearing issues when scrolling vertically, and image corruption when sharing video. (ISDK-2478)
-4. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
+3. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
 
 ### Known Issues
 
