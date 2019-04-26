@@ -1,24 +1,19 @@
 //
-//  ViewController.swift
+//  RendererViewController.swift
 //  VideoRendererExample
 //
-//  Copyright © 2017 Twilio Inc. All rights reserved.
+//  Copyright © 2019 Twilio Inc. All rights reserved.
 //
 
 import AVFoundation
 import TwilioVideo
 import UIKit
 
-class ViewController: UIViewController {
+class RendererViewController: UIViewController {
 
     // MARK: View Controller Members
-
-    // Configure access token manually for testing, if desired! Create one manually in the console
-    // at https://www.twilio.com/console/video/runtime/testing-tools
-    var accessToken = "TWILIO_ACCESS_TOKEN"
-
-    // Configure remote URL to fetch token from
-    let tokenUrl = "http://localhost:8000/token.php"
+    var roomName: String?
+    var accessToken: String?
 
     // Video SDK components
     var room: TVIRoom?
@@ -29,15 +24,8 @@ class ViewController: UIViewController {
 
     // MARK: UI Element Outlets and handles
 
-    @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var disconnectButton: UIButton!
-    @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var remoteViewStack: UIStackView!
-    @IBOutlet weak var roomTextField: UITextField!
-    @IBOutlet weak var roomLine: UIView!
-    @IBOutlet weak var roomLabel: UILabel!
-
-    var messageTimer: Timer!
 
     let kPreviewPadding = CGFloat(10)
 
@@ -47,22 +35,17 @@ class ViewController: UIViewController {
     // Use ExampleSampleBufferView instead of TVIVideoView to render remote Participant video.
     let kUseExampleSampleBufferView = true
 
+    // Enable recording of the local camera.
+    static let kRecordLocalVideo = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "VideoRenderer Example"
         disconnectButton.isHidden = true
         disconnectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
-        connectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
-        roomTextField.autocapitalizationType = .none
-        roomTextField.delegate = self
-
-        // Prefer to work which H.264 where we can guarantee rendering of decoded video using ExampleSampleBufferView.
-        Settings.shared.videoCodec = TVIH264Codec.init()
-        // Use a reasonable video bandwidth limit of 1100 kbps.
-        Settings.shared.maxVideoBitrate = 1024 * 1100
 
         prepareLocalMedia()
+        connect()
     }
 
     override func didReceiveMemoryWarning() {
@@ -70,55 +53,6 @@ class ViewController: UIViewController {
     }
 
     // MARK: IBActions
-    @IBAction func connect(sender: AnyObject) {
-        // Configure access token either from server or manually.
-        // If the default wasn't changed, try fetching from server.
-        if (accessToken == "TWILIO_ACCESS_TOKEN") {
-            do {
-                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
-            } catch {
-                let message = "Failed to fetch access token"
-                logMessage(messageText: message)
-                return
-            }
-        }
-
-        // Preparing the connect options with the access token that we fetched (or hardcoded).
-        let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
-
-            if let audioTrack = self.localAudioTrack {
-                builder.audioTracks = [audioTrack]
-            }
-            if let videoTrack = self.localVideoTrack {
-                builder.videoTracks = [videoTrack]
-            }
-
-            // Use the preferred codecs
-            if let preferredAudioCodec = Settings.shared.audioCodec {
-                builder.preferredAudioCodecs = [preferredAudioCodec]
-            }
-            if let preferredVideoCodec = Settings.shared.videoCodec {
-                builder.preferredVideoCodecs = [preferredVideoCodec]
-            }
-
-            // Use the preferred encoding parameters
-            if let encodingParameters = Settings.shared.getEncodingParameters() {
-                builder.encodingParameters = encodingParameters
-            }
-
-            // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
-            // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
-            builder.roomName = self.roomTextField.text
-        }
-
-        // Connect to the Room using the options we provided.
-        room = TwilioVideo.connect(with: connectOptions, delegate: self)
-
-        logMessage(messageText: "Connecting to \(roomTextField.text ?? "a Room")")
-
-        self.showRoomUI(inRoom: true)
-        self.dismissKeyboard()
-    }
 
     @IBAction func disconnect(sender: UIButton) {
         if let room = self.room {
@@ -157,11 +91,11 @@ class ViewController: UIViewController {
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
-        return self.room != nil
+        return self.room?.state == TVIRoomState.connected || self.room?.state == TVIRoomState.reconnecting
     }
 
     override var prefersStatusBarHidden: Bool {
-        return self.room != nil
+        return self.room?.state == TVIRoomState.connected || self.room?.state == TVIRoomState.reconnecting
     }
 
     override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -171,58 +105,6 @@ class ViewController: UIViewController {
         } else {
             remoteViewStack.axis = .vertical
         }
-    }
-
-    // Update our UI based upon if we are in a Room or not
-    func showRoomUI(inRoom: Bool) {
-        self.connectButton.isHidden = inRoom
-        self.connectButton.isEnabled = !inRoom
-        self.roomTextField.isHidden = inRoom
-        self.roomLine.isHidden = inRoom
-        self.roomLabel.isHidden = inRoom
-        self.disconnectButton.isHidden = !inRoom
-        self.disconnectButton.isEnabled = inRoom
-        UIApplication.shared.isIdleTimerDisabled = inRoom
-        if #available(iOS 11.0, *) {
-            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
-        }
-        self.setNeedsStatusBarAppearanceUpdate()
-
-        self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
-    }
-
-    func dismissKeyboard() {
-        if (self.roomTextField.isFirstResponder) {
-            self.roomTextField.resignFirstResponder()
-        }
-    }
-
-    func logMessage(messageText: String) {
-        messageLabel.text = messageText
-
-        if (messageLabel.alpha < 1.0) {
-            self.messageLabel.isHidden = false
-            UIView.animate(withDuration: 0.4, animations: {
-                self.messageLabel.alpha = 1.0
-            })
-        }
-
-        // Hide the message with a delay.
-        self.messageTimer?.invalidate()
-        let timer = Timer.init(timeInterval: TimeInterval(6), repeats: false) { (timer) in
-            if (self.messageLabel.isHidden == false) {
-                UIView.animate(withDuration: 0.6, animations: {
-                    self.messageLabel.alpha = 0
-                }, completion: { (complete) in
-                    if (complete) {
-                        self.messageLabel.isHidden = true
-                    }
-                })
-            }
-        }
-
-        self.messageTimer = timer
-        RunLoop.main.add(timer, forMode: RunLoop.Mode.common)
     }
 
     func prepareLocalMedia() {
@@ -254,22 +136,84 @@ class ViewController: UIViewController {
             }
 
             camera.startCapture(with: frontCamera,
-                                format: TVICameraSource.supportedFormats(for: frontCamera).lastObject as! TVIVideoFormat) { (captureDevice, videoFormat, error) in
+                                format: TVICameraSource.supportedFormats(for: frontCamera).firstObject as! TVIVideoFormat) { (captureDevice, videoFormat, error) in
                                     if let error = error {
                                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                                         self.camera?.previewView?.removeFromSuperview()
                                     } else {
                                         // Double tap to stop recording.
-                                        let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.recordingTap))
-                                        recognizerDoubleTap.numberOfTapsRequired = 2
-                                        self.camera?.previewView?.addGestureRecognizer(recognizerDoubleTap)
+                                        if (RendererViewController.kRecordLocalVideo) {
+                                            let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(RendererViewController.recordingTap))
+                                            recognizerDoubleTap.numberOfTapsRequired = 2
+                                            self.camera?.previewView?.addGestureRecognizer(recognizerDoubleTap)
+                                            self.prepareVideoRecording(track: self.localVideoTrack!)
+                                        }
 
                                         // Layout the camera preview with dimensions appropriate for our orientation.
                                         self.view.setNeedsLayout()
-                                        self.prepareVideoRecording(track: self.localVideoTrack!)
                                     }
             }
         }
+    }
+
+    func connect() {
+
+        // Preparing the connect options with the access token that we fetched (or hardcoded).
+        let connectOptions = TVIConnectOptions.init(token: accessToken!) { (builder) in
+
+            if let audioTrack = self.localAudioTrack {
+                builder.audioTracks = [audioTrack]
+            }
+            if let videoTrack = self.localVideoTrack {
+                builder.videoTracks = [videoTrack]
+            }
+
+            // Use the preferred codecs
+            if let preferredAudioCodec = Settings.shared.audioCodec {
+                builder.preferredAudioCodecs = [preferredAudioCodec]
+            }
+            if let preferredVideoCodec = Settings.shared.videoCodec {
+                builder.preferredVideoCodecs = [preferredVideoCodec]
+            }
+
+            // Use the preferred encoding parameters
+            if let encodingParameters = Settings.shared.getEncodingParameters() {
+                builder.encodingParameters = encodingParameters
+            }
+
+            // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
+            // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
+            builder.roomName = self.roomName
+        }
+
+        // Connect to the Room using the options we provided.
+        room = TwilioVideo.connect(with: connectOptions, delegate: self)
+
+        logMessage(messageText: "Connecting to \(roomName ?? "a Room")")
+
+        self.showRoomUI(inRoom: true)
+    }
+
+
+    // Update our UI based upon if we are in a Room or not
+    func showRoomUI(inRoom: Bool) {
+        self.disconnectButton.isHidden = !inRoom
+        self.disconnectButton.isEnabled = inRoom
+        UIApplication.shared.isIdleTimerDisabled = inRoom
+        if #available(iOS 11.0, *) {
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
+        self.setNeedsStatusBarAppearanceUpdate()
+
+        self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
+
+        if (!inRoom) {
+            self.navigationController?.popViewController(animated: true)
+        }
+    }
+
+    func logMessage(messageText: String) {
+        NSLog(messageText)
     }
 
     @objc func recordingTap(gestureRecognizer: UIGestureRecognizer) {
@@ -297,7 +241,7 @@ class ViewController: UIViewController {
         remoteView.contentMode = .scaleAspectFit;
 
         // Double tap to change the content mode.
-        let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(ViewController.changeRemoteVideoAspect))
+        let recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(RendererViewController.changeRemoteVideoAspect))
         recognizerDoubleTap.numberOfTapsRequired = 2
         remoteView.addGestureRecognizer(recognizerDoubleTap)
 
@@ -333,16 +277,8 @@ class ViewController: UIViewController {
     }
 }
 
-// MARK: UITextFieldDelegate
-extension ViewController : UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        self.connect(sender: textField)
-        return true
-    }
-}
-
 // MARK: TVIRoomDelegate
-extension ViewController : TVIRoomDelegate {
+extension RendererViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
 
         // Listen to events from existing `TVIRemoteParticipant`s
@@ -384,7 +320,7 @@ extension ViewController : TVIRoomDelegate {
 }
 
 // MARK: TVIRemoteParticipantDelegate
-extension ViewController : TVIRemoteParticipantDelegate {
+extension RendererViewController : TVIRemoteParticipantDelegate {
 
     func remoteParticipant(_ participant: TVIRemoteParticipant,
                            publishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
@@ -490,12 +426,12 @@ extension ViewController : TVIRemoteParticipantDelegate {
 }
 
 // MARK: TVILocalParticipantDelegate
-extension ViewController : TVILocalParticipantDelegate {
+extension RendererViewController : TVILocalParticipantDelegate {
     func localParticipant(_ participant: TVILocalParticipant, publishedAudioTrack: TVILocalAudioTrackPublication) {
     }
 }
 
-extension ViewController : TVICameraSourceDelegate {
+extension RendererViewController : TVICameraSourceDelegate {
     func cameraSource(_ source: TVICameraSource, didFailWithError error: Error) {
         logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
         source.previewView?.removeFromSuperview()
