@@ -142,7 +142,8 @@ class RendererViewController: UIViewController {
                 view.addSubview(preview);
             }
 
-            camera.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
+            let videoFormat = selectVideoFormat(device: frontCamera)
+            camera.startCapture(with: frontCamera, format: videoFormat) { (captureDevice, videoFormat, error) in
                                     if let error = error {
                                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                                         self.camera?.previewView?.removeFromSuperview()
@@ -200,8 +201,8 @@ class RendererViewController: UIViewController {
         // Sometimes a Participant might not interact with their device for a long time in a conference.
         UIApplication.shared.isIdleTimerDisabled = true
 
-        self.disconnectButton.isHidden = true
-        self.disconnectButton.isEnabled = false
+//        self.disconnectButton.isHidden = true
+//        self.disconnectButton.isEnabled = false
 
         self.title = self.roomName
     }
@@ -284,6 +285,35 @@ class RendererViewController: UIViewController {
         remoteView.bounds = remoteView.bounds.insetBy(dx: 1, dy: 1)
         remoteView.bounds = remoteView.bounds.insetBy(dx: -1, dy: -1)
     }
+
+    @objc func hudTapped(gestureRecognizer: UIGestureRecognizer) {
+        let finalAlpha = self.disconnectButton.alpha == 0.0 ? 1.0 : 0.0
+        UIView.animate(withDuration: 0.25) {
+            self.disconnectButton.alpha = CGFloat(finalAlpha)
+        }
+    }
+
+    func selectVideoFormat(device: AVCaptureDevice) -> TVIVideoFormat {
+        let formats = TVICameraSource.supportedFormats(for: device)
+        var selectedFormat = formats.firstObject as? TVIVideoFormat
+
+        for format in formats {
+            guard let videoFormat = format as? TVIVideoFormat else {
+                continue
+            }
+            if videoFormat.pixelFormat != TVIPixelFormat.formatYUV420BiPlanarFullRange {
+                continue
+            }
+            let dimensions = videoFormat.dimensions
+            let ratio = Float(dimensions.width) / Float(dimensions.height)
+            if (dimensions.width >= 640 && ratio >= 1.5) {
+                selectedFormat = videoFormat
+                break
+            }
+        }
+
+        return selectedFormat!
+    }
 }
 
 // MARK: TVIRoomDelegate
@@ -309,6 +339,10 @@ extension RendererViewController : TVIRoomDelegate {
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         }
         self.setNeedsStatusBarAppearanceUpdate()
+
+        let hudTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(RendererViewController.hudTapped))
+        hudTapRecognizer.numberOfTapsRequired = 1
+        self.view.addGestureRecognizer(hudTapRecognizer)
 
         let connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
         logMessage(messageText: connectMessage)
