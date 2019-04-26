@@ -217,6 +217,14 @@ extension ViewController: TVIRoomDelegate {
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
     }
 
+    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
+        print("Reconnecting to room \(room.name), error = \(String(describing: error))")
+    }
+
+    func didReconnect(to room: TVIRoom) {
+        print("Reconnected to room \(room.name)")
+    }
+
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
         print("Participant \(participant.identity) connected to \(room.name).")
     }

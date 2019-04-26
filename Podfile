@@ -3,7 +3,7 @@ source 'https://github.com/CocoaPods/Specs'
 workspace 'VideoQuickStart'
 
 abstract_target 'TwilioVideo' do
-  pod 'TwilioVideo', '~> 2.6'
+  pod 'TwilioVideo', '~> 2.10'
 
   target 'ARKitExample' do
     platform :ios, '11.0'
@@ -53,6 +53,11 @@ abstract_target 'TwilioVideo' do
   target 'DataTrackExample' do
     platform :ios, '9.0'
     project 'DataTrackExample.xcproject'
+  end
+
+  target 'MultiPartyExample' do
+    platform :ios, '9.0'
+    project 'MultiPartyExample.xcproject'
   end
 
 end
