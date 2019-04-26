@@ -45,15 +45,14 @@
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="mAu-B1-6Kl">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zf2-hD-d9C">
-                                <rect key="frame" x="11" y="613" width="80" height="44"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zf2-hD-d9C">
+                                <rect key="frame" x="10" y="605" width="64" height="52"/>
                                 <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="44" id="MfF-ps-k1v"/>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="80" id="Z9d-Za-D9D"/>
+                                    <constraint firstAttribute="height" constant="52" id="MfF-ps-k1v"/>
+                                    <constraint firstAttribute="width" constant="64" id="Z9d-Za-D9D"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <state key="normal" title="Disconnect">
+                                <state key="normal" image="hangup">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
@@ -65,21 +64,14 @@
                         <constraints>
                             <constraint firstItem="mAu-B1-6Kl" firstAttribute="top" secondItem="3J2-Mo-tWS" secondAttribute="top" id="1o9-T7-SLo"/>
                             <constraint firstItem="iKH-Gb-ajd" firstAttribute="top" secondItem="zf2-hD-d9C" secondAttribute="bottom" constant="10" id="67z-LZ-oMp"/>
-                            <constraint firstItem="zf2-hD-d9C" firstAttribute="leading" secondItem="3J2-Mo-tWS" secondAttribute="leadingMargin" constant="-5" id="S7F-dP-Kv3"/>
+                            <constraint firstItem="zf2-hD-d9C" firstAttribute="leading" secondItem="3J2-Mo-tWS" secondAttribute="leading" constant="10" id="Uf7-Au-BMG"/>
                             <constraint firstItem="mAu-B1-6Kl" firstAttribute="leading" secondItem="3J2-Mo-tWS" secondAttribute="leading" id="WQb-My-MMI"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="zf2-hD-d9C" secondAttribute="trailingMargin" id="XnX-E1-bQs"/>
                             <constraint firstAttribute="trailing" secondItem="mAu-B1-6Kl" secondAttribute="trailing" id="bAx-Eb-znk"/>
                             <constraint firstAttribute="bottom" secondItem="mAu-B1-6Kl" secondAttribute="bottom" id="gem-4V-Jve"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ZLY-Qp-F96"/>
                     </view>
-                    <navigationItem key="navigationItem" id="Lao-pd-emY">
-                        <barButtonItem key="rightBarButtonItem" title="Settings" id="uTt-mB-x8T">
-                            <connections>
-                                <action selector="connectOptionsButtonTapped:" destination="6Fe-yO-Bst" id="Sa8-Nc-jqa"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" id="Lao-pd-emY"/>
                     <connections>
                         <outlet property="disconnectButton" destination="zf2-hD-d9C" id="mXO-MI-Y9x"/>
                         <outlet property="remoteViewStack" destination="mAu-B1-6Kl" id="J56-Nf-oXC"/>
@@ -208,7 +200,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Rop-qt-2le"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Video-Renderer Example" id="L5G-aT-IuI">
+                    <navigationItem key="navigationItem" title="VideoRenderer Example" id="L5G-aT-IuI">
                         <barButtonItem key="backBarButtonItem" title="Back" id="Z6I-go-Mnd"/>
                         <barButtonItem key="rightBarButtonItem" title="Settings" id="2XB-jl-Df4">
                             <connections>
@@ -229,5 +221,8 @@
             <point key="canvasLocation" x="-242" y="357"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="hangup" width="26" height="10"/>
+    </resources>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
 </document>

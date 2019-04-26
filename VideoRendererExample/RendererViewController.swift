@@ -41,8 +41,11 @@ class RendererViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        disconnectButton.isHidden = true
         disconnectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
+        disconnectButton.layer.cornerRadius = 4
+
+        navigationItem.setHidesBackButton(true, animated: false)
+        navigationController?.hidesBarsWhenVerticallyCompact = true
 
         prepareLocalMedia()
         connect()
@@ -59,6 +62,10 @@ class RendererViewController: UIViewController {
             logMessage(messageText: "Disconnecting from \(room.name)")
             room.disconnect()
             sender.isEnabled = false
+
+            if let camera = camera {
+                camera.stopCapture()
+            }
         }
     }
 
@@ -121,22 +128,21 @@ class RendererViewController: UIViewController {
             return
         }
 
-        // We will render the camera using TVICameraPreviewView.
+        // The example will render the camera using TVICameraPreviewView.
         let cameraSourceOptions = TVICameraSourceOptions.init { (builder) in
             builder.enablePreview = true
         }
 
         self.camera = TVICameraSource(options: cameraSourceOptions, delegate: self)
         if let camera = self.camera {
-            localVideoTrack = TVILocalVideoTrack.init(source: camera)
+            localVideoTrack = TVILocalVideoTrack(source: camera)
             logMessage(messageText: "Video track created.")
 
             if let preview = camera.previewView {
                 view.addSubview(preview);
             }
 
-            camera.startCapture(with: frontCamera,
-                                format: TVICameraSource.supportedFormats(for: frontCamera).firstObject as! TVIVideoFormat) { (captureDevice, videoFormat, error) in
+            camera.startCapture(with: frontCamera) { (captureDevice, videoFormat, error) in
                                     if let error = error {
                                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                                         self.camera?.previewView?.removeFromSuperview()
@@ -191,25 +197,28 @@ class RendererViewController: UIViewController {
 
         logMessage(messageText: "Connecting to \(roomName ?? "a Room")")
 
-        self.showRoomUI(inRoom: true)
+        // Sometimes a Participant might not interact with their device for a long time in a conference.
+        UIApplication.shared.isIdleTimerDisabled = true
+
+        self.disconnectButton.isHidden = true
+        self.disconnectButton.isEnabled = false
+
+        self.title = self.roomName
     }
 
+    func handleRoomDisconnected() {
+        // Do any necessary cleanup when leaving the room
+        self.room = nil
 
-    // Update our UI based upon if we are in a Room or not
-    func showRoomUI(inRoom: Bool) {
-        self.disconnectButton.isHidden = !inRoom
-        self.disconnectButton.isEnabled = inRoom
-        UIApplication.shared.isIdleTimerDisabled = inRoom
-        if #available(iOS 11.0, *) {
-            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        if let camera = camera {
+            camera.stopCapture()
+            self.camera = nil
         }
-        self.setNeedsStatusBarAppearanceUpdate()
 
-        self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
+        // The Client is no longer in a conference, allow the Participant's device to idle.
+        UIApplication.shared.isIdleTimerDisabled = false
 
-        if (!inRoom) {
-            self.navigationController?.popViewController(animated: true)
-        }
+        navigationController?.popViewController(animated: true)
     }
 
     func logMessage(messageText: String) {
@@ -281,10 +290,25 @@ class RendererViewController: UIViewController {
 extension RendererViewController : TVIRoomDelegate {
     func didConnect(to room: TVIRoom) {
 
-        // Listen to events from existing `TVIRemoteParticipant`s
+        // Listen to events from TVIRemoteParticipants that are already connected.
         for remoteParticipant in room.remoteParticipants {
             remoteParticipant.delegate = self
         }
+
+        self.title = room.name
+
+        self.disconnectButton.isHidden = false
+        self.disconnectButton.alpha = 0
+        self.disconnectButton.isEnabled = true
+        UIView.animate(withDuration: 0.3) {
+            self.disconnectButton.alpha = 1.0
+            self.view.backgroundColor = UIColor.black
+        }
+
+        if #available(iOS 11.0, *) {
+            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        }
+        self.setNeedsStatusBarAppearanceUpdate()
 
         let connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
         logMessage(messageText: connectMessage)
@@ -297,15 +321,13 @@ extension RendererViewController : TVIRoomDelegate {
             logMessage(messageText: "Disconncted from \(room.name)")
         }
 
-        self.room = nil
-        self.showRoomUI(inRoom: false)
+        self.handleRoomDisconnected()
     }
 
     func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
         logMessage(messageText: "Failed to connect to Room:\n\(error.localizedDescription)")
-        self.room = nil
 
-        self.showRoomUI(inRoom: false)
+        self.handleRoomDisconnected()
     }
 
     func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
