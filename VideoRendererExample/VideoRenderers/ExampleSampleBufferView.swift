@@ -23,7 +23,7 @@ class ExampleSampleBufferView : UIView, TVIVideoRenderer {
 
     var isRendering = UIApplication.shared.applicationState != .background
     var outputFormatDescription: CMFormatDescription?
-    // Allows us to enqueue to the layer from a background thread without accessing self.layer directly.
+    // Allows the renderer to enqueue frames from a background thread without accessing self.layer directly.
     var cachedDisplayLayer : AVSampleBufferDisplayLayer?
 
     /*
@@ -162,28 +162,28 @@ extension ExampleSampleBufferView {
             self.videoOrientation = orientation
 
             // TODO: Should we be doing this here, or delegating to a view controller?
-//            [UIView .animate(withDuration: animate ? 0.3 : 0, animations: {
-//                let size = videoSize
-//                let scaleFactor = size.height > size.width ? CGFloat(size.height) / CGFloat(size.width) : CGFloat(size.width) / CGFloat(size.height)
-//                switch (orientation) {
-//                case TVIVideoOrientation.up:
-//                    self.transform = CGAffineTransform.identity;
-//                    break
-//                case TVIVideoOrientation.left:
-//                    let scale = CGAffineTransform.init(scaleX: scaleFactor,
-//                                                       y: scaleFactor)
-//                    self.transform = CGAffineTransform(rotationAngle: CGFloat.pi / 2).concatenating(scale)
-//                    break
-//                case TVIVideoOrientation.down:
-//                    self.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
-//                    break
-//                case TVIVideoOrientation.right:
-//                    let scale = CGAffineTransform.init(scaleX: scaleFactor,
-//                                                       y: scaleFactor)
-//                    self.transform = CGAffineTransform(rotationAngle: CGFloat.pi * 3 / 2).concatenating(scale)
-//                    break
-//                }
-//            })];
+            [UIView .animate(withDuration: animate ? 0.3 : 0, animations: {
+                let size = videoSize
+                let scaleFactor = size.height > size.width ? CGFloat(size.height) / CGFloat(size.width) : CGFloat(size.width) / CGFloat(size.height)
+                switch (orientation) {
+                case TVIVideoOrientation.up:
+                    self.transform = CGAffineTransform.identity;
+                    break
+                case TVIVideoOrientation.left:
+                    let scale = CGAffineTransform.init(scaleX: scaleFactor,
+                                                       y: scaleFactor)
+                    self.transform = CGAffineTransform(rotationAngle: CGFloat.pi / 2).concatenating(scale)
+                    break
+                case TVIVideoOrientation.down:
+                    self.transform = CGAffineTransform(rotationAngle: CGFloat.pi)
+                    break
+                case TVIVideoOrientation.right:
+                    let scale = CGAffineTransform.init(scaleX: scaleFactor,
+                                                       y: scaleFactor)
+                    self.transform = CGAffineTransform(rotationAngle: CGFloat.pi * 3 / 2).concatenating(scale)
+                    break
+                }
+            })];
         }
     }
 

@@ -33,7 +33,7 @@ class RendererViewController: UIViewController {
     let kMaxRemoteVideos = Int(2)
 
     // Use ExampleSampleBufferView instead of TVIVideoView to render remote Participant video.
-    let kUseExampleSampleBufferView = true
+    static let kUseExampleSampleBufferView = true
 
     // Enable recording of the local camera.
     static let kRecordLocalVideo = false
@@ -45,7 +45,7 @@ class RendererViewController: UIViewController {
         disconnectButton.layer.cornerRadius = 4
 
         navigationItem.setHidesBackButton(true, animated: false)
-        navigationController?.hidesBarsWhenVerticallyCompact = true
+        navigationController?.setNavigationBarHidden(true, animated: true)
 
         prepareLocalMedia()
         connect()
@@ -217,8 +217,8 @@ class RendererViewController: UIViewController {
 
         // The Client is no longer in a conference, allow the Participant's device to idle.
         UIApplication.shared.isIdleTimerDisabled = false
-
         navigationController?.popViewController(animated: true)
+        navigationController?.setNavigationBarHidden(false, animated: false)
     }
 
     func logMessage(messageText: String) {
@@ -239,8 +239,8 @@ class RendererViewController: UIViewController {
     }
 
     func setupRemoteVideoView(publication: TVIRemoteVideoTrackPublication) {
-        // Create `ExampleSampleBufferRenderer`, and add it to our `UIStackView`.
-        let remoteView = kUseExampleSampleBufferView ?
+        // Create `ExampleSampleBufferRenderer`, and add it to the `UIStackView`.
+        let remoteView = RendererViewController.kUseExampleSampleBufferView ?
             ExampleSampleBufferView(frame: CGRect.zero) : TVIVideoView(frame: CGRect.zero)
 
         // We will bet that a hash collision between two unique SIDs is very rare.
