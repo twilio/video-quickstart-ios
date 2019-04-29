@@ -12,8 +12,9 @@ import UIKit
 class RendererViewController: UIViewController {
 
     // MARK: View Controller Members
-    var roomName: String?
     var accessToken: String?
+    var roomName: String?
+    var publishTracks: Bool = true
 
     // Video SDK components
     var room: TVIRoom?
@@ -21,9 +22,12 @@ class RendererViewController: UIViewController {
     var localAudioTrack: TVILocalAudioTrack?
     var localVideoTrack: TVILocalVideoTrack?
     var localVideoRecorder: ExampleVideoRecorder?
+    var screenDimensions = CMVideoDimensions(width: Int32(exactly: UIScreen.main.currentMode!.size.width)!,
+                                             height: Int32(exactly: UIScreen.main.currentMode!.size.height)!)
+
+    var subscriberDimensions: CMVideoDimensions?
 
     // MARK: UI Element Outlets and handles
-
     @IBOutlet weak var disconnectButton: UIButton!
     @IBOutlet weak var remoteViewStack: UIStackView!
 
@@ -32,7 +36,7 @@ class RendererViewController: UIViewController {
     // How many remote videos to display.
     let kMaxRemoteVideos = Int(2)
 
-    // Use ExampleSampleBufferView instead of TVIVideoView to render remote Participant video.
+    // Use ExampleSampleBufferView to render remote Participant video.
     static let kUseExampleSampleBufferView = true
 
     // Enable recording of the local camera.
@@ -41,13 +45,22 @@ class RendererViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // Normalize screen dimensions to be in landscape
+        if screenDimensions.height > screenDimensions.width {
+            let width = screenDimensions.height
+            screenDimensions.height = screenDimensions.width
+            screenDimensions.width = width
+        }
+
         disconnectButton.setTitleColor(UIColor.init(white: 0.75, alpha: 1), for: .disabled)
         disconnectButton.layer.cornerRadius = 4
 
         navigationItem.setHidesBackButton(true, animated: false)
         navigationController?.setNavigationBarHidden(true, animated: true)
 
-        prepareLocalMedia()
+        if (publishTracks) {
+            prepareLocalMedia()
+        }
         connect()
     }
 
@@ -115,8 +128,8 @@ class RendererViewController: UIViewController {
     }
 
     func prepareLocalMedia() {
-        // Create an audio track.
-        localAudioTrack = TVILocalAudioTrack.init()
+        // Create an audio track. Encode the Participant's screen dimensions in the Track's name.
+        localAudioTrack = TVILocalAudioTrack(options: nil, enabled: true, name: "{\(screenDimensions.width), \(screenDimensions.height)}")
         if (localAudioTrack == nil) {
             logMessage(messageText: "Failed to create audio track!")
             return
@@ -142,7 +155,7 @@ class RendererViewController: UIViewController {
                 view.addSubview(preview);
             }
 
-            let videoFormat = selectVideoFormat(device: frontCamera)
+            let videoFormat = selectVideoFormat(device: frontCamera, subscriberDimensions: CMVideoDimensions(width: 640, height: 480))
             camera.startCapture(with: frontCamera, format: videoFormat) { (captureDevice, videoFormat, error) in
                                     if let error = error {
                                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
@@ -200,9 +213,6 @@ class RendererViewController: UIViewController {
 
         // Sometimes a Participant might not interact with their device for a long time in a conference.
         UIApplication.shared.isIdleTimerDisabled = true
-
-//        self.disconnectButton.isHidden = true
-//        self.disconnectButton.isEnabled = false
 
         self.title = self.roomName
     }
@@ -293,9 +303,36 @@ class RendererViewController: UIViewController {
         }
     }
 
-    func selectVideoFormat(device: AVCaptureDevice) -> TVIVideoFormat {
+    func updateSourceFormatForSubscriber() {
+        if let camera = self.camera {
+            let videoFormat = selectVideoFormat(device: camera.device!, subscriberDimensions: subscriberDimensions!)
+            camera.select(camera.device!, format: videoFormat, completion: { (captureDevice, videoFormat, error) in
+                if let error = error {
+                    self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                    self.camera?.previewView?.removeFromSuperview()
+                } else {
+                    if let dimensions = self.subscriberDimensions {
+                        let ratio = Float(dimensions.width) / Float(dimensions.height)
+                        if ratio > 1.95 {
+                            let formatRequest = TVIVideoFormat()
+                            formatRequest.dimensions = videoFormat.dimensions
+                            formatRequest.dimensions.height = 496
+                            self.camera?.requestOutputFormat(formatRequest)
+                        }
+                    }
+                    // Layout the camera preview with dimensions appropriate for our orientation.
+                    self.view.setNeedsLayout()
+                }
+            })
+        }
+    }
+
+    func selectVideoFormat(device: AVCaptureDevice,
+                           subscriberDimensions: CMVideoDimensions) -> TVIVideoFormat {
         let formats = TVICameraSource.supportedFormats(for: device)
         var selectedFormat = formats.firstObject as? TVIVideoFormat
+
+        let subscriberRatio = Float(subscriberDimensions.width) / Float(subscriberDimensions.height)
 
         for format in formats {
             guard let videoFormat = format as? TVIVideoFormat else {
@@ -306,7 +343,9 @@ class RendererViewController: UIViewController {
             }
             let dimensions = videoFormat.dimensions
             let ratio = Float(dimensions.width) / Float(dimensions.height)
-            if (dimensions.width >= 640 && ratio >= 1.5) {
+
+            // Find the smallest format that is close to the aspect ratio of the subscriber's display
+            if (dimensions.width >= 640 && abs(subscriberRatio - ratio) < 0.4) {
                 selectedFormat = videoFormat
                 break
             }
@@ -323,6 +362,10 @@ extension RendererViewController : TVIRoomDelegate {
         // Listen to events from TVIRemoteParticipants that are already connected.
         for remoteParticipant in room.remoteParticipants {
             remoteParticipant.delegate = self
+
+            if room.remoteParticipants.count == 1 {
+                updateSubscriberDimensions(participant: remoteParticipant)
+            }
         }
 
         self.title = room.name
@@ -368,10 +411,31 @@ extension RendererViewController : TVIRoomDelegate {
         participant.delegate = self
 
         logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
+
+        if (subscriberDimensions == nil) {
+            updateSubscriberDimensions(participant: participant)
+        }
+    }
+
+    func updateSubscriberDimensions(participant: TVIRemoteParticipant) {
+        guard let subscriberDimensionsName = participant.audioTracks.first?.trackName else {
+            return
+        }
+        let cgSize = NSCoder.cgSize(for: subscriberDimensionsName)
+        subscriberDimensions = CMVideoDimensions(width: Int32(cgSize.width),
+                                                 height: Int32(cgSize.height))
+
+        updateSourceFormatForSubscriber()
     }
 
     func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
         logMessage(messageText: "Room \(room.name), Participant \(participant.identity) disconnected")
+
+        if (room.remoteParticipants.count == 0) {
+            subscriberDimensions = CMVideoDimensions(width: 640, height: 480)
+            updateSourceFormatForSubscriber()
+            subscriberDimensions = nil
+        }
     }
 }
 
