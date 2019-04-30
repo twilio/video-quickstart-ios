@@ -14,7 +14,6 @@
             <connections>
                 <outlet property="audioIndicator" destination="eLV-re-ffH" id="OVB-vR-gKi"/>
                 <outlet property="contentView" destination="xhF-bo-3wH" id="Ehh-0H-R5q"/>
-                <outlet property="networkQualityLevelContainerView" destination="aHV-wJ-CDy" id="Om1-we-zsz"/>
                 <outlet property="networkQualityLevelIndicator" destination="cFq-2D-bKN" id="DmO-ch-0CC"/>
                 <outlet property="noVideoImage" destination="C3c-00-Xd3" id="5UA-E6-XlL"/>
                 <outlet property="videoView" destination="DnR-nN-jn3" id="dsj-up-2rO"/>
@@ -34,23 +33,13 @@
                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <viewLayoutGuide key="safeArea" id="74F-mO-XNF"/>
                 </view>
-                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aHV-wJ-CDy" userLabel="NQL Container View">
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="network-quality-level-0" translatesAutoresizingMaskIntoConstraints="NO" id="cFq-2D-bKN" userLabel="Network Quality Level Indicator">
                     <rect key="frame" x="165" y="12" width="30" height="30"/>
-                    <subviews>
-                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="network-quality-level-0" translatesAutoresizingMaskIntoConstraints="NO" id="cFq-2D-bKN" userLabel="Network Quality Level Indicator">
-                            <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
-                        </imageView>
-                    </subviews>
-                    <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
-                        <constraint firstItem="cFq-2D-bKN" firstAttribute="width" secondItem="aHV-wJ-CDy" secondAttribute="width" id="4Go-d5-2XE"/>
-                        <constraint firstItem="cFq-2D-bKN" firstAttribute="centerY" secondItem="aHV-wJ-CDy" secondAttribute="centerY" id="9g1-zc-FX5"/>
-                        <constraint firstItem="cFq-2D-bKN" firstAttribute="centerX" secondItem="aHV-wJ-CDy" secondAttribute="centerX" id="N67-Jn-Sx9"/>
-                        <constraint firstAttribute="height" constant="30" id="NlE-SW-SOX"/>
-                        <constraint firstItem="cFq-2D-bKN" firstAttribute="height" secondItem="aHV-wJ-CDy" secondAttribute="height" id="bSA-kk-5Th"/>
-                        <constraint firstAttribute="width" constant="30" id="kDB-8I-QKr"/>
+                        <constraint firstAttribute="width" constant="30" id="9ZC-J4-lXT"/>
+                        <constraint firstAttribute="height" constant="30" id="FP0-cu-ADh"/>
                     </constraints>
-                </view>
+                </imageView>
                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="audio-muted-white" translatesAutoresizingMaskIntoConstraints="NO" id="eLV-re-ffH" userLabel="Audio Indicator">
                     <rect key="frame" x="171" y="288" width="20" height="20"/>
                     <constraints>
@@ -69,17 +58,17 @@
             <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <color key="tintColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="calibratedRGB"/>
             <constraints>
+                <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="cFq-2D-bKN" secondAttribute="trailing" constant="12" id="ABk-Uo-Ep2"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="WfB-wR-6NP" secondAttribute="bottom" constant="2" id="BXO-6F-4PB"/>
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerY" secondItem="1Jt-2h-zap" secondAttribute="centerY" id="G3W-ly-Mkv"/>
                 <constraint firstItem="WfB-wR-6NP" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="2" id="ISs-QI-ANY"/>
+                <constraint firstItem="cFq-2D-bKN" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="12" id="Jir-X6-byf"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="4" id="KSC-0w-KOT"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="WfB-wR-6NP" secondAttribute="trailing" constant="2" id="LBF-02-Bxc"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="eLV-re-ffH" secondAttribute="bottom" constant="20" id="PiB-vy-nYl"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="DnR-nN-jn3" secondAttribute="bottom" constant="4" id="SlU-0c-zqL"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="4" id="VU4-Yl-8W5"/>
-                <constraint firstItem="aHV-wJ-CDy" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="12" id="WY6-N9-gHB"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="eLV-re-ffH" secondAttribute="trailing" constant="16" id="ar4-WB-owc"/>
-                <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="aHV-wJ-CDy" secondAttribute="trailing" constant="12" id="bf9-Ib-RR1"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="DnR-nN-jn3" secondAttribute="trailing" constant="4" id="kfM-D2-oUh"/>
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerX" secondItem="1Jt-2h-zap" secondAttribute="centerX" id="p3m-Jw-8o4"/>
                 <constraint firstItem="WfB-wR-6NP" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="2" id="z74-ae-cOc"/>
