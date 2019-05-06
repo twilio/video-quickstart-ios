@@ -173,11 +173,13 @@ class ViewController: UIViewController {
             let transaction = CXTransaction(action: muteAction)
 
             callKitCallController.request(transaction)  { error in
-                if let error = error {
-                    self.logMessage(messageText: "SetMutedCallAction transaction request failed: \(error.localizedDescription)")
-                    return
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self.logMessage(messageText: "SetMutedCallAction transaction request failed: \(error.localizedDescription)")
+                        return
+                    }
+                    self.logMessage(messageText: "SetMutedCallAction transaction request successful")
                 }
-                self.logMessage(messageText: "SetMutedCallAction transaction request successful")
             }
         }
     }
