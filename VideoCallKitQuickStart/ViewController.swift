@@ -57,6 +57,7 @@ class ViewController: UIViewController {
         configuration.maximumCallGroups = 1
         configuration.maximumCallsPerCallGroup = 1
         configuration.supportsVideo = true
+        configuration.supportedHandleTypes = [.generic]
         if let callKitIcon = UIImage(named: "iconMask80") {
             configuration.iconTemplateImageData = callKitIcon.pngData()
         }
