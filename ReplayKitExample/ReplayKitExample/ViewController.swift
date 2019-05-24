@@ -43,6 +43,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
     static let kDownscaleBuffers = false
+    static let kDownScaledMaxWidthOrHeight = 960
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -336,6 +337,13 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
         // Our source produces either downscaled buffers with smoother motion, or an HD screen recording.
         videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers)
+
+        if (ViewController.kDownscaleBuffers) {
+            // Make a format request, apply it to the source.
+            let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: ViewController.kDownScaledMaxWidthOrHeight)
+            videoSource?.requestOutputFormat(outputFormat)
+        }
+
         screenTrack = TVILocalVideoTrack(source: videoSource!,
                                          enabled: true,
                                          name: "Screen")
