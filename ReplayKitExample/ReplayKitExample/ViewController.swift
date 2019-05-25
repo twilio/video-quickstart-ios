@@ -43,6 +43,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
     static let kDownscaleBuffers = false
+    static let kDownscaledMaxWidthOrHeight = 720
+    // Maximum bitrate (in kbps) used to send downscaled video.
+    static let kMaxDownscaledVideoBitrate = UInt(1500)
+
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -65,6 +69,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
+
+        if (ViewController.kDownscaleBuffers) {
+            Settings.shared.maxVideoBitrate = 1024 * ViewController.kMaxDownscaledVideoBitrate
+        }
 
         NotificationCenter.default.addObserver(forName: UIScreen.capturedDidChangeNotification, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
             if self.broadcastPickerView != nil && self.screenTrack == nil {
@@ -336,9 +344,16 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
         // Our source produces either downscaled buffers with smoother motion, or an HD screen recording.
         videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers)
+
         screenTrack = TVILocalVideoTrack(source: videoSource!,
                                          enabled: true,
                                          name: "Screen")
+
+        if (ViewController.kDownscaleBuffers) {
+            // Make a format request, apply it to the source.
+            let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: ViewController.kDownscaledMaxWidthOrHeight)
+            videoSource?.requestOutputFormat(outputFormat)
+        }
 
         recorder.startCapture(handler: { (sampleBuffer, type, error) in
             if error != nil {
@@ -379,7 +394,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                     self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
                     self.spinner.startAnimating()
                     self.infoLabel?.isHidden = true
-                    self.connectToRoom(name: "")
+                    self.connectToRoom(name: "conference")
                 }
             }
         }

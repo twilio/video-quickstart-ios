@@ -65,6 +65,23 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
         }
     }
 
+    static func formatRequestToDownscale(maxWidthOrHeight: Int) -> TVIVideoFormat {
+        let outputFormat = TVIVideoFormat()
+
+        var screenSize = UIScreen.main.bounds.size
+        screenSize.width *= UIScreen.main.nativeScale
+        screenSize.height *= UIScreen.main.nativeScale
+
+        let downscaledTarget = CGSize(width: maxWidthOrHeight,
+                                      height: maxWidthOrHeight)
+        let fitRect = AVMakeRect(aspectRatio: screenSize,
+                                 insideRect: CGRect(origin: CGPoint.zero, size: downscaledTarget)).integral
+        let outputSize = fitRect.size
+
+        outputFormat.dimensions = CMVideoDimensions(width: Int32(outputSize.width), height: Int32(outputSize.height))
+        return outputFormat;
+    }
+
     deinit {
         // Perform teardown and free memory on the video queue to ensure that the resources will not be resurrected.
         if let captureQueue = self.videoQueue {

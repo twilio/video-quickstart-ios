@@ -47,19 +47,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         }
 
         // This source will attempt to produce smaller buffers with fluid motion.
-        let outputFormat = TVIVideoFormat()
-
-        var screenSize = UIScreen.main.bounds.size
-        screenSize.width *= UIScreen.main.nativeScale
-        screenSize.height *= UIScreen.main.nativeScale
-
-        let downscaledTarget = CGSize(width: SampleHandler.kDownScaledMaxWidthOrHeight,
-                                      height: SampleHandler.kDownScaledMaxWidthOrHeight)
-        let fitRect = AVMakeRect(aspectRatio: screenSize,
-                                 insideRect: CGRect(origin: CGPoint.zero, size: downscaledTarget)).integral
-        let outputSize = fitRect.size
-
-        outputFormat.dimensions = CMVideoDimensions(width: Int32(outputSize.width), height: Int32(outputSize.height))
+        let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: SampleHandler.kDownScaledMaxWidthOrHeight)
 
         videoSource = ReplayKitVideoSource(isScreencast: false)
         screenTrack = TVILocalVideoTrack(source: videoSource!,
