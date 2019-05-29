@@ -211,17 +211,7 @@ class SettingsTableViewController: UITableViewController {
             })
             
             if (settings.videoCodec == codec) {
-
-                // Workaround for https://github.com/twilio/twilio-video-ios/issues/12
-                if settings.videoCodec!.isKind(of: TVIVp8Codec.self) {
-                    if codec.isKind(of: TVIVp8Codec.self) {
-                        if ((codec as! TVIVp8Codec).isSimulcast == (settings.videoCodec as! TVIVp8Codec).isSimulcast) {
-                            selectedButton = selectionButton;
-                        }
-                    }
-                } else {
-                    selectedButton = selectionButton;
-                }
+                selectedButton = selectionButton;
             }
             
             alertController.addAction(selectionButton)
@@ -308,10 +298,10 @@ class SettingsTableViewController: UITableViewController {
         self.navigationController!.present(alertController, animated: true, completion: nil)
     }
 
-    func getDisplayStrForVideoCodec(codec: TVIVideoCodec) -> String {
+    func getDisplayStrForVideoCodec(codec: VideoCodec) -> String {
         var str = codec.name
-        if codec.isKind(of: TVIVp8Codec.self) {
-            let vp8Codec = codec as! TVIVp8Codec
+
+        if let vp8Codec = codec as? Vp8Codec {
             str += vp8Codec.isSimulcast ? " Simulcast" : ""
         }
         return str;
