@@ -2,7 +2,7 @@
 //  Settings.swift
 //  VideoQuickStart
 //
-//  Copyright © 2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2017-2019 Twilio, Inc. All rights reserved.
 //
 
 import TwilioVideo
@@ -39,6 +39,6 @@ class Settings: NSObject {
         // Can't initialize a singleton
     }
     
-    // MARK: Shared Instance
+    // MARK:- Shared Instance
     static let shared = Settings()
 }
