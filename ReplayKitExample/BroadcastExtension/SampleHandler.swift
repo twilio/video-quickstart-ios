@@ -2,20 +2,20 @@
 //  SampleHandler.swift
 //  BroadcastExtension
 //
-//  Copyright © 2018 Twilio. All rights reserved.
+//  Copyright © 2018-2019 Twilio. All rights reserved.
 //
 
 import Accelerate
 import TwilioVideo
 import ReplayKit
 
-class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
+class SampleHandler: RPBroadcastSampleHandler {
 
     // Video SDK components
-    public var room: TVIRoom?
-    var audioTrack: TVILocalAudioTrack?
+    public var room: Room?
+    var audioTrack: LocalAudioTrack?
     var videoSource: ReplayKitVideoSource?
-    var screenTrack: TVILocalVideoTrack?
+    var screenTrack: LocalVideoTrack?
     var disconnectSemaphore: DispatchSemaphore?
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
@@ -34,7 +34,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
-        TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
+        TwilioVideoSDK.audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
@@ -50,28 +50,28 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: SampleHandler.kDownScaledMaxWidthOrHeight)
 
         videoSource = ReplayKitVideoSource(isScreencast: false)
-        screenTrack = TVILocalVideoTrack(source: videoSource!,
-                                         enabled: true,
-                                         name: "Screen")
+        screenTrack = LocalVideoTrack(source: videoSource!,
+                                      enabled: true,
+                                      name: "Screen")
 
         videoSource!.requestOutputFormat(outputFormat)
-        audioTrack = TVILocalAudioTrack()
+        audioTrack = LocalAudioTrack()
 
-        let connectOptions = TVIConnectOptions(token: accessToken) { (builder) in
+        let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
             // Use the local media that we prepared earlier.
             builder.audioTracks = [self.audioTrack!]
             builder.videoTracks = [self.screenTrack!]
 
             // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
-            builder.preferredVideoCodecs = [TVIH264Codec()]
+            builder.preferredVideoCodecs = [H264Codec()]
 
             /*
              * Constrain the bitrate to improve QoS for subscribers when simulcast is not used, and to reduce overall
              * bandwidth usage for the broadcaster.
              */
-            builder.encodingParameters = TVIEncodingParameters(audioBitrate: 0,
-                                                               videoBitrate: UInt(1024) * SampleHandler.kMaxVideoBitrate)
+            builder.encodingParameters = EncodingParameters(audioBitrate: 0,
+                                                            videoBitrate: UInt(1024) * SampleHandler.kMaxVideoBitrate)
 
             /*
              * A broadcast extension has no need to subscribe to Tracks, and connects as a publish-only
@@ -90,7 +90,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         }
 
         // Connect to the Room using the options we provided.
-        room = TwilioVideo.connect(with: connectOptions, delegate: self)
+        room = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
 
         // The user has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         print("broadcastStartedWithSetupInfo: ", setupInfo as Any)
@@ -140,20 +140,22 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
             break
         }
     }
+}
 
-    // MARK:- TVIRoomDelegate
-    func didConnect(to room: TVIRoom) {
+// MARK:- RoomDelegate
+extension SampleHandler : RoomDelegate {
+    func roomDidConnect(room: Room) {
         print("didConnectToRoom: ", room)
 
         disconnectSemaphore = DispatchSemaphore(value: 0)
     }
 
-    func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
+    func roomDidFailToConnect(room: Room, error: Error) {
         print("room: ", room, " didFailToConnectWithError: ", error)
         finishBroadcastWithError(error)
     }
 
-    func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
+    func roomDidDisconnect(room: Room, error: Error?) {
         if let semaphore = self.disconnectSemaphore {
             semaphore.signal()
         }
@@ -163,19 +165,19 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
         }
     }
 
-    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
+    func roomIsReconnecting(room: Room, error: Error) {
         print("Reconnecting to room \(room.name), error = \(String(describing: error))")
     }
 
-    func didReconnect(to room: TVIRoom) {
+    func roomDidReconnect(room: Room) {
         print("Reconnected to room \(room.name)")
     }
 
-    func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
+    func participantDidConnect(room: Room, participant: RemoteParticipant) {
         print("participant: ", participant.identity, " didConnect")
     }
 
-    func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
+    func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
         print("participant: ", participant.identity, " didDisconnect")
     }
 }
