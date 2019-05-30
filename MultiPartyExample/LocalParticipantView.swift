@@ -13,7 +13,7 @@ import TwilioVideo
 class LocalParticipantView: UIView {
 
     @IBOutlet var contentView: UIView!
-    @IBOutlet weak var videoView: TVIVideoView!
+    @IBOutlet weak var videoView: VideoView!
     @IBOutlet weak var noVideoImage: UIImageView!
     @IBOutlet weak var audioIndicator: UIImageView!
     @IBOutlet weak var networkQualityLevelIndicator: UIImageView!
@@ -34,7 +34,7 @@ class LocalParticipantView: UIView {
         }
     }
 
-    var networkQualityLevel: TVINetworkQualityLevel = .unknown {
+    var networkQualityLevel: NetworkQualityLevel = .unknown {
         willSet {
             guard let networkQualityLevelImage = networkQualityIndicatorImage(forLevel: newValue) else {
                 networkQualityLevelIndicator.isHidden = true
@@ -68,8 +68,8 @@ class LocalParticipantView: UIView {
         noVideoImage.isHidden = false
         networkQualityLevelIndicator.isHidden = true
 
-        // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
-        // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
+        // `VideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
+        // scaleAspectFit is the default mode when you create `VideoView` programmatically.
         videoView.contentMode = .scaleAspectFit
         videoView.isHidden = true
         videoView.alpha = 0.0
@@ -97,7 +97,7 @@ class LocalParticipantView: UIView {
 
     }
 
-    private func networkQualityIndicatorImage(forLevel networkQualityLevel: TVINetworkQualityLevel) -> UIImage? {
+    private func networkQualityIndicatorImage(forLevel networkQualityLevel: NetworkQualityLevel) -> UIImage? {
         var tempImageName: String?
 
         switch networkQualityLevel {
@@ -121,13 +121,13 @@ class LocalParticipantView: UIView {
             return nil
         }
 
-        return UIImage.init(named: imageName)
+        return UIImage(named: imageName)
     }
 }
 
-// MARK: TVIVideoViewDelegate
-extension LocalParticipantView : TVIVideoViewDelegate {
-    func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
+// MARK:- VideoViewDelegate
+extension LocalParticipantView : VideoViewDelegate {
+    func videoViewDimensionsDidChange(view: VideoView, dimensions: CMVideoDimensions) {
         self.contentView.setNeedsLayout()
     }
 }

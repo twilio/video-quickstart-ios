@@ -10,33 +10,33 @@ import TwilioVideo
 
 class MultiPartyViewController: UIViewController {
 
-    // MARK: View Controller Members
+    // MARK:- View Controller Members
     var roomName: String?
     var accessToken: String?
     var remoteParticipantViews: [RemoteParticipantView] = []
-    var localParticipantView: LocalParticipantView = LocalParticipantView.init(frame: CGRect.zero)
+    var localParticipantView: LocalParticipantView = LocalParticipantView(frame: CGRect.zero)
 
     static let kMaxRemoteParticipants = 3
 
     // Video SDK components
-    var room: TVIRoom?
-    var camera: TVICameraSource?
-    var localVideoTrack: TVILocalVideoTrack?
-    var localAudioTrack: TVILocalAudioTrack?
+    var room: Room?
+    var camera: CameraSource?
+    var localVideoTrack: LocalVideoTrack?
+    var localAudioTrack: LocalAudioTrack?
 
-    var currentDominantSpeaker: TVIRemoteParticipant?
+    var currentDominantSpeaker: RemoteParticipant?
 
-    // MARK: UI Element Outlets and handles
+    // MARK:- UI Element Outlets and handles
     @IBOutlet weak var containerView: UIView!
     @IBOutlet weak var audioMuteButton: UIButton!
     @IBOutlet weak var videoMuteButton: UIButton!
     @IBOutlet weak var hangupButton: UIButton!
 
-    // MARK: UIViewController
+    // MARK:- UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        logMessage(messageText: "TwilioVideo v(\(TwilioVideo.version()))")
+        logMessage(messageText: "TwilioVideo v(\(TwilioVideoSDK.version()))")
 
         title = roomName
         navigationItem.setHidesBackButton(true, animated: false)
@@ -86,14 +86,14 @@ class MultiPartyViewController: UIViewController {
         for remoteParticipantView in remoteParticipantViews {
             switch index {
             case 0:
-                remoteParticipantView.frame = CGRect.init(origin: CGPoint.init(x: layoutFrame.minX + videoViewWidth, y: topY),
-                                                          size: videoViewSize)
+                remoteParticipantView.frame = CGRect(origin: CGPoint(x: layoutFrame.minX + videoViewWidth, y: topY),
+                                                     size: videoViewSize)
             case 1:
-                remoteParticipantView.frame = CGRect.init(origin: CGPoint(x: layoutFrame.minX, y: topY + videoViewHeight),
-                                                          size: videoViewSize)
+                remoteParticipantView.frame = CGRect(origin: CGPoint(x: layoutFrame.minX, y: topY + videoViewHeight),
+                                                     size: videoViewSize)
             case 2:
-                remoteParticipantView.frame = CGRect.init(origin: CGPoint(x: layoutFrame.minX + videoViewWidth, y: topY + videoViewHeight),
-                                                          size: videoViewSize)
+                remoteParticipantView.frame = CGRect(origin: CGPoint(x: layoutFrame.minX + videoViewWidth, y: topY + videoViewHeight),
+                                                     size: videoViewSize)
             default:
                 break
             }
@@ -107,7 +107,7 @@ class MultiPartyViewController: UIViewController {
 
     func prepareAudio() {
         // Create an audio track.
-        guard let localAudioTrack = TVILocalAudioTrack(options: nil, enabled: true, name: "Microphone") else {
+        guard let localAudioTrack = LocalAudioTrack(options: nil, enabled: true, name: "Microphone") else {
             logMessage(messageText: "Failed to create audio track")
             return
         }
@@ -123,15 +123,15 @@ class MultiPartyViewController: UIViewController {
             return
         }
 
-        let frontCamera = TVICameraSource.captureDevice(for: .front)
-        let backCamera = TVICameraSource.captureDevice(for: .back)
+        let frontCamera = CameraSource.captureDevice(position: .front)
+        let backCamera = CameraSource.captureDevice(position: .back)
 
         if (frontCamera != nil || backCamera != nil) {
             // Preview our local camera track in the local video preview view.
-            camera = TVICameraSource(delegate: self)
+            camera = CameraSource(delegate: self)
 
             if let camera = camera {
-                localVideoTrack = TVILocalVideoTrack(source: camera, enabled: true, name: "Camera")
+                localVideoTrack = LocalVideoTrack(source: camera, enabled: true, name: "Camera")
 
                 guard let localVideoTrack = self.localVideoTrack else {
                     logMessage(messageText: "Failed to create video track")
@@ -152,7 +152,7 @@ class MultiPartyViewController: UIViewController {
                     recognizerSingleTap.require(toFail: recognizerDoubleTap)
                 }
 
-                camera.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
+                camera.startCapture(device: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
                     if let error = error {
                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
@@ -170,13 +170,13 @@ class MultiPartyViewController: UIViewController {
 
         if let camera = camera, let captureDevice = camera.device {
             if captureDevice.position == .front {
-                newDevice = TVICameraSource.captureDevice(for: .back)
+                newDevice = CameraSource.captureDevice(position: .back)
             } else {
-                newDevice = TVICameraSource.captureDevice(for: .front)
+                newDevice = CameraSource.captureDevice(position: .front)
             }
 
             if let newDevice = newDevice {
-                camera.select(newDevice) { (captureDevice, videoFormat, error) in
+                camera.selectCaptureDevice(newDevice) { (captureDevice, videoFormat, error) in
                     if let error = error {
                         self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
@@ -213,7 +213,7 @@ class MultiPartyViewController: UIViewController {
         prepareCamera()
 
         // Preparing the connect options with the access token that we fetched (or hardcoded).
-        let connectOptions = TVIConnectOptions(token: accessToken) { (builder) in
+        let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
             // Enable Dominant Speaker functionality
             builder.isDominantSpeakerEnabled = true
@@ -251,7 +251,7 @@ class MultiPartyViewController: UIViewController {
         }
 
         // Connect to the Room using the options we provided.
-        room = TwilioVideo.connect(with: connectOptions, delegate: self)
+        room = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
 
         // Sometimes a Participant might not interact with their device for a long time in a conference.
         UIApplication.shared.isIdleTimerDisabled = true
@@ -284,9 +284,9 @@ class MultiPartyViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
 
-    func setupRemoteParticipantView(remoteParticipant: TVIRemoteParticipant) {
-        // Create a `TVIVideoView` programmatically
-        let remoteView = RemoteParticipantView.init(frame: CGRect.zero)
+    func setupRemoteParticipantView(remoteParticipant: RemoteParticipant) {
+        // Create a `VideoView` programmatically
+        let remoteView = RemoteParticipantView(frame: CGRect.zero)
 
         // We will bet that a hash collision between two unique SIDs is very rare.
         remoteView.tag = remoteParticipant.hashValue
@@ -295,7 +295,7 @@ class MultiPartyViewController: UIViewController {
         remoteParticipantViews.append(remoteView)
     }
 
-    func removeRemoteParticipantView(remoteParticipant: TVIRemoteParticipant) {
+    func removeRemoteParticipantView(remoteParticipant: RemoteParticipant) {
         let viewTag = remoteParticipant.hashValue
         if let remoteView = view.viewWithTag(viewTag) {
             remoteView.removeFromSuperview()
@@ -305,8 +305,8 @@ class MultiPartyViewController: UIViewController {
         }
     }
 
-    func displayVideoTrack(_ videoTrack: TVIRemoteVideoTrack,
-                           for participant: TVIRemoteParticipant) {
+    func displayVideoTrack(_ videoTrack: RemoteVideoTrack,
+                           for participant: RemoteParticipant) {
         let viewTag = participant.hashValue
         if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
             // Start rendering
@@ -315,8 +315,8 @@ class MultiPartyViewController: UIViewController {
         }
     }
 
-    func removeVideoTrack(_ videoTrack: TVIRemoteVideoTrack,
-                          for participant: TVIRemoteParticipant) {
+    func removeVideoTrack(_ videoTrack: RemoteVideoTrack,
+                          for participant: RemoteParticipant) {
         let viewTag = participant.hashValue
         if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
             // Stop rendering
@@ -325,7 +325,7 @@ class MultiPartyViewController: UIViewController {
         }
     }
 
-    func updateDominantSpeaker(dominantSpeaker: TVIRemoteParticipant?) {
+    func updateDominantSpeaker(dominantSpeaker: RemoteParticipant?) {
         if let currentDominantSpeaker = currentDominantSpeaker {
             let viewTag = currentDominantSpeaker.hashValue
             if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
@@ -344,7 +344,7 @@ class MultiPartyViewController: UIViewController {
     }
 
     func updateAudioState(hasAudio: Bool,
-                          for participant: TVIRemoteParticipant) {
+                          for participant: RemoteParticipant) {
         let viewTag = participant.hashValue
         if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
             // Stop rendering
@@ -362,15 +362,15 @@ class MultiPartyViewController: UIViewController {
         videoMuteButton.isSelected = !hasVideo
     }
 
-    func updateLocalNetworkQualityLevel(networkQualityLevel: TVINetworkQualityLevel) {
+    func updateLocalNetworkQualityLevel(networkQualityLevel: NetworkQualityLevel) {
         logMessage(messageText: "Network Quality Level: \(networkQualityLevel.rawValue)")
         localParticipantView.networkQualityLevel = networkQualityLevel
     }
 }
 
-// MARK: TVIRoomDelegate
-extension MultiPartyViewController : TVIRoomDelegate {
-    func didConnect(to room: TVIRoom) {
+// MARK:- RoomDelegate
+extension MultiPartyViewController : RoomDelegate {
+    func roomDidConnect(room: Room) {
         logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "").")
         NSLog("Room: \(room.name) SID: \(room.sid)")
         title = room.name
@@ -392,14 +392,14 @@ extension MultiPartyViewController : TVIRoomDelegate {
         }
     }
 
-    func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
+    func roomDidFailToConnect(room: Room, error: Error) {
         NSLog("Failed to connect to a Room: \(error).")
 
-        let alertController = UIAlertController.init(title: "Connection Failed",
-                                                     message: "Couldn't connect to Room \(room.name). code:\(error._code) \(error.localizedDescription)",
+        let alertController = UIAlertController(title: "Connection Failed",
+                                                message: "Couldn't connect to Room \(room.name). code:\(error._code) \(error.localizedDescription)",
             preferredStyle: .alert)
 
-        let cancelAction = UIAlertAction.init(title: "Okay", style: .default) { (alertAction) in
+        let cancelAction = UIAlertAction(title: "Okay", style: .default) { (alertAction) in
             self.leaveRoom(self)
         }
 
@@ -410,18 +410,18 @@ extension MultiPartyViewController : TVIRoomDelegate {
         }
     }
 
-    func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
+    func roomDidDisconnect(room: Room, error: Error?) {
         guard let error = error else {
             return
         }
 
         NSLog("The Client was disconnected: \(error).")
 
-        let alertController = UIAlertController.init(title: "Connection Failed",
-                                                     message: "Disconnected from Room \(room.name). code:\(error._code) \(error.localizedDescription)",
+        let alertController = UIAlertController(title: "Connection Failed",
+                                                message: "Disconnected from Room \(room.name). code:\(error._code) \(error.localizedDescription)",
             preferredStyle: .alert)
 
-        let cancelAction = UIAlertAction.init(title: "Okay", style: .default) { (alertAction) in
+        let cancelAction = UIAlertAction(title: "Okay", style: .default) { (alertAction) in
             self.leaveRoom(self)
         }
 
@@ -430,15 +430,15 @@ extension MultiPartyViewController : TVIRoomDelegate {
         self.present(alertController, animated: true)
     }
 
-    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
+    func roomIsReconnecting(room: Room, error: Error) {
         logMessage(messageText: "Reconnecting to room \(room.name), error = \(String(describing: error))")
     }
 
-    func didReconnect(to room: TVIRoom) {
+    func roomDidReconnect(room: Room) {
         logMessage(messageText: "Reconnected to room \(room.name)")
     }
 
-    func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
+    func participantDidConnect(room: Room, participant: RemoteParticipant) {
         logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
         participant.delegate = self
 
@@ -447,64 +447,51 @@ extension MultiPartyViewController : TVIRoomDelegate {
         }
     }
 
-    func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
+    func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
         removeRemoteParticipantView(remoteParticipant: participant)
         logMessage(messageText: "Room \(room.name), Participant \(participant.identity) disconnected")
     }
 
-    func room(_ room: TVIRoom, dominantSpeakerDidChange participant: TVIRemoteParticipant?) {
+    func dominantSpeakerDidChange(room: Room, participant: RemoteParticipant?) {
         updateDominantSpeaker(dominantSpeaker: participant)
     }
 }
 
-// MARK: TVILocalParticipantDelegate
-extension MultiPartyViewController : TVILocalParticipantDelegate {
-    func localParticipant(_ participant: TVILocalParticipant,
-                          didChange networkQualityLevel: TVINetworkQualityLevel) {
+// MARK:- LocalParticipantDelegate
+extension MultiPartyViewController : LocalParticipantDelegate {
+    func localParticipantNetworkQualityLevelDidChange(participant: LocalParticipant, networkQualityLevel: NetworkQualityLevel) {
         // Local Participant netwrk quality level has changed
-        
         updateLocalNetworkQualityLevel(networkQualityLevel: networkQualityLevel)
     }
 }
 
-// MARK: TVIRemoteParticipantDelegate
-extension MultiPartyViewController : TVIRemoteParticipantDelegate {
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           publishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
-
+// MARK:- RemoteParticipantDelegate
+extension MultiPartyViewController : RemoteParticipantDelegate {
+    func remoteParticipantDidPublishVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         // Remote Participant has offered to share the video Track.
 
         logMessage(messageText: "Participant \(participant.identity) published \(publication.trackName) video track")
     }
 
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           unpublishedVideoTrack publication: TVIRemoteVideoTrackPublication) {
-
+    func remoteParticipantDidUnpublishVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         // Remote Participant has stopped sharing the video Track.
 
         logMessage(messageText: "Participant \(participant.identity) unpublished \(publication.trackName) video track")
     }
 
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           publishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
-
+    func remoteParticipantDidPublishAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
         // Remote Participant has offered to share the audio Track.
 
         logMessage(messageText: "Participant \(participant.identity) published \(publication.trackName) audio track")
     }
 
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           unpublishedAudioTrack publication: TVIRemoteAudioTrackPublication) {
-
+    func remoteParticipantDidUnpublishAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
         // Remote Participant has stopped sharing the audio Track.
 
         logMessage(messageText: "Participant \(participant.identity) unpublished \(publication.trackName) audio track")
     }
 
-    func subscribed(to videoTrack: TVIRemoteVideoTrack,
-                    publication: TVIRemoteVideoTrackPublication,
-                    for participant: TVIRemoteParticipant) {
-
+    func didSubscribeToVideoTrack(videoTrack: RemoteVideoTrack, publication: RemoteVideoTrackPublication, participant: RemoteParticipant) {
         // We are subscribed to the remote Participant's video Track. We will start receiving the
         // remote Participant's video frames now.
 
@@ -512,10 +499,7 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
         displayVideoTrack(videoTrack, for: participant)
     }
 
-    func unsubscribed(from videoTrack: TVIRemoteVideoTrack,
-                      publication: TVIRemoteVideoTrackPublication,
-                      for participant: TVIRemoteParticipant) {
-
+    func didUnsubscribeFromVideoTrack(videoTrack: RemoteVideoTrack, publication: RemoteVideoTrackPublication, participant: RemoteParticipant) {
         // We are unsubscribed from the remote Participant's video Track. We will no longer receive the
         // remote Participant's video.
 
@@ -523,10 +507,7 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
         removeVideoTrack(videoTrack, for: participant)
     }
 
-    func subscribed(to audioTrack: TVIRemoteAudioTrack,
-                    publication: TVIRemoteAudioTrackPublication,
-                    for participant: TVIRemoteParticipant) {
-
+    func didSubscribeToAudioTrack(audioTrack: RemoteAudioTrack, publication: RemoteAudioTrackPublication, participant: RemoteParticipant) {
         // We are subscribed to the remote Participant's audio Track. We will start receiving the
         // remote Participant's audio now.
 
@@ -534,10 +515,7 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
         updateAudioState(hasAudio: true, for: participant)
     }
 
-    func unsubscribed(from audioTrack: TVIRemoteAudioTrack,
-                      publication: TVIRemoteAudioTrackPublication,
-                      for participant: TVIRemoteParticipant) {
-
+    func didUnsubscribeFromAudioTrack(audioTrack: RemoteAudioTrack, publication: RemoteAudioTrackPublication, participant: RemoteParticipant) {
         // We are unsubscribed from the remote Participant's audio Track. We will no longer receive the
         // remote Participant's audio.
 
@@ -545,44 +523,36 @@ extension MultiPartyViewController : TVIRemoteParticipantDelegate {
         updateAudioState(hasAudio: false, for: participant)
     }
 
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           enabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
+    func remoteParticipantDidEnableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) enabled \(publication.trackName) video track")
     }
 
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           disabledVideoTrack publication: TVIRemoteVideoTrackPublication) {
+    func remoteParticipantDidDisableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) disabled \(publication.trackName) video track")
     }
 
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           enabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
+    func remoteParticipantDidEnableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) enabled \(publication.trackName) audio track")
         updateAudioState(hasAudio: true, for: participant)
     }
 
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           disabledAudioTrack publication: TVIRemoteAudioTrackPublication) {
+    func remoteParticipantDidDisableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) disabled \(publication.trackName) audio track")
         updateAudioState(hasAudio: false, for: participant)
     }
 
-    func failedToSubscribe(toAudioTrack publication: TVIRemoteAudioTrackPublication,
-                           error: Error,
-                           for participant: TVIRemoteParticipant) {
+    func didFailToSubscribeToAudioTrack(publication: RemoteAudioTrackPublication, error: Error, participant: RemoteParticipant) {
         logMessage(messageText: "Failed to subscribe \(publication.trackName) audio track, error = \(String(describing: error))")
     }
 
-    func failedToSubscribe(toVideoTrack publication: TVIRemoteVideoTrackPublication,
-                           error: Error,
-                           for participant: TVIRemoteParticipant) {
+    func didFailToSubscribeToVideoTrack(publication: RemoteVideoTrackPublication, error: Error, participant: RemoteParticipant) {
         logMessage(messageText: "Failed to subscribe \(publication.trackName) video track, error = \(String(describing: error))")
     }
 }
 
-// MARK: TVICameraSourceDelegate
-extension MultiPartyViewController : TVICameraSourceDelegate {
-    func cameraSource(_ source: TVICameraSource, didFailWithError error: Error) {
+// MARK:- CameraSourceDelegate
+extension MultiPartyViewController : CameraSourceDelegate {
+    func cameraSourceDidFail(source: CameraSource, error: Error) {
         logMessage(messageText: "Camera source failed with error: \(error.localizedDescription)")
     }
 }
