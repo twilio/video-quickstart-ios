@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  DataTrackExample
 //
-//  Copyright © 2017 Twilio. All rights reserved.
+//  Copyright © 2017-2019 Twilio. All rights reserved.
 //
 
 import UIKit
