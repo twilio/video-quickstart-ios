@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  VideoQuickStart
 //
-//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2016-2019 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
@@ -11,7 +11,7 @@ import TwilioVideo
 
 class ViewController: UIViewController {
 
-    // MARK: View Controller Members
+    // MARK:- View Controller Members
     
     // Configure access token manually for testing, if desired! Create one manually in the console
     // at https://www.twilio.com/console/video/runtime/testing-tools
@@ -28,7 +28,7 @@ class ViewController: UIViewController {
     var remoteParticipant: RemoteParticipant?
     var remoteView: VideoView?
     
-    // MARK: UI Element Outlets and handles
+    // MARK:- UI Element Outlets and handles
     
     // `VideoView` created from a storyboard
     @IBOutlet weak var previewView: VideoView!
@@ -41,7 +41,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomLabel: UILabel!
     @IBOutlet weak var micButton: UIButton!
 
-    // MARK: UIViewController
+    // MARK:- UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -115,7 +115,7 @@ class ViewController: UIViewController {
         self.view.addConstraint(height)
     }
 
-    // MARK: IBActions
+    // MARK:- IBActions
     @IBAction func connect(sender: AnyObject) {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
@@ -186,7 +186,7 @@ class ViewController: UIViewController {
         }
     }
 
-    // MARK: Private
+    // MARK:- Private
     func startPreview() {
         if PlatformUtils.isSimulator {
             return
@@ -305,7 +305,7 @@ class ViewController: UIViewController {
     }
 }
 
-// MARK: UITextFieldDelegate
+// MARK:- UITextFieldDelegate
 extension ViewController : UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.connect(sender: textField)
@@ -313,7 +313,7 @@ extension ViewController : UITextFieldDelegate {
     }
 }
 
-// MARK: RoomDelegate
+// MARK:- RoomDelegate
 extension ViewController : RoomDelegate {
     func roomDidConnect(room: Room) {
         // At the moment, this example only supports rendering one Participant at a time.
@@ -366,7 +366,7 @@ extension ViewController : RoomDelegate {
     }
 }
 
-// MARK: RemoteParticipantDelegate
+// MARK:- RemoteParticipantDelegate
 extension ViewController : RemoteParticipantDelegate {
 
     func remoteParticipantDidPublishVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
@@ -457,14 +457,14 @@ extension ViewController : RemoteParticipantDelegate {
     }
 }
 
-// MARK: VideoViewDelegate
+// MARK:- VideoViewDelegate
 extension ViewController : VideoViewDelegate {
     func videoViewDimensionsDidChange(view: VideoView, dimensions: CMVideoDimensions) {
         self.view.setNeedsLayout()
     }
 }
 
-// MARK: CameraSourceDelegate
+// MARK:- CameraSourceDelegate
 extension ViewController : CameraSourceDelegate {
     func cameraSourceDidFail(source: CameraSource, error: Error) {
         logMessage(messageText: "Camera source failed with error: \(error.localizedDescription)")
