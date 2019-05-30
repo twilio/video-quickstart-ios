@@ -2,7 +2,7 @@
 //  ViewController+CallKit.swift
 //  VideoCallKitQuickStart
 //
-//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2016-2019 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
@@ -127,7 +127,7 @@ extension ViewController : CXProviderDelegate {
     }
 }
 
-// MARK: Call Kit Actions
+// MARK:- Call Kit Actions
 extension ViewController {
 
     func performStartCallAction(uuid: UUID, roomName: String?) {
@@ -199,11 +199,11 @@ extension ViewController {
         self.prepareLocalMedia()
 
         // Preparing the connect options with the access token that we fetched (or hardcoded).
-        let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
+        let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
             // Use the local media that we prepared earlier.
-            builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [TVILocalAudioTrack]()
-            builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [TVILocalVideoTrack]()
+            builder.audioTracks = self.localAudioTrack != nil ? [self.localAudioTrack!] : [LocalAudioTrack]()
+            builder.videoTracks = self.localVideoTrack != nil ? [self.localVideoTrack!] : [LocalVideoTrack]()
 
             // Use the preferred audio codec
             if let preferredAudioCodec = Settings.shared.audioCodec {
@@ -229,7 +229,7 @@ extension ViewController {
         }
         
         // Connect to the Room using the options we provided.
-        room = TwilioVideo.connect(with: connectOptions, delegate: self)
+        room = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
         
         logMessage(messageText: "Attempting to connect to room \(String(describing: roomName))")
         
