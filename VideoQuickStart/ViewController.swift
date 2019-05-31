@@ -153,6 +153,11 @@ class ViewController: UIViewController {
             if let encodingParameters = Settings.shared.getEncodingParameters() {
                 builder.encodingParameters = encodingParameters
             }
+
+            // Use the preferred signaling region
+            if let signalingRegion = Settings.shared.signalingRegion {
+                builder.region = signalingRegion
+            }
             
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
@@ -336,7 +341,7 @@ extension ViewController : RoomDelegate {
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {
-        logMessage(messageText: "Failed to connect to room with error")
+        logMessage(messageText: "Failed to connect to room with error = \(String(describing: error))")
         self.room = nil
         
         self.showRoomUI(inRoom: false)

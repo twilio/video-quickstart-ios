@@ -112,6 +112,11 @@ class ViewController: UIViewController {
                 builder.encodingParameters = encodingParameters
             }
 
+            // Use the preferred signaling region
+            if let signalingRegion = Settings.shared.signalingRegion {
+                builder.region = signalingRegion
+            }
+
             // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             builder.roomName = self.roomTextField.text

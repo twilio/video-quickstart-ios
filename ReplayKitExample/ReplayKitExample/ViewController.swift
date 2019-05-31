@@ -348,6 +348,11 @@ class ViewController: UIViewController {
                 builder.encodingParameters = encodingParameters
             }
 
+            // Use the preferred signaling region
+            if let signalingRegion = Settings.shared.signalingRegion {
+                builder.region = signalingRegion
+            }
+
             if (!name.isEmpty) {
                 builder.roomName = name
             }
