@@ -84,8 +84,8 @@ You will also find additional examples that provide more advanced use cases of t
 - [CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit](https://developer.apple.com/reference/callkit) framework.
 - [DataTrack](DataTrackExample) - Shows how to use the Data Track APIs for interactive drawing.
 - [MultiParty](MultiPartyExample) - Video conferencing in a Group Room with up to 4 Participants, dominant speaker detection and network quality events.
-- [Screen Capturer](ScreenCapturerExample) - Use a custom `TVIVideoSource` to capture the contents of a `WKWebView`.
 - [ReplayKit](ReplayKitExample) - Shows how to use ReplayKit to share the screen, and microphone via `TVIVideoSource` and `TVIAudioDevice`.
+- [Screen Capturer](ScreenCapturerExample) - Use a custom `TVIVideoSource` to capture the contents of a `WKWebView`.
 
 ## Setup an Access Token Server
 
