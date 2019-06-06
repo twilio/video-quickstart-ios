@@ -368,15 +368,6 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
     [center addObserver:self selector:@selector(handleAudioInterruption:) name:AVAudioSessionInterruptionNotification object:nil];
-    /*
-     * Interruption handling is different on iOS 9.x. If your application becomes interrupted while it is in the
-     * background then you will not get a corresponding notification when the interruption ends. We workaround this
-     * by handling UIApplicationDidBecomeActiveNotification and treating it as an interruption end.
-     */
-    if (![[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 0, 0}]) {
-        [center addObserver:self selector:@selector(handleApplicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
-    }
-
     [center addObserver:self selector:@selector(handleRouteChange:) name:AVAudioSessionRouteChangeNotification object:nil];
     [center addObserver:self selector:@selector(handleMediaServiceLost:) name:AVAudioSessionMediaServicesWereLostNotification object:nil];
     [center addObserver:self selector:@selector(handleMediaServiceRestored:) name:AVAudioSessionMediaServicesWereResetNotification object:nil];
@@ -396,22 +387,6 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
                     [self stopAudioUnit];
                 } else {
                     NSLog(@"Interruption ended.");
-                    self.interrupted = NO;
-                    [self startAudioUnit];
-                }
-            });
-        }
-    }
-}
-
-- (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
-    @synchronized(self) {
-        // If the worker block is executed, then context is guaranteed to be valid.
-        TVIAudioDeviceContext context = self.renderingContext ? self.renderingContext->deviceContext : NULL;
-        if (context) {
-            TVIAudioDeviceExecuteWorkerBlock(context, ^{
-                if (self.isInterrupted) {
-                    NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
                     self.interrupted = NO;
                     [self startAudioUnit];
                 }
