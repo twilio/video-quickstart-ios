@@ -40,6 +40,11 @@ abstract_target 'TwilioVideo' do
     project 'ReplayKitExample.xcodeproj'
   end
 
+  target 'ScreenCapturerExample' do
+    platform :ios, '10.0'
+    project 'ScreenCapturerExample.xcproject'
+  end
+
   target 'DataTrackExample' do
     platform :ios, '10.0'
     project 'DataTrackExample.xcproject'
