@@ -79,7 +79,7 @@ NSString *const kStatusKey   = @"status";
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    [self logMessage:[NSString stringWithFormat:@"TwilioVideo v%@", [TwilioVideo version]]];
+    [self logMessage:[NSString stringWithFormat:@"TwilioVideo v%@", [TwilioVideoSDK version]]];
 
     // Configure access token for testing. Create one manually in the console
     // at https://www.twilio.com/console/video/runtime/testing-tools
@@ -222,7 +222,7 @@ NSString *const kStatusKey   = @"status";
      * before performing any other actions with the SDK (such as creating Tracks, or connecting to a Room).
      * In this case we've already initialized our own `TVIDefaultAudioDevice` instance which we will now set.
      */
-    TwilioVideo.audioDevice = self.audioDevice;
+    TwilioVideoSDK.audioDevice = self.audioDevice;
 
     // Create an audio track.
     if (!self.localAudioTrack) {
@@ -316,7 +316,7 @@ NSString *const kStatusKey   = @"status";
                                                                       }];
 
     // Connect to the Room using the options we provided.
-    self.room = [TwilioVideo connectWithOptions:connectOptions delegate:self];
+    self.room = [TwilioVideoSDK connectWithOptions:connectOptions delegate:self];
 
     [self logMessage:[NSString stringWithFormat:@"Attempting to connect to room %@", self.roomTextField.text]];
 }
