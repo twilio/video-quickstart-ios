@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  ScreenCapturerExample
 //
-//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2016-2019 Twilio, Inc. All rights reserved.
 //
 
 import TwilioVideo
@@ -12,20 +12,14 @@ import AVFoundation
 
 class ViewController : UIViewController {
 
-    var localVideoTrack: TVILocalVideoTrack?
-    weak var localView: TVIVideoView?
-
-    // Deprecated capturer to use on older iOS versions where WKWebView snapshotting is not supported.
-    var screenCapturer: TVIScreenCapturer?
+    var localVideoTrack: LocalVideoTrack?
+    weak var localView: VideoView?
 
     // A source which uses snapshotting APIs to capture the contents of a WKWebView.
-    var webViewSource: TVIVideoSource?
+    var webViewSource: VideoSource?
 
     var webView: WKWebView?
     var webNavigation: WKNavigation?
-
-    // Set this value to 'true' to force the use of `TVIScreenCapturer` on iOS 11.0+.
-    static let useDeprecatedScreenCapturer = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,7 +38,7 @@ class ViewController : UIViewController {
         setupLocalMedia()
 
         // Setup a renderer to preview what we are capturing.
-        if let videoView = TVIVideoView(frame: CGRect.zero, delegate: self) {
+        if let videoView = VideoView(frame: CGRect.zero, delegate: self) {
             self.localView = videoView
 
             localVideoTrack?.addRenderer(videoView)
@@ -98,37 +92,9 @@ class ViewController : UIViewController {
     }
 
     func setupLocalMedia() {
-        if #available(iOS 11.0, *) {
-            if ViewController.useDeprecatedScreenCapturer {
-                setupScreenCapturer()
-            } else {
-                setupWebViewSource()
-            }
-        } else {
-            setupScreenCapturer()
-        }
-    }
-
-    func teardownLocalMedia() {
-        if #available(iOS 11.0, *) {
-            // ExampleWebViewSource has an explicit API to start and stop capturing. Stop to break the retain cycle.
-            if let source = self.webViewSource {
-                let webSource = source as! ExampleWebViewSource
-                webSource.stopCapture()
-            }
-        }
-
-        if let renderer = localView {
-            localVideoTrack?.removeRenderer(renderer)
-        }
-        localVideoTrack = nil
-    }
-
-    @available(iOS 11.0, *)
-    func setupWebViewSource() {
         let source = ExampleWebViewSource(aView: self.webView!)
 
-        guard let videoTrack = TVILocalVideoTrack(source: source, enabled: true, name: "Screen") else {
+        guard let videoTrack = LocalVideoTrack(source: source, enabled: true, name: "Screen") else {
             presentError(message: "Failed to add ExampleWebViewSource video track!")
             return
         }
@@ -138,19 +104,17 @@ class ViewController : UIViewController {
         source.startCapture()
     }
 
-    func setupScreenCapturer() {
-        guard let capturer = TVIScreenCapturer(view: self.webView!) else {
-            presentError(message: "Failed to create TVIScreenCapturer!")
-            return
+    func teardownLocalMedia() {
+        // ExampleWebViewSource has an explicit API to start and stop capturing. Stop to break the retain cycle.
+        if let source = self.webViewSource {
+            let webSource = source as! ExampleWebViewSource
+            webSource.stopCapture()
         }
 
-        guard let videoTrack = TVILocalVideoTrack(capturer: capturer, enabled: true, constraints: nil, name: "Screen") else {
-            presentError(message: "Failed to add TVIScreenCapturer video track!")
-            return
+        if let renderer = localView {
+            localVideoTrack?.removeRenderer(renderer)
         }
-
-        self.localVideoTrack = videoTrack
-        screenCapturer = capturer;
+        localVideoTrack = nil
     }
 
     func presentError( message: String) {
@@ -180,15 +144,15 @@ extension ViewController : WKNavigationDelegate {
 }
 
 // MARK: TVIVideoViewDelegate
-extension ViewController : TVIVideoViewDelegate {
-    func videoViewDidReceiveData(_ view: TVIVideoView) {
+extension ViewController : VideoViewDelegate {
+    func videoViewDidReceiveData(view: VideoView) {
         if (view == localView) {
             localView?.isHidden = false
             self.view.setNeedsLayout()
         }
     }
 
-    func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
+    func videoViewDimensionsDidChange(view: VideoView, dimensions: CMVideoDimensions) {
         self.view.setNeedsLayout()
     }
 }
