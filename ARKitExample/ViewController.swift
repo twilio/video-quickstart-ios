@@ -103,7 +103,7 @@ class ViewController: UIViewController {
             return
         }
 
-        // As a VideoSource, we must deliver CVPixelBuffers and not CGImages to the consumer.
+        // A VideoSource must deliver CVPixelBuffers (and not CGImages) to a VideoSink.
         if let pixelBuffer = self.copyPixelbufferFromCGImageProvider(image: imageRef) {
             self.frame = VideoFrame(timeInterval: timer.timestamp,
                                     buffer: pixelBuffer,
@@ -196,7 +196,7 @@ extension ViewController: RoomDelegate {
 
         let alertController = UIAlertController(title: "Connection Failed",
                                                 message: "Couldn't connect to Room \(room.name). code:\(error._code) \(error.localizedDescription)",
-            preferredStyle: UIAlertController.Style.alert)
+                                                preferredStyle: UIAlertController.Style.alert)
 
         let cancelAction = UIAlertAction(title: "Okay", style: UIAlertAction.Style.default, handler: nil)
         alertController.addAction(cancelAction)
