@@ -1,10 +1,10 @@
 
-[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://github.com/twilio/twilio-video-ios/releases/download/3.0.0-beta1/TwilioVideo.framework.zip)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta1/index.html)
 
 # Twilio Video Quickstart for Swift
 
-> NOTE: These sample applications use the Twilio Video 2.x APIs. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
+> NOTE: These sample applications use the Twilio Video 3.x APIs. For examples using our 2.x APIs, please see the [master](https://github.com/twilio/video-quickstart-swift) branch. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-swift/tree/1.x) branch.
 
 Get started with Video on iOS:
 
@@ -36,7 +36,7 @@ Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com
 
 ### Manual Integration
 
-You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/video/ios-v2-getting-started#manual).
+You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/video/ios-v3-getting-started#manual).
 
 ## Quickstart
 
@@ -80,12 +80,12 @@ You will also find additional examples that provide more advanced use cases of t
 
 - [AudioDevice](AudioDeviceExample) - Provide your own means to playback and record audio using a custom `TVIAudioDevice` and [CoreAudio](https://developer.apple.com/documentation/coreaudio).
 - [AudioSink](AudioSinkExample) - Access raw audio samples and record them to disk using [AVFoundation](https://developer.apple.com/documentation/avfoundation). Perform live voice recognition using Apple's [Speech](https://developer.apple.com/documentation/speech) framework.
-- [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `TVIRoom` via a custom `TVIVideoCapturer` source. This app requires Xcode 9 & iOS 11.
+- [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `TVIRoom` via a custom `TVIVideoSource` source. This app requires Xcode 9 & iOS 11.
 - [CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit](https://developer.apple.com/reference/callkit) framework.
 - [DataTrack](DataTrackExample) - Shows how to use the Data Track APIs for interactive drawing.
 - [MultiParty](MultiPartyExample) - Video conferencing in a Group Room with up to 4 Participants, dominant speaker detection and network quality events.
-- [ReplayKit](ReplayKitExample) - Shows how to use ReplayKit to share the screen, and microphone via `TVIVideoCapturer` and `TVIAudioDevice`.
-- [Screen Capturer](ScreenCapturerExample) - Use a custom `TVIVideoSource` to capture the contents of a `WKWebView`, and fallback to `TVIScreenCapturer` on older versions of iOS.
+- [ReplayKit](ReplayKitExample) - Shows how to use ReplayKit to share the screen, and microphone via `TVIVideoSource` and `TVIAudioDevice`.
+- [Screen Capturer](ScreenCapturerExample) - Use a custom `TVIVideoSource` to capture the contents of a `WKWebView`.
 
 ## Setup an Access Token Server
 
@@ -122,8 +122,8 @@ For this Quickstart, the Application transport security settings are set to allo
 
 You can find more documentation on getting started as well as our latest Docs below:
 
-* [Getting Started](https://www.twilio.com/docs/video/ios-v2-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
+* [Getting Started](https://www.twilio.com/docs/video/ios-v3-getting-started)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta1/index.html)
 
 ## Issues and Support
 

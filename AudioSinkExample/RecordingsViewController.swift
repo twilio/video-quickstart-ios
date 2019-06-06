@@ -2,7 +2,7 @@
 //  RecordingsViewController.swift
 //  AudioSinkExample
 //
-//  Copyright © 2017 Twilio Inc. All rights reserved.
+//  Copyright © 2017-2019 Twilio Inc. All rights reserved.
 //
 
 import Foundation
@@ -63,8 +63,8 @@ class RecordingsViewController: UITableViewController {
         let item = recordings[indexPath.row]
 
         // Present a full-screen AVPlayerViewController and begin playback.
-        let player = AVPlayer.init(url: item)
-        let playerVC = AVPlayerViewController.init()
+        let player = AVPlayer(url: item)
+        let playerVC = AVPlayerViewController()
         playerVC.player = player
         if #available(iOS 11.0, *) {
             playerVC.entersFullScreenWhenPlaybackBegins = true

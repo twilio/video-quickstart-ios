@@ -2,12 +2,12 @@
 //  ViewController+SimulateIncomingCall.swift
 //  VideoCallKitQuickStart
 //
-//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2016-2019 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
 
-// MARK: Simulate Incoming Call
+// MARK:- Simulate Incoming Call
 extension ViewController {
 
     @IBAction func simulateIncomingCall(sender: AnyObject) {

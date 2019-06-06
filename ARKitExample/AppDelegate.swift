@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  ARKitExample
 //
-//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2016-2019 Twilio, Inc. All rights reserved.
 //
 
 import UIKit

@@ -10,7 +10,7 @@ import TwilioVideo
 
 class MainViewController: UIViewController {
 
-    // MARK: View Controller Members
+    // MARK:- View Controller Members
 
     // Configure access token manually for testing, if desired! Create one manually in the console
     // at https://www.twilio.com/console/video/runtime/testing-tools
@@ -22,14 +22,14 @@ class MainViewController: UIViewController {
     // Maximum bitrate (in kbps) used to send video.
     static let kMaxVideoBitrate = UInt(1500)
 
-    // MARK: UI Element Outlets and handles
+    // MARK:- UI Element Outlets and handles
     @IBOutlet weak var connectButton: UIButton?
     @IBOutlet weak var roomTextField: UITextField?
     @IBOutlet weak var roomLine: UIView?
     @IBOutlet weak var roomLabel: UILabel?
     @IBOutlet weak var messageLabel: UILabel?
 
-    // MARK: UIViewController
+    // MARK:- UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -45,7 +45,7 @@ class MainViewController: UIViewController {
          * In order to ensure good quality of service for all users, the Client prefers VP8 simulcast.
          * Since the video being shared is VGA the Client restricts the amount of bandwidth used for publishing video.
          */
-        Settings.shared.videoCodec = TVIVp8Codec(simulcast: true)
+        Settings.shared.videoCodec = Vp8Codec(simulcast: true)
         Settings.shared.maxVideoBitrate = 1024 * MainViewController.kMaxVideoBitrate
 
         roomTextField?.becomeFirstResponder()
@@ -54,7 +54,7 @@ class MainViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         roomTextField?.text = ""
-        logMessage(messageText: "Twilio Video v\(TwilioVideo.version())")
+        logMessage(messageText: "Twilio Video v\(TwilioVideoSDK.version())")
     }
 
     @objc func dismissKeyboard() {
@@ -104,7 +104,7 @@ class MainViewController: UIViewController {
     }
 }
 
-// MARK: UITextFieldDelegate
+// MARK:- UITextFieldDelegate
 extension MainViewController : UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         connect(textField)

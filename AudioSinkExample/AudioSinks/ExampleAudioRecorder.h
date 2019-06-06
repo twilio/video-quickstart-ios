@@ -2,7 +2,7 @@
 //  ExampleAudioRecorder.h
 //  AudioSinkExample
 //
-//  Copyright © 2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2017-2019 Twilio, Inc. All rights reserved.
 //
 
 @import Foundation;

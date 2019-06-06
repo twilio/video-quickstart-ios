@@ -13,7 +13,7 @@ class RemoteParticipantView: UIView {
 
     @IBOutlet var contentView: UIView!
     @IBOutlet weak var containerView: UIView!
-    @IBOutlet weak var videoView: TVIVideoView!
+    @IBOutlet weak var videoView: VideoView!
     @IBOutlet weak var noVideoImage: UIImageView!
     @IBOutlet weak var audioIndicator: UIImageView!
     @IBOutlet weak var identityLabel : UILabel!
@@ -71,8 +71,8 @@ class RemoteParticipantView: UIView {
 
         noVideoImage.isHidden = false
 
-        // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
-        // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
+        // `VideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
+        // scaleAspectFit is the default mode when you create `VideoView` programmatically.
         videoView.contentMode = .scaleAspectFit
         videoView.isHidden = true
         videoView.alpha = 0.0
@@ -98,9 +98,9 @@ class RemoteParticipantView: UIView {
     }
 }
 
-// MARK: TVIVideoViewDelegate
-extension RemoteParticipantView : TVIVideoViewDelegate {
-    func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
+// MARK:- VideoViewDelegate
+extension RemoteParticipantView : VideoViewDelegate {
+    func videoViewDimensionsDidChange(view: VideoView, dimensions: CMVideoDimensions) {
         self.contentView.setNeedsLayout()
     }
 }

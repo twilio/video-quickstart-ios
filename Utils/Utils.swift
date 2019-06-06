@@ -1,7 +1,7 @@
 //
 //  Utils.swift
 //
-//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2016-2019 Twilio, Inc. All rights reserved.
 //
 
 import Foundation
@@ -23,7 +23,7 @@ struct TokenUtils {
         let requestURL: URL = URL(string: url)!
         do {
             let data = try Data(contentsOf: requestURL)
-            if let tokenReponse = String.init(data: data, encoding: String.Encoding.utf8) {
+            if let tokenReponse = String(data: data, encoding: String.Encoding.utf8) {
                 token = tokenReponse
             }
         } catch let error as NSError {
