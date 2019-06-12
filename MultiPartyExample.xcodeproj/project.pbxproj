@@ -34,6 +34,7 @@
 		241B5CB82267DD050035590C /* LocalParticipantView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LocalParticipantView.xib; sourceTree = "<group>"; };
 		241B5CBA2267DD590035590C /* LocalParticipantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalParticipantView.swift; sourceTree = "<group>"; };
 		243CDB472266580900637B6B /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		24A82E6122B18ADC001EFC32 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = MultiPartyExample/README.md; sourceTree = "<group>"; };
 		24B231212232D7C0002FD387 /* RemoteParticipantView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RemoteParticipantView.xib; sourceTree = "<group>"; };
 		24B231232232D822002FD387 /* RemoteParticipantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteParticipantView.swift; sourceTree = "<group>"; };
 		24C934CC22315E66006D7657 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
@@ -60,6 +61,7 @@
 				24C934CB22315E66006D7657 /* Utils */,
 				24064F9B222EE48900BBA411 /* Products */,
 				83675BA88483CBD32EDF7B91 /* Frameworks */,
+				24A82E6122B18ADC001EFC32 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
