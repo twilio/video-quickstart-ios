@@ -1,6 +1,7 @@
 source 'https://github.com/CocoaPods/Specs'
 
 workspace 'VideoQuickStart'
+platform :ios, '9.0'
 
 abstract_target 'TwilioVideo' do
   pod 'TwilioVideo', '~> 2.10'
@@ -11,7 +12,6 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'AudioDeviceExample' do
-    platform :ios, '9.0'
     project 'AudioDeviceExample.xcproject'
   end
 
@@ -21,7 +21,6 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'VideoQuickStart' do
-    platform :ios, '9.0'
     project 'VideoQuickStart.xcproject'
   end
   
@@ -41,18 +40,23 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'ScreenCapturerExample' do
-    platform :ios, '9.0'
     project 'ScreenCapturerExample.xcproject'
   end
 
   target 'DataTrackExample' do
-    platform :ios, '9.0'
     project 'DataTrackExample.xcproject'
   end
 
   target 'MultiPartyExample' do
-    platform :ios, '9.0'
     project 'MultiPartyExample.xcproject'
+  end
+
+  target 'ObjCVideoQuickstart' do
+    project 'ObjCVideoQuickstart.xcproject'
+  end
+  
+  target 'AVPlayerExample' do
+    project 'AVPlayerExample.xcproject'
   end
 
 end
