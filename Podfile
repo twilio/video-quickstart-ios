@@ -24,4 +24,14 @@ abstract_target 'TwilioVideo' do
     platform :ios, '8.1'
     project 'ScreenCapturerExample.xcproject'
   end
+
+  target 'ObjCVideoQuickstart' do
+    platform :ios, '8.1'
+    project 'ObjCVideoQuickstart.xcproject'
+  end
+  
+  target 'AVPlayerExample' do
+    platform :ios, '8.1'
+    project 'AVPlayerExample.xcproject'
+  end
 end
