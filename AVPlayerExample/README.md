@@ -14,4 +14,4 @@ In order to use `AVPlayer` along with Twilio Video the `TVIAudioController+CallK
 
 ## Known Issues
 
-We are currently experiencing some problems with low output volume when `AVPlayer` content is mixed with remote Participant audio. This occurs when using the built-in device loudspeaker and microphone, but not when using headphones to monitor audio. For more information please refer to issue [#62](https://github.com/twilio/video-quickstart-objc/issues/62).
+We are currently experiencing some problems with low output volume when `AVPlayer` content is mixed with remote Participant audio. This occurs when using the built-in device loudspeaker and microphone, but not when using headphones to monitor audio. For more information please refer to issue [#402](https://github.com/twilio/video-quickstart-ios/issues/402).
