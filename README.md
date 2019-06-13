@@ -108,7 +108,7 @@ You will also find additional examples that provide more advanced use cases of t
 - [AudioSink](AudioSinkExample) - Access raw audio samples and record them to disk using [AVFoundation](https://developer.apple.com/documentation/avfoundation). Perform live voice recognition using Apple's [Speech](https://developer.apple.com/documentation/speech) framework.
 - [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `TVIRoom` via a custom `TVIVideoCapturer` source. This app requires Xcode 9 & iOS 11.
 - [AVPlayer](AVPlayerExample) - Shows how to use `AVPlayer` to stream Audio & Video content while connected to a `TVIRoom`.
-- [CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit](https://developer.apple.com/reference/callkit) framework. Written in Swift.
+- [CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit](https://developer.apple.com/reference/callkit) framework.
 - [DataTrack](DataTrackExample) - Shows how to use the Data Track APIs for interactive drawing.
 - [MultiParty](MultiPartyExample) - Video conferencing in a Group Room with up to 4 Participants, dominant speaker detection and network quality events.
 - [ReplayKit](ReplayKitExample) - Shows how to use ReplayKit to share the screen, and microphone via `TVIVideoCapturer` and `TVIAudioDevice`.
