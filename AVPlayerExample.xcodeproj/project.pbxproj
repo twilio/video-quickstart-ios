@@ -50,9 +50,9 @@
 		8A0A1F0B1ECD1FFC0008C1AF = {
 			isa = PBXGroup;
 			children = (
-				24A82E5922B18A0A001EFC32 /* README.md */,
 				8A0A1F161ECD1FFC0008C1AF /* AVPlayerExample */,
 				8A0A1F151ECD1FFC0008C1AF /* Products */,
+				24A82E5922B18A0A001EFC32 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
