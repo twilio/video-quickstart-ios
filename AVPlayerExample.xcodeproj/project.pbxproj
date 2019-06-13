@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		24A82E5A22B18A0A001EFC32 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 24A82E5922B18A0A001EFC32 /* README.md */; };
 		8A0A1F191ECD1FFC0008C1AF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A0A1F181ECD1FFC0008C1AF /* main.m */; };
 		8A0A1F1C1ECD1FFC0008C1AF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A0A1F1B1ECD1FFC0008C1AF /* AppDelegate.m */; };
 		8A0A1F1F1ECD1FFC0008C1AF /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A0A1F1E1ECD1FFC0008C1AF /* ViewController.m */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		24A82E5922B18A0A001EFC32 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = AVPlayerExample/README.md; sourceTree = "<group>"; };
 		8A0A1F141ECD1FFC0008C1AF /* AVPlayerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVPlayerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A0A1F181ECD1FFC0008C1AF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		8A0A1F1A1ECD1FFC0008C1AF /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -48,6 +50,7 @@
 		8A0A1F0B1ECD1FFC0008C1AF = {
 			isa = PBXGroup;
 			children = (
+				24A82E5922B18A0A001EFC32 /* README.md */,
 				8A0A1F161ECD1FFC0008C1AF /* AVPlayerExample */,
 				8A0A1F151ECD1FFC0008C1AF /* Products */,
 			);
@@ -150,6 +153,7 @@
 			files = (
 				8A0A1F271ECD1FFC0008C1AF /* LaunchScreen.storyboard in Resources */,
 				8A0A1F241ECD1FFC0008C1AF /* Assets.xcassets in Resources */,
+				24A82E5A22B18A0A001EFC32 /* README.md in Resources */,
 				8A0A1F221ECD1FFC0008C1AF /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
