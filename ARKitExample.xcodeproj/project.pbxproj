@@ -37,6 +37,7 @@
 		1C0964A31F3CF21B008F2C19 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1C0964A61F3CF21B008F2C19 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1C0964A81F3CF21B008F2C19 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		24278FE722B2AA7700593ADB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ARKitExample/README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +56,7 @@
 			children = (
 				1C0964991F3CF21B008F2C19 /* ARKitExample */,
 				1C0964981F3CF21B008F2C19 /* Products */,
+				24278FE722B2AA7700593ADB /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
