@@ -55,4 +55,14 @@ abstract_target 'TwilioVideo' do
     project 'MultiPartyExample.xcproject'
   end
 
+  target 'ObjCVideoQuickstart' do
+    platform :ios, '10.0'
+    project 'ObjCVideoQuickstart.xcproject'
+  end
+  
+  target 'AVPlayerExample' do
+    platform :ios, '10.0'
+    project 'AVPlayerExample.xcproject'
+  end
+
 end

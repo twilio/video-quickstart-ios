@@ -16,6 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		24B657BB22B1F8AE0057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ScreenCapturerExample/README.md; sourceTree = "<group>"; };
 		8AB81D9A1DED183B0021868E /* ExampleWebViewSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleWebViewSource.swift; sourceTree = "<group>"; };
 		8AC2285D1DECF14D00AF58EA /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ScreenCapturerExample/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
 		8AC2285E1DECF14D00AF58EA /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ScreenCapturerExample/ViewController.swift; sourceTree = SOURCE_ROOT; };
@@ -42,6 +43,7 @@
 			children = (
 				8AF6E84B1DECEEF600DFBE3E /* ScreenCapturerExample */,
 				8AF6E84A1DECEEF600DFBE3E /* Products */,
+				24B657BB22B1F8AE0057EBE6 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
