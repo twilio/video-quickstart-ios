@@ -69,6 +69,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		24B657B422B18BAD0057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ReplayKitExample/README.md; sourceTree = "<group>"; };
 		4B20000420E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BroadcastExtensionSetupUI.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B20000620E9CB9C00FE9F2C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		4B20000920E9CB9C00FE9F2C /* BroadcastSetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastSetupViewController.swift; sourceTree = "<group>"; };
@@ -147,6 +148,7 @@
 				4B20000820E9CB9C00FE9F2C /* BroadcastExtensionSetupUI */,
 				4B20FFF920E9CB9C00FE9F2C /* Frameworks */,
 				4B20FFE020E9CB8500FE9F2C /* Products */,
+				24B657B422B18BAD0057EBE6 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
