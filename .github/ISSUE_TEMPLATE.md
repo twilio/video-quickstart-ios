@@ -1,7 +1,7 @@
 <!-- Check the following before filing an issue -->
 > Before filing an issue please check that the issue is not already addressed by the following:
 >  * [Video Guides](https://www.twilio.com/docs/api/video)
->  * [Github Issues](https://github.com/twilio/video-quickstart-swift/issues)
+>  * [Github Issues](https://github.com/twilio/video-quickstart-ios/issues)
 >  * [Changelog](https://www.twilio.com/docs/api/video/changelogs/ios)
 >
 > Please ensure that you are not sharing any
