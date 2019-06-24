@@ -11,9 +11,9 @@
 #import "TPCircularBuffer+AudioBufferList.h"
 
 // We want to get as close to 20 msec buffers as possible, to match the behavior of TVIDefaultAudioDevice.
-static double const kPreferredIOBufferDuration = 0.02;
+static double const kPreferredIOBufferDuration = 0.01;
 // We will use stereo playback where available. Some audio routes may be restricted to mono only.
-static size_t const kPreferredNumberOfChannels = 2;
+static size_t const kPreferredNumberOfChannels = 1;
 static size_t const kPreferredNumberOfInputChannels = 1;
 // An audio sample is a signed 16-bit integer.
 static size_t const kAudioSampleSize = sizeof(SInt16);
@@ -589,74 +589,12 @@ static OSStatus ExampleAVPlayerAudioDeviceRecordingInputCallback(void *refCon,
     }
 
     // Early return with microphone only recording.
-    if (context->recordingBuffer == NULL) {
-        if (context->deviceContext) {
-            TVIAudioDeviceWriteCaptureData(context->deviceContext,
-                                           microphoneAudioBuffer->mData,
-                                           microphoneAudioBuffer->mDataByteSize);
-        }
-        return noErr;
-    }
-
-    // Dequeue the AVPlayer audio.
-    AudioBufferList playerBufferList;
-    playerBufferList.mNumberBuffers = 1;
-    AudioBuffer *playerAudioBuffer = &playerBufferList.mBuffers[0];
-    playerAudioBuffer->mNumberChannels = kPreferredNumberOfChannels;
-    playerAudioBuffer->mDataByteSize = (UInt32)numFrames * playerAudioBuffer->mNumberChannels * kAudioSampleSize;
-    playerAudioBuffer->mData = context->audioBuffer;
-
-    ExampleAVPlayerAudioDeviceDequeueFrames(context->recordingBuffer, numFrames, NULL, &playerBufferList);
-
-    // Early return to test player audio.
-    // Deliver the samples (via copying) to WebRTC.
     if (context->deviceContext) {
-        TVIAudioDeviceWriteCaptureData(context->deviceContext, playerAudioBuffer->mData, playerAudioBuffer->mDataByteSize);
-        return noErr;
+        TVIAudioDeviceWriteCaptureData(context->deviceContext,
+                                       microphoneAudioBuffer->mData,
+                                       microphoneAudioBuffer->mDataByteSize);
     }
-
-
-    // Convert the mono AVPlayer and Microphone sources into a stereo stream.
-    AudioConverterRef converter = context->audioConverter;
-
-    // Source buffers.
-    AudioBufferList *playerMicrophoneBufferList = (AudioBufferList *)alloca(sizeof(AudioBufferList) + sizeof(AudioBuffer));
-    playerMicrophoneBufferList->mNumberBuffers = 2;
-
-    AudioBuffer *playerConvertBuffer = &playerMicrophoneBufferList->mBuffers[0];
-    playerConvertBuffer->mNumberChannels = 1;
-    playerConvertBuffer->mDataByteSize = (UInt32)numFrames * 2;
-    playerConvertBuffer->mData = context->audioBuffer;
-
-    AudioBuffer *microphoneConvertBuffer = &playerMicrophoneBufferList->mBuffers[1];
-    microphoneConvertBuffer->mNumberChannels = microphoneAudioBuffer->mNumberChannels;
-    microphoneConvertBuffer->mDataByteSize = microphoneAudioBuffer->mDataByteSize;
-    microphoneConvertBuffer->mData = microphoneAudioBuffer->mData;
-
-    // Destination buffer list.
-    AudioBufferList convertedBufferList;
-    convertedBufferList.mNumberBuffers = 1;
-    AudioBuffer *convertedAudioBuffer = &convertedBufferList.mBuffers[0];
-    convertedAudioBuffer->mNumberChannels = 2;
-    convertedAudioBuffer->mDataByteSize = (UInt32)numFrames * 4;
-    // Ensure 16-byte alignment.
-    UInt32 byteOffset = (UInt32)numFrames * 2;
-    byteOffset += 16 - (byteOffset % 16);
-    convertedAudioBuffer->mData = context->audioBuffer + byteOffset;
-    assert((byteOffset % 16) == 0);
-
-    status = AudioConverterConvertComplexBuffer(converter, numFrames, playerMicrophoneBufferList, &convertedBufferList);
-    if (status != noErr) {
-        NSLog(@"Convert failed, status: %d", status);
-    }
-    int8_t *convertedAudioData = (int8_t *)convertedAudioBuffer->mData;
-
-    // Deliver the samples (via copying) to WebRTC.
-    if (context->deviceContext && convertedAudioData) {
-        TVIAudioDeviceWriteCaptureData(context->deviceContext, convertedAudioData, convertedAudioBuffer->mDataByteSize);
-    }
-
-    return status;
+    return noErr;
 }
 
 #pragma mark - Private (AVAudioSession and CoreAudio)
