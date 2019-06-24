@@ -48,7 +48,6 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var hangupButton: UIButton!
     @IBOutlet weak var presenterButton: UIButton!
-    @IBOutlet weak var viewerButton: UIButton!
 
     @IBOutlet weak var localView: TVIVideoView!
     weak var remotePlayerView: TVIVideoView?
@@ -92,7 +91,6 @@ class ViewController: UIViewController {
         self.hangupButton.isHidden = true
 
         presenterButton.layer.cornerRadius = 4;
-        viewerButton.layer.cornerRadius = 4;
         hangupButton.layer.cornerRadius = 2;
 
         self.localView.contentMode = UIView.ContentMode.scaleAspectFit
@@ -181,13 +179,6 @@ class ViewController: UIViewController {
         connect(name: "presenter")
     }
 
-    @IBAction func startViewer(_ sender: Any) {
-        self.audioDevice = nil
-        TwilioVideo.audioDevice = TVIDefaultAudioDevice()
-        isPresenter = false
-        connect(name: "viewer")
-    }
-
     @IBAction func hangup(_ sender: Any) {
         self.room?.disconnect()
     }
@@ -223,12 +214,8 @@ class ViewController: UIViewController {
             // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
             builder.roomName = "twilio"
 
-            // Restrict video bandwidth used by viewers to improve presenter video. Use more bandwidth for presenter audio.
-            if name == "viewer" {
-                builder.encodingParameters = TVIEncodingParameters(audioBitrate: 0, videoBitrate: 1024 * 900)
-            } else {
-                builder.encodingParameters = TVIEncodingParameters(audioBitrate: 1024 * 96, videoBitrate: 0)
-            }
+            // Using more bandwidth for presenter audio.
+            builder.encodingParameters = TVIEncodingParameters(audioBitrate: 1024 * 96, videoBitrate: 0)
         }
 
         // Connect to the Room using the options we provided.
@@ -278,7 +265,6 @@ class ViewController: UIViewController {
         self.localView.isHidden = !inRoom
         self.remoteView.isHidden = !inRoom
         self.presenterButton.isHidden = inRoom
-        self.viewerButton.isHidden = inRoom
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         self.setNeedsStatusBarAppearanceUpdate()
         UIApplication.shared.isIdleTimerDisabled = inRoom
