@@ -39,15 +39,18 @@ class ViewController: UIViewController {
     var videoPlayerUrl: URL? = nil
     var videoPlayerPreroll: Bool = false
 
-    var isPresenter: Bool?
-
     @IBOutlet weak var localHeightConstraint: NSLayoutConstraint?
     @IBOutlet weak var localWidthConstraint: NSLayoutConstraint?
     @IBOutlet weak var remoteHeightConstraint: NSLayoutConstraint?
     @IBOutlet weak var remoteWidthConstraint: NSLayoutConstraint?
 
     @IBOutlet weak var hangupButton: UIButton!
-    @IBOutlet weak var presenterButton: UIButton!
+    @IBOutlet weak var connectButton: UIButton!
+    @IBOutlet weak var roomTextField: UITextField!
+    @IBOutlet weak var greyLine: UIView!
+    @IBOutlet weak var roomLabel: UILabel!
+
+    @IBOutlet weak var audioMixingSwitch: UISwitch!
 
     @IBOutlet weak var localView: TVIVideoView!
     weak var remotePlayerView: TVIVideoView?
@@ -85,12 +88,13 @@ class ViewController: UIViewController {
                           blue: 37.0/255.0,
                           alpha: 1.0)
 
-        presenterButton.backgroundColor = red
+        connectButton.backgroundColor = red
         self.hangupButton.backgroundColor = red
         self.hangupButton.titleLabel?.textColor = UIColor.white
         self.hangupButton.isHidden = true
+        self.audioMixingSwitch.isHidden = true
 
-        presenterButton.layer.cornerRadius = 4;
+        connectButton.layer.cornerRadius = 4;
         hangupButton.layer.cornerRadius = 2;
 
         self.localView.contentMode = UIView.ContentMode.scaleAspectFit
@@ -103,8 +107,12 @@ class ViewController: UIViewController {
         self.remoteWidthConstraint = self.remoteView.constraints.last
 
         if let videoUrl = videoPlayerUrl {
-            startPresenter(contentUrl: videoUrl)
+            connect(contentUrl: videoUrl)
         }
+        let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
+        self.view.addGestureRecognizer(tap)
+
+        self.dismissKeyboard()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -148,6 +156,12 @@ class ViewController: UIViewController {
         }
     }
 
+    @objc func dismissKeyboard() {
+        if (self.roomTextField.isFirstResponder) {
+            self.roomTextField.resignFirstResponder()
+        }
+    }
+
     override var prefersHomeIndicatorAutoHidden: Bool {
         get {
             return self.room != nil
@@ -160,11 +174,16 @@ class ViewController: UIViewController {
         }
     }
 
-    @IBAction func startPresenter(_ sender: Any) {
-        startPresenter(contentUrl: ViewController.kRemoteContentURL)
+    @IBAction func connect(_ sender: Any) {
+        dismissKeyboard()
+        connect(contentUrl: ViewController.kRemoteContentURL)
     }
 
-    public func startPresenter(contentUrl: URL) {
+    @IBAction func toggleAudioMixing(_ sender: Any) {
+        // TODO: Pause/stop audio mixing on demand
+    }
+
+    public func connect(contentUrl: URL) {
         videoPlayerUrl = contentUrl
         if self.isViewLoaded == false {
             return
@@ -175,7 +194,6 @@ class ViewController: UIViewController {
             TwilioVideo.audioDevice =  device
             self.audioDevice = device
         }
-        isPresenter = true
         connect(name: "presenter")
     }
 
@@ -262,9 +280,13 @@ class ViewController: UIViewController {
 
     func showRoomUI(inRoom: Bool) {
         self.hangupButton.isHidden = !inRoom
+        self.audioMixingSwitch.isHidden = !inRoom
         self.localView.isHidden = !inRoom
         self.remoteView.isHidden = !inRoom
-        self.presenterButton.isHidden = inRoom
+        self.connectButton.isHidden = inRoom
+        self.greyLine.isHidden = inRoom
+        self.roomTextField.isHidden = inRoom
+        self.roomLabel.isHidden = inRoom
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         self.setNeedsStatusBarAppearanceUpdate()
         UIApplication.shared.isIdleTimerDisabled = inRoom
@@ -521,7 +543,7 @@ extension ViewController : TVIRoomDelegate {
             remoteParticipant.delegate = self
         }
 
-        if (room.remoteParticipants.count > 0 && self.isPresenter!) {
+        if (room.remoteParticipants.count > 0) {
             stopVideoPlayer()
             startVideoPlayer()
         }
@@ -564,7 +586,7 @@ extension ViewController : TVIRoomDelegate {
 
         logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
 
-        if (room.remoteParticipants.count == 1 && self.isPresenter!) {
+        if (room.remoteParticipants.count == 1) {
             stopVideoPlayer()
             startVideoPlayer()
         }

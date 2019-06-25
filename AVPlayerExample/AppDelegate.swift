@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let options = launchOptions,
             let videoUrl = options[UIApplication.LaunchOptionsKey.url] as? URL {
                 let rootVC = window?.rootViewController as! ViewController
-                rootVC.startPresenter(contentUrl: videoUrl)
+                rootVC.connect(contentUrl: videoUrl)
         }
         return true
     }
@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("app:openURL:", url, " options:", options as Any)
 
         let rootVC = window?.rootViewController as! ViewController
-        rootVC.startPresenter(contentUrl: url)
+        rootVC.connect(contentUrl: url)
 
         return true
     }
