@@ -21,7 +21,7 @@ class ViewController: UIViewController {
 
     // Twilio Video classes.
     var room: TVIRoom?
-    var camera: TVICameraCapturer?
+    var camera: TVICameraSource?
     var localVideoTrack: TVILocalVideoTrack!
     var playerVideoTrack: TVILocalVideoTrack?
     var localAudioTrack: TVILocalAudioTrack!
@@ -256,26 +256,60 @@ class ViewController: UIViewController {
 
         // Create a camera video Track.
         #if !targetEnvironment(simulator)
-        if (localVideoTrack == nil) {
-            // Preview our local camera track in the local video preview view.
+        let frontCamera = TVICameraSource.captureDevice(for: .front)
+        let backCamera = TVICameraSource.captureDevice(for: .back)
 
-            camera = TVICameraCapturer(source: .frontCamera, delegate: nil)
-            let constraints = TVIVideoConstraints.init { (builder) in
-                builder.maxSize = TVIVideoConstraintsSize480x360
-                builder.maxFrameRate = TVIVideoConstraintsFrameRate24
+        if (frontCamera != nil || backCamera != nil) {
+            // Preview our local camera track in the local video preview view.
+            camera = TVICameraSource(delegate: self)
+            localVideoTrack = TVILocalVideoTrack.init(source: camera!, enabled: true, name: "Camera")
+
+            // Add renderer to video track for local preview
+            localVideoTrack!.addRenderer(self.localView)
+            logMessage(messageText: "Video track created")
+
+            if (frontCamera != nil && backCamera != nil) {
+                // We will flip camera on tap.
+                let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.flipCamera))
+                self.localView.addGestureRecognizer(tap)
             }
 
-            localVideoTrack = TVILocalVideoTrack(capturer: camera!,
-                                                 enabled: true,
-                                                 constraints: constraints,
-                                                 name: "camera")
-            localVideoTrack.addRenderer(self.localView)
-            // We use the front facing camera only. Set mirroring each time since the renderer might be reused.
-            localView.shouldMirror = true
+            camera!.startCapture(with: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
+                if let error = error {
+                    self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                } else {
+                    self.localView.shouldMirror = (captureDevice.position == .front)
+                }
+            }
+        }
+        else {
+            self.logMessage(messageText:"No front or back capture device found!")
         }
         #else
         localAudioTrack.isEnabled = false
         #endif
+    }
+
+    @objc func flipCamera() {
+        var newDevice: AVCaptureDevice?
+
+        if let camera = self.camera, let captureDevice = camera.device {
+            if captureDevice.position == .front {
+                newDevice = TVICameraSource.captureDevice(for: .back)
+            } else {
+                newDevice = TVICameraSource.captureDevice(for: .front)
+            }
+
+            if let newDevice = newDevice {
+                camera.select(newDevice) { (captureDevice, videoFormat, error) in
+                    if let error = error {
+                        self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                    } else {
+                        self.localView.shouldMirror = (captureDevice.position == .front)
+                    }
+                }
+            }
+        }
     }
 
     func showRoomUI(inRoom: Bool) {
@@ -753,5 +787,12 @@ extension ViewController : TVIVideoViewDelegate {
         if view == self.localView || view == self.remoteView {
             self.view.setNeedsUpdateConstraints()
         }
+    }
+}
+
+// MARK: TVICameraSourceDelegate
+extension ViewController : TVICameraSourceDelegate {
+    func cameraSource(_ source: TVICameraSource, didFailWithError error: Error) {
+        logMessage(messageText: "Camera source failed with error: \(error.localizedDescription)")
     }
 }
