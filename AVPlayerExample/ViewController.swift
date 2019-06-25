@@ -314,7 +314,7 @@ class ViewController: UIViewController {
 
     func showRoomUI(inRoom: Bool) {
         self.hangupButton.isHidden = !inRoom
-        self.audioMixingSwitch.isHidden = !inRoom
+        // TODO: show audioMixingSwitch when connected to a Room.
         self.localView.isHidden = !inRoom
         self.remoteView.isHidden = !inRoom
         self.connectButton.isHidden = inRoom
