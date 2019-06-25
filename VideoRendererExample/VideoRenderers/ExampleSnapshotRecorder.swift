@@ -9,15 +9,9 @@ import CoreImage
 import Foundation
 import TwilioVideo
 
-class ExampleSnapshotRecorder : NSObject, TVIVideoRenderer {
+class ExampleSnapshotRecorder : NSObject, VideoRenderer {
     var lastImageBuffer: CVImageBuffer?
     var captureSemaphore = DispatchSemaphore.init(value: 1)
-
-    // Register pixel formats that we can convert to a UIImage.
-    var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.format32ARGB.rawValue)]
 
     func captureSnapshot() -> UIImage? {
         // TODO: Maybe we don't want to wait forever for the smaphore?
@@ -53,13 +47,13 @@ class ExampleSnapshotRecorder : NSObject, TVIVideoRenderer {
 }
 
 extension ExampleSnapshotRecorder {
-    func renderFrame(_ frame: TVIVideoFrame) {
+    func renderFrame(_ frame: VideoFrame) {
         captureSemaphore.wait()
         lastImageBuffer = frame.imageBuffer
         captureSemaphore.signal()
     }
 
-    func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: TVIVideoOrientation) {
+    func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: VideoOrientation) {
         // Nothing to do.
     }
 }

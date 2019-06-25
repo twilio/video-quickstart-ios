@@ -13,13 +13,13 @@ import TwilioVideo
 protocol ExampleSampleBufferRendererDelegate {
     func bufferViewVideoChanged(view: ExampleSampleBufferView,
                                 dimensions: CMVideoDimensions,
-                                orientation: TVIVideoOrientation)
+                                orientation: VideoOrientation)
 }
 
-class ExampleSampleBufferView : UIView, TVIVideoRenderer {
+class ExampleSampleBufferView : UIView, VideoRenderer {
 
     public var videoDimensions: CMVideoDimensions
-    public var videoOrientation: TVIVideoOrientation
+    public var videoOrientation: VideoOrientation
 
     var isRendering = UIApplication.shared.applicationState != .background
     var outputFormatDescription: CMFormatDescription?
@@ -31,10 +31,10 @@ class ExampleSampleBufferView : UIView, TVIVideoRenderer {
      * At a minimum, the CVPixelBuffers are expected to be backed by an IOSurface so we will not support
      * every possible input from CoreVideo.
      */
-    var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.format32BGRA.rawValue),
-                                            NSNumber.init(value: TVIPixelFormat.format32ARGB.rawValue)]
+    var optionalPixelFormats: [NSNumber] = [NSNumber.init(value: PixelFormat.formatYUV420BiPlanarFullRange.rawValue),
+                                            NSNumber.init(value: PixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
+                                            NSNumber.init(value: PixelFormat.format32BGRA.rawValue),
+                                            NSNumber.init(value: PixelFormat.format32ARGB.rawValue)]
 
     required init?(coder aDecoder: NSCoder) {
         // This example does not support storyboards.
@@ -44,7 +44,7 @@ class ExampleSampleBufferView : UIView, TVIVideoRenderer {
 
     override init(frame: CGRect) {
         videoDimensions = CMVideoDimensions(width: 0, height: 0)
-        videoOrientation = TVIVideoOrientation.up
+        videoOrientation = VideoOrientation.up
 
         super.init(frame: frame)
 
@@ -127,7 +127,7 @@ extension ExampleSampleBufferView {
 
 extension ExampleSampleBufferView {
 
-    func renderFrame(_ frame: TVIVideoFrame) {
+    func renderFrame(_ frame: VideoFrame) {
         let pixelFormat = CVPixelBufferGetPixelFormatType(frame.imageBuffer)
 
         // Unfortunately I420 is not directly supported by AVSampleBufferDisplayLayer.
@@ -136,8 +136,8 @@ extension ExampleSampleBufferView {
         // a CVPixelBufferPool of NV12 frames which are ready to be displayed.
         if (self.isRendering == false ) {
             return
-        } else if (pixelFormat == TVIPixelFormat.formatYUV420PlanarFullRange.rawValue ||
-                   pixelFormat == TVIPixelFormat.formatYUV420PlanarVideoRange.rawValue) {
+        } else if (pixelFormat == PixelFormat.formatYUV420PlanarFullRange.rawValue ||
+                   pixelFormat == PixelFormat.formatYUV420PlanarVideoRange.rawValue) {
             print("Unsupported I420 pixel format!");
             return
         }
@@ -153,7 +153,7 @@ extension ExampleSampleBufferView {
         }
     }
 
-    func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: TVIVideoOrientation) {
+    func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: VideoOrientation) {
         DispatchQueue.main.async {
             // Update properties to help with View layout.
             let orientationChanged = orientation != self.videoOrientation
@@ -214,7 +214,7 @@ extension ExampleSampleBufferView {
     }
 
     // TODO: Return OSStatus?
-    func enqueueFrame(frame: TVIVideoFrame) {
+    func enqueueFrame(frame: VideoFrame) {
         let imageBuffer = frame.imageBuffer
 
         if (self.cachedDisplayLayer?.error != nil) {

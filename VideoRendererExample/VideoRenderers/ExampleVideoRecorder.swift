@@ -9,22 +9,16 @@ import AVFoundation
 import Foundation
 import TwilioVideo
 
-class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
+class ExampleVideoRecorder : NSObject, VideoRenderer {
     let identifier : String
-    let videoTrack : TVIVideoTrack
+    let videoTrack : VideoTrack
 
     var recorderTimestamp = CMTime.invalid
     var videoFormatDescription: CMFormatDescription?
     var videoRecorder : AVAssetWriter?
     var videoRecorderInput : AVAssetWriterInput?
 
-    // Register pixel formats that are known to work with AVAssetWriterInput.
-    var optionalPixelFormats: [NSNumber] = [NSNumber(value: TVIPixelFormat.formatYUV420BiPlanarFullRange.rawValue),
-                                            NSNumber(value: TVIPixelFormat.formatYUV420BiPlanarVideoRange.rawValue),
-                                            NSNumber(value: TVIPixelFormat.format32BGRA.rawValue),
-                                            NSNumber(value: TVIPixelFormat.format32ARGB.rawValue)]
-
-    init(videoTrack: TVIVideoTrack, identifier: String) {
+    init(videoTrack: VideoTrack, identifier: String) {
         self.videoTrack = videoTrack
         self.identifier = identifier
 
@@ -49,7 +43,7 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
         // task, and handling failures.
     }
 
-    private func startRecording(frame: TVIVideoFrame) {
+    private func startRecording(frame: VideoFrame) {
         self.recorderTimestamp = frame.timestamp
 
         // Determine width and height dynamically (based upon the first frame). This works well for local content.
@@ -120,7 +114,7 @@ class ExampleVideoRecorder : NSObject, TVIVideoRenderer {
 }
 
 extension ExampleVideoRecorder {
-    func renderFrame(_ frame: TVIVideoFrame) {
+    func renderFrame(_ frame: VideoFrame) {
         // Frames are delivered with presentation timestamps. We will make do with this for our recorder.
         let timestamp = frame.timestamp
 
@@ -180,7 +174,7 @@ extension ExampleVideoRecorder {
         }
     }
 
-    func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: TVIVideoOrientation) {
+    func updateVideoSize(_ videoSize: CMVideoDimensions, orientation: VideoOrientation) {
         // The recorder inspects individual frames (including pixel format). As a result, there is nothing to do here.
     }
 }

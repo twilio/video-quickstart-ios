@@ -45,7 +45,7 @@ class ConnectViewController: UIViewController {
          * ExampleSampleBufferView can render NV12 buffers, and does not support I420 at this time.
          * Perfer to use the H.264 codec, which is decoded into IOSurface backed NV12 buffers suitable for display.
          */
-        Settings.shared.videoCodec = TVIH264Codec.init()
+        Settings.shared.videoCodec = H264Codec()
         Settings.shared.maxVideoBitrate = 1024 * ConnectViewController.kMaxVideoBitrate
 
         roomTextField?.becomeFirstResponder()
@@ -54,7 +54,7 @@ class ConnectViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         roomTextField?.text = ""
-        logMessage(messageText: "Twilio Video v\(TwilioVideo.version())")
+        logMessage(messageText: "Twilio Video v\(TwilioVideoSDK.version())")
     }
 
     @objc func dismissKeyboard() {
