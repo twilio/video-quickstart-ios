@@ -474,10 +474,9 @@ extension RendererViewController : RemoteParticipantDelegate {
         logMessage(messageText: "Participant \(participant.identity) unpublished \(publication.trackName) audio track")
     }
 
-    func subscribed(to videoTrack: RemoteVideoTrack,
-                    publication: RemoteVideoTrackPublication,
-                    for participant: RemoteParticipant) {
-
+    func didSubscribeToVideoTrack(videoTrack: RemoteVideoTrack,
+                                  publication: RemoteVideoTrackPublication,
+                                  participant: RemoteParticipant) {
         // We are subscribed to the remote Participant's audio Track. We will start receiving the
         // remote Participant's video frames now.
 
@@ -489,10 +488,9 @@ extension RendererViewController : RemoteParticipantDelegate {
         }
     }
 
-    func unsubscribed(from videoTrack: RemoteVideoTrack,
-                      publication: RemoteVideoTrackPublication,
-                      for participant: RemoteParticipant) {
-
+    func didUnsubscribeFromVideoTrack(videoTrack: RemoteVideoTrack,
+                                      publication: RemoteVideoTrackPublication,
+                                      participant: RemoteParticipant) {
         // We are unsubscribed from the remote Participant's video Track. We will no longer receive the
         // remote Participant's video.
 
@@ -502,25 +500,20 @@ extension RendererViewController : RemoteParticipantDelegate {
         removeRemoteVideoView(publication: publication)
     }
 
-    func subscribed(to audioTrack: RemoteAudioTrack,
-                    publication: RemoteAudioTrackPublication,
-                    for participant: RemoteParticipant) {
-
+    func didSubscribeToAudioTrack(audioTrack: RemoteAudioTrack,
+                                  publication: RemoteAudioTrackPublication,
+                                  participant: RemoteParticipant) {
         // We are subscribed to the remote Participant's audio Track. We will start receiving the
         // remote Participant's audio now.
 
         logMessage(messageText: "Subscribed to \(publication.trackName) audio track for Participant \(participant.identity)")
     }
 
-    func unsubscribed(from audioTrack: RemoteAudioTrack,
-                      publication: RemoteAudioTrackPublication,
-                      for participant: RemoteParticipant) {
-
+    func didUnsubscribeFromAudioTrack(audioTrack: RemoteAudioTrack, publication: RemoteAudioTrackPublication, participant: RemoteParticipant) {
         // We are unsubscribed from the remote Participant's audio Track. We will no longer receive the
         // remote Participant's audio.
 
         logMessage(messageText: "Unsubscribed from \(publication.trackName) audio track for Participant \(participant.identity)")
-
     }
 
     func remoteParticipantDidEnableVideoTrack(participant: RemoteParticipant,
