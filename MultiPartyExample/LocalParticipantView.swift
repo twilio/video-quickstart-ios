@@ -13,10 +13,9 @@ import TwilioVideo
 class LocalParticipantView: UIView {
 
     @IBOutlet var contentView: UIView!
-    @IBOutlet weak var videoView: TVIVideoView!
+    @IBOutlet weak var videoView: VideoView!
     @IBOutlet weak var noVideoImage: UIImageView!
     @IBOutlet weak var audioIndicator: UIImageView!
-    @IBOutlet weak var networkQualityLevelContainerView: UIView!
     @IBOutlet weak var networkQualityLevelIndicator: UIImageView!
 
     var recognizerDoubleTap: UITapGestureRecognizer?
@@ -35,22 +34,17 @@ class LocalParticipantView: UIView {
         }
     }
 
-    var networkQualityLevel: TVINetworkQualityLevel = .unknown {
+    var networkQualityLevel: NetworkQualityLevel = .unknown {
         willSet {
-            let info = networkQualityLevelIndicatorInfo(newValue)
-
-            guard let networkQualityLevelImage = info.networkQualityLevelImage,
-                let tintColor = info.tintColor else {
-                    networkQualityLevelContainerView.isHidden = true
-                    return
+            guard let networkQualityLevelImage = networkQualityIndicatorImage(forLevel: newValue) else {
+                networkQualityLevelIndicator.isHidden = true
+                return
             }
 
-            networkQualityLevelContainerView.isHidden = false
+            networkQualityLevelIndicator.isHidden = false
             networkQualityLevelIndicator.image = networkQualityLevelImage
-            networkQualityLevelIndicator.tintColor = tintColor
         }
     }
-
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -72,14 +66,10 @@ class LocalParticipantView: UIView {
         audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.75).cgColor
 
         noVideoImage.isHidden = false
-        networkQualityLevelContainerView.isHidden = true
+        networkQualityLevelIndicator.isHidden = true
 
-        // Note: Both the image and the containing view have transparency. Ideally this would be combined into a single
-        // image to only cause one blending operation over top of the video view.
-        networkQualityLevelContainerView.layer.backgroundColor = UIColor.black.withAlphaComponent(0.75).cgColor
-
-        // `TVIVideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
-        // scaleAspectFit is the default mode when you create `TVIVideoView` programmatically.
+        // `VideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit.
+        // scaleAspectFit is the default mode when you create `VideoView` programmatically.
         videoView.contentMode = .scaleAspectFit
         videoView.isHidden = true
         videoView.alpha = 0.0
@@ -107,45 +97,37 @@ class LocalParticipantView: UIView {
 
     }
 
-    private func networkQualityLevelIndicatorInfo(_ networkQualityLevel: TVINetworkQualityLevel) -> (networkQualityLevelImage: UIImage?, tintColor: UIColor?) {
+    private func networkQualityIndicatorImage(forLevel networkQualityLevel: NetworkQualityLevel) -> UIImage? {
         var tempImageName: String?
-        var tempTintColor: UIColor?
 
         switch networkQualityLevel {
         case .zero:
             tempImageName = "network-quality-level-0"
-            tempTintColor = UIColor.Twilio.Status.Red
         case .one:
             tempImageName = "network-quality-level-1"
-            tempTintColor = UIColor.Twilio.Status.Red
         case .two:
             tempImageName = "network-quality-level-2"
-            tempTintColor = UIColor.Twilio.Status.Orange
         case .three:
             tempImageName = "network-quality-level-3"
-            tempTintColor = UIColor.Twilio.Status.Orange
         case .four:
             tempImageName = "network-quality-level-4"
-            tempTintColor = UIColor.Twilio.Status.Green
         case .five:
             tempImageName = "network-quality-level-5"
-            tempTintColor = UIColor.Twilio.Status.Green
         case .unknown:
             break
         }
 
-        guard let imageName = tempImageName, let tintColor = tempTintColor else {
-            return (nil, nil)
+        guard let imageName = tempImageName else {
+            return nil
         }
 
-        return (UIImage.init(imageLiteralResourceName: imageName).withRenderingMode(.alwaysTemplate),
-                tintColor)
+        return UIImage(named: imageName)
     }
 }
 
-// MARK: TVIVideoViewDelegate
-extension LocalParticipantView : TVIVideoViewDelegate {
-    func videoView(_ view: TVIVideoView, videoDimensionsDidChange dimensions: CMVideoDimensions) {
+// MARK:- VideoViewDelegate
+extension LocalParticipantView : VideoViewDelegate {
+    func videoViewDimensionsDidChange(view: VideoView, dimensions: CMVideoDimensions) {
         self.contentView.setNeedsLayout()
     }
 }

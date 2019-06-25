@@ -2,7 +2,7 @@
 //  ReplayKitVideoSource.swift
 //  ReplayKitExample
 //
-//  Copyright © 2018 Twilio. All rights reserved.
+//  Copyright © 2018-2019 Twilio. All rights reserved.
 //
 
 import Accelerate
@@ -12,7 +12,7 @@ import Dispatch
 import ReplayKit
 import TwilioVideo
 
-class ReplayKitVideoSource: NSObject, TVIVideoSource {
+class ReplayKitVideoSource: NSObject, VideoSource {
 
     /*
      * Streaming video content at 30 fps or lower is ideal. ReplayKit may produce buffers at up to 120 Hz on an iPad Pro.
@@ -25,14 +25,14 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
     static let kFormatFrameRate = UIScreen.main.maximumFramesPerSecond
 
     var screencastUsage: Bool = false
-    weak var sink: TVIVideoSink?
-    var videoFormat: TVIVideoFormat?
+    weak var sink: VideoSink?
+    var videoFormat: VideoFormat?
 
     var lastTimestamp: CMTime?
     var videoQueue: DispatchQueue?
     var timerSource: DispatchSourceTimer?
     var lastTransmitTimestamp: CMTime?
-    private var lastFrameStorage: TVIVideoFrame?
+    private var lastFrameStorage: VideoFrame?
 
     /*
      * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
@@ -57,12 +57,29 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
         }
     }
 
-    func requestOutputFormat(_ outputFormat: TVIVideoFormat) {
+    func requestOutputFormat(_ outputFormat: VideoFormat) {
         videoFormat = outputFormat
 
         if let sink = sink {
             sink.onVideoFormatRequest(videoFormat)
         }
+    }
+
+    static func formatRequestToDownscale(maxWidthOrHeight: Int) -> VideoFormat {
+        let outputFormat = VideoFormat()
+
+        var screenSize = UIScreen.main.bounds.size
+        screenSize.width *= UIScreen.main.nativeScale
+        screenSize.height *= UIScreen.main.nativeScale
+
+        let downscaledTarget = CGSize(width: maxWidthOrHeight,
+                                      height: maxWidthOrHeight)
+        let fitRect = AVMakeRect(aspectRatio: screenSize,
+                                 insideRect: CGRect(origin: CGPoint.zero, size: downscaledTarget)).integral
+        let outputSize = fitRect.size
+
+        outputFormat.dimensions = CMVideoDimensions(width: Int32(outputSize.width), height: Int32(outputSize.height))
+        return outputFormat;
     }
 
     deinit {
@@ -112,7 +129,7 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
          * Check rotation tags. Extensions see these tags, but `RPScreenRecorder` does not appear to set them.
          * On iOS 12.0, rotation tags other than up are set by extensions.
          */
-        var videoOrientation = TVIVideoOrientation.up
+        var videoOrientation = VideoOrientation.up
         if let sampleOrientation = CMGetAttachment(sampleBuffer, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil),
             let coreSampleOrientation = sampleOrientation.uint32Value {
             videoOrientation
@@ -130,12 +147,12 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
                      forceReschedule: false)
     }
 
-    func deliverFrame(to: TVIVideoSink, timestamp: CMTime, buffer: CVPixelBuffer, orientation: TVIVideoOrientation, forceReschedule: Bool) {
-        guard let frame = TVIVideoFrame(timestamp: timestamp,
-                                        buffer: buffer,
-                                        orientation: orientation) else {
-                                            assertionFailure("We couldn't create a TVIVideoFrame with a valid CVPixelBuffer.")
-                                            return
+    func deliverFrame(to: VideoSink, timestamp: CMTime, buffer: CVPixelBuffer, orientation: VideoOrientation, forceReschedule: Bool) {
+        guard let frame = VideoFrame(timestamp: timestamp,
+                                     buffer: buffer,
+                                     orientation: orientation) else {
+                                        assertionFailure("We couldn't create a VideoFrame with a valid CVPixelBuffer.")
+                                        return
         }
         to.onVideoFrame(frame)
         lastTimestamp = timestamp
@@ -200,27 +217,27 @@ class ReplayKitVideoSource: NSObject, TVIVideoSource {
         source.activate()
     }
 
-    static func imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation) -> TVIVideoOrientation {
-        let videoOrientation: TVIVideoOrientation
+    static func imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation) -> VideoOrientation {
+        let videoOrientation: VideoOrientation
 
         // Note: The source does not attempt to "undo" mirroring. So far I have not encountered mirrored tags from ReplayKit sources.
         switch imageOrientation {
         case .up:
-            videoOrientation = TVIVideoOrientation.up
+            videoOrientation = VideoOrientation.up
         case .upMirrored:
-            videoOrientation = TVIVideoOrientation.up
+            videoOrientation = VideoOrientation.up
         case .left:
-            videoOrientation = TVIVideoOrientation.left
+            videoOrientation = VideoOrientation.left
         case .leftMirrored:
-            videoOrientation = TVIVideoOrientation.left
+            videoOrientation = VideoOrientation.left
         case .right:
-            videoOrientation = TVIVideoOrientation.right
+            videoOrientation = VideoOrientation.right
         case .rightMirrored:
-            videoOrientation = TVIVideoOrientation.right
+            videoOrientation = VideoOrientation.right
         case .down:
-            videoOrientation = TVIVideoOrientation.down
+            videoOrientation = VideoOrientation.down
         case .downMirrored:
-            videoOrientation = TVIVideoOrientation.down
+            videoOrientation = VideoOrientation.down
         }
 
         return videoOrientation

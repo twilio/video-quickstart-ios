@@ -3,7 +3,7 @@ source 'https://github.com/CocoaPods/Specs'
 workspace 'VideoQuickStart'
 
 abstract_target 'TwilioVideo' do
-  pod 'TwilioVideo', '~> 2.10'
+  pod 'TwilioVideo', '~> 3.0.0-beta1'
 
   target 'ARKitExample' do
     platform :ios, '11.0'
@@ -11,7 +11,7 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'AudioDeviceExample' do
-    platform :ios, '9.0'
+    platform :ios, '10.0'
     project 'AudioDeviceExample.xcproject'
   end
 
@@ -21,7 +21,7 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'VideoQuickStart' do
-    platform :ios, '9.0'
+    platform :ios, '10.0'
     project 'VideoQuickStart.xcproject'
   end
   
@@ -46,18 +46,28 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'ScreenCapturerExample' do
-    platform :ios, '9.0'
+    platform :ios, '11.0'
     project 'ScreenCapturerExample.xcproject'
   end
 
   target 'DataTrackExample' do
-    platform :ios, '9.0'
+    platform :ios, '10.0'
     project 'DataTrackExample.xcproject'
   end
 
   target 'MultiPartyExample' do
-    platform :ios, '9.0'
+    platform :ios, '10.0'
     project 'MultiPartyExample.xcproject'
+  end
+
+  target 'ObjCVideoQuickstart' do
+    platform :ios, '10.0'
+    project 'ObjCVideoQuickstart.xcproject'
+  end
+  
+  target 'AVPlayerExample' do
+    platform :ios, '10.0'
+    project 'AVPlayerExample.xcproject'
   end
 
 end

@@ -2,14 +2,14 @@
 //  ViewController.swift
 //  ReplayKitExample
 //
-//  Copyright © 2018 Twilio. All rights reserved.
+//  Copyright © 2018-2019 Twilio. All rights reserved.
 //
 
 import UIKit
 import ReplayKit
 import TwilioVideo
 
-class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegate, RPBroadcastControllerDelegate, RPScreenRecorderDelegate, TVIRoomDelegate {
+class ViewController: UIViewController {
 
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     @IBOutlet weak var broadcastButton: UIButton!
@@ -20,9 +20,9 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     @IBOutlet weak var settingsButton: UIBarButtonItem?
 
     // Conference state.
-    var screenTrack: TVILocalVideoTrack?
+    var screenTrack: LocalVideoTrack?
     var videoSource: ReplayKitVideoSource?
-    var conferenceRoom: TVIRoom?
+    var conferenceRoom: Room?
 
     // Broadcast state. Our extension will capture samples from ReplayKit, and publish them in a Room.
     var broadcastController: RPBroadcastController?
@@ -43,6 +43,10 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
     static let kDownscaleBuffers = false
+    static let kDownscaledMaxWidthOrHeight = 720
+    // Maximum bitrate (in kbps) used to send downscaled video.
+    static let kMaxDownscaledVideoBitrate = UInt(1500)
+
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -55,16 +59,20 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         broadcastButton.layer.cornerRadius = 4
         conferenceButton?.layer.cornerRadius = 4
 
-        self.navigationController?.navigationBar.barTintColor = UIColor.init(red: 226.0/255.0,
-                                                                             green: 29.0/255.0,
-                                                                             blue: 37.0/255.0,
-                                                                             alpha: 1.0)
+        self.navigationController?.navigationBar.barTintColor = UIColor(red: 226.0/255.0,
+                                                                        green: 29.0/255.0,
+                                                                        blue: 37.0/255.0,
+                                                                        alpha: 1.0)
         self.navigationController?.navigationBar.tintColor = UIColor.white
         self.navigationController?.navigationBar.barStyle = UIBarStyle.black
 
         // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
+
+        if (ViewController.kDownscaleBuffers) {
+            Settings.shared.maxVideoBitrate = 1024 * ViewController.kMaxDownscaledVideoBitrate
+        }
 
         NotificationCenter.default.addObserver(forName: UIScreen.capturedDidChangeNotification, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
             if self.broadcastPickerView != nil && self.screenTrack == nil {
@@ -171,93 +179,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         }
     }
 
-    //MARK: RPBroadcastActivityViewControllerDelegate
-    func broadcastActivityViewController(_ broadcastActivityViewController: RPBroadcastActivityViewController, didFinishWith broadcastController: RPBroadcastController?, error: Error?) {
-
-        DispatchQueue.main.async {
-            self.broadcastController = broadcastController
-            self.broadcastController?.delegate = self
-            self.conferenceButton?.isEnabled = false
-            self.infoLabel?.text = ""
-
-            broadcastActivityViewController.dismiss(animated: true) {
-                self.startBroadcast()
-            }
-        }
-    }
-
-    //MARK: RPBroadcastControllerDelegate
-    func broadcastController(_ broadcastController: RPBroadcastController, didFinishWithError error: Error?) {
-        // Update the button UI.
-        DispatchQueue.main.async {
-            self.broadcastController = nil
-            self.conferenceButton?.isEnabled = true
-            self.infoLabel?.isHidden = false
-            if let picker = self.broadcastPickerView {
-                picker.isHidden = false
-                self.broadcastButton.isHidden = false
-            } else {
-                self.broadcastButton.isEnabled = true
-            }
-            self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
-            self.spinner?.stopAnimating()
-
-            if let theError = error {
-                print("Broadcast did finish with error:", error as Any)
-                self.infoLabel?.text = theError.localizedDescription
-            } else {
-                print("Broadcast did finish.")
-            }
-        }
-    }
-
-    func broadcastController(_ broadcastController: RPBroadcastController, didUpdateServiceInfo serviceInfo: [String : NSCoding & NSObjectProtocol]) {
-        print("Broadcast did update service info: \(serviceInfo)")
-    }
-
-    func broadcastController(_ broadcastController: RPBroadcastController, didUpdateBroadcast broadcastURL: URL) {
-        print("Broadcast did update URL: \(broadcastURL)")
-    }
-
-    //MARK: TVIRoomDelegate
-    func didConnect(to room: TVIRoom) {
-        print("Connected to Room: ", room)
-    }
-
-    func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
-        stopConference(error: error)
-        print("Failed to connect with error: ", error)
-    }
-
-    func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
-        if let error = error {
-            print("Disconnected with error: ", error)
-        }
-
-        if self.screenTrack != nil {
-            stopConference(error: error)
-        } else {
-            conferenceRoom = nil
-        }
-    }
-
-    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
-        print("Reconnecting to room \(room.name), error = \(String(describing: error))")
-    }
-
-    func didReconnect(to room: TVIRoom) {
-        print("Reconnected to room \(room.name)")
-    }
-
-    //MARK: RPScreenRecorderDelegate
-    func screenRecorderDidChangeAvailability(_ screenRecorder: RPScreenRecorder) {
-        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
-        if (self.broadcastController == nil && screenTrack == nil) {
-            checkRecordingAvailability()
-        }
-    }
-
-    //MARK: Private
+    // MARK:- Private
     func checkRecordingAvailability() {
         let isScreenRecordingAvailable = RPScreenRecorder.shared().isAvailable
         broadcastButton.isHidden = !isScreenRecordingAvailable
@@ -311,7 +233,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         }
 
         if let room = conferenceRoom,
-            room.state == TVIRoomState.connected {
+            room.state == .connected {
             room.disconnect()
         } else {
             conferenceRoom = nil
@@ -336,9 +258,16 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
         // Our source produces either downscaled buffers with smoother motion, or an HD screen recording.
         videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers)
-        screenTrack = TVILocalVideoTrack(source: videoSource!,
-                                         enabled: true,
-                                         name: "Screen")
+
+        screenTrack = LocalVideoTrack(source: videoSource!,
+                                      enabled: true,
+                                      name: "Screen")
+
+        if (ViewController.kDownscaleBuffers) {
+            // Make a format request, apply it to the source.
+            let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: ViewController.kDownscaledMaxWidthOrHeight)
+            videoSource?.requestOutputFormat(outputFormat)
+        }
 
         recorder.startCapture(handler: { (sampleBuffer, type, error) in
             if error != nil {
@@ -379,7 +308,7 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                     self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
                     self.spinner.startAnimating()
                     self.infoLabel?.isHidden = true
-                    self.connectToRoom(name: "")
+                    self.connectToRoom(name: "conference")
                 }
             }
         }
@@ -398,9 +327,9 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
         }
 
         // Preparing the connect options with the access token that we fetched (or hardcoded).
-        let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
+        let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
-            builder.audioTracks = [TVILocalAudioTrack()!]
+            builder.audioTracks = [LocalAudioTrack()!]
 
             if let videoTrack = self.screenTrack {
                 builder.videoTracks = [videoTrack]
@@ -419,12 +348,110 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                 builder.encodingParameters = encodingParameters
             }
 
+            // Use the preferred signaling region
+            if let signalingRegion = Settings.shared.signalingRegion {
+                builder.region = signalingRegion
+            }
+
             if (!name.isEmpty) {
                 builder.roomName = name
             }
         }
 
         // Connect to the Room using the options we provided.
-        conferenceRoom = TwilioVideo.connect(with: connectOptions, delegate: self)
+        conferenceRoom = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
+    }
+}
+
+// MARK:- RPBroadcastActivityViewControllerDelegate
+extension ViewController: RPBroadcastActivityViewControllerDelegate {
+    func broadcastActivityViewController(_ broadcastActivityViewController: RPBroadcastActivityViewController, didFinishWith broadcastController: RPBroadcastController?, error: Error?) {
+        DispatchQueue.main.async {
+            self.broadcastController = broadcastController
+            self.broadcastController?.delegate = self
+            self.conferenceButton?.isEnabled = false
+            self.infoLabel?.text = ""
+
+            broadcastActivityViewController.dismiss(animated: true) {
+                self.startBroadcast()
+            }
+        }
+    }
+}
+
+// MARK:- RPBroadcastControllerDelegate
+extension ViewController: RPBroadcastControllerDelegate {
+    func broadcastController(_ broadcastController: RPBroadcastController, didFinishWithError error: Error?) {
+        // Update the button UI.
+        DispatchQueue.main.async {
+            self.broadcastController = nil
+            self.conferenceButton?.isEnabled = true
+            self.infoLabel?.isHidden = false
+            if let picker = self.broadcastPickerView {
+                picker.isHidden = false
+                self.broadcastButton.isHidden = false
+            } else {
+                self.broadcastButton.isEnabled = true
+            }
+            self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: .normal)
+            self.spinner?.stopAnimating()
+
+            if let theError = error {
+                print("Broadcast did finish with error:", error as Any)
+                self.infoLabel?.text = theError.localizedDescription
+            } else {
+                print("Broadcast did finish.")
+            }
+        }
+    }
+
+    func broadcastController(_ broadcastController: RPBroadcastController, didUpdateServiceInfo serviceInfo: [String : NSCoding & NSObjectProtocol]) {
+        print("Broadcast did update service info: \(serviceInfo)")
+    }
+
+    func broadcastController(_ broadcastController: RPBroadcastController, didUpdateBroadcast broadcastURL: URL) {
+        print("Broadcast did update URL: \(broadcastURL)")
+    }
+}
+
+// MARK:- RPScreenRecorderDelegate
+extension ViewController: RPScreenRecorderDelegate {
+    func screenRecorderDidChangeAvailability(_ screenRecorder: RPScreenRecorder) {
+        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
+        if (self.broadcastController == nil && screenTrack == nil) {
+            checkRecordingAvailability()
+        }
+    }
+}
+
+// MARK:- RoomDelegate
+extension ViewController: RoomDelegate {
+    func roomDidConnect(room: Room) {
+        print("Connected to Room: ", room)
+    }
+
+    func roomDidFailToConnect(room: Room, error: Error) {
+        stopConference(error: error)
+        print("Failed to connect with error: ", error)
+    }
+
+    func roomDidDisconnect(room: Room, error: Error?) {
+        if let error = error {
+            print("Disconnected with error: ", error)
+        }
+
+        if self.screenTrack != nil {
+            stopConference(error: error)
+        } else {
+            conferenceRoom = nil
+        }
+    }
+
+    func roomIsReconnecting(room: Room, error: Error) {
+        print("Reconnecting to room \(room.name), error = \(String(describing: error))")
+    }
+
+    func roomDidReconnect(room: Room) {
+        print("Reconnected to room \(room.name)")
     }
 }

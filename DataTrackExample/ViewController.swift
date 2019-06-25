@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  DataTrackExample
 //
-//  Copyright © 2017 Twilio. All rights reserved.
+//  Copyright © 2017-2019 Twilio. All rights reserved.
 //
 
 import UIKit
@@ -24,7 +24,7 @@ class Drawer : NSObject {
 
 class ViewController: UIViewController {
     
-    // MARK: View Controller Members
+    // MARK:- View Controller Members
     
     // Configure access token manually for testing, if desired! Create one manually in the console
     // at https://www.twilio.com/console/video/runtime/testing-tools
@@ -41,17 +41,17 @@ class ViewController: UIViewController {
     let kYCoordinate = "y";
     
     // Video SDK components
-    var room: TVIRoom?
-    var localDataTrack: TVILocalDataTrack!
-    var localParticipant: TVILocalParticipant?
+    var room: Room?
+    var localDataTrack: LocalDataTrack!
+    var localParticipant: LocalParticipant?
     
     // Private members
-    var drawers = Dictionary<TVIDataTrack, Drawer>()
+    var drawers = Dictionary<DataTrack, Drawer>()
     
     // By default app sends `Data`. Flip this flag to send json String instead.
     let useSendStringAPI = false
     
-    // MARK: UI Element Outlets and handles
+    // MARK:- UI Element Outlets and handles
     
     @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var disconnectButton: UIButton!
@@ -68,7 +68,7 @@ class ViewController: UIViewController {
         self.roomTextField.delegate = self
     }
 
-    // MARK: IBActions
+    // MARK:- IBActions
     @IBAction func connect(sender: AnyObject) {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
@@ -82,15 +82,15 @@ class ViewController: UIViewController {
             }
         }
 
-        let dataTrackOptions = TVIDataTrackOptions.init { (builder) in
+        let dataTrackOptions = DataTrackOptions() { (builder) in
             builder.isOrdered = true
             builder.name = "Draw"
         }
         
-        self.localDataTrack = TVILocalDataTrack.init(options: dataTrackOptions)
+        self.localDataTrack = LocalDataTrack(options: dataTrackOptions)
         
         // Preparing the connect options with the access token that we fetched (or hardcoded).
-        let connectOptions = TVIConnectOptions.init(token: accessToken) { (builder) in
+        let connectOptions = ConnectOptions(token: accessToken) { (builder) in
             
             builder.dataTracks = [self.localDataTrack]
 
@@ -100,7 +100,7 @@ class ViewController: UIViewController {
         }
 
         // Connect to the Room using the options we provided.
-        room = TwilioVideo.connect(with: connectOptions, delegate: self)
+        room = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
 
         logMessage(messageText: "Attempting to connect to room \(String(describing: self.roomTextField.text))")
 
@@ -221,12 +221,12 @@ class ViewController: UIViewController {
         }
     }
     
-    func addDrawer(_ key: TVIDataTrack, color: CGColor) {
+    func addDrawer(_ key: DataTrack, color: CGColor) {
         let drawer = Drawer(color)
         drawers[key] = drawer
     }
     
-    func removeDrawer(_ key: TVIDataTrack) {
+    func removeDrawer(_ key: DataTrack) {
         if let drawer = drawers[key] {
             drawer.shapeLayer.removeFromSuperlayer()
             drawers.removeValue(forKey: key)
@@ -234,7 +234,7 @@ class ViewController: UIViewController {
     }
 }
 
-// MARK: UITextFieldDelegate
+// MARK:- UITextFieldDelegate
 extension ViewController : UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.connect(sender: textField)
@@ -242,10 +242,9 @@ extension ViewController : UITextFieldDelegate {
     }
 }
 
-// MARK: TVIRoomDelegate
-extension ViewController : TVIRoomDelegate {
-    func didConnect(to room: TVIRoom) {
-        
+// MARK:- RoomDelegate
+extension ViewController : RoomDelegate {
+    func roomDidConnect(room: Room) {
         self.localParticipant = room.localParticipant!
         self.addDrawer(self.localDataTrack, color: UIColor.black.cgColor)
         
@@ -256,7 +255,7 @@ extension ViewController : TVIRoomDelegate {
         logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
     }
     
-    func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
+    func roomDidDisconnect(room: Room, error: Error?) {
         logMessage(messageText: "Disconnected from room \(room.name), error = \(String(describing: error))")
         
         for (_, drawer) in self.drawers {
@@ -269,54 +268,47 @@ extension ViewController : TVIRoomDelegate {
         self.showRoomUI(inRoom: false)
     }
     
-    func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
+    func roomDidFailToConnect(room: Room, error: Error) {
         logMessage(messageText: "Failed to connect to room with error: \(error.localizedDescription)")
         self.room = nil
         
         self.showRoomUI(inRoom: false)
     }
 
-    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
+    func roomIsReconnecting(room: Room, error: Error) {
         logMessage(messageText: "Reconnecting to room \(room.name), error = \(String(describing: error))")
     }
 
-    func didReconnect(to room: TVIRoom) {
+    func roomDidReconnect(room: Room) {
         logMessage(messageText: "Reconnected to room \(room.name)")
     }
-    
-    func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
+
+    func participantDidConnect(room: Room, participant: RemoteParticipant) {
         participant.delegate = self
         
         logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteDataTracks.count) data, \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
     }
     
-    func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
+    func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
         logMessage(messageText: "Room \(room.name), Participant \(participant.identity) disconnected")
     }
 }
 
-// MARK: TVIParticipantDelegate
-extension ViewController : TVIRemoteParticipantDelegate {
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           publishedDataTrack publication: TVIRemoteDataTrackPublication) {
-        
+// MARK:- RemoteParticipantDelegate
+extension ViewController : RemoteParticipantDelegate {
+    func remoteParticipantDidPublishDataTrack(participant: RemoteParticipant, publication: RemoteDataTrackPublication) {
         // Remote Participant has offered to share the data Track.
         
         logMessage(messageText: "Participant \(participant.identity) published data track")
     }
-    
-    func remoteParticipant(_ participant: TVIRemoteParticipant,
-                           unpublishedDataTrack publication: TVIRemoteDataTrackPublication) {
-        
+
+    func remoteParticipantDidUnpublishDataTrack(participant: RemoteParticipant, publication: RemoteDataTrackPublication) {
         // Remote Participant has stopped sharing the data Track.
         
         logMessage(messageText: "Participant \(participant.identity) unpublished data track")
     }
-    
-    func subscribed(to dataTrack: TVIRemoteDataTrack,
-                    publication: TVIRemoteDataTrackPublication,
-                    for participant: TVIRemoteParticipant) {
-        
+
+    func didSubscribeToDataTrack(dataTrack: RemoteDataTrack, publication: RemoteDataTrackPublication, participant: RemoteParticipant) {
         // We are subscribed to the remote Participant's data Track. We will start receiving the
         // remote Participant's data messages now.
         
@@ -326,10 +318,7 @@ extension ViewController : TVIRemoteParticipantDelegate {
         logMessage(messageText: "Subscribed to data track for Participant \(participant.identity)")
     }
     
-    func unsubscribed(from dataTrack: TVIRemoteDataTrack,
-                      publication: TVIRemoteDataTrackPublication,
-                      for participant: TVIRemoteParticipant) {
-        
+    func didUnsubscribeFromDataTrack(dataTrack: RemoteDataTrack, publication: RemoteDataTrackPublication, participant: RemoteParticipant) {
         // We are unsubscribed from the remote Participant's data Track. We will no longer receive the
         // remote Participant's data messages.
         
@@ -337,16 +326,14 @@ extension ViewController : TVIRemoteParticipantDelegate {
         logMessage(messageText: "Unsubscribed from data track for Participant \(participant.identity)")
     }
 
-    func failedToSubscribe(toDataTrack publication: TVIRemoteDataTrackPublication,
-                           error: Error,
-                           for participant: TVIRemoteParticipant) {
+    func didFailToSubscribeToDataTrack(publication: RemoteDataTrackPublication, error: Error, participant: RemoteParticipant) {
         logMessage(messageText: "FailedToSubscribe \(publication.trackName) data track, error = \(String(describing: error))")
     }
 }
 
-// MARK: TVIRemoteDataTrackDelegate
-extension ViewController : TVIRemoteDataTrackDelegate {
-    func remoteDataTrack(_ remoteDataTrack: TVIRemoteDataTrack, didReceive message: String) {
+// MARK:- RemoteDataTrackDelegate
+extension ViewController : RemoteDataTrackDelegate {
+    func remoteDataTrackDidReceiveString(remoteDataTrack: RemoteDataTrack, message: String) {
         NSLog("remoteDataTrack:didReceiveString: \(message)" )
         
         if let data = message.data(using: .utf8) {
@@ -354,12 +341,12 @@ extension ViewController : TVIRemoteDataTrackDelegate {
         }
     }
     
-    func remoteDataTrack(_ remoteDataTrack: TVIRemoteDataTrack, didReceive message: Data) {
+    func remoteDataTrackDidReceiveData(remoteDataTrack: RemoteDataTrack, message: Data) {
         NSLog("remoteDataTrack:didReceiveData: \(message)" )
         processJsonData(remoteDataTrack, message: message)
     }
     
-    func processJsonData(_ remoteDataTrack: TVIRemoteDataTrack, message: Data) {
+    func processJsonData(_ remoteDataTrack: RemoteDataTrack, message: Data) {
         do {
             var success = false
             if let jsonDictionary = try JSONSerialization.jsonObject(with: message, options: []) as? [String: AnyObject] {
@@ -393,4 +380,3 @@ extension ViewController : TVIRemoteDataTrackDelegate {
         }
     }
 }
-

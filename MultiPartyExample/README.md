@@ -28,13 +28,13 @@ Displays a single `TVIRemoteParticipant`, with up to one `TVIRemoteVideoTrack` a
 
 ### Setup
 
-See the master [README](https://github.com/twilio/video-quickstart-swift/blob/master/README.md) for instructions on how to generate access tokens that are needed to connect to a Room.
+See the master [README](https://github.com/twilio/video-quickstart-ios/blob/master/README.md) for instructions on how to generate access tokens that are needed to connect to a Room.
 
 You will need to provide a hardcoded token, or token server URL in [MainViewController.swift](MultiPartyExample/MainViewController.swift). Please note that this example is designed to work in a Group Room, including the usage of [VP8 Simulcast](https://www.twilio.com/docs/video/tutorials/working-with-vp8-simulcast), [Dominant Speaker](https://www.twilio.com/docs/video/detecting-dominant-speaker) and [Network Quality](https://www.twilio.com/docs/video/using-network-quality-api) events. You can create Group Rooms using the [REST API](https://www.twilio.com/docs/video/api/rooms-resource), or by selecting them as the default type in the [console](https://www.twilio.com/console/video/configure).
 
 <kbd><img src="../images/quickstart/console-room-topology-group.png"/></kbd>
 
-This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device or simulator running iOS 9.0 or above. Sharing video from the camera is not supported on an iOS simulator.
+This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device or simulator running iOS 10.0 or above. Sharing video from the camera is not supported on an iOS simulator.
 
 ### Running
 

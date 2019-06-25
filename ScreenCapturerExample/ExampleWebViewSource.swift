@@ -14,7 +14,7 @@ class ExampleWebViewSource: NSObject {
 
     // TVIVideoSource
     public var isScreencast: Bool = true
-    public weak var sink: TVIVideoSink? = nil
+    public weak var sink: VideoSink? = nil
 
     // Private variables
     weak var view: WKWebView?
@@ -107,7 +107,7 @@ class ExampleWebViewSource: NSObject {
         webView.takeSnapshot(with:configuration, completionHandler: { (image, error) in
             if let deliverableImage = image {
                 self.deliverCapturedImage(image: deliverableImage,
-                                          orientation: TVIVideoOrientation.up,
+                                          orientation: VideoOrientation.up,
                                           timestamp: timer.timestamp)
             } else if let theError = error {
                 print("Snapshot error:", theError as Any)
@@ -116,7 +116,7 @@ class ExampleWebViewSource: NSObject {
     }
 
     private func deliverCapturedImage(image: UIImage,
-                                      orientation: TVIVideoOrientation,
+                                      orientation: VideoOrientation,
                                       timestamp: CFTimeInterval) {
         /*
          * Make a (deep) copy of the UIImage's underlying data. We do this by getting the CGImage, and its CGDataProvider.
@@ -136,7 +136,7 @@ class ExampleWebViewSource: NSObject {
          * Also, the CVPixelBuffer constructor will only accept a mutable pointer.
          */
         let mutableBaseAddress = UnsafeMutablePointer<UInt8>(mutating: baseAddress)
-        var pixelFormat = TVIPixelFormat.format32BGRA
+        var pixelFormat = PixelFormat.format32BGRA
 
         var imageBuffer = vImage_Buffer(data: mutableBaseAddress,
                                         height: vImagePixelCount(cgImage.height),
@@ -154,7 +154,7 @@ class ExampleWebViewSource: NSObject {
         case .byteOrder32Big:
             // Never encountered with snapshots on iOS, but maybe on macOS?
             assert(alphaInfo == .premultipliedFirst || alphaInfo == .noneSkipFirst)
-            pixelFormat = TVIPixelFormat.format32ARGB
+            pixelFormat = PixelFormat.format32ARGB
         case .byteOrder16Little:
             assert(false)
         case .byteOrder16Big:
@@ -198,9 +198,9 @@ class ExampleWebViewSource: NSObject {
 
         if let buffer = pixelBuffer {
             // Deliver a frame to the consumer.
-            let frame = TVIVideoFrame(timeInterval: timestamp,
-                                      buffer: buffer,
-                                      orientation: orientation)
+            let frame = VideoFrame(timeInterval: timestamp,
+                                   buffer: buffer,
+                                   orientation: orientation)
 
             // The consumer retains the CVPixelBuffer and will own it as the buffer flows through the video pipeline.
             self.sink?.onVideoFrame(frame!)
@@ -211,8 +211,8 @@ class ExampleWebViewSource: NSObject {
 }
 
 @available(iOS 11.0, *)
-extension ExampleWebViewSource: TVIVideoSource {
-    func requestOutputFormat(_ outputFormat: TVIVideoFormat) {
+extension ExampleWebViewSource: VideoSource {
+    func requestOutputFormat(_ outputFormat: VideoFormat) {
         /*
          * This class doesn't explicitly support different scaling factors or frame rates.
          * That being said, we won't disallow cropping and/or scaling if its absolutely needed.

@@ -2,7 +2,7 @@
 //  ExampleAVAudioEngineDevice.m
 //  AudioDeviceExample
 //
-//  Copyright © 2018 Twilio, Inc. All rights reserved.
+//  Copyright © 2018-2019 Twilio, Inc. All rights reserved.
 //
 
 #import "ExampleAVAudioEngineDevice.h"
@@ -508,9 +508,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
             return NO;
         }
         BOOL success = [self startAudioUnit];
-        if (success) {
-            TVIAudioSessionActivated(context);
-        }
         return success;
     }
 }
@@ -531,7 +528,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
             });
 
             [self stopAudioUnit];
-            TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
             [self teardownAudioUnit];
         }
 
@@ -606,9 +602,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
         }
 
         BOOL success = [self startAudioUnit];
-        if (success) {
-            TVIAudioSessionActivated(context);
-        }
         return success;
     }
 }
@@ -629,7 +622,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
             });
 
             [self stopAudioUnit];
-            TVIAudioSessionDeactivated(self.capturingContext->deviceContext);
             [self teardownAudioUnit];
         }
 
@@ -983,13 +975,10 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                     NSLog(@"Interruption began.");
                     self.interrupted = YES;
                     [self stopAudioUnit];
-                    TVIAudioSessionDeactivated(context);
                 } else {
                     NSLog(@"Interruption ended.");
                     self.interrupted = NO;
-                    if ([self startAudioUnit]) {
-                        TVIAudioSessionActivated(context);
-                    }
+                    [self startAudioUnit];
                 }
             });
         }
@@ -1005,9 +994,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                 if (self.isInterrupted) {
                     NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
                     self.interrupted = NO;
-                    if ([self startAudioUnit]) {
-                        TVIAudioSessionActivated(context);
-                    }
+                    [self startAudioUnit];
                 }
             });
         }
@@ -1096,7 +1083,6 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
         if (context) {
             TVIAudioDeviceExecuteWorkerBlock(context, ^{
                 [self teardownAudioUnit];
-                TVIAudioSessionDeactivated(context);
             });
         }
     }
@@ -1110,9 +1096,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
         TVIAudioDeviceContext context = [self deviceContext];
         if (context) {
             TVIAudioDeviceExecuteWorkerBlock(context, ^{
-                if ([self startAudioUnit]) {
-                    TVIAudioSessionActivated(context);
-                }
+                [self startAudioUnit];
             });
         }
     }

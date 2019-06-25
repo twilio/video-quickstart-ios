@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  ReplayKitExample
 //
-//  Copyright © 2018 Twilio. All rights reserved.
+//  Copyright © 2018-2019 Twilio. All rights reserved.
 //
 
 import UIKit
