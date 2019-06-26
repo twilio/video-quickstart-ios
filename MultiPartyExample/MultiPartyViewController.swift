@@ -36,7 +36,7 @@ class MultiPartyViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        logMessage(messageText: "TwilioVideo v(\(TwilioVideoSDK.version()))")
+        logMessage(messageText: "TwilioVideo v(\(TwilioVideoSDK.sdkVersion()))")
 
         title = roomName
         navigationItem.setHidesBackButton(true, animated: false)

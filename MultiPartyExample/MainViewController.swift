@@ -54,7 +54,7 @@ class MainViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         roomTextField?.text = ""
-        logMessage(messageText: "Twilio Video v\(TwilioVideoSDK.version())")
+        logMessage(messageText: "Twilio Video v\(TwilioVideoSDK.sdkVersion())")
     }
 
     @objc func dismissKeyboard() {
