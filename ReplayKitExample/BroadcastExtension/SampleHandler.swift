@@ -19,7 +19,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     var disconnectSemaphore: DispatchSemaphore?
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
-    let accessTokenUrl = "http://127.0.0.1:5000/"
+    let tokenUrl = "http://127.0.0.1:5000/"
 
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
@@ -39,7 +39,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
             do {
-                accessToken = try TokenUtils.fetchToken(url: self.accessTokenUrl)
+                accessToken = try TokenUtils.fetchToken(url: self.tokenUrl)
             } catch {
                 let message = "Failed to fetch access token."
                 print(message)
