@@ -28,7 +28,7 @@ class ViewController: UIViewController {
     var broadcastController: RPBroadcastController?
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
-    let accessTokenUrl = "http://127.0.0.1:5000/"
+    let tokenUrl = "http://127.0.0.1:5000/"
 
     static let kBroadcastExtensionBundleId = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
     static let kBroadcastExtensionSetupUiBundleId = "com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI"
@@ -319,7 +319,7 @@ class ViewController: UIViewController {
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
             do {
-                accessToken = try TokenUtils.fetchToken(url: accessTokenUrl)
+                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
             } catch {
                 stopConference(error: error)
                 return
