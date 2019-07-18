@@ -65,20 +65,21 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         }
     }
 
-    static func formatRequestToDownscale(maxWidthOrHeight: Int) -> VideoFormat {
+    static func formatRequestToDownscale(maxWidthOrHeight: UInt, maxFrameRate: UInt) -> VideoFormat {
         let outputFormat = VideoFormat()
 
         var screenSize = UIScreen.main.bounds.size
         screenSize.width *= UIScreen.main.nativeScale
         screenSize.height *= UIScreen.main.nativeScale
 
-        let downscaledTarget = CGSize(width: maxWidthOrHeight,
-                                      height: maxWidthOrHeight)
+        let downscaledTarget = CGSize(width: Int(maxWidthOrHeight),
+                                      height: Int(maxWidthOrHeight))
         let fitRect = AVMakeRect(aspectRatio: screenSize,
                                  insideRect: CGRect(origin: CGPoint.zero, size: downscaledTarget)).integral
         let outputSize = fitRect.size
 
         outputFormat.dimensions = CMVideoDimensions(width: Int32(outputSize.width), height: Int32(outputSize.height))
+        outputFormat.frameRate = maxFrameRate
         return outputFormat;
     }
 

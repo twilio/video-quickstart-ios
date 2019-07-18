@@ -43,10 +43,13 @@ class ViewController: UIViewController {
 
     // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
     static let kDownscaleBuffers = false
-    static let kDownscaledMaxWidthOrHeight = 720
+    static let kDownscaledMaxWidthOrHeight = UInt(720)
+
     // Maximum bitrate (in kbps) used to send downscaled video.
     static let kMaxDownscaledVideoBitrate = UInt(1500)
 
+    // Maximum frame rate to send video at.
+    static let kMaxDownscaledVideoFrameRate = UInt(30)
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -265,7 +268,8 @@ class ViewController: UIViewController {
 
         if (ViewController.kDownscaleBuffers) {
             // Make a format request, apply it to the source.
-            let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: ViewController.kDownscaledMaxWidthOrHeight)
+            let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: ViewController.kDownscaledMaxWidthOrHeight,
+                                                                             maxFrameRate: ViewController.kMaxDownscaledVideoFrameRate)
             videoSource?.requestOutputFormat(outputFormat)
         }
 

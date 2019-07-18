@@ -24,10 +24,13 @@ class SampleHandler: RPBroadcastSampleHandler {
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
     // In order to save memory, we request that our source downscale its output.
-    static let kDownScaledMaxWidthOrHeight = 720
+    static let kDownScaledMaxWidthOrHeight = UInt(720)
 
     // Maximum bitrate (in kbps) used to send video.
     static let kMaxVideoBitrate = UInt(1400)
+
+    // Maximum frame rate to send video at.
+    static let kMaxVideoFrameRate = UInt(30)
 
     // Which kind of audio samples we will capture. The example does not mix multiple types of samples together.
     static let kAudioSampleType = RPSampleBufferType.audioMic
@@ -47,7 +50,8 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
 
         // This source will attempt to produce smaller buffers with fluid motion.
-        let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: SampleHandler.kDownScaledMaxWidthOrHeight)
+        let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: SampleHandler.kDownScaledMaxWidthOrHeight,
+                                                                         maxFrameRate: SampleHandler.kMaxVideoFrameRate)
 
         videoSource = ReplayKitVideoSource(isScreencast: false)
         screenTrack = LocalVideoTrack(source: videoSource!,
