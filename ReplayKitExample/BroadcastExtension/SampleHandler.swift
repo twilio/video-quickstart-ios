@@ -30,7 +30,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     static let kMaxVideoBitrate = UInt(1400)
 
     // Maximum frame rate to send video at.
-    static let kMaxVideoFrameRate = UInt(30)
+    static let kMaxVideoFrameRate = UInt(15)
 
     // Which kind of audio samples we will capture. The example does not mix multiple types of samples together.
     static let kAudioSampleType = RPSampleBufferType.audioMic
