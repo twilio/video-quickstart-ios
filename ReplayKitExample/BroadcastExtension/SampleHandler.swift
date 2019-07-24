@@ -26,9 +26,11 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     // In order to save memory, the handler requests that the source downscale its output.
     static let kDownScaledMaxWidthOrHeight = UInt(720)
+    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(1280)
 
     // Maximum bitrate (in kbps) used to send video.
-    static let kMaxVideoBitrate = UInt(1400)
+    static let kMaxVideoBitrate = UInt(1420)
+    static let kMaxVideoBitrateSimulcast = UInt(3000)
 
     // Maximum frame rate to send video at.
     static let kMaxVideoFrameRate = UInt(15)
