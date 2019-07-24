@@ -154,7 +154,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             recentInputFrameDeltas.append(delta)
 
             var total = CMTime.zero
-            for var dataPoint in recentInputFrameDeltas {
+            for dataPoint in recentInputFrameDeltas {
                 total = CMTimeAdd(total, dataPoint)
             }
             let averageInput = Int32(round(Double(recentInputFrameDeltas.count) / total.seconds))
@@ -263,7 +263,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         let width = CVPixelBufferGetWidthOfPlane(firstPixelBuffer, planeIndex)
         let height = CVPixelBufferGetHeightOfPlane(firstPixelBuffer, planeIndex)
 
-        for var row in 0...height {
+        for row in 0...height {
             let rowOffset = row * CVPixelBufferGetBytesPerRowOfPlane(firstPixelBuffer, planeIndex)
             if memcmp(baseAddress1.advanced(by: rowOffset), baseAddress2.advanced(by: rowOffset), width) != 0 {
                 return false
@@ -299,7 +299,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             recentDeliveredFrameDeltas.append(delta)
 
             var total = CMTime.zero
-            for var dataPoint in recentDeliveredFrameDeltas {
+            for dataPoint in recentDeliveredFrameDeltas {
                 total = CMTimeAdd(total, dataPoint)
             }
             averageDelivered = UInt32(round(Double(recentDeliveredFrameDeltas.count) / total.seconds))
