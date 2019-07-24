@@ -61,7 +61,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
      * that your most recent frame eventually reaches subscribers, and that the publisher has a reasonable bandwidth estimate
      * for the next time a new frame is captured.
      */
-    static let retransmitLastFrame = false
+    static let retransmitLastFrame = true
     static let kFrameRetransmitIntervalMs = Int(250)
     static let kFrameRetransmitTimeInterval = CMTime(value: CMTimeValue(kFrameRetransmitIntervalMs),
                                                      timescale: CMTimeScale(1000))
