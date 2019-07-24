@@ -22,6 +22,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
      *  2. Video content: Attempt to match the natural video cadence between kMinSyncFrameRate <= fps <= kMaxSyncFrameRate.
      *  3. Video content (24/25 in 30 (in 60)): Some apps perform a telecine by drawing to the screen using more vsyncs than are needed.
      *     When this occurs, ReplayKit generates duplicate frames, decimating the content further to 30 Hz.
+     *     Duplicate video frames reduce encoder performance, increase cpu usage and lower the quality of the video stream.
+     *     When the source detects telecined content, it attempts an inverse telecine to restore the natural cadence.
      */
     static let kMaxSyncFrameRate = 26
     static let kMinSyncFrameRate = 20
@@ -250,7 +252,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             CVPixelBufferUnlockBaseAddress(secondPixelBuffer, .readOnly)
         }
 
-        // For performance reasons, only the chroma plane is compared.
+        // Only the chroma plane is compared.
         let planeIndex = 1
         guard let baseAddress1 = CVPixelBufferGetBaseAddressOfPlane(firstPixelBuffer, planeIndex) else {
             return false
