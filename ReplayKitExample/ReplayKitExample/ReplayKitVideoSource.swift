@@ -25,7 +25,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     static let kFrameHistorySize = 20
     // The minimum average frame rate where IVTC is attempted.
     static let kInverseTelecineInputFrameRate = 28
-    static let kInverseTelecineMinimumFrameRate = 24
+    static let kInverseTelecineMinimumFrameRate = 23
     var didTelecineLastFrame = false
 
     static let kFormatFrameRate = UIScreen.main.maximumFramesPerSecond
