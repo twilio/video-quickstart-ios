@@ -23,7 +23,7 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
-    // In order to save memory, we request that our source downscale its output.
+    // In order to save memory, the handler requests that the source downscale its output.
     static let kDownScaledMaxWidthOrHeight = UInt(720)
 
     // Maximum bitrate (in kbps) used to send video.

@@ -15,25 +15,40 @@ import TwilioVideo
 class ReplayKitVideoSource: NSObject, VideoSource {
 
     /*
-     * Streaming video content at 30 fps or lower is ideal. ReplayKit may produce buffers at up to 120 Hz on an iPad Pro.
-     * This logic attempts to drop frames based upon timestamps. However, the approach is not ideal because timestamps
-     * from ReplayKit do not seem to represent exact vSyncs that are measurable 1/60 second or 1/120 second increments.
-     * For now we've increased the constant so that we will not drop frames (except for repeats) on an iPhone.
+     * Streaming video content at 30 fps or lower is ideal, especially in variable network conditions.
+     * In order to improve quality of screen sharing, these constant optimize for a specific use case.
+     *  1. App content: Stream at 15 fps to ensure fine details (spatial resolution) are maintained.
+     *  2. Video content: Attempt to match native cadence from kMinSyncFrameRate <= fps <= kMaxSyncFrameRate.
      */
-    static let kDesiredFrameRate = 120
+    static let kMaxSyncFrameRate = 26
+    static let kMinSyncFrameRate = 20
+    static let kFrameHistorySize = 20
+    // The minimum average frame rate where IVTC is attempted.
+    static let kInverseTelecineInputFrameRate = 28
+    static let kInverseTelecineMinimumFrameRate = 24
+    var didTelecineLastFrame = false
 
     static let kFormatFrameRate = UIScreen.main.maximumFramesPerSecond
 
     var screencastUsage: Bool = false
     weak var sink: VideoSink?
     var videoFormat: VideoFormat?
+    var frameSync: Bool = false
 
-    var lastTimestamp: CMTime?
+    var averageDelivered = UInt32(0)
+
+    var lastDeliveredTimestamp: CMTime?
+    var recentDeliveredFrameDeltas: [CMTime] = []
+    var lastInputTimestamp: CMTime?
+    var recentInputFrameDeltas: [CMTime] = []
     var videoQueue: DispatchQueue?
     var timerSource: DispatchSourceTimer?
     var lastTransmitTimestamp: CMTime?
     private var lastFrameStorage: VideoFrame?
-
+    // ReplayKit reuses the underlying CVPixelBuffer if you release the CMSampleBuffer back to their pool.
+    // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
+    private var lastSampleBuffer: CMSampleBuffer?
+    private var lastSampleBuffer2: CMSampleBuffer?
     /*
      * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
      * that your most recent frame eventually reaches subscribers, and that the publisher has a reasonable bandwidth estimate
@@ -89,6 +104,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             captureQueue.sync {
                 self.timerSource?.cancel()
                 self.timerSource = nil
+                self.lastSampleBuffer = nil
+                self.lastSampleBuffer2 = nil
             }
         }
     }
@@ -114,15 +131,62 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             videoQueue = ExampleCoreAudioDeviceGetCurrentQueue()
         }
 
-        // Frame dropping logic.
-        if let lastTimestamp = lastTimestamp {
-            let currentTimestmap = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-            let delta = CMTimeSubtract(currentTimestmap, lastTimestamp).seconds
-            let threshold = Double(1.0 / Double(ReplayKitVideoSource.kDesiredFrameRate))
+        // Frame dropping & inverse telecine (IVTC) logic.
+        let lastTimestamp = lastInputTimestamp
+        let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+        lastInputTimestamp = currentTimestamp
 
-            if (delta < threshold) {
-                print("Dropping frame with delta. ", delta as Any)
-                return
+        if let lastTimestamp = lastTimestamp {
+            let delta = CMTimeSubtract(currentTimestamp, lastTimestamp)
+
+            // Update input stats.
+            if recentInputFrameDeltas.count == ReplayKitVideoSource.kFrameHistorySize {
+                recentInputFrameDeltas.removeFirst()
+            }
+            recentInputFrameDeltas.append(delta)
+
+            var total = CMTime.zero
+            for var dataPoint in recentInputFrameDeltas {
+                total = CMTimeAdd(total, dataPoint)
+            }
+            let averageInput = Int32(round(Double(recentInputFrameDeltas.count) / total.seconds))
+
+            let deltaSeconds = delta.seconds
+            if frameSync == false,
+                averageDelivered >= ReplayKitVideoSource.kMinSyncFrameRate,
+                averageDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate {
+                frameSync = true
+
+                if let format = videoFormat {
+                    format.frameRate = UInt(ReplayKitVideoSource.kMaxSyncFrameRate)
+                    requestOutputFormat(format)
+                }
+
+                print("Frame sync detected at rate: \(averageDelivered)")
+            } else if frameSync,
+                averageDelivered < ReplayKitVideoSource.kMinSyncFrameRate || averageDelivered > ReplayKitVideoSource.kMaxSyncFrameRate {
+                frameSync = false
+
+                if let format = videoFormat {
+                    format.frameRate = UInt(15)
+                    requestOutputFormat(format)
+                }
+
+                print("Frame sync stopped at rate: \(averageDelivered)")
+            } else if averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
+                averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
+                if let lastSample = lastSampleBuffer,
+                    didTelecineLastFrame == false,
+                    ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+                    didTelecineLastFrame = true
+                    print("Dropping frame due to IVTC.")
+                    return
+                } else if didTelecineLastFrame {
+                    didTelecineLastFrame = false
+                    print("After telecine: \(deltaSeconds) Delivered: \(averageDelivered)")
+                }
+            } else {
+                print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered: \(averageDelivered)")
             }
         }
 
@@ -146,6 +210,54 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                      buffer: sourcePixelBuffer,
                      orientation: videoOrientation,
                      forceReschedule: false)
+
+        // Hold on to the previous sample buffer to prevent tearing.
+        lastSampleBuffer2 = lastSampleBuffer
+        lastSampleBuffer = sampleBuffer
+    }
+
+    static func compareSamples(first: CMSampleBuffer, second: CMSampleBuffer) -> Bool {
+        guard let firstPixelBuffer = CMSampleBufferGetImageBuffer(first) else {
+            return false
+        }
+        guard let secondPixelBuffer = CMSampleBufferGetImageBuffer(second) else {
+            return false
+        }
+
+        // Assumption: Only NV12 is supported.
+        guard CVPixelBufferGetWidth(firstPixelBuffer) == CVPixelBufferGetWidth(secondPixelBuffer) else {
+            return false
+        }
+        guard CVPixelBufferGetHeight(firstPixelBuffer) == CVPixelBufferGetHeight(secondPixelBuffer) else {
+            return false
+        }
+
+        CVPixelBufferLockBaseAddress(firstPixelBuffer, .readOnly)
+        CVPixelBufferLockBaseAddress(secondPixelBuffer, .readOnly)
+        defer {
+            CVPixelBufferUnlockBaseAddress(firstPixelBuffer, .readOnly)
+            CVPixelBufferUnlockBaseAddress(secondPixelBuffer, .readOnly)
+        }
+
+        // For performance reasons, only the chroma plane is compared.
+        let planeIndex = 1
+        guard let baseAddress1 = CVPixelBufferGetBaseAddressOfPlane(firstPixelBuffer, planeIndex) else {
+            return false
+        }
+        guard let baseAddress2 = CVPixelBufferGetBaseAddressOfPlane(secondPixelBuffer, planeIndex) else {
+            return false
+        }
+        let width = CVPixelBufferGetWidthOfPlane(firstPixelBuffer, planeIndex)
+        let height = CVPixelBufferGetHeightOfPlane(firstPixelBuffer, planeIndex)
+
+        for var row in 0...height {
+            let rowOffset = row * CVPixelBufferGetBytesPerRowOfPlane(firstPixelBuffer, planeIndex)
+            if memcmp(baseAddress1.advanced(by: rowOffset), baseAddress2.advanced(by: rowOffset), width) != 0 {
+                return false
+            }
+        }
+
+        return true
     }
 
     func deliverFrame(to: VideoSink, timestamp: CMTime, buffer: CVPixelBuffer, orientation: VideoOrientation, forceReschedule: Bool) {
@@ -156,7 +268,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                                         return
         }
         to.onVideoFrame(frame)
-        lastTimestamp = timestamp
 
         // Frame retransmission logic.
         if (ReplayKitVideoSource.retransmitLastFrame) {
@@ -164,6 +275,24 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             lastTransmitTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
             dispatchRetransmissions(forceReschedule: forceReschedule)
         }
+
+        // Update stats
+        if let lastTimestamp = lastDeliveredTimestamp {
+            let delta = CMTimeSubtract(timestamp, lastTimestamp)
+
+            if recentDeliveredFrameDeltas.count == ReplayKitVideoSource.kFrameHistorySize {
+                recentDeliveredFrameDeltas.removeFirst()
+            }
+            recentDeliveredFrameDeltas.append(delta)
+
+            var total = CMTime.zero
+            for var dataPoint in recentDeliveredFrameDeltas {
+                total = CMTimeAdd(total, dataPoint)
+            }
+            averageDelivered = UInt32(round(Double(recentDeliveredFrameDeltas.count) / total.seconds))
+        }
+
+        lastDeliveredTimestamp = timestamp
     }
 
     func dispatchRetransmissions(forceReschedule: Bool) {
