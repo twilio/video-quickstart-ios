@@ -21,6 +21,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
     let tokenUrl = "http://127.0.0.1:5000/"
 
+    var statsTimer: Timer?
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
     // In order to save memory, the handler requests that the source downscale its output.
@@ -152,6 +153,22 @@ extension SampleHandler : RoomDelegate {
         print("didConnectToRoom: ", room)
 
         disconnectSemaphore = DispatchSemaphore(value: 0)
+
+        #if DEBUG
+        statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
+            room.getStats({ (reports: [StatsReport]) in
+                for report in reports {
+                    let videoStats = report.localVideoTrackStats.first!
+                    print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
+                    print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
+                }
+            })
+        })
+
+        if let theTimer = statsTimer {
+            RunLoop.main.add(theTimer, forMode: .common)
+        }
+        #endif
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {
@@ -160,6 +177,7 @@ extension SampleHandler : RoomDelegate {
     }
 
     func roomDidDisconnect(room: Room, error: Error?) {
+        statsTimer?.invalidate()
         if let semaphore = self.disconnectSemaphore {
             semaphore.signal()
         }
