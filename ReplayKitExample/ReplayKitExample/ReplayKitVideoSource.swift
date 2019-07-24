@@ -222,6 +222,11 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         lastSampleBuffer = sampleBuffer
     }
 
+    /*
+     * The IVTC algorithm must know when a given frame is a duplicate of a previous frame. This implementation simply
+     * compares the chroma channels of each image to determine equality. Occasional false positives are worth the
+     * performance benefit of skipping the luma (Y) plane, which is twice the size of the chroma (UV) plane.
+     */
     static func compareSamples(first: CMSampleBuffer, second: CMSampleBuffer) -> Bool {
         guard let firstPixelBuffer = CMSampleBufferGetImageBuffer(first) else {
             return false
