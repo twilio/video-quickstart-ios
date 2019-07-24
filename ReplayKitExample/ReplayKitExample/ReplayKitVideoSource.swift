@@ -16,16 +16,21 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     /*
      * Streaming video content at 30 fps or lower is ideal, especially in variable network conditions.
-     * In order to improve quality of screen sharing, these constant optimize for a specific use case.
+     * In order to improve the quality of screen sharing, these constants optimize for specific use cases:
+     *
      *  1. App content: Stream at 15 fps to ensure fine details (spatial resolution) are maintained.
-     *  2. Video content: Attempt to match native cadence from kMinSyncFrameRate <= fps <= kMaxSyncFrameRate.
+     *  2. Video content: Attempt to match the natural video cadence between kMinSyncFrameRate <= fps <= kMaxSyncFrameRate.
+     *  3. Video content (24/25 in 30 (in 60)): Some apps perform a telecine by drawing to the screen using more vsyncs than are needed.
+     *     When this occurs, ReplayKit generates duplicate frames, decimating the content further to 30 Hz.
      */
     static let kMaxSyncFrameRate = 26
     static let kMinSyncFrameRate = 20
     static let kFrameHistorySize = 20
-    // The minimum average frame rate where IVTC is attempted.
+    // The minimum average input frame rate where IVTC is attempted.
     static let kInverseTelecineInputFrameRate = 28
+    // The minimum average delivery frame rate where IVTC is attempted. Add leeway due to 24 in 30 in 60 case.
     static let kInverseTelecineMinimumFrameRate = 23
+    // When video content has 3:2 pulldown (in the form of extra frames), the IVTC should only ever drop 1 sequential frame.
     var didTelecineLastFrame = false
 
     static let kFormatFrameRate = UIScreen.main.maximumFramesPerSecond
@@ -136,6 +141,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         lastInputTimestamp = currentTimestamp
 
+        // TODO: Only engage the frame sync logic conditionally.
         if let lastTimestamp = lastTimestamp {
             let delta = CMTimeSubtract(currentTimestamp, lastTimestamp)
 
@@ -276,7 +282,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             dispatchRetransmissions(forceReschedule: forceReschedule)
         }
 
-        // Update stats
+        // Update delivery stats
         if let lastTimestamp = lastDeliveredTimestamp {
             let delta = CMTimeSubtract(timestamp, lastTimestamp)
 
