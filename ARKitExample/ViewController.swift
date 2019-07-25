@@ -59,7 +59,7 @@ class ViewController: UIViewController {
         format.pixelFormat = PixelFormat.format32BGRA
         format.dimensions = CMVideoDimensions(width: Int32(UIScreen.main.bounds.size.width),
                                               height: Int32(UIScreen.main.bounds.size.height))
-        self.requestOutputFormat(format);
+        self.requestOutputFormat(format)
         start()
 
         self.audioTrack = LocalAudioTrack()
