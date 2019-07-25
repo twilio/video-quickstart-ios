@@ -256,8 +256,8 @@ class ViewController: UIViewController {
                                       name: "Screen")
 
         let videoCodec = Settings.shared.videoCodec ?? Vp8Codec()!
-        let (encodingParams, outputFormat) = ReplayKitVideoSource.encodingParameters(codec: videoCodec,
-                                                                                     isScreencast: !ViewController.kDownscaleBuffers)
+        let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: videoCodec,
+                                                                                          isScreencast: !ViewController.kDownscaleBuffers)
         videoSource?.requestOutputFormat(outputFormat)
 
         recorder.startCapture(handler: { (sampleBuffer, type, error) in

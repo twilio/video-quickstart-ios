@@ -45,8 +45,8 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
 
         // This source will attempt to produce smaller buffers with fluid motion.
-        let (encodingParams, outputFormat) = ReplayKitVideoSource.encodingParameters(codec: SampleHandler.kVideoCodec,
-                                                                                     isScreencast: false)
+        let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: SampleHandler.kVideoCodec,
+                                                                                          isScreencast: false)
 
         videoSource = ReplayKitVideoSource(isScreencast: false)
         screenTrack = LocalVideoTrack(source: videoSource!,

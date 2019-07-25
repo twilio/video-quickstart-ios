@@ -122,7 +122,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         return outputFormat;
     }
 
-    static func encodingParameters(codec: VideoCodec, isScreencast: Bool) -> (EncodingParameters, VideoFormat) {
+    static func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool) -> (EncodingParameters, VideoFormat) {
         let audioBitrate = UInt(0)
         var videoBitrate = kMaxVideoBitrate
         var maxWidthOrHeight = isScreencast ? UInt(0) : kDownScaledMaxWidthOrHeight
