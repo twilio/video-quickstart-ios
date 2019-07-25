@@ -143,8 +143,9 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         lastInputTimestamp = currentTimestamp
 
-        // TODO: Only engage the frame sync logic conditionally.
-        if let lastTimestamp = lastTimestamp {
+        // Frame sync & IVTC logic is engaged when screencast is not used.
+        if let lastTimestamp = lastTimestamp,
+            !screencastUsage {
             let delta = CMTimeSubtract(currentTimestamp, lastTimestamp)
 
             // Update input stats.
@@ -290,7 +291,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         }
 
         // Update delivery stats
-        if let lastTimestamp = lastDeliveredTimestamp {
+        if let lastTimestamp = lastDeliveredTimestamp,
+            !screencastUsage {
             let delta = CMTimeSubtract(timestamp, lastTimestamp)
 
             if recentDeliveredFrameDeltas.count == ReplayKitVideoSource.kFrameHistorySize {
