@@ -24,19 +24,11 @@ class SampleHandler: RPBroadcastSampleHandler {
     var statsTimer: Timer?
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
-    // In order to save memory, the handler requests that the source downscale its output.
-    static let kDownScaledMaxWidthOrHeight = UInt(720)
-    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(1280)
-
-    // Maximum bitrate (in kbps) used to send video.
-    static let kMaxVideoBitrate = UInt(1420)
-    static let kMaxVideoBitrateSimulcast = UInt(3000)
-
-    // Maximum frame rate to send video at.
-    static let kMaxVideoFrameRate = UInt(15)
-
     // Which kind of audio samples we will capture. The example does not mix multiple types of samples together.
     static let kAudioSampleType = RPSampleBufferType.audioMic
+
+    // The video codec to use for the broadcast. The encoding parameters and format request are built dynamically based upon the codec.
+    static let kVideoCodec = H264Codec()!
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
@@ -53,8 +45,8 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
 
         // This source will attempt to produce smaller buffers with fluid motion.
-        let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: SampleHandler.kDownScaledMaxWidthOrHeight,
-                                                                         maxFrameRate: SampleHandler.kMaxVideoFrameRate)
+        let (encodingParams, outputFormat) = ReplayKitVideoSource.encodingParameters(codec: SampleHandler.kVideoCodec,
+                                                                                     isScreencast: false)
 
         videoSource = ReplayKitVideoSource(isScreencast: false)
         screenTrack = LocalVideoTrack(source: videoSource!,
@@ -71,14 +63,13 @@ class SampleHandler: RPBroadcastSampleHandler {
             builder.videoTracks = [self.screenTrack!]
 
             // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
-            builder.preferredVideoCodecs = [H264Codec()]
+            builder.preferredVideoCodecs = [SampleHandler.kVideoCodec]
 
             /*
              * Constrain the bitrate to improve QoS for subscribers when simulcast is not used, and to reduce overall
              * bandwidth usage for the broadcaster.
              */
-            builder.encodingParameters = EncodingParameters(audioBitrate: 0,
-                                                            videoBitrate: UInt(1024) * SampleHandler.kMaxVideoBitrate)
+            builder.encodingParameters = encodingParams
 
             /*
              * A broadcast extension has no need to subscribe to Tracks, and connects as a publish-only

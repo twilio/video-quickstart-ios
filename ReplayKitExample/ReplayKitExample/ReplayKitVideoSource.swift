@@ -14,6 +14,18 @@ import TwilioVideo
 
 class ReplayKitVideoSource: NSObject, VideoSource {
 
+    // In order to save memory, the handler may request that the source downscale its output.
+    static let kDownScaledMaxWidthOrHeight = UInt(720)
+    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(1280)
+
+    // Maximum bitrate (in kbps) used to send video.
+    static let kMaxVideoBitrate = UInt(1420)
+    static let kMaxVideoBitrateSimulcast = UInt(3000)
+    static let kMaxScreenshareBitrate = UInt(1600)
+
+    // Maximum frame rate to send video at.
+    static let kMaxVideoFrameRate = UInt(15)
+
     /*
      * Streaming video content at 30 fps or lower is ideal, especially in variable network conditions.
      * In order to improve the quality of screen sharing, these constants optimize for specific use cases:
@@ -87,22 +99,44 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         }
     }
 
-    static func formatRequestToDownscale(maxWidthOrHeight: UInt, maxFrameRate: UInt) -> VideoFormat {
+    static private func formatRequestToDownscale(maxWidthOrHeight: UInt, maxFrameRate: UInt) -> VideoFormat {
         let outputFormat = VideoFormat()
 
         var screenSize = UIScreen.main.bounds.size
         screenSize.width *= UIScreen.main.nativeScale
         screenSize.height *= UIScreen.main.nativeScale
 
-        let downscaledTarget = CGSize(width: Int(maxWidthOrHeight),
-                                      height: Int(maxWidthOrHeight))
-        let fitRect = AVMakeRect(aspectRatio: screenSize,
-                                 insideRect: CGRect(origin: CGPoint.zero, size: downscaledTarget)).integral
-        let outputSize = fitRect.size
+        if maxWidthOrHeight > 0 {
+            let downscaledTarget = CGSize(width: Int(maxWidthOrHeight),
+                                          height: Int(maxWidthOrHeight))
+            let fitRect = AVMakeRect(aspectRatio: screenSize,
+                                     insideRect: CGRect(origin: CGPoint.zero, size: downscaledTarget)).integral
+            let outputSize = fitRect.size
 
-        outputFormat.dimensions = CMVideoDimensions(width: Int32(outputSize.width), height: Int32(outputSize.height))
+            outputFormat.dimensions = CMVideoDimensions(width: Int32(outputSize.width), height: Int32(outputSize.height))
+        } else {
+            outputFormat.dimensions = CMVideoDimensions(width: Int32(screenSize.width), height: Int32(screenSize.height))
+        }
+
         outputFormat.frameRate = maxFrameRate
         return outputFormat;
+    }
+
+    static func encodingParameters(codec: VideoCodec, isScreencast: Bool) -> (EncodingParameters, VideoFormat) {
+        let audioBitrate = UInt(0)
+        var videoBitrate = kMaxVideoBitrate
+        var maxWidthOrHeight = isScreencast ? UInt(0) : kDownScaledMaxWidthOrHeight
+        let maxFrameRate = kMaxVideoFrameRate
+
+        if let vp8Codec = codec as? Vp8Codec {
+            videoBitrate = vp8Codec.isSimulcast ? kMaxVideoBitrateSimulcast : kMaxVideoBitrate
+            if (!isScreencast) {
+                maxWidthOrHeight = vp8Codec.isSimulcast ? kDownScaledMaxWidthOrHeightSimulcast : kDownScaledMaxWidthOrHeight
+            }
+        }
+
+        return (EncodingParameters(audioBitrate: audioBitrate, videoBitrate: UInt(1024) * videoBitrate),
+                formatRequestToDownscale(maxWidthOrHeight: maxWidthOrHeight, maxFrameRate: maxFrameRate))
     }
 
     deinit {
@@ -188,7 +222,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                     didTelecineLastFrame == false,
                     ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
                     didTelecineLastFrame = true
-                    print("Dropping frame due to IVTC.")
+                    print("Dropping frame due to IVTC. Delta: \(deltaSeconds)")
                     return
                 } else if didTelecineLastFrame {
                     didTelecineLastFrame = false

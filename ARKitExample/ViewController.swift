@@ -188,7 +188,7 @@ extension ViewController: ARSCNViewDelegate {
 // MARK:- RoomDelegate
 extension ViewController: RoomDelegate {
     func roomDidConnect(room: Room) {
-        print("Connected to Room /(room.name).")
+        print("Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")")
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {

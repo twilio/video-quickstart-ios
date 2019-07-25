@@ -43,13 +43,6 @@ class ViewController: UIViewController {
 
     // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
     static let kDownscaleBuffers = false
-    static let kDownscaledMaxWidthOrHeight = UInt(720)
-
-    // Maximum bitrate (in kbps) used to send downscaled video.
-    static let kMaxDownscaledVideoBitrate = UInt(1500)
-
-    // Maximum frame rate to send video at.
-    static let kMaxDownscaledVideoFrameRate = UInt(30)
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -72,10 +65,6 @@ class ViewController: UIViewController {
         // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
-
-        if (ViewController.kDownscaleBuffers) {
-            Settings.shared.maxVideoBitrate = 1024 * ViewController.kMaxDownscaledVideoBitrate
-        }
 
         NotificationCenter.default.addObserver(forName: UIScreen.capturedDidChangeNotification, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
             if self.broadcastPickerView != nil && self.screenTrack == nil {
@@ -266,12 +255,10 @@ class ViewController: UIViewController {
                                       enabled: true,
                                       name: "Screen")
 
-        if (ViewController.kDownscaleBuffers) {
-            // Make a format request, apply it to the source.
-            let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: ViewController.kDownscaledMaxWidthOrHeight,
-                                                                             maxFrameRate: ViewController.kMaxDownscaledVideoFrameRate)
-            videoSource?.requestOutputFormat(outputFormat)
-        }
+        let videoCodec = Settings.shared.videoCodec ?? Vp8Codec()!
+        let (encodingParams, outputFormat) = ReplayKitVideoSource.encodingParameters(codec: videoCodec,
+                                                                                     isScreencast: !ViewController.kDownscaleBuffers)
+        videoSource?.requestOutputFormat(outputFormat)
 
         recorder.startCapture(handler: { (sampleBuffer, type, error) in
             if error != nil {
@@ -312,13 +299,13 @@ class ViewController: UIViewController {
                     self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
                     self.spinner.startAnimating()
                     self.infoLabel?.isHidden = true
-                    self.connectToRoom(name: "conference")
+                    self.connectToRoom(name: "conference", encodingParameters: encodingParams)
                 }
             }
         }
     }
 
-    func connectToRoom(name: String) {
+    func connectToRoom(name: String, encodingParameters: EncodingParameters) {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
@@ -348,9 +335,7 @@ class ViewController: UIViewController {
             }
 
             // Use the preferred encoding parameters
-            if let encodingParameters = Settings.shared.getEncodingParameters() {
-                builder.encodingParameters = encodingParameters
-            }
+            builder.encodingParameters = encodingParameters
 
             // Use the preferred signaling region
             if let signalingRegion = Settings.shared.signalingRegion {
@@ -442,6 +427,8 @@ extension ViewController: RoomDelegate {
     func roomDidDisconnect(room: Room, error: Error?) {
         if let error = error {
             print("Disconnected with error: ", error)
+        } else {
+            print("Disconnected from: \(room.name)")
         }
 
         if self.screenTrack != nil {
