@@ -11,11 +11,13 @@ import TwilioVideo
 struct CaptureDeviceUtils {
 
     static let kOneToOneFrameRate = UInt(24)
-    static let kOneToOneVideoBitrate = UInt(1200) * 1024
+    static let kOneToOneVideoBitrate = UInt(1140) * 1024
     static let kMultipartyFrameRate = UInt(15)
     static let kMultipartyVideoBitrate = UInt(600) * 1024
+    static let kSimulcastVideoBitrate = UInt(1800) * 1024
     static let kOneToOneVideoDimensions = CMVideoDimensions(width: 640, height: 480)
     static let kMultipartyVideoDimensions = CMVideoDimensions(width: 480, height: 360)
+    static let kSimulcastVideoDimensions = CMVideoDimensions(width: 1280, height: 960)
 
     static let kFormatByRatioMinimumSize = UInt(640)
     static let kFormatByRatioMaxDelta = Float(0.4)
@@ -113,6 +115,16 @@ class MultiPartyViewController: UIViewController {
     @IBOutlet weak var audioMuteButton: UIButton!
     @IBOutlet weak var videoMuteButton: UIButton!
     @IBOutlet weak var hangupButton: UIButton!
+
+    static var isSimulcast: Bool {
+        get {
+            var isSimulcast = false
+            if let vp8 = Settings.shared.videoCodec as? Vp8Codec {
+                isSimulcast = vp8.isSimulcast
+            }
+            return isSimulcast
+        }
+    }
 
     // MARK:- UIViewController
     override func viewDidLoad() {
@@ -235,8 +247,9 @@ class MultiPartyViewController: UIViewController {
                 }
 
                 let device = frontCamera != nil ? frontCamera! : backCamera!
+                let targetSize = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoDimensions : CaptureDeviceUtils.kOneToOneVideoDimensions
                 let format = CaptureDeviceUtils.selectFormatBySize(device: device,
-                                                                   targetSize: CaptureDeviceUtils.kOneToOneVideoDimensions)
+                                                                   targetSize: targetSize)
                 format.frameRate = CaptureDeviceUtils.kOneToOneFrameRate
 
                 camera.startCapture(device: device, format:format) { (captureDevice, videoFormat, error) in
@@ -327,8 +340,9 @@ class MultiPartyViewController: UIViewController {
                 builder.preferredVideoCodecs = [preferredVideoCodec]
             }
 
+            let bitrate = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoBitrate : CaptureDeviceUtils.kOneToOneVideoBitrate
             builder.encodingParameters = EncodingParameters(audioBitrate: 0,
-                                                            videoBitrate: CaptureDeviceUtils.kOneToOneVideoBitrate)
+                                                            videoBitrate: bitrate)
 
             // Use the preferred signaling region
             if let signalingRegion = Settings.shared.signalingRegion {
@@ -456,10 +470,7 @@ class MultiPartyViewController: UIViewController {
         logMessage(messageText: "Network Quality Level: \(networkQualityLevel.rawValue)")
         localParticipantView.networkQualityLevel = networkQualityLevel
     }
-}
 
-// MARK:- RoomDelegate
-extension MultiPartyViewController : RoomDelegate {
     func checkVideoSenderSettings(room: Room) {
         guard let localParticipant = room.localParticipant else {
             return
@@ -481,8 +492,11 @@ extension MultiPartyViewController : RoomDelegate {
         if isMultiparty != useMultipartyMedia {
             useMultipartyMedia = isMultiparty
             let frameRate = isMultiparty ? CaptureDeviceUtils.kMultipartyFrameRate : CaptureDeviceUtils.kOneToOneFrameRate
-            let dimensions = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoDimensions : CaptureDeviceUtils.kOneToOneVideoDimensions
-            let bitrate = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoBitrate : CaptureDeviceUtils.kOneToOneVideoBitrate
+            var dimensions = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoDimensions : CaptureDeviceUtils.kOneToOneVideoDimensions
+            dimensions = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoDimensions : dimensions
+
+            var bitrate = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoBitrate : CaptureDeviceUtils.kOneToOneVideoBitrate
+            bitrate = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoBitrate : bitrate
 
             let format = CaptureDeviceUtils.selectFormatBySize(device: (camera.device)!, targetSize: dimensions)
             format.frameRate = frameRate
@@ -492,6 +506,10 @@ extension MultiPartyViewController : RoomDelegate {
             })
         }
     }
+}
+
+// MARK:- RoomDelegate
+extension MultiPartyViewController : RoomDelegate {
 
     func roomDidConnect(room: Room) {
         logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "").")

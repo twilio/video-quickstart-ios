@@ -41,12 +41,9 @@ class MainViewController: UIViewController {
         view.addGestureRecognizer(tap)
 
         /*
-         * Choose default settings that are appropriate for a multi-party Group Room.
-         * In order to ensure good quality of service for all users, the Client prefers VP8 simulcast.
-         * Since the video being shared is VGA the Client restricts the amount of bandwidth used for publishing video.
+         * Choose a default video codec that is appropriate for a multi-party Group Room.
          */
-        Settings.shared.videoCodec = Vp8Codec(simulcast: true)
-        Settings.shared.maxVideoBitrate = 1024 * MainViewController.kMaxVideoBitrate
+        Settings.shared.videoCodec = Vp8Codec(simulcast: false)
 
         roomTextField?.becomeFirstResponder()
     }
