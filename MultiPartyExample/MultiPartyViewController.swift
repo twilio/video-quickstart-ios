@@ -17,6 +17,9 @@ struct CaptureDeviceUtils {
     static let kOneToOneVideoDimensions = CMVideoDimensions(width: 640, height: 480)
     static let kMultipartyVideoDimensions = CMVideoDimensions(width: 480, height: 360)
 
+    static let kFormatByRatioMinimumSize = UInt(640)
+    static let kFormatByRatioMaxDelta = Float(0.4)
+
     /*
      * @brief Finds the smallest format that is suitably close to the ratio requested.
      *
@@ -43,7 +46,7 @@ struct CaptureDeviceUtils {
             let ratio = Float(dimensions.width) / Float(dimensions.height)
 
             // Find the smallest format that is close to the aspect ratio of the target
-            if (dimensions.width >= 640 && abs(subscriberRatio - ratio) < 0.4) {
+            if (dimensions.width >= kFormatByRatioMinimumSize && abs(subscriberRatio - ratio) < kFormatByRatioMaxDelta) {
                 selectedFormat = videoFormat
                 break
             }
@@ -53,7 +56,12 @@ struct CaptureDeviceUtils {
     }
 
     /*
-     * Finds the smallest format that exactly matches or contains the size requested.
+     * @brief Finds the smallest format that exactly matches or contains the size requested.
+     *
+     * @param device The AVCaptureDevice to query.
+     * @param targetSize The size that is preferred.
+     *
+     * @return A format that satisfies the request.
      */
     static func selectFormatBySize(device: AVCaptureDevice,
                                    targetSize: CMVideoDimensions) -> VideoFormat {
@@ -454,16 +462,23 @@ class MultiPartyViewController: UIViewController {
 
 // MARK:- RoomDelegate
 extension MultiPartyViewController : RoomDelegate {
-    func checkMediaRenegotiation(room: Room) {
+    func checkVideoSenderSettings(room: Room) {
         guard let localParticipant = room.localParticipant else {
             return
         }
-
         guard let camera = camera else {
             return
         }
 
-        // Update the CameraCapturer's format and the LocalParticipant's EncodingParameters based upon the Room SID.
+        /*
+         * Update the CameraCapturer's format and the LocalParticipant's EncodingParameters based upon the size of the Room.
+         * When simulcast is not used, it is preferrable for the Participant to send a smaller video stream that may be
+         * easily consumed by all subscribers. If simulcast is enabled, then the source should produce frames that are
+         * large enough for the encoder to create 3 spatial layers.
+         *
+         * A lower frame rate is used in Multi-party to reduce the cumulative receiving / decoding / rendering cost for
+         * subscribed video.
+         */
         let isMultiparty = room.remoteParticipants.count > 1
         if isMultiparty != useMultipartyMedia {
             let frameRate = isMultiparty ? CaptureDeviceUtils.kMultipartyFrameRate : CaptureDeviceUtils.kOneToOneFrameRate
@@ -496,7 +511,7 @@ extension MultiPartyViewController : RoomDelegate {
             }
         }
 
-        checkMediaRenegotiation(room: room)
+        checkVideoSenderSettings(room: room)
 
         if #available(iOS 11.0, *) {
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
@@ -557,14 +572,14 @@ extension MultiPartyViewController : RoomDelegate {
             setupRemoteParticipantView(remoteParticipant: participant)
         }
 
-        checkMediaRenegotiation(room: room)
+        checkVideoSenderSettings(room: room)
     }
 
     func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
         logMessage(messageText: "Room \(room.name), Participant \(participant.identity) disconnected")
 
         removeRemoteParticipantView(remoteParticipant: participant)
-        checkMediaRenegotiation(room: room)
+        checkVideoSenderSettings(room: room)
     }
 
     func dominantSpeakerDidChange(room: Room, participant: RemoteParticipant?) {
