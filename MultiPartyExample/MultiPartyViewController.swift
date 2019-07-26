@@ -11,9 +11,9 @@ import TwilioVideo
 struct CaptureDeviceUtils {
 
     static let kOneToOneFrameRate = UInt(24)
-    static let kOneToOneVideoBitrate = UInt(1200)
+    static let kOneToOneVideoBitrate = UInt(1200) * 1024
     static let kMultipartyFrameRate = UInt(15)
-    static let kMultipartyVideoBitrate = UInt(600)
+    static let kMultipartyVideoBitrate = UInt(600) * 1024
     static let kOneToOneVideoDimensions = CMVideoDimensions(width: 640, height: 480)
     static let kMultipartyVideoDimensions = CMVideoDimensions(width: 480, height: 360)
 
@@ -327,10 +327,8 @@ class MultiPartyViewController: UIViewController {
                 builder.preferredVideoCodecs = [preferredVideoCodec]
             }
 
-            // Use the preferred encoding parameters
-            if let encodingParameters = Settings.shared.getEncodingParameters() {
-                builder.encodingParameters = encodingParameters
-            }
+            builder.encodingParameters = EncodingParameters(audioBitrate: 0,
+                                                            videoBitrate: CaptureDeviceUtils.kOneToOneVideoBitrate)
 
             // Use the preferred signaling region
             if let signalingRegion = Settings.shared.signalingRegion {
