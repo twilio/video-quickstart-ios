@@ -8,6 +8,79 @@
 import UIKit
 import TwilioVideo
 
+struct CaptureDeviceUtils {
+
+    static let kOneToOneFrameRate = UInt(24)
+    static let kOneToOneVideoBitrate = 1200
+    static let kMultipartyFrameRate = UInt(15)
+    static let kMultipartyVideoBitrate = 400
+    static let kOneToOneVideoDimensions = CMVideoDimensions(width: 640, height: 480)
+    static let kMultipartyVideoDimensions = CMVideoDimensions(width: 480, height: 360)
+
+    /*
+     * @brief Finds the smallest format that is suitably close to the ratio requested.
+     *
+     * @param device The AVCaptureDevice to query.
+     * @param targetRatio The ratio that is preferred.
+     *
+     * @return A format that satisfies the request.
+     */
+    static func selectFormatByRatio(device: AVCaptureDevice,
+                                    targetRatio: CMVideoDimensions) -> VideoFormat {
+        let formats = CameraSource.supportedFormats(captureDevice: device)
+        var selectedFormat = formats.firstObject as? VideoFormat
+
+        let subscriberRatio = Float(targetRatio.width) / Float(targetRatio.height)
+
+        for format in formats {
+            guard let videoFormat = format as? VideoFormat else {
+                continue
+            }
+            if videoFormat.pixelFormat != PixelFormat.formatYUV420BiPlanarFullRange {
+                continue
+            }
+            let dimensions = videoFormat.dimensions
+            let ratio = Float(dimensions.width) / Float(dimensions.height)
+
+            // Find the smallest format that is close to the aspect ratio of the target
+            if (dimensions.width >= 640 && abs(subscriberRatio - ratio) < 0.4) {
+                selectedFormat = videoFormat
+                break
+            }
+        }
+
+        return selectedFormat!
+    }
+
+    /*
+     * Finds the smallest format that exactly matches or contains the size requested.
+     */
+    static func selectFormatBySize(device: AVCaptureDevice,
+                                   targetSize: CMVideoDimensions) -> VideoFormat {
+        // Arranged from smallest to largest.
+        let formats = CameraSource.supportedFormats(captureDevice: device)
+        var selectedFormat = formats.firstObject as? VideoFormat
+
+        for format in formats {
+            guard let videoFormat = format as? VideoFormat else {
+                continue
+            }
+            if videoFormat.pixelFormat != PixelFormat.formatYUV420BiPlanarFullRange {
+                continue
+            }
+            let dimensions = videoFormat.dimensions
+
+            // Cropping might be used if there is not an exact match.
+            if (dimensions.width >= targetSize.width && dimensions.height >= targetSize.height) {
+                selectedFormat = videoFormat
+                break
+            }
+        }
+
+        return selectedFormat!
+    }
+}
+
 class MultiPartyViewController: UIViewController {
 
     // MARK:- View Controller Members
@@ -152,7 +225,12 @@ class MultiPartyViewController: UIViewController {
                     recognizerSingleTap.require(toFail: recognizerDoubleTap)
                 }
 
-                camera.startCapture(device: frontCamera != nil ? frontCamera! : backCamera!) { (captureDevice, videoFormat, error) in
+                let device = frontCamera != nil ? frontCamera! : backCamera!
+                let format = CaptureDeviceUtils.selectFormatBySize(device: device,
+                                                                   targetSize: CaptureDeviceUtils.kOneToOneVideoDimensions)
+                format.frameRate = CaptureDeviceUtils.kOneToOneFrameRate
+
+                camera.startCapture(device: device, format:format) { (captureDevice, videoFormat, error) in
                     if let error = error {
                         self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
