@@ -479,6 +479,7 @@ extension MultiPartyViewController : RoomDelegate {
          */
         let isMultiparty = room.remoteParticipants.count > 1
         if isMultiparty != useMultipartyMedia {
+            useMultipartyMedia = isMultiparty
             let frameRate = isMultiparty ? CaptureDeviceUtils.kMultipartyFrameRate : CaptureDeviceUtils.kOneToOneFrameRate
             let dimensions = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoDimensions : CaptureDeviceUtils.kOneToOneVideoDimensions
             let bitrate = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoBitrate : CaptureDeviceUtils.kOneToOneVideoBitrate
