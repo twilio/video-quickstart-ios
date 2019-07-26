@@ -11,9 +11,9 @@ import TwilioVideo
 struct CaptureDeviceUtils {
 
     static let kOneToOneFrameRate = UInt(24)
-    static let kOneToOneVideoBitrate = 1200
+    static let kOneToOneVideoBitrate = UInt(1200)
     static let kMultipartyFrameRate = UInt(15)
-    static let kMultipartyVideoBitrate = 400
+    static let kMultipartyVideoBitrate = UInt(600)
     static let kOneToOneVideoDimensions = CMVideoDimensions(width: 640, height: 480)
     static let kMultipartyVideoDimensions = CMVideoDimensions(width: 480, height: 360)
 
@@ -96,6 +96,7 @@ class MultiPartyViewController: UIViewController {
     var camera: CameraSource?
     var localVideoTrack: LocalVideoTrack?
     var localAudioTrack: LocalAudioTrack?
+    var useMultipartyMedia = false
 
     var currentDominantSpeaker: RemoteParticipant?
 
@@ -453,6 +454,31 @@ class MultiPartyViewController: UIViewController {
 
 // MARK:- RoomDelegate
 extension MultiPartyViewController : RoomDelegate {
+    func checkMediaRenegotiation(room: Room) {
+        guard let localParticipant = room.localParticipant else {
+            return
+        }
+
+        guard let camera = camera else {
+            return
+        }
+
+        // Update the CameraCapturer's format and the LocalParticipant's EncodingParameters based upon the Room SID.
+        let isMultiparty = room.remoteParticipants.count > 1
+        if isMultiparty != useMultipartyMedia {
+            let frameRate = isMultiparty ? CaptureDeviceUtils.kMultipartyFrameRate : CaptureDeviceUtils.kOneToOneFrameRate
+            let dimensions = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoDimensions : CaptureDeviceUtils.kOneToOneVideoDimensions
+            let bitrate = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoBitrate : CaptureDeviceUtils.kOneToOneVideoBitrate
+
+            let format = CaptureDeviceUtils.selectFormatBySize(device: (camera.device)!, targetSize: dimensions)
+            format.frameRate = frameRate
+
+            localParticipant.setEncodingParameters(EncodingParameters(audioBitrate: 0, videoBitrate: bitrate))
+            camera.selectCaptureDevice((camera.device)!, format: format, completion: { (device, format, error) in
+            })
+        }
+    }
+
     func roomDidConnect(room: Room) {
         logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "").")
         NSLog("Room: \(room.name) SID: \(room.sid)")
@@ -469,6 +495,8 @@ extension MultiPartyViewController : RoomDelegate {
                 setupRemoteParticipantView(remoteParticipant: remoteParticipant)
             }
         }
+
+        checkMediaRenegotiation(room: room)
 
         if #available(iOS 11.0, *) {
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
@@ -528,11 +556,15 @@ extension MultiPartyViewController : RoomDelegate {
         if remoteParticipantViews.count < MultiPartyViewController.kMaxRemoteParticipants {
             setupRemoteParticipantView(remoteParticipant: participant)
         }
+
+        checkMediaRenegotiation(room: room)
     }
 
     func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
-        removeRemoteParticipantView(remoteParticipant: participant)
         logMessage(messageText: "Room \(room.name), Participant \(participant.identity) disconnected")
+
+        removeRemoteParticipantView(remoteParticipant: participant)
+        checkMediaRenegotiation(room: room)
     }
 
     func dominantSpeakerDidChange(room: Room, participant: RemoteParticipant?) {
