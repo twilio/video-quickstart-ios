@@ -10,7 +10,7 @@ Two `UIViewController` classes and one `UIView` comprise the main functionality 
 
 The landing page for the example. This class coordinates authorization of the Video Client, and accepts user input to determine which Room to connect to. The shared settings UI is accessible from the ViewController's navigation items.
 
-*Please note that bitrate settings made on the settings page are ignored, since the example manages bitrate dynamically.*
+*Please note that video bitrate configurations on the settings page are ignored, since the example manages bitrate dynamically.*
 
 **MultiPartyViewController**
 
@@ -24,7 +24,11 @@ Coordinates a Video conference in a Room, including:
 6. Raising fatal errors to the developer.
 7. Disconnecting from the Room, and stopping `TVICameraSource`.
 
-The controller manages your LocalParticipant's media, dynamically reconfiguring the CameraSource and EncodingParameters for both 1:1 and multi-party scenarios. In order to conserve bandwidth, the controller will unpublish audio if it has been muted for a suitably long time (15 seconds).
+The controller manages your LocalParticipant's media, reconfiguring the CameraSource and EncodingParameters for both 1:1 and multi-party scenarios. In order to conserve bandwidth, the controller will unpublish the Participant's `LocalAudioTrack` if it remains disabled for a long time.
+
+Xcode's Network Report debugger demonstrates how much send bandwidth is consumed by a `LocalAudioTrack` in a Group Room as it is disabled, unpublished, and then republished later:
+
+<kbd><img width="760px" src="../images/quickstart/multi-party-audio-send-bandwidth.png"/></kbd>
 
 **RemoteParticipantView**
 

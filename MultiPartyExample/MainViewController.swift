@@ -38,7 +38,7 @@ class MainViewController: UIViewController {
         view.addGestureRecognizer(tap)
 
         /*
-         * Choose H.264 by default for multi-party scenarios because it uses the most CPU and battery on iOS devices.
+         * Choose H.264 by default for multi-party scenarios because it uses the least CPU and battery on iOS devices.
          * The example may also be used with VP8 with or without simulcast.
          */
         Settings.shared.videoCodec = H264Codec()

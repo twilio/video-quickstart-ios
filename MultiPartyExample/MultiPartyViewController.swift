@@ -114,7 +114,7 @@ class MultiPartyViewController: UIViewController {
     var inactivityTimer: Timer?
 
     // The number of seconds before a muted Track is considered inactive.
-    static let kInactivityTimeout = 15.0
+    static let kInactivityTimeout = 20.0
 
     // MARK:- UI Element Outlets and handles
     @IBOutlet weak var containerView: UIView!
@@ -129,6 +129,23 @@ class MultiPartyViewController: UIViewController {
                 isSimulcast = vp8.isSimulcast
             }
             return isSimulcast
+        }
+    }
+
+    static var audioBitrate: UInt {
+        get {
+            var bitrate = UInt(0)
+            if let encodingParameters = Settings.shared.getEncodingParameters() {
+                bitrate = encodingParameters.maxAudioBitrate
+            }
+            return bitrate
+        }
+    }
+
+    static var defaultVideoBitrate: UInt {
+        get {
+            return MultiPartyViewController.isSimulcast ?
+                CaptureDeviceUtils.kSimulcastVideoBitrate : CaptureDeviceUtils.kOneToOneVideoBitrate
         }
     }
 
@@ -215,7 +232,7 @@ class MultiPartyViewController: UIViewController {
         logMessage(messageText: "Audio track created")
         self.localAudioTrack = localAudioTrack
 
-        updateLocalAudioState(hasAudio: localAudioTrack.isEnabled)
+        updateLocalAudioState(hasAudio: true)
     }
 
     func prepareCamera() {
@@ -306,7 +323,7 @@ class MultiPartyViewController: UIViewController {
             if !isEnabled {
                 inactivityTimer = Timer(fire: Date(timeIntervalSinceNow: MultiPartyViewController.kInactivityTimeout), interval: 0, repeats: false, block: { (Timer) in
                     if let audioTrack = self.localAudioTrack {
-                        print("Unpublishing audio track due to inactivity")
+                        print("Unpublishing audio track due to inactivity timer.")
                         self.room?.localParticipant?.unpublishAudioTrack(audioTrack)
                         self.localAudioTrack = nil
                     }
@@ -370,9 +387,8 @@ class MultiPartyViewController: UIViewController {
                 builder.preferredVideoCodecs = [preferredVideoCodec]
             }
 
-            let bitrate = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoBitrate : CaptureDeviceUtils.kOneToOneVideoBitrate
-            builder.encodingParameters = EncodingParameters(audioBitrate: 0,
-                                                            videoBitrate: bitrate)
+            builder.encodingParameters = EncodingParameters(audioBitrate: MultiPartyViewController.audioBitrate,
+                                                            videoBitrate: MultiPartyViewController.defaultVideoBitrate)
 
             // Use the preferred signaling region
             if let signalingRegion = Settings.shared.signalingRegion {
@@ -531,7 +547,8 @@ class MultiPartyViewController: UIViewController {
             let format = CaptureDeviceUtils.selectFormatBySize(device: (camera.device)!, targetSize: dimensions)
             format.frameRate = frameRate
 
-            localParticipant.setEncodingParameters(EncodingParameters(audioBitrate: 0, videoBitrate: bitrate))
+            localParticipant.setEncodingParameters(EncodingParameters(audioBitrate: MultiPartyViewController.audioBitrate,
+                                                                      videoBitrate: bitrate))
             camera.selectCaptureDevice((camera.device)!, format: format, completion: { (device, format, error) in
             })
         }
