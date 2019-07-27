@@ -11,7 +11,7 @@ import TwilioVideo
 struct CaptureDeviceUtils {
 
     static let kOneToOneFrameRate = UInt(24)
-    static let kOneToOneVideoBitrate = UInt(1140) * 1024
+    static let kOneToOneVideoBitrate = UInt(1120) * 1024
     static let kMultipartyFrameRate = UInt(15)
     static let kMultipartyVideoBitrate = UInt(600) * 1024
     static let kSimulcastVideoBitrate = UInt(1800) * 1024
@@ -109,6 +109,12 @@ class MultiPartyViewController: UIViewController {
     var useMultipartyMedia = false
 
     var currentDominantSpeaker: RemoteParticipant?
+
+    // A timer used to unpublish the LocalAudioTrack after it has been muted for a long time.
+    var inactivityTimer: Timer?
+
+    // The number of seconds before a muted Track is considered inactive.
+    static let kInactivityTimeout = 15.0
 
     // MARK:- UI Element Outlets and handles
     @IBOutlet weak var containerView: UIView!
@@ -275,6 +281,7 @@ class MultiPartyViewController: UIViewController {
                 newDevice = CameraSource.captureDevice(position: .front)
             }
 
+            // TODO: Set the correct format here.
             if let newDevice = newDevice {
                 camera.selectCaptureDevice(newDevice) { (captureDevice, videoFormat, error) in
                     if let error = error {
@@ -288,9 +295,32 @@ class MultiPartyViewController: UIViewController {
     }
 
     @IBAction func toggleAudio(_ sender: Any) {
+        inactivityTimer?.invalidate()
+
         if let localAudioTrack = self.localAudioTrack {
-            localAudioTrack.isEnabled = !localAudioTrack.isEnabled
-            updateLocalAudioState(hasAudio: localAudioTrack.isEnabled)
+            let isEnabled = !localAudioTrack.isEnabled
+            localAudioTrack.isEnabled = isEnabled
+            updateLocalAudioState(hasAudio: isEnabled)
+
+            // Unpublish after no activity.
+            if !isEnabled {
+                inactivityTimer = Timer(fire: Date(timeIntervalSinceNow: MultiPartyViewController.kInactivityTimeout), interval: 0, repeats: false, block: { (Timer) in
+                    if let audioTrack = self.localAudioTrack {
+                        print("Unpublishing audio track due to inactivity")
+                        self.room?.localParticipant?.unpublishAudioTrack(audioTrack)
+                        self.localAudioTrack = nil
+                    }
+                })
+
+                if let theTimer = inactivityTimer {
+                    RunLoop.main.add(theTimer, forMode: .common)
+                }
+            }
+        } else if let participant = self.room?.localParticipant {
+            prepareAudio()
+            if let audioTrack = self.localAudioTrack {
+                participant.publishAudioTrack(audioTrack)
+            }
         }
     }
 
@@ -538,6 +568,8 @@ extension MultiPartyViewController : RoomDelegate {
     func roomDidFailToConnect(room: Room, error: Error) {
         NSLog("Failed to connect to a Room: \(error).")
 
+        inactivityTimer?.invalidate()
+
         let alertController = UIAlertController(title: "Connection Failed",
                                                 message: "Couldn't connect to Room \(room.name). code:\(error._code) \(error.localizedDescription)",
             preferredStyle: .alert)
@@ -554,6 +586,8 @@ extension MultiPartyViewController : RoomDelegate {
     }
 
     func roomDidDisconnect(room: Room, error: Error?) {
+        inactivityTimer?.invalidate()
+
         guard let error = error else {
             return
         }

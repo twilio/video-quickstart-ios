@@ -19,9 +19,6 @@ class MainViewController: UIViewController {
     // Configure remote URL to fetch token from
     var tokenUrl = "http://localhost:8000/token.php"
 
-    // Maximum bitrate (in kbps) used to send video.
-    static let kMaxVideoBitrate = UInt(1500)
-
     // MARK:- UI Element Outlets and handles
     @IBOutlet weak var connectButton: UIButton?
     @IBOutlet weak var roomTextField: UITextField?
@@ -41,9 +38,10 @@ class MainViewController: UIViewController {
         view.addGestureRecognizer(tap)
 
         /*
-         * Choose a default video codec that is appropriate for a multi-party Group Room.
+         * Choose H.264 by default for multi-party scenarios because it uses the most CPU and battery on iOS devices.
+         * The example may also be used with VP8 with or without simulcast.
          */
-        Settings.shared.videoCodec = Vp8Codec(simulcast: false)
+        Settings.shared.videoCodec = H264Codec()
 
         roomTextField?.becomeFirstResponder()
     }
