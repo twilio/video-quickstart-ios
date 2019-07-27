@@ -28,7 +28,7 @@ The controller manages your LocalParticipant's media, reconfiguring the CameraSo
 
 Xcode's Network Report debugger demonstrates how much send bandwidth is consumed by a `LocalAudioTrack` in a Group Room as it is disabled, unpublished, and then republished later:
 
-<kbd><img width="760px" src="../images/quickstart/multi-party-audio-send-bandwidth.png"/></kbd>
+<kbd><img width="860px" src="../images/quickstart/multi-party-audio-send-bandwidth.png"/></kbd>
 
 **RemoteParticipantView**
 
