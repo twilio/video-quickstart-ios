@@ -89,6 +89,16 @@ struct CaptureDeviceUtils {
 
         return selectedFormat!
     }
+
+    static func selectVideoFormat(multiparty: Bool, device: AVCaptureDevice) -> VideoFormat {
+        let frameRate = multiparty ? CaptureDeviceUtils.kMultipartyFrameRate : CaptureDeviceUtils.kOneToOneFrameRate
+        var dimensions = multiparty ? CaptureDeviceUtils.kMultipartyVideoDimensions : CaptureDeviceUtils.kOneToOneVideoDimensions
+        dimensions = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoDimensions : dimensions
+
+        let format = CaptureDeviceUtils.selectFormatBySize(device: device, targetSize: dimensions)
+        format.frameRate = frameRate
+        return format
+    }
 }
 
 class MultiPartyViewController: UIViewController {
@@ -232,7 +242,7 @@ class MultiPartyViewController: UIViewController {
         logMessage(messageText: "Audio track created")
         self.localAudioTrack = localAudioTrack
 
-        updateLocalAudioState(hasAudio: true)
+        updateLocalAudioState(hasAudio: true, isPublished: self.room == nil)
     }
 
     func prepareCamera() {
@@ -270,10 +280,7 @@ class MultiPartyViewController: UIViewController {
                 }
 
                 let device = frontCamera != nil ? frontCamera! : backCamera!
-                let targetSize = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoDimensions : CaptureDeviceUtils.kOneToOneVideoDimensions
-                let format = CaptureDeviceUtils.selectFormatBySize(device: device,
-                                                                   targetSize: targetSize)
-                format.frameRate = CaptureDeviceUtils.kOneToOneFrameRate
+                let format = CaptureDeviceUtils.selectVideoFormat(multiparty: false, device: device)
 
                 camera.startCapture(device: device, format:format) { (captureDevice, videoFormat, error) in
                     if let error = error {
@@ -298,9 +305,9 @@ class MultiPartyViewController: UIViewController {
                 newDevice = CameraSource.captureDevice(position: .front)
             }
 
-            // TODO: Set the correct format here.
             if let newDevice = newDevice {
-                camera.selectCaptureDevice(newDevice) { (captureDevice, videoFormat, error) in
+                let format = CaptureDeviceUtils.selectVideoFormat(multiparty: useMultipartyMedia, device: newDevice)
+                camera.selectCaptureDevice(newDevice, format: format) { (captureDevice, videoFormat, error) in
                     if let error = error {
                         self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
                     } else {
@@ -311,13 +318,13 @@ class MultiPartyViewController: UIViewController {
         }
     }
 
-    @IBAction func toggleAudio(_ sender: Any) {
+    @IBAction func toggleAudio(_ sender: UIButton) {
         inactivityTimer?.invalidate()
 
         if let localAudioTrack = self.localAudioTrack {
             let isEnabled = !localAudioTrack.isEnabled
             localAudioTrack.isEnabled = isEnabled
-            updateLocalAudioState(hasAudio: isEnabled)
+            updateLocalAudioState(hasAudio: isEnabled, isPublished: true)
 
             // Unpublish after no activity.
             if !isEnabled {
@@ -336,6 +343,7 @@ class MultiPartyViewController: UIViewController {
         } else if let participant = self.room?.localParticipant {
             prepareAudio()
             if let audioTrack = self.localAudioTrack {
+                updateLocalAudioState(hasAudio: true, isPublished: false)
                 participant.publishAudioTrack(audioTrack)
             }
         }
@@ -502,9 +510,10 @@ class MultiPartyViewController: UIViewController {
         }
     }
 
-    func updateLocalAudioState(hasAudio: Bool) {
+    func updateLocalAudioState(hasAudio: Bool, isPublished: Bool) {
         self.localParticipantView.hasAudio = hasAudio
         audioMuteButton.isSelected = !hasAudio
+        audioMuteButton.isEnabled = isPublished
     }
 
     func updateLocalVideoState(hasVideo: Bool) {
@@ -531,25 +540,23 @@ class MultiPartyViewController: UIViewController {
          * easily consumed by all subscribers. If simulcast is enabled, then the source should produce frames that are
          * large enough for the encoder to create 3 spatial layers.
          *
-         * A lower frame rate is used in Multi-party to reduce the cumulative receiving / decoding / rendering cost for
+         * A lower frame rate is used in multi-party to reduce the cumulative receiving / decoding / rendering cost for
          * subscribed video.
          */
         let isMultiparty = room.remoteParticipants.count > 1
         if isMultiparty != useMultipartyMedia {
             useMultipartyMedia = isMultiparty
-            let frameRate = isMultiparty ? CaptureDeviceUtils.kMultipartyFrameRate : CaptureDeviceUtils.kOneToOneFrameRate
-            var dimensions = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoDimensions : CaptureDeviceUtils.kOneToOneVideoDimensions
-            dimensions = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoDimensions : dimensions
 
             var bitrate = isMultiparty ? CaptureDeviceUtils.kMultipartyVideoBitrate : CaptureDeviceUtils.kOneToOneVideoBitrate
             bitrate = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoBitrate : bitrate
-
-            let format = CaptureDeviceUtils.selectFormatBySize(device: (camera.device)!, targetSize: dimensions)
-            format.frameRate = frameRate
-
             localParticipant.setEncodingParameters(EncodingParameters(audioBitrate: MultiPartyViewController.audioBitrate,
                                                                       videoBitrate: bitrate))
+
+            let format = CaptureDeviceUtils.selectVideoFormat(multiparty: isMultiparty, device: (camera.device)!)
             camera.selectCaptureDevice((camera.device)!, format: format, completion: { (device, format, error) in
+                if let error = error {
+                    self.logMessage(messageText: "Failed to select format \(format), error = \(String(describing: error))")
+                }
             })
         }
     }
@@ -660,6 +667,16 @@ extension MultiPartyViewController : LocalParticipantDelegate {
     func localParticipantNetworkQualityLevelDidChange(participant: LocalParticipant, networkQualityLevel: NetworkQualityLevel) {
         // Local Participant netwrk quality level has changed
         updateLocalNetworkQualityLevel(networkQualityLevel: networkQualityLevel)
+    }
+
+    func localParticipantDidPublishAudioTrack(participant: LocalParticipant, audioTrackPublication: LocalAudioTrackPublication) {
+        updateLocalAudioState(hasAudio: audioTrackPublication.isTrackEnabled, isPublished: true)
+    }
+
+    func localParticipantDidFailToPublishAudioTrack(participant: LocalParticipant, audioTrack: LocalAudioTrack, error: Error) {
+        self.localAudioTrack = nil
+        updateLocalAudioState(hasAudio: false, isPublished: false)
+        logMessage(messageText: "Failed to publish audio track, error = \(String(describing: error))")
     }
 }
 
