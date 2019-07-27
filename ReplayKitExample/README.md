@@ -16,6 +16,8 @@ An iOS 12.0 extension is not limited to capturing the screen of a single applica
 
 In order to reduce memory usage, the extension configures `ReplayKitVideoSource` to downscale incoming video frames, and prefers the H.264 video codec by default. In a Group Room, the extension connects as a publish-only Participant ([TVIConnectOptionsBuilder.automaticSubscriptionEnabled](https://twilio.github.io/twilio-video-ios/docs/latest/Classes/TVIConnectOptionsBuilder.html#//api/name/automaticSubscriptionEnabled)) to further reduce bandwidth, memory, and CPU requirements.
 
+### Key Classes
+
 **ReplayKitVideoSource**
 
 This `TVIVideoSource` produces `TVIVideoFrame`s from `CMSampleBuffer`s captured by ReplayKit. In order to reduce memory usage, instances may be configured (via a format request) to downscale the captured content.
@@ -24,7 +26,7 @@ The source offers several capabilities to optimize for different use cases:
 
 1. Screencast mode (In-App Conferencing). This setting preserves resolution (detail) over all else. The input from ReplayKit is always capped at 15 fps, and is not downscaled.
 2. Video mode (Broadcast Extension). This setting balances spatial and temporal resolution, and is content aware. When app content is shown, the input is capped at 15 fps. However, when playback of 24 fps video content is detected the input cap is raised to preserve the native cadence of the video.
-3. Real-time [Inverse Telecine (IVTC)](https://en.wikipedia.org/wiki/Telecine#Reverse_telecine_(a.k.a._inverse_telecine_(IVTC),_reverse_pulldown)). The source removes duplicate frames when it detects a sequence of 24 frame / second content with 3:2 pulldown. Some apps (that do not use AVPlayer for playback) perform a telecine by drawing the same frame to screen multiple times.
+3. Real-time [Inverse Telecine (IVTC)](https://en.wikipedia.org/wiki/Telecine#Reverse_telecine_(a.k.a._inverse_telecine_(IVTC),_reverse_pulldown)). The source removes duplicate frames when it detects 24 frame / second content with 3:2 pulldown applied. Some apps (that do not use AVPlayer for playback) perform a telecine by drawing the same frame to screen multiple times.
 4. A helper method to generate `EncodingParameters` and `VideoFromat` configuration based upon `VideoCodec` information and operating mode.
 
 **ExampleReplayKitAudioCapturer**
@@ -62,7 +64,6 @@ Tapping "Start Conference" begins capturing and sharing the screen from within t
 1. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
 2. Share the camera using ReplayKit, or `TVICameraSource`.
 3. Resolve tearing issues when scrolling vertically, and image corruption when sharing video. (ISDK-2478)
-4. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
 
 ### Known Issues
 
