@@ -24,8 +24,8 @@ The source offers several capabilities to optimize for different use cases:
 
 1. Screencast mode (In-App Conferencing). This setting preserves resolution (detail) over all else. The input from ReplayKit is always capped at 15 fps, and is not downscaled.
 2. Video mode (Broadcast Extension). This setting balances spatial and temporal resolution, and is content aware. When app content is shown, the input is capped at 15 fps. However, when playback of 24 fps video content is detected the input cap is raised to preserve the native cadence of the video.
-3. Inverse Telecine (IVTC) for 24 frames / second with 3:2 pulldown. Some apps (that do not use AVPlayer for playback) perform a telecine by drawing the same video frame to screen multiple times. These duplicate frames waste bandwidth, and CPU while making it more likely for subscribers to miss vsyncs in their own display pipeline. When 30 frame / second input with 3:2 pulldown is detected, the IVTC algorithm removes the duplicate frames to restore the content's natural frame rate.
-4. Helper method to generate `EncodingParameters` and `VideoFromat` configuration based upon `VideoCodec` information and operating mode.
+3. Real-time [Inverse Telecine (IVTC)](https://en.wikipedia.org/wiki/Telecine#Reverse_telecine_(a.k.a._inverse_telecine_(IVTC),_reverse_pulldown)sdsfdsfsdfds). The source removes duplicate frames when it detects a sequence of 24 frame / second content with 3:2 pulldown. Some apps (that do not use AVPlayer for playback) perform a telecine by drawing the same frame to screen multiple times.
+4. A helper method to generate `EncodingParameters` and `VideoFromat` configuration based upon `VideoCodec` information and operating mode.
 
 **ExampleReplayKitAudioCapturer**
 
