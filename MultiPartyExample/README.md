@@ -10,7 +10,7 @@ Two `UIViewController` classes and one `UIView` comprise the main functionality 
 
 The landing page for the example. This class coordinates authorization of the Video Client, and accepts user input to determine which Room to connect to. The shared settings UI is accessible from the ViewController's navigation items.
 
-*Please note that video bitrate configurations on the settings page are ignored, since the example manages bitrate dynamically.*
+*Please note that video bitrate option on the settings page is ignored, since the example manages bitrate dynamically.*
 
 **MultiPartyViewController**
 
