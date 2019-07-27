@@ -56,4 +56,4 @@ Tapping "Connect" will authorize your Client, and then connect to a Room sharing
 
 **1. Not optimized for Peer-to-Peer Rooms**
 
-This app is designed to be used in a Group Room. If you join a Peer-to-Peer Room then Dominant Speaker or Network Quality events will not be raised. Also, using VP8 simulcast in a Peer-to-Peer Room does not provide any benefit.
+This app is designed to be used in a Group Room. If you join a Peer-to-Peer Room then Dominant Speaker and Network Quality events will not be raised. Also, using VP8 simulcast in a Peer-to-Peer Room does not provide any benefit.
