@@ -122,7 +122,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
         switch sampleBufferType {
         case RPSampleBufferType.video:
-            videoSource?.processVideoSampleBuffer(sampleBuffer)
+            videoSource?.processFrame(sampleBuffer: sampleBuffer)
             break
 
         case RPSampleBufferType.audioApp:

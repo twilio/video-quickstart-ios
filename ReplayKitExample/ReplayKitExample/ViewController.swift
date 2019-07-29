@@ -268,7 +268,7 @@ class ViewController: UIViewController {
 
             switch type {
             case RPSampleBufferType.video:
-                self.videoSource?.processVideoSampleBuffer(sampleBuffer)
+                self.videoSource?.processFrame(sampleBuffer: sampleBuffer)
                 break
             case RPSampleBufferType.audioApp:
                 break

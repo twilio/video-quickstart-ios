@@ -32,7 +32,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
      *
      *  1. App content: Stream at 15 fps to ensure fine details (spatial resolution) are maintained.
      *  2. Video content: Attempt to match the natural video cadence between kMinSyncFrameRate <= fps <= kMaxSyncFrameRate.
-     *  3. Video content (24/25 in 30 (in 60)): Some apps perform a telecine by drawing to the screen using more vsyncs than are needed.
+     *  3. Telecined Video: Some apps perform a telecine by drawing to the screen using more vsyncs than are needed.
      *     When this occurs, ReplayKit generates duplicate frames, decimating the content further to 30 Hz.
      *     Duplicate video frames reduce encoder performance, increase cpu usage and lower the quality of the video stream.
      *     When the source detects telecined content, it attempts an inverse telecine to restore the natural cadence.
@@ -151,7 +151,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         }
     }
 
-    public func processVideoSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
+    public func processFrame(sampleBuffer: CMSampleBuffer) {
         guard let sink = self.sink else {
             return
         }
@@ -172,65 +172,10 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             videoQueue = ExampleCoreAudioDeviceGetCurrentQueue()
         }
 
-        // Frame dropping & inverse telecine (IVTC) logic.
-        let lastTimestamp = lastInputTimestamp
-        let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-        lastInputTimestamp = currentTimestamp
-
-        // Frame sync & IVTC logic is engaged when screencast is not used.
-        if let lastTimestamp = lastTimestamp,
-            !screencastUsage {
-            let delta = CMTimeSubtract(currentTimestamp, lastTimestamp)
-
-            // Update input stats.
-            if recentInputFrameDeltas.count == ReplayKitVideoSource.kFrameHistorySize {
-                recentInputFrameDeltas.removeFirst()
-            }
-            recentInputFrameDeltas.append(delta)
-
-            var total = CMTime.zero
-            for dataPoint in recentInputFrameDeltas {
-                total = CMTimeAdd(total, dataPoint)
-            }
-            let averageInput = Int32(round(Double(recentInputFrameDeltas.count) / total.seconds))
-
-            let deltaSeconds = delta.seconds
-            if frameSync == false,
-                averageDelivered >= ReplayKitVideoSource.kMinSyncFrameRate,
-                averageDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate {
-                frameSync = true
-
-                if let format = videoFormat {
-                    format.frameRate = UInt(ReplayKitVideoSource.kMaxSyncFrameRate)
-                    requestOutputFormat(format)
-                }
-
-                print("Frame sync detected at rate: \(averageDelivered)")
-            } else if frameSync,
-                averageDelivered < ReplayKitVideoSource.kMinSyncFrameRate || averageDelivered > ReplayKitVideoSource.kMaxSyncFrameRate {
-                frameSync = false
-
-                if let format = videoFormat {
-                    format.frameRate = UInt(15)
-                    requestOutputFormat(format)
-                }
-
-                print("Frame sync stopped at rate: \(averageDelivered)")
-            } else if averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
-                averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
-                if let lastSample = lastSampleBuffer,
-                    didTelecineLastFrame == false,
-                    ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-                    didTelecineLastFrame = true
-                    print("Dropping frame due to IVTC. Delta: \(deltaSeconds)")
-                    return
-                } else if didTelecineLastFrame {
-                    didTelecineLastFrame = false
-                    print("After telecine: \(deltaSeconds) Delivered: \(averageDelivered)")
-                }
-            } else {
-                print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered: \(averageDelivered)")
-            }
+        // A frame might be dropped if it is a duplicate. This method updates a history and might issue a format request.
+        if !screencastUsage,
+            processFrameInput(sampleBuffer: sampleBuffer) == .dropFrame {
+            return
         }
 
         /*
@@ -257,6 +202,75 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         // Hold on to the previous sample buffer to prevent tearing.
         lastSampleBuffer2 = lastSampleBuffer
         lastSampleBuffer = sampleBuffer
+    }
+
+    enum InputResult {
+        case dropFrame
+        case deliverFrame
+    }
+
+    // Frame dropping & inverse telecine (IVTC) logic. Returns 'True' if the frame should be dropped
+    private func processFrameInput(sampleBuffer: CMSampleBuffer) -> InputResult {
+        let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+        guard let lastTimestamp = lastInputTimestamp else {
+            lastInputTimestamp = currentTimestamp
+            return .deliverFrame
+        }
+
+        lastInputTimestamp = currentTimestamp
+        let delta = CMTimeSubtract(currentTimestamp, lastTimestamp)
+
+        // Update input stats.
+        if recentInputFrameDeltas.count == ReplayKitVideoSource.kFrameHistorySize {
+            recentInputFrameDeltas.removeFirst()
+        }
+        recentInputFrameDeltas.append(delta)
+
+        var total = CMTime.zero
+        for dataPoint in recentInputFrameDeltas {
+            total = CMTimeAdd(total, dataPoint)
+        }
+        let averageInput = Int32(round(Double(recentInputFrameDeltas.count) / total.seconds))
+
+        let deltaSeconds = delta.seconds
+        if frameSync == false,
+            averageDelivered >= ReplayKitVideoSource.kMinSyncFrameRate,
+            averageDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate {
+            frameSync = true
+
+            if let format = videoFormat {
+                format.frameRate = UInt(ReplayKitVideoSource.kMaxSyncFrameRate)
+                requestOutputFormat(format)
+            }
+
+            print("Frame sync detected at rate: \(averageDelivered)")
+        } else if frameSync,
+            averageDelivered < ReplayKitVideoSource.kMinSyncFrameRate || averageDelivered > ReplayKitVideoSource.kMaxSyncFrameRate {
+            frameSync = false
+
+            if let format = videoFormat {
+                format.frameRate = UInt(15)
+                requestOutputFormat(format)
+            }
+
+            print("Frame sync stopped at rate: \(averageDelivered)")
+        } else if averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
+            averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
+            if let lastSample = lastSampleBuffer,
+                didTelecineLastFrame == false,
+                ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+                didTelecineLastFrame = true
+                print("Dropping frame due to IVTC. Delta: \(deltaSeconds)")
+                return .dropFrame
+            } else if didTelecineLastFrame {
+                didTelecineLastFrame = false
+                print("After telecine: \(deltaSeconds) Delivered: \(averageDelivered)")
+            }
+        } else {
+            print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered: \(averageDelivered)")
+        }
+
+        return .deliverFrame
     }
 
     /*
