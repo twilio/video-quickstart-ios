@@ -15,11 +15,11 @@ import TwilioVideo
 class ReplayKitVideoSource: NSObject, VideoSource {
 
     // In order to save memory, the handler may request that the source downscale its output.
-    static let kDownScaledMaxWidthOrHeight = UInt(720)
+    static let kDownScaledMaxWidthOrHeight = UInt(886)
     static let kDownScaledMaxWidthOrHeightSimulcast = UInt(1280)
 
     // Maximum bitrate (in kbps) used to send video.
-    static let kMaxVideoBitrate = UInt(1420)
+    static let kMaxVideoBitrate = UInt(1440)
     static let kMaxVideoBitrateSimulcast = UInt(3000)
     static let kMaxScreenshareBitrate = UInt(1600)
 
@@ -32,42 +32,19 @@ class ReplayKitVideoSource: NSObject, VideoSource {
      *
      *  1. App content: Stream at 15 fps to ensure fine details (spatial resolution) are maintained.
      *  2. Video content: Attempt to match the natural video cadence between kMinSyncFrameRate <= fps <= kMaxSyncFrameRate.
-     *  3. Telecined Video: Some apps perform a telecine by drawing to the screen using more vsyncs than are needed.
+     *  3. Telecined Video content: Some apps perform a telecine by drawing to the screen using more vsyncs than are needed.
      *     When this occurs, ReplayKit generates duplicate frames, decimating the content further to 30 Hz.
      *     Duplicate video frames reduce encoder performance, increase cpu usage and lower the quality of the video stream.
      *     When the source detects telecined content, it attempts an inverse telecine to restore the natural cadence.
      */
     static let kMaxSyncFrameRate = 26
-    static let kMinSyncFrameRate = 20
-    static let kFrameHistorySize = 20
+    static let kMinSyncFrameRate = 23
+    static let kFrameHistorySize = 16
     // The minimum average input frame rate where IVTC is attempted.
     static let kInverseTelecineInputFrameRate = 28
     // The minimum average delivery frame rate where IVTC is attempted. Add leeway due to 24 in 30 in 60 case.
     static let kInverseTelecineMinimumFrameRate = 23
-    // When video content has 3:2 pulldown (in the form of extra frames), the IVTC should only ever drop 1 sequential frame.
-    var didTelecineLastFrame = false
 
-    static let kFormatFrameRate = UIScreen.main.maximumFramesPerSecond
-
-    var screencastUsage: Bool = false
-    weak var sink: VideoSink?
-    var videoFormat: VideoFormat?
-    var frameSync: Bool = false
-
-    var averageDelivered = UInt32(0)
-
-    var lastDeliveredTimestamp: CMTime?
-    var recentDeliveredFrameDeltas: [CMTime] = []
-    var lastInputTimestamp: CMTime?
-    var recentInputFrameDeltas: [CMTime] = []
-    var videoQueue: DispatchQueue?
-    var timerSource: DispatchSourceTimer?
-    var lastTransmitTimestamp: CMTime?
-    private var lastFrameStorage: VideoFrame?
-    // ReplayKit reuses the underlying CVPixelBuffer if you release the CMSampleBuffer back to their pool.
-    // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
-    private var lastSampleBuffer: CMSampleBuffer?
-    private var lastSampleBuffer2: CMSampleBuffer?
     /*
      * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
      * that your most recent frame eventually reaches subscribers, and that the publisher has a reasonable bandwidth estimate
@@ -79,6 +56,41 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                                                      timescale: CMTimeScale(1000))
     static let kFrameRetransmitDispatchInterval = DispatchTimeInterval.milliseconds(kFrameRetransmitIntervalMs)
     static let kFrameRetransmitDispatchLeeway = DispatchTimeInterval.milliseconds(20)
+
+    enum TelecineSequence {
+        case NotDetected
+        // A duplicate frame has been detected.
+        case Duplicate3
+        // New content following the duplicate frame.
+        case Content2
+        // New content after the non-duplicated content
+        case Content3
+    }
+
+    var screencastUsage: Bool = false
+    weak var sink: VideoSink?
+    var videoFormat: VideoFormat?
+    var frameSync: Bool = false
+
+    var averageDelivered = UInt32(0)
+    var recentDelivered = UInt32(0)
+
+    // Used to detect a sequence of video frames that have 3:2 pulldown applied
+    var telecineSequence = TelecineSequence.NotDetected
+    var didTelecineLastFrame = false
+    var lastDeliveredTimestamp: CMTime?
+    var recentDeliveredFrameDeltas: [CMTime] = []
+    var lastInputTimestamp: CMTime?
+    var recentInputFrameDeltas: [CMTime] = []
+
+    var videoQueue: DispatchQueue?
+    var timerSource: DispatchSourceTimer?
+    var lastTransmitTimestamp: CMTime?
+    private var lastFrameStorage: VideoFrame?
+    // ReplayKit reuses the underlying CVPixelBuffer if you release the CMSampleBuffer back to their pool.
+    // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
+    private var lastSampleBuffer: CMSampleBuffer?
+    private var lastSampleBuffer2: CMSampleBuffer?
 
     init(isScreencast: Bool) {
         screencastUsage = isScreencast
@@ -209,7 +221,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         case deliverFrame
     }
 
-    // Frame dropping & inverse telecine (IVTC) logic. Returns 'True' if the frame should be dropped
+    // Frame rate matching & inverse telecine (IVTC) logic.
     private func processFrameInput(sampleBuffer: CMSampleBuffer) -> InputResult {
         let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         guard let lastTimestamp = lastInputTimestamp else {
@@ -233,9 +245,12 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         let averageInput = Int32(round(Double(recentInputFrameDeltas.count) / total.seconds))
 
         let deltaSeconds = delta.seconds
+
         if frameSync == false,
             averageDelivered >= ReplayKitVideoSource.kMinSyncFrameRate,
-            averageDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate {
+            averageDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate,
+            recentDelivered >= ReplayKitVideoSource.kMinSyncFrameRate,
+            recentDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate {
             frameSync = true
 
             if let format = videoFormat {
@@ -248,6 +263,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             averageDelivered < ReplayKitVideoSource.kMinSyncFrameRate || averageDelivered > ReplayKitVideoSource.kMaxSyncFrameRate {
             frameSync = false
 
+            // TODO: Restore the original frame rate, whatever it was.
             if let format = videoFormat {
                 format.frameRate = UInt(15)
                 requestOutputFormat(format)
@@ -264,17 +280,19 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                 return .dropFrame
             } else if didTelecineLastFrame {
                 didTelecineLastFrame = false
-                print("After telecine: \(deltaSeconds) Delivered: \(averageDelivered)")
+                print("After telecine: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+            } else {
+//                print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
             }
         } else {
-            print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered: \(averageDelivered)")
+            print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
         }
 
         return .deliverFrame
     }
 
     /*
-     * The IVTC algorithm must know when a given frame is a duplicate of a previous frame. This implementation simply
+     * The IVTC algorithm must know when a given frame is a duplicate of a previous frame. This implementation
      * compares the chroma channels of each image to determine equality. Occasional false positives are worth the
      * performance benefit of skipping the luma (Y) plane, which is twice the size of the chroma (UV) plane.
      */
@@ -353,6 +371,16 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                 total = CMTimeAdd(total, dataPoint)
             }
             averageDelivered = UInt32(round(Double(recentDeliveredFrameDeltas.count) / total.seconds))
+
+            var recent = CMTime.zero
+            if recentDeliveredFrameDeltas.count >= 4 {
+                recent = CMTimeAdd(recent, recentDeliveredFrameDeltas.last!)
+                recent = CMTimeAdd(recent, recentDeliveredFrameDeltas[recentDeliveredFrameDeltas.count - 2])
+                recent = CMTimeAdd(recent, recentDeliveredFrameDeltas[recentDeliveredFrameDeltas.count - 3])
+                recent = CMTimeAdd(recent, recentDeliveredFrameDeltas[recentDeliveredFrameDeltas.count - 4])
+
+                recentDelivered = UInt32(round(Double(4) / recent.seconds))
+            }
         }
 
         lastDeliveredTimestamp = timestamp
