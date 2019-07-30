@@ -61,10 +61,13 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         case NotDetected
         // A duplicate frame has been detected.
         case Duplicate3
-        // New content following the duplicate frame.
-        case Content2
-        // New content after the non-duplicated content
-        case Content3
+        // Real frames following the duplicate.
+        case Content20
+        case Content21
+        case Content22
+        case Content23
+        // 25 frame / second content extends the sequence by 1.
+        case Content24
     }
 
     var screencastUsage: Bool = false
@@ -77,7 +80,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     // Used to detect a sequence of video frames that have 3:2 pulldown applied
     var telecineSequence = TelecineSequence.NotDetected
-    var didTelecineLastFrame = false
     var lastDeliveredTimestamp: CMTime?
     var recentDeliveredFrameDeltas: [CMTime] = []
     var lastInputTimestamp: CMTime?
@@ -254,7 +256,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             frameSync = true
 
             if let format = videoFormat {
-                format.frameRate = UInt(ReplayKitVideoSource.kMaxSyncFrameRate)
+                format.frameRate = UInt(ReplayKitVideoSource.kMaxSyncFrameRate + 1)
                 requestOutputFormat(format)
             }
 
@@ -272,17 +274,59 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             print("Frame sync stopped at rate: \(averageDelivered)")
         } else if averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
             averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
-            if let lastSample = lastSampleBuffer,
-                didTelecineLastFrame == false,
-                ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-                didTelecineLastFrame = true
-                print("Dropping frame due to IVTC. Delta: \(deltaSeconds)")
-                return .dropFrame
-            } else if didTelecineLastFrame {
-                didTelecineLastFrame = false
-                print("After telecine: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
-            } else {
-//                print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+            if let lastSample = lastSampleBuffer {
+                switch telecineSequence {
+                case .NotDetected:
+                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+                        print("Found first duplicate frame. Delta: \(deltaSeconds)")
+                        self.telecineSequence = .Duplicate3
+                        return .dropFrame
+                    }
+                    break
+                case .Duplicate3:
+                    self.telecineSequence = .Content20
+                    print("After telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+                    break
+                case .Content20:
+                    self.telecineSequence = .Content21
+                    print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+                    break
+                case .Content21:
+                    self.telecineSequence = .Content22
+                    print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+                    break
+                case .Content22:
+                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+                        print("Found early 24p duplicate frame. Delta: \(deltaSeconds)")
+                        self.telecineSequence = .Duplicate3
+                        return .dropFrame
+                    } else {
+                        print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+                        self.telecineSequence = .Content23
+                    }
+                    break
+                case .Content23:
+                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+                        print("Found 24p duplicate frame. Delta: \(deltaSeconds)")
+                        self.telecineSequence = .Duplicate3
+                        return .dropFrame
+                    } else {
+                        // PAL / 25 fps
+                        print("Telecine PAL content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+                        self.telecineSequence = .Content24
+                    }
+                    break
+                case .Content24:
+                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+                        print("Found 25p duplicate frame. Delta: \(deltaSeconds)")
+                        self.telecineSequence = .Duplicate3
+                        return .dropFrame
+                    } else {
+                        print("Telecine sequence broken.")
+                        self.telecineSequence = .NotDetected
+                    }
+                    break
+                }
             }
         } else {
             print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
