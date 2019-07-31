@@ -24,11 +24,12 @@ Coordinates a Video conference in a Room, including:
 6. Raising fatal errors to the developer.
 7. Disconnecting from the Room, and stopping `TVICameraSource`.
 
-The controller manages your LocalParticipant's media, reconfiguring the CameraSource and EncodingParameters for both 1:1 and multi-party scenarios. In order to conserve bandwidth, the controller will unpublish the Participant's `LocalAudioTrack` if it remains disabled for a long time.
+The controller manages your LocalParticipant's media, reconfiguring the CameraSource and EncodingParameters for both 1:1 and multi-party scenarios.
 
-Xcode's Network Report debugger demonstrates how much send bandwidth is consumed by a `LocalAudioTrack` in a Group Room as it is disabled, unpublished, and then republished later:
+In order to conserve bandwidth, the controller will unpublish the Participant's `LocalAudioTrack` if it remains disabled for too long. Xcode's Network Report debugger demonstrates how much bandwidth is consumed when publishing a `LocalAudioTrack` in a Group Room:
 
 <kbd><img width="860px" src="../images/quickstart/multi-party-audio-send-bandwidth.png"/></kbd>
+*A Participant connects with a `LocalAudioTrack`, and then disables it. The Track is unpublished after a period of inactivity in order to conserve bandwidth. When the Participant is ready to speak, audio is published on demand.*
 
 **RemoteParticipantView**
 
