@@ -10,6 +10,8 @@ Two `UIViewController` classes and one `UIView` comprise the main functionality 
 
 The landing page for the example. This class coordinates authorization of the Video Client, and accepts user input to determine which Room to connect to. The shared settings UI is accessible from the ViewController's navigation items.
 
+*Please note that video bitrate option on the settings page is ignored, since the example manages bitrate dynamically.*
+
 **MultiPartyViewController**
 
 Coordinates a Video conference in a Room, including:
@@ -21,6 +23,13 @@ Coordinates a Video conference in a Room, including:
 5. Displaying the Local Participant's [Network Quality Level](https://www.twilio.com/docs/video/using-network-quality-api).
 6. Raising fatal errors to the developer.
 7. Disconnecting from the Room, and stopping `TVICameraSource`.
+
+The controller manages your LocalParticipant's media, reconfiguring the CameraSource and EncodingParameters for both 1:1 and multi-party scenarios.
+
+In order to conserve bandwidth, the controller will unpublish the Participant's `LocalAudioTrack` if it remains disabled for too long. Xcode's Network Report debugger demonstrates how much bandwidth is consumed when publishing a `LocalAudioTrack` in a Group Room:
+
+<kbd><img width="860px" src="../images/quickstart/multi-party-audio-send-bandwidth.png"/></kbd>
+*A Participant connects with a `LocalAudioTrack`, and then disables it. The Track is unpublished after a period of inactivity in order to conserve bandwidth. When the Participant is ready to speak, audio is published on demand.*
 
 **RemoteParticipantView**
 
@@ -46,6 +55,6 @@ Tapping "Connect" will authorize your Client, and then connect to a Room sharing
 
 ### Known Issues
 
-**1. Defaults are inefficient for Peer-to-Peer**
+**1. Not optimized for Peer-to-Peer Rooms**
 
-This app is designed to be used in a Group Room. If you join a Peer-to-Peer Room then simulcast will still be enabled by default. The Client has no way to disable simulcast after connecting, beacuse it is ignorant of the Room type that is being used.
+This app is designed to be used in a Group Room. If you join a Peer-to-Peer Room then Dominant Speaker and Network Quality events will not be raised. Also, using VP8 simulcast in a Peer-to-Peer Room does not provide any benefit.
