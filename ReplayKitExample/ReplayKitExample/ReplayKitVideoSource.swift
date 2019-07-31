@@ -20,7 +20,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     // Maximum bitrate (in kbps) used to send video.
     static let kMaxVideoBitrate = UInt(1440)
-    static let kMaxVideoBitrateSimulcast = UInt(3000)
+    // The simulcast encoder allocates bits for each layer.
+    static let kMaxVideoBitrateSimulcast = UInt(1160)
     static let kMaxScreenshareBitrate = UInt(1600)
 
     // Maximum frame rate to send video at.
