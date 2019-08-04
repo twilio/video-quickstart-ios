@@ -5,6 +5,7 @@
 //  Copyright © 2018-2019 Twilio. All rights reserved.
 //
 
+import AVKit
 import UIKit
 import ReplayKit
 import TwilioVideo
@@ -61,6 +62,8 @@ class ViewController: UIViewController {
                                                                         alpha: 1.0)
         self.navigationController?.navigationBar.tintColor = UIColor.white
         self.navigationController?.navigationBar.barStyle = UIBarStyle.black
+        self.navigationItem.leftBarButtonItem =
+            UIBarButtonItem(title: "Documents", style: .plain, target: self, action: #selector(pickDocument(_:)))
 
         // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
         RPScreenRecorder.shared().delegate = self
@@ -80,6 +83,13 @@ class ViewController: UIViewController {
         if #available(iOS 12.0, *) {
             setupPickerView()
         }
+    }
+
+    @IBAction func pickDocument(_ sender: Any) {
+        let documents = [AVFileType.mov.rawValue, AVFileType.mp4.rawValue, AVFileType.m4v.rawValue]
+        let pickerVC = UIDocumentPickerViewController(documentTypes: documents, in: .`import`)
+        pickerVC.delegate = self
+        self.navigationController?.present(pickerVC, animated: true, completion: nil)
     }
 
     @available(iOS 12.0, *)
@@ -444,5 +454,23 @@ extension ViewController: RoomDelegate {
 
     func roomDidReconnect(room: Room) {
         print("Reconnected to room \(room.name)")
+    }
+}
+
+// MARK:- UIDocumentPickerDelegate
+extension ViewController : UIDocumentPickerDelegate {
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        if let url = urls.first {
+            print("Ready to play: \(url)")
+            let moviePlayer = AVPlayerViewController()
+            moviePlayer.player = AVPlayer(url: url)
+            moviePlayer.allowsPictureInPicturePlayback = false
+            moviePlayer.entersFullScreenWhenPlaybackBegins = true
+            self.navigationController?.pushViewController(moviePlayer, animated: true)
+        }
+    }
+
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        print("Document picker was cancelled.")
     }
 }
