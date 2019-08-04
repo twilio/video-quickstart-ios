@@ -21,7 +21,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // Maximum bitrate (in kbps) used to send video.
     static let kMaxVideoBitrate = UInt(1440)
     // The simulcast encoder allocates bits for each layer.
-    static let kMaxVideoBitrateSimulcast = UInt(1160)
+    static let kMaxVideoBitrateSimulcast = UInt(1180)
     static let kMaxScreenshareBitrate = UInt(1600)
 
     // Maximum frame rate to send video at.
@@ -38,13 +38,16 @@ class ReplayKitVideoSource: NSObject, VideoSource {
      *     Duplicate video frames reduce encoder performance, increase cpu usage and lower the quality of the video stream.
      *     When the source detects telecined content, it attempts an inverse telecine to restore the natural cadence.
      */
-    static let kMaxSyncFrameRate = 26
-    static let kMinSyncFrameRate = 23
+    static let kMaxSyncFrameRate = 27
+    static let kMinSyncFrameRate = 22
     static let kFrameHistorySize = 16
     // The minimum average input frame rate where IVTC is attempted.
     static let kInverseTelecineInputFrameRate = 28
     // The minimum average delivery frame rate where IVTC is attempted. Add leeway due to 24 in 30 in 60 case.
     static let kInverseTelecineMinimumFrameRate = 23
+    // How often to test for the start of a pulldown sequence.
+    // 6
+    static let kInverseTelecineDetectorFrameSkip = UInt(1)
 
     /*
      * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
@@ -75,12 +78,14 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     weak var sink: VideoSink?
     var videoFormat: VideoFormat?
     var frameSync: Bool = false
+    var frameSyncRestorableFrameRate: UInt?
 
     var averageDelivered = UInt32(0)
     var recentDelivered = UInt32(0)
 
     // Used to detect a sequence of video frames that have 3:2 pulldown applied
     var telecineSequence = TelecineSequence.NotDetected
+    var telecineDetectorCounter = UInt(0)
     var lastDeliveredTimestamp: CMTime?
     var recentDeliveredFrameDeltas: [CMTime] = []
     var lastInputTimestamp: CMTime?
@@ -187,10 +192,16 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             videoQueue = ExampleCoreAudioDeviceGetCurrentQueue()
         }
 
+        var timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+
         // A frame might be dropped if it is a duplicate. This method updates a history and might issue a format request.
-        if !screencastUsage,
-            processFrameInput(sampleBuffer: sampleBuffer) == .dropFrame {
-            return
+        if !screencastUsage {
+            let (result, adjustedTimestamp) = processFrameInput(sampleBuffer: sampleBuffer)
+            if result == .dropFrame {
+                return
+            } else {
+                timestamp = adjustedTimestamp
+            }
         }
 
         /*
@@ -209,7 +220,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
          * You may use a format request to crop and/or scale the buffers produced by this class.
          */
         deliverFrame(to: sink,
-                     timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer),
+                     timestamp: timestamp,
                      buffer: sourcePixelBuffer,
                      orientation: videoOrientation,
                      forceReschedule: false)
@@ -225,11 +236,11 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     }
 
     // Frame rate matching & inverse telecine (IVTC) logic.
-    private func processFrameInput(sampleBuffer: CMSampleBuffer) -> InputResult {
+    private func processFrameInput(sampleBuffer: CMSampleBuffer) -> (InputResult, CMTime) {
         let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         guard let lastTimestamp = lastInputTimestamp else {
             lastInputTimestamp = currentTimestamp
-            return .deliverFrame
+            return (.deliverFrame, currentTimestamp)
         }
 
         lastInputTimestamp = currentTimestamp
@@ -253,10 +264,12 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             averageDelivered >= ReplayKitVideoSource.kMinSyncFrameRate,
             averageDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate,
             recentDelivered >= ReplayKitVideoSource.kMinSyncFrameRate,
-            recentDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate {
+            recentDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate,
+            videoFormat?.frameRate ?? UInt(ReplayKitVideoSource.kMaxSyncFrameRate + 1) < ReplayKitVideoSource.kMaxSyncFrameRate {
             frameSync = true
 
             if let format = videoFormat {
+                frameSyncRestorableFrameRate = format.frameRate
                 format.frameRate = UInt(ReplayKitVideoSource.kMaxSyncFrameRate + 1)
                 requestOutputFormat(format)
             }
@@ -266,28 +279,36 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             averageDelivered < ReplayKitVideoSource.kMinSyncFrameRate || averageDelivered > ReplayKitVideoSource.kMaxSyncFrameRate {
             frameSync = false
 
-            // TODO: Restore the original frame rate, whatever it was.
             if let format = videoFormat {
-                format.frameRate = UInt(15)
+                format.frameRate = frameSyncRestorableFrameRate ?? ReplayKitVideoSource.kMaxVideoFrameRate
                 requestOutputFormat(format)
+                frameSyncRestorableFrameRate = nil
             }
 
             print("Frame sync stopped at rate: \(averageDelivered)")
-        } else if averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
+        }
+
+        if averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
             averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
             if let lastSample = lastSampleBuffer {
                 switch telecineSequence {
                 case .NotDetected:
-                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+                    if telecineDetectorCounter % ReplayKitVideoSource.kInverseTelecineDetectorFrameSkip == 0,
+                        ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
                         print("Found first duplicate frame. Delta: \(deltaSeconds)")
                         self.telecineSequence = .Duplicate3
-                        return .dropFrame
+                        return (.dropFrame, currentTimestamp)
+                    } else {
+                        telecineDetectorCounter += 1
                     }
                     break
                 case .Duplicate3:
+                    // Pull the frame following the duplicate back 1/60 second, so as to not have a 4/60 second gap.
+                    let halfDelta = CMTimeMultiplyByRatio(delta, multiplier: 1, divisor: 2)
+                    let adjustedTimestamp = currentTimestamp - halfDelta
                     self.telecineSequence = .Content20
-                    print("After telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
-                    break
+                    print("After telecine content: \((delta + halfDelta).seconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+                    return (.deliverFrame, adjustedTimestamp)
                 case .Content20:
                     self.telecineSequence = .Content21
                     print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
@@ -298,30 +319,26 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                     break
                 case .Content22:
                     if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-                        print("Found early 24p duplicate frame. Delta: \(deltaSeconds)")
                         self.telecineSequence = .Duplicate3
-                        return .dropFrame
+                        return (.dropFrame, currentTimestamp)
                     } else {
-                        print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
                         self.telecineSequence = .Content23
                     }
                     break
                 case .Content23:
+                    // 24 fps
                     if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-                        print("Found 24p duplicate frame. Delta: \(deltaSeconds)")
                         self.telecineSequence = .Duplicate3
-                        return .dropFrame
+                        return (.dropFrame, currentTimestamp)
                     } else {
-                        // PAL / 25 fps
-                        print("Telecine PAL content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
                         self.telecineSequence = .Content24
                     }
                     break
                 case .Content24:
+                    // 25 fps
                     if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-                        print("Found 25p duplicate frame. Delta: \(deltaSeconds)")
                         self.telecineSequence = .Duplicate3
-                        return .dropFrame
+                        return (.dropFrame, currentTimestamp)
                     } else {
                         print("Telecine sequence broken.")
                         self.telecineSequence = .NotDetected
@@ -333,7 +350,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
         }
 
-        return .deliverFrame
+        return (.deliverFrame, currentTimestamp)
     }
 
     /*
