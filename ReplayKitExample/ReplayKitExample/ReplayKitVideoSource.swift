@@ -38,8 +38,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
      *     Duplicate video frames reduce encoder performance, increase cpu usage and lower the quality of the video stream.
      *     When the source detects telecined content, it attempts an inverse telecine to restore the natural cadence.
      */
-    static let kMaxSyncFrameRate = 27
-    static let kMinSyncFrameRate = 22
+    static let kMaxSyncFrameRate = UInt(27)
+    static let kMinSyncFrameRate = UInt(22)
     static let kFrameHistorySize = 16
     // The minimum average input frame rate where IVTC is attempted.
     static let kInverseTelecineInputFrameRate = 28
@@ -99,7 +99,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // ReplayKit reuses the underlying CVPixelBuffer if you release the CMSampleBuffer back to their pool.
     // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
     private var lastSampleBuffer: CMSampleBuffer?
-    private var lastSampleBuffer2: CMSampleBuffer?
 
     init(isScreencast: Bool) {
         screencastUsage = isScreencast
@@ -167,7 +166,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                 self.timerSource?.cancel()
                 self.timerSource = nil
                 self.lastSampleBuffer = nil
-                self.lastSampleBuffer2 = nil
             }
         }
     }
@@ -227,7 +225,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                      forceReschedule: false)
 
         // Hold on to the previous sample buffer to prevent tearing.
-        lastSampleBuffer2 = lastSampleBuffer
         lastSampleBuffer = sampleBuffer
     }
 
@@ -266,7 +263,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             averageDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate,
             recentDelivered >= ReplayKitVideoSource.kMinSyncFrameRate,
             recentDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate,
-            videoFormat?.frameRate ?? UInt(ReplayKitVideoSource.kMaxSyncFrameRate + 1) < ReplayKitVideoSource.kMaxSyncFrameRate {
+            videoFormat?.frameRate ?? ReplayKitVideoSource.kMaxSyncFrameRate < ReplayKitVideoSource.kMaxSyncFrameRate {
             frameSync = true
 
             if let format = videoFormat {
@@ -478,7 +475,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                 let delta = CMTimeSubtract(currentTimestamp, lastHostTimestamp)
 
                 if delta >= ReplayKitVideoSource.kFrameRetransmitTimeInterval {
-                    print("Delivering frame since send-delta is greather than threshold. delta=", delta.seconds)
+                    print("Delivering frame since send delta is greather than threshold. delta=", delta.seconds)
                     // Reconstruct a new timestamp, advancing by our relative read of host time.
                     self.deliverFrame(to: sink,
                                       timestamp: CMTimeAdd(frame.timestamp, delta),
