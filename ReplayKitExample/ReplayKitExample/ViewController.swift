@@ -85,6 +85,11 @@ class ViewController: UIViewController {
         }
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+
     @IBAction func pickDocument(_ sender: Any) {
         let documents = [AVFileType.mov.rawValue, AVFileType.mp4.rawValue, AVFileType.m4v.rawValue]
         let pickerVC = UIDocumentPickerViewController(documentTypes: documents, in: .`import`)
@@ -259,7 +264,7 @@ class ViewController: UIViewController {
         recorder.isCameraEnabled = false
 
         // Our source produces either downscaled buffers with smoother motion, or an HD screen recording.
-        videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers)
+        videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers, inverseTelecine: false)
 
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
@@ -464,9 +469,12 @@ extension ViewController : UIDocumentPickerDelegate {
             print("Ready to play: \(url)")
             let moviePlayer = AVPlayerViewController()
             moviePlayer.player = AVPlayer(url: url)
+            moviePlayer.player?.play()
             moviePlayer.allowsPictureInPicturePlayback = false
             moviePlayer.entersFullScreenWhenPlaybackBegins = true
+            moviePlayer.exitsFullScreenWhenPlaybackEnds = true
             self.navigationController?.pushViewController(moviePlayer, animated: true)
+            self.navigationController?.setNavigationBarHidden(true, animated: true)
         }
     }
 

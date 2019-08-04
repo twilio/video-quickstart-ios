@@ -48,7 +48,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: SampleHandler.kVideoCodec,
                                                                                           isScreencast: false)
 
-        videoSource = ReplayKitVideoSource(isScreencast: false)
+        videoSource = ReplayKitVideoSource(isScreencast: false, inverseTelecine: true)
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
                                       name: "Screen")

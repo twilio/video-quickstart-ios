@@ -76,6 +76,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     }
 
     var screencastUsage: Bool = false
+    let useInverseTelecine: Bool
     weak var sink: VideoSink?
     var videoFormat: VideoFormat?
     var frameSync: Bool = false
@@ -100,8 +101,9 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
     private var lastSampleBuffer: CMSampleBuffer?
 
-    init(isScreencast: Bool) {
+    init(isScreencast: Bool, inverseTelecine: Bool) {
         screencastUsage = isScreencast
+        useInverseTelecine = inverseTelecine
         super.init()
     }
 
@@ -286,7 +288,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             print("Frame sync stopped at rate: \(averageDelivered)")
         }
 
-        if averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
+        if useInverseTelecine,
+            averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
             averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
             if let lastSample = lastSampleBuffer {
                 switch telecineSequence {
