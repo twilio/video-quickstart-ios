@@ -46,8 +46,9 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // The minimum average delivery frame rate where IVTC is attempted. Add leeway due to 24 in 30 in 60 case.
     static let kInverseTelecineMinimumFrameRate = 23
     // How often to test for the start of a pulldown sequence.
-    // 6
-    static let kInverseTelecineDetectorFrameSkip = UInt(1)
+    static let kInverseTelecineDetectorFrameSkip = UInt64(30)
+    // How long to look for a duplicate frame to begin a telecine sequence.
+    static let kInverseTelecineDetectorSequenceLength = UInt64(6)
 
     /*
      * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
@@ -85,7 +86,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     // Used to detect a sequence of video frames that have 3:2 pulldown applied
     var telecineSequence = TelecineSequence.NotDetected
-    var telecineDetectorCounter = UInt(0)
+    var telecineDetectorCounter = UInt64(0)
     var lastDeliveredTimestamp: CMTime?
     var recentDeliveredFrameDeltas: [CMTime] = []
     var lastInputTimestamp: CMTime?
@@ -293,10 +294,14 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             if let lastSample = lastSampleBuffer {
                 switch telecineSequence {
                 case .NotDetected:
-                    if telecineDetectorCounter % ReplayKitVideoSource.kInverseTelecineDetectorFrameSkip == 0,
+                    let shouldCompareFrames =
+                        telecineDetectorCounter % ReplayKitVideoSource.kInverseTelecineDetectorFrameSkip
+                            < ReplayKitVideoSource.kInverseTelecineDetectorSequenceLength
+                    if shouldCompareFrames,
                         ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
                         print("Found first duplicate frame. Delta: \(deltaSeconds)")
                         self.telecineSequence = .Duplicate3
+                        telecineDetectorCounter = 0
                         return (.dropFrame, currentTimestamp)
                     } else {
                         telecineDetectorCounter += 1
