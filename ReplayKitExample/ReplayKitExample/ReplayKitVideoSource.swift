@@ -75,27 +75,27 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         case Content24
     }
 
-    var screencastUsage: Bool = false
-    let useInverseTelecine: Bool
+    private var screencastUsage: Bool = false
+    private let useInverseTelecine: Bool
     weak var sink: VideoSink?
-    var videoFormat: VideoFormat?
-    var frameSync: Bool = false
-    var frameSyncRestorableFrameRate: UInt?
+    private var videoFormat: VideoFormat?
+    private var frameSync: Bool = false
+    private var frameSyncRestorableFrameRate: UInt?
 
-    var averageDelivered = UInt32(0)
-    var recentDelivered = UInt32(0)
+    private var averageDelivered = UInt32(0)
+    private var recentDelivered = UInt32(0)
 
     // Used to detect a sequence of video frames that have 3:2 pulldown applied
-    var telecineSequence = TelecineSequence.NotDetected
-    var telecineDetectorCounter = UInt64(0)
-    var lastDeliveredTimestamp: CMTime?
-    var recentDeliveredFrameDeltas: [CMTime] = []
-    var lastInputTimestamp: CMTime?
-    var recentInputFrameDeltas: [CMTime] = []
+    private var telecineSequence = TelecineSequence.NotDetected
+    private var telecineDetectorCounter = UInt64(0)
+    private var lastDeliveredTimestamp: CMTime?
+    private var recentDeliveredFrameDeltas: [CMTime] = []
+    private var lastInputTimestamp: CMTime?
+    private var recentInputFrameDeltas: [CMTime] = []
 
-    var videoQueue: DispatchQueue?
-    var timerSource: DispatchSourceTimer?
-    var lastTransmitTimestamp: CMTime?
+    private var videoQueue: DispatchQueue?
+    private var timerSource: DispatchSourceTimer?
+    private var lastTransmitTimestamp: CMTime?
     private var lastFrameStorage: VideoFrame?
     // ReplayKit reuses the underlying CVPixelBuffer if you release the CMSampleBuffer back to their pool.
     // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
@@ -144,7 +144,13 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         return outputFormat;
     }
 
-    static func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool) -> (EncodingParameters, VideoFormat) {
+    /// Gets the recommended EncodingParameters and VideoFormat for a specific use case.
+    ///
+    /// - Parameters:
+    ///   - codec: The video codec that will be preferred to send ReplayKit video frames.
+    ///   - isScreencast: If the content is a screencast or not.
+    /// - Returns: The EncodingParameters and VideoFormat that are appropriate for the use case.
+    static public func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool) -> (EncodingParameters, VideoFormat) {
         let audioBitrate = UInt(0)
         var videoBitrate = kMaxVideoBitrate
         var maxWidthOrHeight = isScreencast ? UInt(0) : kDownScaledMaxWidthOrHeight
@@ -172,6 +178,10 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         }
     }
 
+    /// Provide a frame to the source for processing. This operation might result in the frame being delivered to the sink,
+    /// dropped, and/or remapped.
+    ///
+    /// - Parameter sampleBuffer: The new CMSampleBuffer input to process.
     public func processFrame(sampleBuffer: CMSampleBuffer) {
         guard let sink = self.sink else {
             return
@@ -235,7 +245,10 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         case deliverFrame
     }
 
-    // Frame rate matching & inverse telecine (IVTC) logic.
+    /// Process a frame, deciding if it should be dropped and remapping the timestamp if needed.
+    ///
+    /// - Parameter sampleBuffer: A CMSampleBuffer containing a single CVPixelBuffer sample.
+    /// - Returns: The result of the frame processing, and a frame timestamp that may have been remapped.
     private func processFrameInput(sampleBuffer: CMSampleBuffer) -> (InputResult, CMTime) {
         let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         guard let lastTimestamp = lastInputTimestamp else {
@@ -358,12 +371,15 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         return (.deliverFrame, currentTimestamp)
     }
 
-    /*
-     * The IVTC algorithm must know when a given frame is a duplicate of a previous frame. This implementation
-     * compares the chroma channels of each image to determine equality. Occasional false positives are worth the
-     * performance benefit of skipping the luma (Y) plane, which is twice the size of the chroma (UV) plane.
-     */
-    static func compareSamples(first: CMSampleBuffer, second: CMSampleBuffer) -> Bool {
+    /// The IVTC algorithm must know when a given frame is a duplicate of a previous frame. This implementation
+    /// compares the chroma channels of each image to determine equality. Occasional false positives are worth the
+    /// performance benefit of skipping the luma (Y) plane, which is twice the size of the chroma (UV) plane.
+    ///
+    /// - Parameters:
+    ///   - first: The first sample.
+    ///   - second: The second sample.
+    /// - Returns: `true` if the samples are the same, and `false` if they are not.
+    private static func compareSamples(first: CMSampleBuffer, second: CMSampleBuffer) -> Bool {
         guard let firstPixelBuffer = CMSampleBufferGetImageBuffer(first) else {
             return false
         }
@@ -407,7 +423,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         return true
     }
 
-    func deliverFrame(to: VideoSink, timestamp: CMTime, buffer: CVPixelBuffer, orientation: VideoOrientation, forceReschedule: Bool) {
+    private func deliverFrame(to: VideoSink, timestamp: CMTime, buffer: CVPixelBuffer, orientation: VideoOrientation, forceReschedule: Bool) {
         guard let frame = VideoFrame(timestamp: timestamp,
                                      buffer: buffer,
                                      orientation: orientation) else {
@@ -453,7 +469,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         lastDeliveredTimestamp = timestamp
     }
 
-    func dispatchRetransmissions(forceReschedule: Bool) {
+    private func dispatchRetransmissions(forceReschedule: Bool) {
         if let source = timerSource,
             source.isCancelled == false,
             forceReschedule == false {
@@ -505,7 +521,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         source.activate()
     }
 
-    static func imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation) -> VideoOrientation {
+    private static func imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation) -> VideoOrientation {
         let videoOrientation: VideoOrientation
 
         // Note: The source does not attempt to "undo" mirroring. So far I have not encountered mirrored tags from ReplayKit sources.
