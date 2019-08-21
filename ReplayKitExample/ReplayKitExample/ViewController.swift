@@ -62,8 +62,6 @@ class ViewController: UIViewController {
                                                                         alpha: 1.0)
         self.navigationController?.navigationBar.tintColor = UIColor.white
         self.navigationController?.navigationBar.barStyle = UIBarStyle.black
-        self.navigationItem.leftBarButtonItem =
-            UIBarButtonItem(title: "Documents", style: .plain, target: self, action: #selector(pickDocument(_:)))
 
         // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
         RPScreenRecorder.shared().delegate = self
@@ -217,6 +215,7 @@ class ViewController: UIViewController {
             } else {
                 print("Screen capture stopped.")
                 DispatchQueue.main.async {
+                    self.navigationItem.leftBarButtonItem = nil
                     self.conferenceButton?.isEnabled = true
                     self.infoLabel?.isHidden = false
                     if let picker = self.broadcastPickerView {
@@ -315,6 +314,9 @@ class ViewController: UIViewController {
                     self.spinner.startAnimating()
                     self.infoLabel?.isHidden = true
                     self.connectToRoom(name: "conference", encodingParameters: encodingParams)
+
+                    self.navigationItem.leftBarButtonItem =
+                        UIBarButtonItem(title: "Play Video", style: .plain, target: self, action: #selector(self.pickDocument(_:)))
                 }
             }
         }
