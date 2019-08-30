@@ -150,11 +150,11 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     ///   - codec: The video codec that will be preferred to send ReplayKit video frames.
     ///   - isScreencast: If the content is a screencast or not.
     /// - Returns: The EncodingParameters and VideoFormat that are appropriate for the use case.
-    static public func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool) -> (EncodingParameters, VideoFormat) {
+    static public func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool, useInverseTelecine: Bool) -> (EncodingParameters, VideoFormat) {
         let audioBitrate = UInt(0)
         var videoBitrate = kMaxVideoBitrate
         var maxWidthOrHeight = isScreencast ? UInt(0) : kDownScaledMaxWidthOrHeight
-        let maxFrameRate = kMaxVideoFrameRate
+        let maxFrameRate = useInverseTelecine || isScreencast ? kMaxVideoFrameRate : UInt(30)
 
         if let vp8Codec = codec as? Vp8Codec {
             videoBitrate = vp8Codec.isSimulcast ? kMaxVideoBitrateSimulcast : kMaxVideoBitrate
@@ -217,7 +217,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
         /*
          * Check rotation tags. Extensions see these tags, but `RPScreenRecorder` does not appear to set them.
-         * On iOS 12.0, rotation tags other than up are set by extensions.
+         * On iOS 12.0+, rotation tags (other than up) are set by extensions.
          */
         var videoOrientation = VideoOrientation.up
         if let sampleOrientation = CMGetAttachment(sampleBuffer, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil),

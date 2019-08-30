@@ -185,14 +185,14 @@ class ViewController: UIViewController {
     }
 
     // MARK:- Private
-    func checkRecordingAvailability() {
+    private func checkRecordingAvailability() {
         let isScreenRecordingAvailable = RPScreenRecorder.shared().isAvailable
         broadcastButton.isHidden = !isScreenRecordingAvailable
         conferenceButton?.isHidden = !isScreenRecordingAvailable
         infoLabel?.text = isScreenRecordingAvailable ? ViewController.kRecordingAvailableInfo : ViewController.kRecordingNotAvailableInfo
     }
 
-    func startBroadcast() {
+    private func startBroadcast() {
         self.broadcastController?.startBroadcast { [unowned self] error in
             DispatchQueue.main.async {
                 if let theError = error {
@@ -206,7 +206,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func stopConference(error: Error?) {
+    private func stopConference(error: Error?) {
         // Stop recording the screen.
         let recorder = RPScreenRecorder.shared()
         recorder.stopCapture { (captureError) in
@@ -246,7 +246,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func startConference() {
+    private func startConference() {
         self.broadcastButton.isEnabled = false
         if let picker = self.broadcastPickerView {
             picker.isHidden = true
@@ -262,8 +262,9 @@ class ViewController: UIViewController {
         recorder.isMicrophoneEnabled = false
         recorder.isCameraEnabled = false
 
-        // Our source produces either downscaled buffers with smoother motion, or an HD screen recording.
-        videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers, inverseTelecine: false)
+        // The source produces either downscaled buffers with smoother motion, or an HD screen recording.
+        videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers,
+                                           inverseTelecine: false)
 
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
@@ -271,7 +272,8 @@ class ViewController: UIViewController {
 
         let videoCodec = Settings.shared.videoCodec ?? Vp8Codec()!
         let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: videoCodec,
-                                                                                          isScreencast: !ViewController.kDownscaleBuffers)
+                                                                                          isScreencast: !ViewController.kDownscaleBuffers,
+                                                                                    useInverseTelecine: false)
         videoSource?.requestOutputFormat(outputFormat)
 
         recorder.startCapture(handler: { (sampleBuffer, type, error) in
@@ -322,7 +324,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func connectToRoom(name: String, encodingParameters: EncodingParameters) {
+    private func connectToRoom(name: String, encodingParameters: EncodingParameters) {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
