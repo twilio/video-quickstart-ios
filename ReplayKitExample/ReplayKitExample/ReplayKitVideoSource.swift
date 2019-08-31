@@ -42,7 +42,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     static let kMinSyncFrameRate = UInt(22)
     static let kFrameHistorySize = 16
     // The minimum average input frame rate where IVTC is attempted.
-    static let kInverseTelecineInputFrameRate = 28
+    static let kInverseTelecineInputFrameRate = 58
     // The minimum average delivery frame rate where IVTC is attempted. Add leeway due to 24 in 30 in 60 case.
     static let kInverseTelecineMinimumFrameRate = 23
     // How often to test for the start of a pulldown sequence.
@@ -74,6 +74,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         // 25 frame / second content extends the sequence by 1.
         case Content24
     }
+
+    private var telecine60p: InverseTelecine60p?
 
     private var screencastUsage: Bool = false
     private let useInverseTelecine: Bool
@@ -154,7 +156,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         let audioBitrate = UInt(0)
         var videoBitrate = kMaxVideoBitrate
         var maxWidthOrHeight = isScreencast ? UInt(0) : kDownScaledMaxWidthOrHeight
-        let maxFrameRate = useInverseTelecine || isScreencast ? kMaxVideoFrameRate : UInt(30)
+        // TODO: IVTC in broadcast
+        let maxFrameRate = isScreencast ? kMaxVideoFrameRate : UInt(30)
 
         if let vp8Codec = codec as? Vp8Codec {
             videoBitrate = vp8Codec.isSimulcast ? kMaxVideoBitrateSimulcast : kMaxVideoBitrate
@@ -240,16 +243,11 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         lastSampleBuffer = sampleBuffer
     }
 
-    enum InputResult {
-        case dropFrame
-        case deliverFrame
-    }
-
     /// Process a frame, deciding if it should be dropped and remapping the timestamp if needed.
     ///
     /// - Parameter sampleBuffer: A CMSampleBuffer containing a single CVPixelBuffer sample.
     /// - Returns: The result of the frame processing, and a frame timestamp that may have been remapped.
-    private func processFrameInput(sampleBuffer: CMSampleBuffer) -> (InputResult, CMTime) {
+    private func processFrameInput(sampleBuffer: CMSampleBuffer) -> (InverseTelecine60p.Result, CMTime) {
         let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         guard let lastTimestamp = lastInputTimestamp else {
             lastInputTimestamp = currentTimestamp
@@ -305,64 +303,72 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
             averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
             if let lastSample = lastSampleBuffer {
-                switch telecineSequence {
-                case .NotDetected:
-                    let shouldCompareFrames =
-                        telecineDetectorCounter % ReplayKitVideoSource.kInverseTelecineDetectorFrameSkip
-                            < ReplayKitVideoSource.kInverseTelecineDetectorSequenceLength
-                    if shouldCompareFrames,
-                        ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-                        print("Found first duplicate frame. Delta: \(deltaSeconds)")
-                        self.telecineSequence = .Duplicate3
-                        telecineDetectorCounter = 0
-                        return (.dropFrame, currentTimestamp)
-                    } else {
-                        telecineDetectorCounter += 1
-                    }
-                    break
-                case .Duplicate3:
-                    // Pull the frame following the duplicate back 1/60 second, so as to not have a 4/60 second gap.
-                    let halfDelta = CMTimeMultiplyByRatio(delta, multiplier: 1, divisor: 2)
-                    let adjustedTimestamp = currentTimestamp - halfDelta
-                    self.telecineSequence = .Content20
-                    print("After telecine content: \((delta + halfDelta).seconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
-                    return (.deliverFrame, adjustedTimestamp)
-                case .Content20:
-                    self.telecineSequence = .Content21
-                    print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
-                    break
-                case .Content21:
-                    self.telecineSequence = .Content22
-                    print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
-                    break
-                case .Content22:
-                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-                        self.telecineSequence = .Duplicate3
-                        return (.dropFrame, currentTimestamp)
-                    } else {
-                        self.telecineSequence = .Content23
-                    }
-                    break
-                case .Content23:
-                    // 24 fps
-                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-                        self.telecineSequence = .Duplicate3
-                        return (.dropFrame, currentTimestamp)
-                    } else {
-                        self.telecineSequence = .Content24
-                    }
-                    break
-                case .Content24:
-                    // 25 fps
-                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-                        self.telecineSequence = .Duplicate3
-                        return (.dropFrame, currentTimestamp)
-                    } else {
-                        print("Telecine sequence broken.")
-                        self.telecineSequence = .NotDetected
-                    }
-                    break
+                if telecine60p == nil {
+                    telecine60p = InverseTelecine60p()
                 }
+
+                if let telecine = telecine60p {
+                    return telecine.process(input: sampleBuffer, last: lastSample)
+                }
+
+//                switch telecineSequence {
+//                case .NotDetected:
+//                    let shouldCompareFrames =
+//                        telecineDetectorCounter % ReplayKitVideoSource.kInverseTelecineDetectorFrameSkip
+//                            < ReplayKitVideoSource.kInverseTelecineDetectorSequenceLength
+//                    if shouldCompareFrames,
+//                        ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+//                        print("Found first duplicate frame. Delta: \(deltaSeconds)")
+//                        self.telecineSequence = .Duplicate3
+//                        telecineDetectorCounter = 0
+//                        return (.dropFrame, currentTimestamp)
+//                    } else {
+//                        telecineDetectorCounter += 1
+//                    }
+//                    break
+//                case .Duplicate3:
+//                    // Pull the frame following the duplicate back 1/60 second, so as to not have a 4/60 second gap.
+//                    let halfDelta = CMTimeMultiplyByRatio(delta, multiplier: 1, divisor: 2)
+//                    let adjustedTimestamp = currentTimestamp - halfDelta
+//                    self.telecineSequence = .Content20
+//                    print("After telecine content: \((delta + halfDelta).seconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+//                    return (.deliverFrame, adjustedTimestamp)
+//                case .Content20:
+//                    self.telecineSequence = .Content21
+//                    print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+//                    break
+//                case .Content21:
+//                    self.telecineSequence = .Content22
+//                    print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
+//                    break
+//                case .Content22:
+//                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+//                        self.telecineSequence = .Duplicate3
+//                        return (.dropFrame, currentTimestamp)
+//                    } else {
+//                        self.telecineSequence = .Content23
+//                    }
+//                    break
+//                case .Content23:
+//                    // 24 fps
+//                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+//                        self.telecineSequence = .Duplicate3
+//                        return (.dropFrame, currentTimestamp)
+//                    } else {
+//                        self.telecineSequence = .Content24
+//                    }
+//                    break
+//                case .Content24:
+//                    // 25 fps
+//                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
+//                        self.telecineSequence = .Duplicate3
+//                        return (.dropFrame, currentTimestamp)
+//                    } else {
+//                        print("Telecine sequence broken.")
+//                        self.telecineSequence = .NotDetected
+//                    }
+//                    break
+//                }
             }
         } else {
             print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
@@ -442,7 +448,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         // Update delivery stats
         if let lastTimestamp = lastDeliveredTimestamp,
             !screencastUsage {
-            let delta = CMTimeSubtract(timestamp, lastTimestamp)
+            let delta = CMTimeAbsoluteValue(CMTimeSubtract(timestamp, lastTimestamp))
 
             if recentDeliveredFrameDeltas.count == ReplayKitVideoSource.kFrameHistorySize {
                 recentDeliveredFrameDeltas.removeFirst()
