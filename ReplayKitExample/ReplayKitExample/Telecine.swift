@@ -8,19 +8,23 @@
 
 import Foundation
 
-class InverseTelecine60p {
-    enum TelecineSequence {
-        // No duplicate has been detected yet.
-        case Detecting
-        // Waiting to try again.
-        case Wait
-        // Sequences that are 2 or 3 frames long, with occasional 1 frame sequences interspersed.
-        case Content
-    }
+enum TelecineResult {
+    case dropFrame
+    case deliverFrame
+}
 
-    enum Result {
-        case dropFrame
-        case deliverFrame
+protocol InverseTelecine {
+    func process(input: CMSampleBuffer, last: CMSampleBuffer) -> (TelecineResult, CMTime)
+}
+
+class InverseTelecine60p : InverseTelecine {
+    enum TelecineSequence {
+        /// No duplicate has been detected yet.
+        case Detecting
+        /// Waiting to try again.
+        case Wait
+        /// Sequences that are 2 or 3 duplicate frames long, with occasional single frame sequences interspersed.
+        case Content
     }
 
     private var sequence = TelecineSequence.Detecting
@@ -28,9 +32,9 @@ class InverseTelecine60p {
     private var sequenceCounter = UInt64(0)
     private var lastSequenceLength = UInt16(0)
 
-    public func process(input: CMSampleBuffer, last: CMSampleBuffer) -> (Result, CMTime) {
+    public func process(input: CMSampleBuffer, last: CMSampleBuffer) -> (TelecineResult, CMTime) {
         let inputTimestamp = CMSampleBufferGetPresentationTimeStamp(input)
-        var result = Result.deliverFrame
+        var result = TelecineResult.deliverFrame
 
         switch sequence {
         case .Detecting:
@@ -86,7 +90,7 @@ class InverseTelecine60p {
             result = .deliverFrame
         }
 
-        return (result as Result, inputTimestamp)
+        return (result as TelecineResult, inputTimestamp)
     }
 
     /// The IVTC algorithm must know when a given frame is a duplicate of a previous frame. This implementation
@@ -142,7 +146,7 @@ class InverseTelecine60p {
     }
 }
 
-class InverseTelecine30p {
+class InverseTelecine30p : InverseTelecine {
     enum TelecineSequence {
         // No duplicate has been detected yet.
         case Detecting
@@ -157,8 +161,8 @@ class InverseTelecine30p {
     private var sequenceCounter = UInt64(0)
     private var lastInputTimestamp: CMTime?
 
-    public func process(input: CMSampleBuffer, last: CMSampleBuffer) -> (InverseTelecine60p.Result, CMTime) {
-        var result = InverseTelecine60p.Result.deliverFrame
+    public func process(input: CMSampleBuffer, last: CMSampleBuffer) -> (TelecineResult, CMTime) {
+        var result = TelecineResult.deliverFrame
         let inputTimestamp = CMSampleBufferGetPresentationTimeStamp(input)
         var adjustedTimestamp = inputTimestamp
         guard let lastTimestamp = lastInputTimestamp else {
@@ -217,6 +221,6 @@ class InverseTelecine30p {
             result = .deliverFrame
         }
 
-        return (result as InverseTelecine60p.Result, adjustedTimestamp)
+        return (result as TelecineResult, adjustedTimestamp)
     }
 }

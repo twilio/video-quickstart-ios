@@ -14,6 +14,15 @@ import TwilioVideo
 
 class ReplayKitVideoSource: NSObject, VideoSource {
 
+    enum TelecineOptions {
+        /// The source delivers all of the frames that it receives. Format requests might drop frames and limit the encoded frame rate.
+        case disabled
+        /// Remove duplicate frames that result when video is drawn directly to the screen and captured using RPBroadcastSampleHandler.
+        case p30to24or25
+        /// Remove duplicate frames that result when video is drawn directly to the screen and captured using RPScreenRecorder.
+        case p60to24or25or30
+    }
+
     // In order to save memory, the handler may request that the source downscale its output.
     static let kDownScaledMaxWidthOrHeight = UInt(886)
     static let kDownScaledMaxWidthOrHeightSimulcast = UInt(1280)
@@ -41,14 +50,9 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     static let kMaxSyncFrameRate = UInt(27)
     static let kMinSyncFrameRate = UInt(22)
     static let kFrameHistorySize = 16
-    // The minimum average input frame rate where IVTC is attempted.
-    static let kInverseTelecineInputFrameRate = 58
+
     // The minimum average delivery frame rate where IVTC is attempted. Add leeway due to 24 in 30 in 60 case.
     static let kInverseTelecineMinimumFrameRate = 23
-    // How often to test for the start of a pulldown sequence.
-    static let kInverseTelecineDetectorFrameSkip = UInt64(30)
-    // How long to look for a duplicate frame to begin a telecine sequence.
-    static let kInverseTelecineDetectorSequenceLength = UInt64(6)
 
     /*
      * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
@@ -62,11 +66,10 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     static let kFrameRetransmitDispatchInterval = DispatchTimeInterval.milliseconds(kFrameRetransmitIntervalMs)
     static let kFrameRetransmitDispatchLeeway = DispatchTimeInterval.milliseconds(20)
 
-    private var telecine60p: InverseTelecine60p?
-    private var telecine30p: InverseTelecine30p?
+    private var telecine: InverseTelecine?
+    private var telecineInputFrameRate: UInt32
 
     private var screencastUsage: Bool = false
-    private let useInverseTelecine: Bool
     weak var sink: VideoSink?
     private var videoFormat: VideoFormat?
     private var frameSync: Bool = false
@@ -89,9 +92,22 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
     private var lastSampleBuffer: CMSampleBuffer?
 
-    init(isScreencast: Bool, inverseTelecine: Bool) {
+    init(isScreencast: Bool, telecineOptions: TelecineOptions) {
         screencastUsage = isScreencast
-        useInverseTelecine = inverseTelecine
+        // The minimum average input frame rate where IVTC is attempted.
+        switch telecineOptions {
+        case .p60to24or25or30:
+            telecine = InverseTelecine60p()
+            telecineInputFrameRate = 58
+            break
+        case .p30to24or25:
+            telecine = InverseTelecine30p()
+            telecineInputFrameRate = 28
+            break
+        case .disabled:
+            telecineInputFrameRate = 0
+            break
+        }
         super.init()
     }
 
@@ -233,7 +249,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     ///
     /// - Parameter sampleBuffer: A CMSampleBuffer containing a single CVPixelBuffer sample.
     /// - Returns: The result of the frame processing, and a frame timestamp that may have been remapped.
-    private func processFrameInput(sampleBuffer: CMSampleBuffer) -> (InverseTelecine60p.Result, CMTime) {
+    private func processFrameInput(sampleBuffer: CMSampleBuffer) -> (TelecineResult, CMTime) {
         let currentTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         guard let lastTimestamp = lastInputTimestamp else {
             lastInputTimestamp = currentTimestamp
@@ -286,24 +302,11 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         }
 
         // TODO: Fix delivered frame rate.
-        if useInverseTelecine,
-            averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate {
+        if let telecine = telecine,
+            averageInput >= telecineInputFrameRate {
 //            averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
             if let lastSample = lastSampleBuffer {
-                if telecine60p == nil {
-                    telecine60p = InverseTelecine60p()
-                }
-//                if telecine30p == nil {
-//                    telecine30p = InverseTelecine30p()
-//                }
-//
-//                if let telecine = telecine30p {
-//                    return telecine.process(input: sampleBuffer, last: lastSample)
-//                }
-
-                if let telecine = telecine60p {
-                    return telecine.process(input: sampleBuffer, last: lastSample)
-                }
+                return telecine.process(input: sampleBuffer, last: lastSample)
             }
         } else {
             print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")

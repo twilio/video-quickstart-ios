@@ -264,7 +264,7 @@ class ViewController: UIViewController {
 
         // The source produces either downscaled buffers with smoother motion, or an HD screen recording.
         videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers,
-                                           inverseTelecine: ViewController.kDownscaleBuffers)
+                                           telecineOptions: ViewController.kDownscaleBuffers ? ReplayKitVideoSource.TelecineOptions.p60to24or25or30 : ReplayKitVideoSource.TelecineOptions.disabled)
 
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,

@@ -49,7 +49,7 @@ class SampleHandler: RPBroadcastSampleHandler {
                                                                                           isScreencast: false,
                                                                                     useInverseTelecine: true)
 
-        videoSource = ReplayKitVideoSource(isScreencast: false, inverseTelecine: true)
+        videoSource = ReplayKitVideoSource(isScreencast: false, telecineOptions: .p30to24or25)
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
                                       name: "Screen")
