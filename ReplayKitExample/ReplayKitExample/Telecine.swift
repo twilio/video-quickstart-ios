@@ -14,8 +14,7 @@ class InverseTelecine60p {
         case Detecting
         // Waiting to try again.
         case Wait
-        case Content2
-        case Content3
+        case Content
     }
 
     enum Result {
@@ -26,6 +25,7 @@ class InverseTelecine60p {
     private var sequence = TelecineSequence.Detecting
     private var frameCounter = UInt16(0)
     private var sequenceCounter = UInt64(0)
+    private var lastSequenceLength = UInt16(0)
 
     public func process(input: CMSampleBuffer, last: CMSampleBuffer) -> (Result, CMTime) {
         let inputTimestamp = CMSampleBufferGetPresentationTimeStamp(input)
@@ -36,66 +36,43 @@ class InverseTelecine60p {
             if InverseTelecine60p.compareSamples(first: input, second: last) {
                 frameCounter += 1
                 if (frameCounter == 2) {
-                    print("Found the 3 duplicate frames, looking for 2 more.")
-                    self.sequence = .Content2
+                    print("Found 3 duplicate frames, looking for more 2 or 3 length content.")
+                    self.sequence = .Content
                     frameCounter = 0
                 }
             } else {
                 frameCounter = 0
             }
             break
-        case .Content2:
+        case .Content:
             if InverseTelecine60p.compareSamples(first: input, second: last) {
                 if frameCounter == 0 {
-                    print("\(sequenceCounter + 1): frame 1 of 2 was a duplicate.")
+                    print("\(sequenceCounter + 1): frame 1 was a duplicate.")
                     self.sequence = .Detecting
                     sequenceCounter = 0
-                } else if frameCounter == 1 {
-                    self.sequence = .Content3
-                    frameCounter = 0
-                    result = .dropFrame
-                }
-            } else if frameCounter == 0 {
-                // Deliver
-                frameCounter = 1
-            } else if frameCounter == 1 {
-                print("\(sequenceCounter + 1): frame 2 of 2 was not a duplicate.")
-                self.sequence = .Detecting
-                sequenceCounter = 0
-                frameCounter = 0
-            }
-            break
-        case .Content3:
-            if InverseTelecine60p.compareSamples(first: input, second: last) {
-                if frameCounter == 0 {
-                    print("\(sequenceCounter + 1): frame 1 of 3 was a duplicate.")
-                    result = .dropFrame
-                    self.sequence = .Detecting
-                    sequenceCounter = 0
-                    frameCounter = 0
-                } else if frameCounter == 1 {
-                    frameCounter = 2
+                    lastSequenceLength = 0
+                } else if frameCounter < 3 {
+                    frameCounter += 1
                     result = .dropFrame
                 } else {
-                    self.sequence = .Content2
+                    print("\(sequenceCounter + 1): has more than 3 duplicate frames.")
+                    self.sequence = .Detecting
+                    sequenceCounter = 0
+                    lastSequenceLength = 0
                     frameCounter = 0
-                    sequenceCounter += 1
-                    result = .dropFrame
-                    print("Completed sequence \(sequenceCounter)")
                 }
-            } else if frameCounter == 0 {
-                // Deliver
-                frameCounter = 1
-            } else if frameCounter == 1 {
-                print("\(sequenceCounter + 1): frame \(frameCounter + 1) of 3 was not a duplicate.")
+            } else if frameCounter == 1 && lastSequenceLength == 1 {
+                print("\(sequenceCounter + 1): length is only 1 frame.")
                 self.sequence = .Detecting
                 sequenceCounter = 0
+                lastSequenceLength = 0
                 frameCounter = 0
             } else {
-                print("\(sequenceCounter + 1): frame \(frameCounter + 1) of 3 was not a duplicate.")
-                self.sequence = .Detecting
-                sequenceCounter = 0
-                frameCounter = 0
+                // Deliver, end of sequence.
+                sequenceCounter += 1
+                lastSequenceLength = frameCounter
+                print("Completed sequence \(sequenceCounter) with \(frameCounter) frames")
+                frameCounter = 1
             }
             break
         case .Wait:
