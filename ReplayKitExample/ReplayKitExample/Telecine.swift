@@ -14,6 +14,7 @@ class InverseTelecine60p {
         case Detecting
         // Waiting to try again.
         case Wait
+        // Sequences that are 2 or 3 frames long, with occasional 1 frame sequences interspersed.
         case Content
     }
 
@@ -147,7 +148,7 @@ class InverseTelecine30p {
         case Detecting
         // Waiting to try again.
         case Wait
-        // Stream of 4 to 6 frames of non-duplicated content.
+        // A content sequence is 3 to 6 distinct frames followed by a duplicate frame.
         case Content
     }
 
@@ -164,12 +165,12 @@ class InverseTelecine30p {
             lastInputTimestamp = inputTimestamp
             return (.deliverFrame, adjustedTimestamp)
         }
+        lastInputTimestamp = inputTimestamp
         let delta = CMTimeSubtract(inputTimestamp, lastTimestamp)
 
         switch sequence {
         case .Detecting:
             if InverseTelecine60p.compareSamples(first: input, second: last) {
-//                print("Found a duplicate frame.")
                 self.sequence = .Content
                 contentFrames = 0
             } else {
@@ -179,7 +180,7 @@ class InverseTelecine30p {
             break
         case .Content:
             if InverseTelecine60p.compareSamples(first: input, second: last) {
-                if contentFrames >= 3 && contentFrames <= 7 {
+                if contentFrames >= 3 && contentFrames <= 6 {
                     contentFrames = 0
                     sequenceCounter += 1
                     result = .dropFrame
@@ -200,7 +201,7 @@ class InverseTelecine30p {
                 // Deliver
                 contentFrames += 1
             } else {
-                print("\(sequenceCounter + 1): frame 1-7 contained no duplicates.")
+                print("\(sequenceCounter + 1): frames 1-7 contained no duplicates.")
                 self.sequence = .Detecting
                 sequenceCounter = 0
                 contentFrames = 0
