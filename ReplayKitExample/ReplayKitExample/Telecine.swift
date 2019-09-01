@@ -119,7 +119,7 @@ class InverseTelecine60p {
     ///   - first: The first sample.
     ///   - second: The second sample.
     /// - Returns: `true` if the samples are the same, and `false` if they are not.
-    private static func compareSamples(first: CMSampleBuffer, second: CMSampleBuffer) -> Bool {
+    public static func compareSamples(first: CMSampleBuffer, second: CMSampleBuffer) -> Bool {
         guard let firstPixelBuffer = CMSampleBufferGetImageBuffer(first) else {
             return false
         }
@@ -161,5 +161,84 @@ class InverseTelecine60p {
         }
 
         return true
+    }
+}
+
+class InverseTelecine30p {
+    enum TelecineSequence {
+        // No duplicate has been detected yet.
+        case Detecting
+        // Waiting to try again.
+        case Wait
+        // Stream of 4 to 6 frames of non-duplicated content.
+        case Content
+    }
+
+    private var sequence = TelecineSequence.Detecting
+    private var contentFrames = UInt16(0)
+    private var sequenceCounter = UInt64(0)
+    private var lastInputTimestamp: CMTime?
+
+    public func process(input: CMSampleBuffer, last: CMSampleBuffer) -> (InverseTelecine60p.Result, CMTime) {
+        var result = InverseTelecine60p.Result.deliverFrame
+        let inputTimestamp = CMSampleBufferGetPresentationTimeStamp(input)
+        var adjustedTimestamp = inputTimestamp
+        guard let lastTimestamp = lastInputTimestamp else {
+            lastInputTimestamp = inputTimestamp
+            return (.deliverFrame, adjustedTimestamp)
+        }
+        let delta = CMTimeSubtract(inputTimestamp, lastTimestamp)
+
+        switch sequence {
+        case .Detecting:
+            if InverseTelecine60p.compareSamples(first: input, second: last) {
+//                print("Found a duplicate frame.")
+                self.sequence = .Content
+                contentFrames = 0
+            } else {
+                contentFrames += 1
+                // TODO: Transition to wait state.
+            }
+            break
+        case .Content:
+            if InverseTelecine60p.compareSamples(first: input, second: last) {
+                if contentFrames >= 3 && contentFrames <= 7 {
+                    contentFrames = 0
+                    sequenceCounter += 1
+                    result = .dropFrame
+                    print("Completed sequence \(sequenceCounter)")
+                } else {
+                    print("\(sequenceCounter + 1): frame \(contentFrames) was a duplicate.")
+                    self.sequence = .Detecting
+                    contentFrames = 0
+                    sequenceCounter = 0
+                }
+            } else if contentFrames == 0 {
+                contentFrames += 1
+                // Pull the frame following the duplicate back 1/60 second, so as to not have a 4/60 second gap.
+                let halfDelta = CMTimeMultiplyByRatio(delta, multiplier: 1, divisor: 2)
+                adjustedTimestamp = inputTimestamp - halfDelta
+                print("After duplicate frame: \((delta + halfDelta).seconds) Timestamp: \(adjustedTimestamp.seconds)")
+            } else if contentFrames <= 6 {
+                // Deliver
+                contentFrames += 1
+            } else {
+                print("\(sequenceCounter + 1): frame 1-7 contained no duplicates.")
+                self.sequence = .Detecting
+                sequenceCounter = 0
+                contentFrames = 0
+            }
+            break
+        case .Wait:
+            contentFrames = 0
+            break
+        }
+
+        // Wait to lock on to several iterations of the sequence.
+        if sequenceCounter <= 4 {
+            result = .deliverFrame
+        }
+
+        return (result as InverseTelecine60p.Result, adjustedTimestamp)
     }
 }

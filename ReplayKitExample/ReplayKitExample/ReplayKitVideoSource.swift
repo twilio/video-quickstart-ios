@@ -62,20 +62,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     static let kFrameRetransmitDispatchInterval = DispatchTimeInterval.milliseconds(kFrameRetransmitIntervalMs)
     static let kFrameRetransmitDispatchLeeway = DispatchTimeInterval.milliseconds(20)
 
-    enum TelecineSequence {
-        case NotDetected
-        // A duplicate frame has been detected.
-        case Duplicate3
-        // Real frames following the duplicate.
-        case Content20
-        case Content21
-        case Content22
-        case Content23
-        // 25 frame / second content extends the sequence by 1.
-        case Content24
-    }
-
     private var telecine60p: InverseTelecine60p?
+    private var telecine30p: InverseTelecine30p?
 
     private var screencastUsage: Bool = false
     private let useInverseTelecine: Bool
@@ -88,8 +76,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     private var recentDelivered = UInt32(0)
 
     // Used to detect a sequence of video frames that have 3:2 pulldown applied
-    private var telecineSequence = TelecineSequence.NotDetected
-    private var telecineDetectorCounter = UInt64(0)
     private var lastDeliveredTimestamp: CMTime?
     private var recentDeliveredFrameDeltas: [CMTime] = []
     private var lastInputTimestamp: CMTime?
@@ -299,134 +285,31 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             print("Frame sync stopped at rate: \(averageDelivered)")
         }
 
+        // TODO: Fix delivered frame rate.
         if useInverseTelecine,
-            averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate,
-            averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
+            averageInput >= ReplayKitVideoSource.kInverseTelecineInputFrameRate {
+//            averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
             if let lastSample = lastSampleBuffer {
                 if telecine60p == nil {
                     telecine60p = InverseTelecine60p()
                 }
+//                if telecine30p == nil {
+//                    telecine30p = InverseTelecine30p()
+//                }
+//
+//                if let telecine = telecine30p {
+//                    return telecine.process(input: sampleBuffer, last: lastSample)
+//                }
 
                 if let telecine = telecine60p {
                     return telecine.process(input: sampleBuffer, last: lastSample)
                 }
-
-//                switch telecineSequence {
-//                case .NotDetected:
-//                    let shouldCompareFrames =
-//                        telecineDetectorCounter % ReplayKitVideoSource.kInverseTelecineDetectorFrameSkip
-//                            < ReplayKitVideoSource.kInverseTelecineDetectorSequenceLength
-//                    if shouldCompareFrames,
-//                        ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-//                        print("Found first duplicate frame. Delta: \(deltaSeconds)")
-//                        self.telecineSequence = .Duplicate3
-//                        telecineDetectorCounter = 0
-//                        return (.dropFrame, currentTimestamp)
-//                    } else {
-//                        telecineDetectorCounter += 1
-//                    }
-//                    break
-//                case .Duplicate3:
-//                    // Pull the frame following the duplicate back 1/60 second, so as to not have a 4/60 second gap.
-//                    let halfDelta = CMTimeMultiplyByRatio(delta, multiplier: 1, divisor: 2)
-//                    let adjustedTimestamp = currentTimestamp - halfDelta
-//                    self.telecineSequence = .Content20
-//                    print("After telecine content: \((delta + halfDelta).seconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
-//                    return (.deliverFrame, adjustedTimestamp)
-//                case .Content20:
-//                    self.telecineSequence = .Content21
-//                    print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
-//                    break
-//                case .Content21:
-//                    self.telecineSequence = .Content22
-//                    print("Telecine content: \(deltaSeconds) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
-//                    break
-//                case .Content22:
-//                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-//                        self.telecineSequence = .Duplicate3
-//                        return (.dropFrame, currentTimestamp)
-//                    } else {
-//                        self.telecineSequence = .Content23
-//                    }
-//                    break
-//                case .Content23:
-//                    // 24 fps
-//                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-//                        self.telecineSequence = .Duplicate3
-//                        return (.dropFrame, currentTimestamp)
-//                    } else {
-//                        self.telecineSequence = .Content24
-//                    }
-//                    break
-//                case .Content24:
-//                    // 25 fps
-//                    if ReplayKitVideoSource.compareSamples(first: lastSample, second: sampleBuffer) {
-//                        self.telecineSequence = .Duplicate3
-//                        return (.dropFrame, currentTimestamp)
-//                    } else {
-//                        print("Telecine sequence broken.")
-//                        self.telecineSequence = .NotDetected
-//                    }
-//                    break
-//                }
             }
         } else {
             print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
         }
 
         return (.deliverFrame, currentTimestamp)
-    }
-
-    /// The IVTC algorithm must know when a given frame is a duplicate of a previous frame. This implementation
-    /// compares the chroma channels of each image to determine equality. Occasional false positives are worth the
-    /// performance benefit of skipping the luma (Y) plane, which is twice the size of the chroma (UV) plane.
-    ///
-    /// - Parameters:
-    ///   - first: The first sample.
-    ///   - second: The second sample.
-    /// - Returns: `true` if the samples are the same, and `false` if they are not.
-    private static func compareSamples(first: CMSampleBuffer, second: CMSampleBuffer) -> Bool {
-        guard let firstPixelBuffer = CMSampleBufferGetImageBuffer(first) else {
-            return false
-        }
-        guard let secondPixelBuffer = CMSampleBufferGetImageBuffer(second) else {
-            return false
-        }
-
-        // Assumption: Only NV12 is supported.
-        guard CVPixelBufferGetWidth(firstPixelBuffer) == CVPixelBufferGetWidth(secondPixelBuffer) else {
-            return false
-        }
-        guard CVPixelBufferGetHeight(firstPixelBuffer) == CVPixelBufferGetHeight(secondPixelBuffer) else {
-            return false
-        }
-
-        CVPixelBufferLockBaseAddress(firstPixelBuffer, .readOnly)
-        CVPixelBufferLockBaseAddress(secondPixelBuffer, .readOnly)
-        defer {
-            CVPixelBufferUnlockBaseAddress(firstPixelBuffer, .readOnly)
-            CVPixelBufferUnlockBaseAddress(secondPixelBuffer, .readOnly)
-        }
-
-        // Only the chroma plane is compared.
-        let planeIndex = 1
-        guard let baseAddress1 = CVPixelBufferGetBaseAddressOfPlane(firstPixelBuffer, planeIndex) else {
-            return false
-        }
-        guard let baseAddress2 = CVPixelBufferGetBaseAddressOfPlane(secondPixelBuffer, planeIndex) else {
-            return false
-        }
-        let width = CVPixelBufferGetWidthOfPlane(firstPixelBuffer, planeIndex)
-        let height = CVPixelBufferGetHeightOfPlane(firstPixelBuffer, planeIndex)
-
-        for row in 0...height {
-            let rowOffset = row * CVPixelBufferGetBytesPerRowOfPlane(firstPixelBuffer, planeIndex)
-            if memcmp(baseAddress1.advanced(by: rowOffset), baseAddress2.advanced(by: rowOffset), width) != 0 {
-                return false
-            }
-        }
-
-        return true
     }
 
     private func deliverFrame(to: VideoSink, timestamp: CMTime, buffer: CVPixelBuffer, orientation: VideoOrientation, forceReschedule: Bool) {
@@ -448,7 +331,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         // Update delivery stats
         if let lastTimestamp = lastDeliveredTimestamp,
             !screencastUsage {
-            let delta = CMTimeAbsoluteValue(CMTimeSubtract(timestamp, lastTimestamp))
+            let delta = CMTimeSubtract(timestamp, lastTimestamp)
 
             if recentDeliveredFrameDeltas.count == ReplayKitVideoSource.kFrameHistorySize {
                 recentDeliveredFrameDeltas.removeFirst()
@@ -459,7 +342,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             for dataPoint in recentDeliveredFrameDeltas {
                 total = CMTimeAdd(total, dataPoint)
             }
-            averageDelivered = UInt32(round(Double(recentDeliveredFrameDeltas.count) / total.seconds))
+            // Frames with older timestamps might be delivered by ReplayKit causing the result to be negative.
+            averageDelivered = UInt32(abs(round(Double(recentDeliveredFrameDeltas.count) / total.seconds)))
 
             var recent = CMTime.zero
             if recentDeliveredFrameDeltas.count >= 4 {
@@ -468,7 +352,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                 recent = CMTimeAdd(recent, recentDeliveredFrameDeltas[recentDeliveredFrameDeltas.count - 3])
                 recent = CMTimeAdd(recent, recentDeliveredFrameDeltas[recentDeliveredFrameDeltas.count - 4])
 
-                recentDelivered = UInt32(round(Double(4) / recent.seconds))
+                recentDelivered = UInt32( abs(round(Double(4) / recent.seconds)))
             }
         }
 
