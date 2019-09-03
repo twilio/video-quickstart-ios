@@ -153,6 +153,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     /// - Parameters:
     ///   - codec: The video codec that will be preferred to send ReplayKit video frames.
     ///   - isScreencast: If the content is a screencast or not.
+    ///   - telecineOptions: The options used to process the input frames.
     /// - Returns: The EncodingParameters and VideoFormat that are appropriate for the use case.
     static public func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool, telecineOptions: TelecineOptions) -> (EncodingParameters, VideoFormat) {
         let audioBitrate = UInt(0)
@@ -203,7 +204,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             return
         }
 
-        // Discover the dispatch queue that we are operating on.
+        // Discover the dispatch queue that ReplayKit is operating on.
         if videoQueue == nil {
             videoQueue = ExampleCoreAudioDeviceGetCurrentQueue()
         }
@@ -222,7 +223,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
         /*
          * Check rotation tags. Extensions see these tags, but `RPScreenRecorder` does not appear to set them.
-         * On iOS 12.0+, rotation tags (other than up) are set by extensions.
+         * On iOS 12.0 and 13.0 rotation tags (other than up) are set by extensions.
          */
         var videoOrientation = VideoOrientation.up
         if let sampleOrientation = CMGetAttachment(sampleBuffer, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil),
@@ -319,7 +320,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         guard let frame = VideoFrame(timestamp: timestamp,
                                      buffer: buffer,
                                      orientation: orientation) else {
-                                        assertionFailure("We couldn't create a VideoFrame with a valid CVPixelBuffer.")
+                                        assertionFailure("Couldn't create a VideoFrame with a valid CVPixelBuffer.")
                                         return
         }
         to.onVideoFrame(frame)
@@ -387,7 +388,9 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                 let delta = CMTimeSubtract(currentTimestamp, lastHostTimestamp)
 
                 if delta >= ReplayKitVideoSource.kFrameRetransmitTimeInterval {
+                    #if DEBUG
                     print("Delivering frame since send delta is greather than threshold. delta=", delta.seconds)
+                    #endif
                     // Reconstruct a new timestamp, advancing by our relative read of host time.
                     self.deliverFrame(to: sink,
                                       timestamp: CMTimeAdd(frame.timestamp, delta),
