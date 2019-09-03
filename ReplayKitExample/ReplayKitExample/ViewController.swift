@@ -24,6 +24,7 @@ class ViewController: UIViewController {
     var screenTrack: LocalVideoTrack?
     var videoSource: ReplayKitVideoSource?
     var conferenceRoom: Room?
+    var videoPlayer: AVPlayer?
 
     // Broadcast state. Our extension will capture samples from ReplayKit, and publish them in a Room.
     var broadcastController: RPBroadcastController?
@@ -476,11 +477,12 @@ extension ViewController: RoomDelegate {
 // MARK:- UIDocumentPickerDelegate
 extension ViewController : UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        print(#function)
+
         if let url = urls.first {
-            print("Ready to play: \(url)")
+            startVideoPlayer(url: url)
             let moviePlayer = AVPlayerViewController()
-            moviePlayer.player = AVPlayer(url: url)
-            moviePlayer.player?.play()
+            moviePlayer.player = videoPlayer!
             moviePlayer.allowsPictureInPicturePlayback = false
             moviePlayer.entersFullScreenWhenPlaybackBegins = true
             moviePlayer.exitsFullScreenWhenPlaybackEnds = true
@@ -490,6 +492,46 @@ extension ViewController : UIDocumentPickerDelegate {
     }
 
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-        print("Document picker was cancelled.")
+        print(#function)
+    }
+
+    func startVideoPlayer(url: URL) {
+        print(#function)
+
+        if let player = self.videoPlayer {
+            player.play()
+            return
+        }
+
+        let asset = AVAsset(url: url)
+        let assetKeysToPreload = [
+            "hasProtectedContent",
+            "playable",
+            "tracks"
+        ]
+        print("Created asset with tracks:", asset.tracks as Any)
+
+        let playerItem = AVPlayerItem(asset: asset, automaticallyLoadedAssetKeys: assetKeysToPreload)
+        let notificationCenter = NotificationCenter.default
+    notificationCenter.addObserver(self, selector: #selector(stopVideoPlayer), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
+
+        let player = AVPlayer(playerItem: playerItem)
+        videoPlayer = player
+        player.play()
+    }
+
+    @objc func stopVideoPlayer() {
+        print(#function)
+
+        if let player = videoPlayer {
+            player.pause()
+            NotificationCenter.default.removeObserver(self,
+                                                      name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                                      object: nil)
+            player.replaceCurrentItem(with: nil)
+            videoPlayer = nil
+        }
+
+        self.navigationController?.popViewController(animated: true)
     }
 }
