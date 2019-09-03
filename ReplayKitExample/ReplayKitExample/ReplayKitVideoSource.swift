@@ -154,7 +154,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     ///   - codec: The video codec that will be preferred to send ReplayKit video frames.
     ///   - isScreencast: If the content is a screencast or not.
     /// - Returns: The EncodingParameters and VideoFormat that are appropriate for the use case.
-    static public func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool, useInverseTelecine: Bool) -> (EncodingParameters, VideoFormat) {
+    static public func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool, telecineOptions: TelecineOptions) -> (EncodingParameters, VideoFormat) {
         let audioBitrate = UInt(0)
         var videoBitrate = kMaxVideoBitrate
         var maxWidthOrHeight = isScreencast ? UInt(0) : kDownScaledMaxWidthOrHeight

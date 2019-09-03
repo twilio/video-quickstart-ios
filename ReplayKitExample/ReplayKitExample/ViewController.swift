@@ -263,8 +263,9 @@ class ViewController: UIViewController {
         recorder.isCameraEnabled = false
 
         // The source produces either downscaled buffers with smoother motion, or an HD screen recording.
+        let options = ViewController.kDownscaleBuffers ? ReplayKitVideoSource.TelecineOptions.p60to24or25or30 : ReplayKitVideoSource.TelecineOptions.disabled
         videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers,
-                                           telecineOptions: ViewController.kDownscaleBuffers ? ReplayKitVideoSource.TelecineOptions.p60to24or25or30 : ReplayKitVideoSource.TelecineOptions.disabled)
+                                           telecineOptions: options)
 
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
@@ -273,7 +274,7 @@ class ViewController: UIViewController {
         let videoCodec = Settings.shared.videoCodec ?? Vp8Codec()!
         let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: videoCodec,
                                                                                           isScreencast: !ViewController.kDownscaleBuffers,
-                                                                                    useInverseTelecine: ViewController.kDownscaleBuffers)
+                                                                                       telecineOptions:options)
         videoSource?.requestOutputFormat(outputFormat)
 
         recorder.startCapture(handler: { (sampleBuffer, type, error) in
