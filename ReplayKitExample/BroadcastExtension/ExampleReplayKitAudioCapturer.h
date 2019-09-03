@@ -6,7 +6,7 @@
 //
 
 #import <ReplayKit/ReplayKit.h>
-#import <TwilioVideo/TwilioVideo.h>
+#import <TwilioVideo/TVIAudioDevice.h>
 
 dispatch_queue_t ExampleCoreAudioDeviceGetCurrentQueue(void);
 
