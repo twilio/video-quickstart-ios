@@ -6,15 +6,24 @@
 //
 
 #import <ReplayKit/ReplayKit.h>
-#import <TwilioVideo/TVIAudioDevice.h>
-#import <TwilioVideo/TVIAudioFormat.h>
+//#import <TwilioVideo/TVIAudioFormat.h>
+//#import <TwilioVideo/TVIAudioDevice.h>
 
-dispatch_queue_t ExampleCoreAudioDeviceGetCurrentQueue(void);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wduplicate-protocol"
+#pragma clang diagnostic ignored "-Wall"
+@import TwilioVideo;
+//#import "TwilioVideo/TVIAudioDevice.h"
+#pragma clang diagnostic pop
+
+#import "ExampleReplayKitAudioCapturerDispatch.h"
+
+//@class TVIAudioFormat;
 
 OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef audioSample);
 
 typedef struct ExampleAudioContext {
-    TVIAudioDeviceContext deviceContext;
+    void *deviceContext;
     size_t expectedFramesPerBuffer;
     size_t maxFramesPerBuffer;
 } ExampleAudioContext;

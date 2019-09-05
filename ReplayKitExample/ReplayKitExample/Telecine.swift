@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import CoreMedia
+import CoreVideo
 
 enum TelecineResult {
     case dropFrame

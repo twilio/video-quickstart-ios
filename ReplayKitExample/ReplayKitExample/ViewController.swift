@@ -8,6 +8,7 @@
 import AVKit
 import UIKit
 import ReplayKit
+import SafariServices
 import TwilioVideo
 
 class ViewController: UIViewController {
@@ -94,6 +95,16 @@ class ViewController: UIViewController {
         let pickerVC = UIDocumentPickerViewController(documentTypes: documents, in: .`import`)
         pickerVC.delegate = self
         self.navigationController?.present(pickerVC, animated: true, completion: nil)
+    }
+
+    @IBAction func browseWeb(_ sender: Any) {
+        let url = URL(string: "https://www.apple.com")!
+        let config = SFSafariViewController.Configuration()
+        config.barCollapsingEnabled = false
+        let safariVC = SFSafariViewController(url: url, configuration: config)
+        safariVC.delegate = self
+        self.navigationController?.pushViewController(safariVC, animated: true)
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
     }
 
     @available(iOS 12.0, *)
@@ -319,8 +330,9 @@ class ViewController: UIViewController {
                     self.infoLabel?.isHidden = true
                     self.connectToRoom(name: "conference", encodingParameters: encodingParams)
 
-                    self.navigationItem.leftBarButtonItem =
-                        UIBarButtonItem(title: "Play Video", style: .plain, target: self, action: #selector(self.pickDocument(_:)))
+                    let playVideo = UIBarButtonItem(title: "Play Video", style: .plain, target: self, action: #selector(self.pickDocument(_:)))
+                    let browseWeb = UIBarButtonItem(title: "Browse Web", style: .plain, target: self, action: #selector(self.browseWeb(_:)))
+                    self.navigationItem.leftBarButtonItems = [playVideo, browseWeb]
                 }
             }
         }
@@ -471,6 +483,14 @@ extension ViewController: RoomDelegate {
 
     func roomDidReconnect(room: Room) {
         print("Reconnected to room \(room.name)")
+    }
+}
+
+// MARK:- SFSafariViewControllerDelegate
+extension ViewController : SFSafariViewControllerDelegate {
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        self.navigationController?.popViewController(animated: true)
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
     }
 }
 
