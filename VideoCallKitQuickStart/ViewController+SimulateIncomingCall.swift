@@ -6,9 +6,41 @@
 //
 
 import UIKit
+import UserNotifications
 
 // MARK:- Simulate Incoming Call
 extension ViewController {
+
+    func registerForLocalNotifications() {
+        // Define the custom actions.
+        let acceptAction = UNNotificationAction(identifier: "ACCEPT_ACTION",
+              title: "Accept",
+              options: UNNotificationActionOptions(rawValue: 0))
+        let declineAction = UNNotificationAction(identifier: "DECLINE_ACTION",
+              title: "Decline",
+              options: .destructive)
+        let notificationCenter = UNUserNotificationCenter.current()
+
+        // Define the notification type
+        if #available(iOS 11.0, *) {
+            let meetingInviteCategory =
+                UNNotificationCategory(identifier: "ROOM_INVITATION",
+                                       actions: [acceptAction, declineAction],
+                                       intentIdentifiers: [],
+                                       hiddenPreviewsBodyPlaceholder: "",
+                                       options: .customDismissAction)
+            notificationCenter.setNotificationCategories([meetingInviteCategory])
+        }
+
+        // Register the notification type.
+        notificationCenter.delegate = self
+
+        // Request permission to display alerts and play sounds.
+        notificationCenter.requestAuthorization(options: [.alert])
+           { (granted, error) in
+              // Enable or disable features based on authorization.
+           }
+    }
 
     @IBAction func simulateIncomingCall(sender: AnyObject) {
 
@@ -29,10 +61,16 @@ extension ViewController {
 
             self.logMessage(messageText: "Simulating Incoming Call for room: \(String(describing: roomName)) after a \(delay) second delay")
 
-            let backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
-            DispatchQueue.main.asyncAfter(wallDeadline: DispatchWallTime.now() + delay) {
-                self.reportIncomingCall(uuid: UUID(), roomName: self.roomTextField.text) { _ in
-                    UIApplication.shared.endBackgroundTask(backgroundTaskIdentifier)
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
+            let content = UNMutableNotificationContent()
+            content.title = "Room Invitation"
+            content.body = "Tap to connect to the Room."
+            content.categoryIdentifier = "ROOM_INVITATION"
+            let identifier = NSUUID.init().uuidString
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+            UNUserNotificationCenter.current().add(request) { (error) in
+                if let theError = error {
+                    print("Error posting local notification \(theError)")
                 }
             }
         })
@@ -53,5 +91,47 @@ extension ViewController {
         alertController.addAction(cancelAction)
         
         self.present(alertController, animated: true, completion: nil)
+    }
+}
+
+extension ViewController : UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        print("Will present notification \(notification)")
+
+        self.reportIncomingCall(uuid: UUID(), roomName: self.roomTextField.text) { _ in
+            // Always call the completion handler when done.
+            completionHandler(UNNotificationPresentationOptions())
+        }
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+
+        print("Received notification response in \(UIApplication.shared.applicationState.rawValue) \(response)")
+
+        switch response.actionIdentifier {
+        case UNNotificationDefaultActionIdentifier:
+            self.reportIncomingCall(uuid: UUID(), roomName: self.roomTextField.text) { _ in
+                // Always call the completion handler when done.
+                completionHandler()
+            }
+            break
+        case "ACCEPT_ACTION":
+            self.reportIncomingCall(uuid: UUID(), roomName: self.roomTextField.text) { _ in
+                // Always call the completion handler when done.
+                completionHandler()
+            }
+            break
+        case "DECLINE_ACTION":
+            completionHandler()
+            break
+        case UNNotificationDismissActionIdentifier:
+            completionHandler()
+            break
+        // Handle other actions…
+        default:
+            break
+        }
     }
 }
