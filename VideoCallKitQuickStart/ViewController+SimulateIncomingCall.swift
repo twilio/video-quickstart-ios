@@ -13,8 +13,8 @@ extension ViewController {
 
     func registerForLocalNotifications() {
         // Define the custom actions.
-        let acceptAction = UNNotificationAction(identifier: "ACCEPT_ACTION",
-              title: "Accept",
+        let inviteAction = UNNotificationAction(identifier: "INVITE_ACTION",
+              title: "Simulate VoIP Push",
               options: UNNotificationActionOptions(rawValue: 0))
         let declineAction = UNNotificationAction(identifier: "DECLINE_ACTION",
               title: "Decline",
@@ -25,7 +25,7 @@ extension ViewController {
         if #available(iOS 11.0, *) {
             let meetingInviteCategory =
                 UNNotificationCategory(identifier: "ROOM_INVITATION",
-                                       actions: [acceptAction, declineAction],
+                                       actions: [inviteAction, declineAction],
                                        intentIdentifiers: [],
                                        hiddenPreviewsBodyPlaceholder: "",
                                        options: .customDismissAction)
@@ -112,12 +112,10 @@ extension ViewController : UNUserNotificationCenterDelegate {
 
         switch response.actionIdentifier {
         case UNNotificationDefaultActionIdentifier:
-            self.reportIncomingCall(uuid: UUID(), roomName: self.roomTextField.text) { _ in
-                // Always call the completion handler when done.
-                completionHandler()
-            }
+            self.performStartCallAction(uuid: UUID(), roomName: self.roomTextField.text)
+            completionHandler()
             break
-        case "ACCEPT_ACTION":
+        case "INVITE_ACTION":
             self.reportIncomingCall(uuid: UUID(), roomName: self.roomTextField.text) { _ in
                 // Always call the completion handler when done.
                 completionHandler()
