@@ -44,7 +44,7 @@ extension ViewController {
 
     @IBAction func simulateIncomingCall(sender: AnyObject) {
 
-        let alertController = UIAlertController(title: "Simulate Incoming Call", message: nil, preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Schedule Notification", message: nil, preferredStyle: .alert)
 
         let okAction = UIAlertAction(title: "OK", style: .default, handler: { alert -> Void in
 
@@ -59,13 +59,16 @@ extension ViewController {
                 delay = delayFromString
             }
 
-            self.logMessage(messageText: "Simulating Incoming Call for room: \(String(describing: roomName)) after a \(delay) second delay")
+            self.logMessage(messageText: "Schedule local notification for Room: \(String(describing: roomName)) after a \(delay) second delay")
 
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
             let content = UNMutableNotificationContent()
-            content.title = "Room Invitation"
-            content.body = "Tap to connect to the Room."
+            content.title = "Room Invite"
+            content.body = "Tap to connect to \(roomName ?? "a Room")."
             content.categoryIdentifier = "ROOM_INVITATION"
+            if let name = roomName {
+                content.userInfo = [ "roomName" : name ]
+            }
             let identifier = NSUUID.init().uuidString
             let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
             UNUserNotificationCenter.current().add(request) { (error) in
@@ -98,10 +101,18 @@ extension ViewController : UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         print("Will present notification \(notification)")
 
-        self.reportIncomingCall(uuid: UUID(), roomName: self.roomTextField.text) { _ in
+        self.reportIncomingCall(uuid: UUID(), roomName: ViewController.parseNotification(notification: notification)) { _ in
             // Always call the completion handler when done.
             completionHandler(UNNotificationPresentationOptions())
         }
+    }
+
+    static func parseNotification(notification: UNNotification) -> String {
+        var roomName = ""
+        if let requestedName = notification.request.content.userInfo["roomName"] as? String {
+            roomName = requestedName
+        }
+        return roomName
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -109,14 +120,14 @@ extension ViewController : UNUserNotificationCenterDelegate {
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
 
         print("Received notification response in \(UIApplication.shared.applicationState.rawValue) \(response)")
-
+        let roomName = ViewController.parseNotification(notification: response.notification)
         switch response.actionIdentifier {
         case UNNotificationDefaultActionIdentifier:
-            self.performStartCallAction(uuid: UUID(), roomName: self.roomTextField.text)
+            self.performStartCallAction(uuid: UUID(), roomName: roomName)
             completionHandler()
             break
         case "INVITE_ACTION":
-            self.reportIncomingCall(uuid: UUID(), roomName: self.roomTextField.text) { _ in
+            self.reportIncomingCall(uuid: UUID(), roomName: roomName) { _ in
                 // Always call the completion handler when done.
                 completionHandler()
             }
