@@ -6,10 +6,6 @@
 //
 
 #import "ExampleReplayKitAudioCapturer.h"
-//#import <TwilioVideo/TVIAudioDevice.h>
-//#import <TwilioVideo/TVIAudioFormat.h>
-//#import "TwilioVideo/TVIAudioDevice.h"
-//#import "TwilioVideo/TVIAudioFormat.h"
 
 // Our guess at the maximum slice size used by ReplayKit app audio. We have observed up to 22596 in the field.
 static size_t kMaximumFramesPerAppAudioBuffer = 45192;
