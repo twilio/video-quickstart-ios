@@ -174,9 +174,6 @@ OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef sampleBuffer) {
     // We are making some assumptions about the format received from ReplayKit. So far, only 1/44.1 kHz has been encountered.
     const double sessionSampleRate = 44100;
     size_t rendererChannels = 1;
-    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){13, 0, 0}]) {
-        rendererChannels = 2;
-    }
 
     return [[TVIAudioFormat alloc] initWithChannels:rendererChannels
                                          sampleRate:sessionSampleRate
