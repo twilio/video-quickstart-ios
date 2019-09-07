@@ -22,17 +22,13 @@ extension ViewController {
         let notificationCenter = UNUserNotificationCenter.current()
 
         // Define the notification type
-        if #available(iOS 11.0, *) {
-            let meetingInviteCategory =
-                UNNotificationCategory(identifier: "ROOM_INVITATION",
-                                       actions: [inviteAction, declineAction],
-                                       intentIdentifiers: [],
-                                       hiddenPreviewsBodyPlaceholder: "",
-                                       options: .customDismissAction)
-            notificationCenter.setNotificationCategories([meetingInviteCategory])
-        }
+        let meetingInviteCategory = UNNotificationCategory(identifier: "ROOM_INVITATION",
+                                                           actions: [inviteAction, declineAction],
+                                                           intentIdentifiers: [],
+                                                           options: .customDismissAction)
+        notificationCenter.setNotificationCategories([meetingInviteCategory])
 
-        // Register the notification type.
+        // Register for notification callbacks.
         notificationCenter.delegate = self
 
         // Request permission to display alerts and play sounds.
