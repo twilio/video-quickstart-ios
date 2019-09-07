@@ -17,6 +17,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     var videoSource: ReplayKitVideoSource?
     var screenTrack: LocalVideoTrack?
     var disconnectSemaphore: DispatchSemaphore?
+    let audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
     let tokenUrl = "http://127.0.0.1:5000/"
@@ -32,7 +33,7 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
-        TwilioVideoSDK.audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
+        TwilioVideoSDK.audioDevice = self.audioDevice
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
@@ -129,13 +130,13 @@ class SampleHandler: RPBroadcastSampleHandler {
 
         case RPSampleBufferType.audioApp:
             if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioApp) {
-                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+                ExampleCoreAudioDeviceRecordCallback(audioDevice, sampleBuffer)
             }
             break
 
         case RPSampleBufferType.audioMic:
             if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioMic) {
-                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+                ExampleCoreAudioDeviceRecordCallback(audioDevice, sampleBuffer)
             }
             break
         }

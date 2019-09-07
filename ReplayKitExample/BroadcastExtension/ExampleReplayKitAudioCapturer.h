@@ -9,14 +9,12 @@
 #import <TwilioVideo/TVIAudioDevice.h>
 #import <TwilioVideo/TVIAudioFormat.h>
 
-dispatch_queue_t ExampleCoreAudioDeviceGetCurrentQueue(void);
-
-OSStatus ExampleCoreAudioDeviceRecordCallback(CMSampleBufferRef audioSample);
+dispatch_queue_t _Nullable ExampleCoreAudioDeviceGetCurrentQueue(void);
 
 typedef struct ExampleAudioContext {
-    TVIAudioDeviceContext deviceContext;
-    size_t expectedFramesPerBuffer;
+    TVIAudioDeviceContext _Nullable deviceContext;
     size_t maxFramesPerBuffer;
+    AudioStreamBasicDescription streamDescription;
 } ExampleAudioContext;
 
 /*
@@ -25,8 +23,14 @@ typedef struct ExampleAudioContext {
  */
 @interface ExampleReplayKitAudioCapturer : NSObject <TVIAudioDevice>
 
-- (instancetype)init;
+- (nonnull instancetype)init;
 
-- (instancetype)initWithSampleType:(RPSampleBufferType)type NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithSampleType:(RPSampleBufferType)type NS_DESIGNATED_INITIALIZER;
 
 @end
+
+/// Deliver audio samples to the capturer.
+/// @param capturer The capturer to deliver the samples to.
+/// @param sampleBuffer A CMSampleBuffer which contains an audio sample.
+OSStatus ExampleCoreAudioDeviceRecordCallback(ExampleReplayKitAudioCapturer * _Nonnull capturer,
+                                              CMSampleBufferRef _Nonnull sampleBuffer);
