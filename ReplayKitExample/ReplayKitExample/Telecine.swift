@@ -46,7 +46,6 @@ class InverseTelecine60p : InverseTelecine {
             if InverseTelecine60p.compareSamples(first: input, second: last) {
                 frameCounter += 1
                 if (frameCounter == 2) {
-                    print("Found 3 duplicate frames, looking for more 2 or 3 length content.")
                     self.sequence = .Content
                     frameCounter = 0
                 }
@@ -57,7 +56,6 @@ class InverseTelecine60p : InverseTelecine {
         case .Content:
             if InverseTelecine60p.compareSamples(first: input, second: last) {
                 if frameCounter == 0 {
-                    print("\(sequenceCounter + 1): frame 1 was a duplicate.")
                     self.sequence = .Detecting
                     sequenceCounter = 0
                     lastSequenceLength = 0
@@ -65,14 +63,13 @@ class InverseTelecine60p : InverseTelecine {
                     frameCounter += 1
                     result = .dropFrame
                 } else {
-                    print("\(sequenceCounter + 1): has more than 3 duplicate frames.")
                     self.sequence = .Detecting
                     sequenceCounter = 0
                     lastSequenceLength = 0
                     frameCounter = 0
                 }
             } else if frameCounter == 1 && lastSequenceLength == 1 {
-                print("\(sequenceCounter + 1): length is only 1 frame.")
+                // [A, A, B, C] is not allowed.
                 self.sequence = .Detecting
                 sequenceCounter = 0
                 lastSequenceLength = 0
@@ -81,7 +78,6 @@ class InverseTelecine60p : InverseTelecine {
                 // Deliver, end of sequence.
                 sequenceCounter += 1
                 lastSequenceLength = frameCounter
-                print("Completed sequence \(sequenceCounter) with \(frameCounter) frames")
                 frameCounter = 1
             }
             break
