@@ -19,6 +19,9 @@ protocol InverseTelecine {
     func process(input: CMSampleBuffer, last: CMSampleBuffer) -> (TelecineResult, CMTime)
 }
 
+/// This class implements an inverse telecine to remove duplicate frames from 60p content produced by an RPScreenRecorder.
+/// Typically, the source content is 23.976, 24, or 25 fps. The telecine looks for sequences that are 2 or 3 duplicate frames long.
+/// For example, when the content is 24 frames / second: [A, A, B, B, B, C, C] -> [A, B, C]
 class InverseTelecine60p : InverseTelecine {
     enum TelecineSequence {
         /// No duplicate has been detected yet.
@@ -148,6 +151,9 @@ class InverseTelecine60p : InverseTelecine {
     }
 }
 
+/// This class implements an inverse telecine to remove duplicate frames from 30p content produced by an RPBroadcastSampleHandler.
+/// Typically, the source content is 23.976, 24, or 25 fps. The telecine looks for sequences of distinct content followed by a single duplicate frame.
+/// For example. [A, B, C, D, E, E, F] -> [A, B, C, D, E, F]
 class InverseTelecine30p : InverseTelecine {
     enum TelecineSequence {
         // No duplicate has been detected yet.
@@ -162,6 +168,11 @@ class InverseTelecine30p : InverseTelecine {
     private var contentFrames = UInt16(0)
     private var sequenceCounter = UInt64(0)
     private var lastInputTimestamp: CMTime?
+
+    // How many frames to wait before attempting detection again.
+    private static let kWaitFrames = UInt16(120)
+    // How many frames to process without finding a duplicate in order to transition to the wait state.
+    private static let kMaxDetectingFrames = UInt16(14)
 
     public func process(input: CMSampleBuffer, last: CMSampleBuffer) -> (TelecineResult, CMTime) {
         var result = TelecineResult.deliverFrame
@@ -181,7 +192,13 @@ class InverseTelecine30p : InverseTelecine {
                 contentFrames = 0
             } else {
                 contentFrames += 1
-                // TODO: Transition to wait state.
+                if contentFrames >= InverseTelecine30p.kMaxDetectingFrames {
+                    #if DEBUG
+                    print("Detecting for \(contentFrames). Transitioning to wait state.")
+                    #endif
+                    self.sequence = .Wait
+                    contentFrames = 0
+                }
             }
             break
         case .Content:
@@ -190,9 +207,11 @@ class InverseTelecine30p : InverseTelecine {
                     contentFrames = 0
                     sequenceCounter += 1
                     result = .dropFrame
-                    print("Completed sequence \(sequenceCounter)")
+                } else if contentFrames == 0 {
+                    self.sequence = .Wait
+                    contentFrames = 0
+                    sequenceCounter = 0
                 } else {
-                    print("\(sequenceCounter + 1): frame \(contentFrames) was a duplicate.")
                     self.sequence = .Detecting
                     contentFrames = 0
                     sequenceCounter = 0
@@ -202,19 +221,24 @@ class InverseTelecine30p : InverseTelecine {
                 // Pull the frame following the duplicate back 1/60 second, so as to not have a 4/60 second gap.
                 let halfDelta = CMTimeMultiplyByRatio(delta, multiplier: 1, divisor: 2)
                 adjustedTimestamp = inputTimestamp - halfDelta
-                print("After duplicate frame: \((delta + halfDelta).seconds) Timestamp: \(adjustedTimestamp.seconds)")
             } else if contentFrames <= 6 {
                 // Deliver
                 contentFrames += 1
             } else {
-                print("\(sequenceCounter + 1): frames 1-7 contained no duplicates.")
                 self.sequence = .Detecting
                 sequenceCounter = 0
                 contentFrames = 0
             }
             break
         case .Wait:
-            contentFrames = 0
+            contentFrames += 1
+            if contentFrames >= InverseTelecine30p.kWaitFrames {
+                #if DEBUG
+                print("Waited for \(contentFrames). Beginning detection pass.")
+                #endif
+                self.sequence = .Detecting
+                contentFrames = 0
+            }
             break
         }
 

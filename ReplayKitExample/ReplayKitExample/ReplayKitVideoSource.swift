@@ -272,8 +272,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         }
         let averageInput = Int32(round(Double(recentInputFrameDeltas.count) / total.seconds))
 
-        let deltaSeconds = delta.seconds
-
         if frameSync == false,
             averageDelivered >= ReplayKitVideoSource.kMinSyncFrameRate,
             averageDelivered <= ReplayKitVideoSource.kMaxSyncFrameRate,
@@ -307,8 +305,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             if let lastSample = lastSampleBuffer {
                 return telecine.process(input: sampleBuffer, last: lastSample)
             }
-        } else {
-            print("Delta: \(deltaSeconds) Input: \(averageInput) Delivered avg: \(averageDelivered) recent: \(recentDelivered)")
         }
 
         return (.deliverFrame, currentTimestamp)
