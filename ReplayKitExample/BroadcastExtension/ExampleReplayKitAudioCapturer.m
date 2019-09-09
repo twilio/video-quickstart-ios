@@ -120,7 +120,7 @@ OSStatus ExampleCoreAudioDeviceCapturerCallback(ExampleReplayKitAudioCapturer *c
     const AudioStreamBasicDescription *asbd = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
     ExampleAudioContext *context = capturer->_capturingContext;
 
-    // Update the capture format ahead of capture starting (no context needed).
+    // Update the capture format at runtime in case the input changes, or does not match the capturer's initial guess.
     TVIAudioFormat *format = capturer->_capturingFormat;
     if (context &&
         (asbd->mChannelsPerFrame != context->streamDescription.mChannelsPerFrame || asbd->mSampleRate != context->streamDescription.mSampleRate)) {
