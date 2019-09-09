@@ -84,6 +84,8 @@ static size_t kMaximumFramesPerMicAudioBuffer = 2048;
         _capturingContext->deviceContext = context;
         _capturingContext->maxFramesPerBuffer = _capturingFormat.framesPerBuffer;
         _capturingContext->deviceContext = context;
+        // Represents the expected capture format. If the capturer's guess is incorrect then a restart will occur.
+        _capturingContext->streamDescription = _capturingFormat.streamDescription;
     }
     return YES;
 }
@@ -112,8 +114,8 @@ dispatch_queue_t ExampleCoreAudioDeviceGetCurrentQueue() {
 #pragma clang diagnostic pop
 }
 
-OSStatus ExampleCoreAudioDeviceRecordCallback(ExampleReplayKitAudioCapturer *capturer,
-                                              CMSampleBufferRef sampleBuffer) {
+OSStatus ExampleCoreAudioDeviceCapturerCallback(ExampleReplayKitAudioCapturer *capturer,
+                                                CMSampleBufferRef sampleBuffer) {
     CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
     const AudioStreamBasicDescription *asbd = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
     ExampleAudioContext *context = capturer->_capturingContext;
