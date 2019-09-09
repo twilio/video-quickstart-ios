@@ -130,13 +130,13 @@ class SampleHandler: RPBroadcastSampleHandler {
 
         case RPSampleBufferType.audioApp:
             if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioApp) {
-                ExampleCoreAudioDeviceRecordCallback(audioDevice, sampleBuffer)
+                ExampleCoreAudioDeviceCapturerCallback(audioDevice, sampleBuffer)
             }
             break
 
         case RPSampleBufferType.audioMic:
             if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioMic) {
-                ExampleCoreAudioDeviceRecordCallback(audioDevice, sampleBuffer)
+                ExampleCoreAudioDeviceCapturerCallback(audioDevice, sampleBuffer)
             }
             break
         }
