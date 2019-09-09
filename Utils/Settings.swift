@@ -9,11 +9,12 @@ import TwilioVideo
 
 class Settings: NSObject {
 
-    let supportedAudioCodecs: [AudioCodec] = [IsacCodec(),
-                                              OpusCodec(),
-                                              PcmaCodec(),
-                                              PcmuCodec(),
-                                              G722Codec()]
+    // ISDK-2644: Resolving a conflict with AudioToolbox in iOS 13
+    let supportedAudioCodecs: [TwilioVideo.AudioCodec] = [IsacCodec(),
+                                                          OpusCodec(),
+                                                          PcmaCodec(),
+                                                          PcmuCodec(),
+                                                          G722Codec()]
     
     let supportedVideoCodecs: [VideoCodec] = [Vp8Codec(),
                                               Vp8Codec(simulcast: true),
@@ -45,7 +46,7 @@ class Settings: NSObject {
                                                                     "us1": "US East Coast (Virginia)",
                                                                     "us2": "US West Coast (Oregon)"]
     
-    var audioCodec: AudioCodec?
+    var audioCodec: TwilioVideo.AudioCodec?
     var videoCodec: VideoCodec?
 
     var maxAudioBitrate = UInt()

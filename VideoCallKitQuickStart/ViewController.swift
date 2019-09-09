@@ -337,8 +337,8 @@ extension ViewController : RoomDelegate {
     func roomDidConnect(room: Room) {
         // At the moment, this example only supports rendering one Participant at a time.
         
-        logMessage(messageText: "Connected to room \(room.name) as \(String(describing: room.localParticipant?.identity))")
-        
+        logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")")
+
         if (room.remoteParticipants.count > 0) {
             self.remoteParticipant = room.remoteParticipants[0]
             self.remoteParticipant?.delegate = self
