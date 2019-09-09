@@ -60,11 +60,13 @@ Once you have setup your access token, install and run the example. You will be 
 
 <kbd><img width="360px" src="../images/quickstart/replaykit-launch-ios11.png"/></kbd>
 
-From here you can tap "Start Broadcast" to begin using the broadcast extension. The extension will automatically join a room called "Broadcast", unless a Room is specified in your access token grants. Other participants can join using the QuickStart example, or any other example app which can display remote video.
+From here you can tap "Start Broadcast" to begin using the broadcast extension. The extension will automatically join a room called "Broadcast", unless a Room is specified in your access token grants. Other Participants can join using the QuickStart example, or any other example app which can display remote video.
 
 <kbd><img width="360px" src="../images/quickstart/replaykit-picker-ios12.png"/></kbd>
 
-Tapping "Start Conference" begins capturing and sharing the screen from within the main application. Please note that backgrounding the app during a conference will cause in-app capture to be suspended.
+Tapping "Start Conference" begins capturing and sharing the screen from within the main application. Once you accept the screen recording permission, you can tap "Play Video" to select any mp4, or m4v video using `UIDocumentPickerViewController` and `AVPlayerViewController`. You can also tap "Browse Web" to visit a website using `SFSafariViewController`.
+
+Please note that backgrounding the app during a conference will cause in-app capture to be suspended.
 
 ### Betterments
 
@@ -82,20 +84,13 @@ The memory usage of a ReplayKit Broadcast Extension is limited to 50 MB (as of i
 
 It is highly recommended that you use Group Rooms with your ReplayKit extension, because the extension may connect without subscribing to Tracks.
 
-**2. Application Audio Delay**
-
-An `RPSampleHandler` may receive both application and microphone audio samples. We have found that, while microphone samples are suitable for realtime usage, application audio samples are significantly delayed.
-
-The following table shows what you can expect in the field (mesaured on iOS 12.1.3, and an iPhone X).
-
-| Sample Type | Format                          | Sample Size (Frames) | Period (milliseconds) |
-|-------------|---------------------------------|----------------------|-----------------------|
-| Application | 1ch, 44,100 Hz, Big Endian    | 22,596               | 512.3                 |
-| Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
-
-**3. Application Audio & Copy Protection**
+**2. Application Audio & Copy Protection**
 
 It is not possible to capture application audio produced by AVPlayer, by Safari video playback (even if no Fairplay DRM is used), or by the Music app.
+
+**3. RPSystemBroadcastPickerView crashes (13.0-beta8)**
+
+There is a serious bug in iOS 13.0-beta8 where tapping `RPSystemBroadcastPickerView` causes a crash. The example disables usage of the picker in the iOS 13.0.x version range. The issue is resolved in iOS 13.1-beta releases.
 
 **4. RPScreenRecorder Debugging**
 
@@ -114,3 +109,29 @@ It is possible to get ReplayKit into an inconsistent state when debugging `RPBro
 > Broadcast did finish with error: Error Domain=com.apple.ReplayKit.RPRecordingErrorDomain Code=-5808 "Attempted to start an invalid broadcast session" UserInfo={NSLocalizedDescription=Attempted to start an invalid broadcast session}
 
 This problem may be solved by deleting and re-installing the example app.
+
+**6. Application Audio Delay (iOS 12.x)**
+
+An `RPSampleHandler` receives both application and microphone audio samples. We have found that, while microphone samples are suitable for realtime usage, application audio samples are significantly delayed in iOS 12 releases. This delay results in poor audio quality for subscribers (even under ideal network conditions), since the extension delivers audio in bursts rather than continuously.
+
+The following table shows what you can expect in the field (mesaured on iOS 12.4.1, and an iPhone X).
+
+| Sample Type | Format                          | Sample Size (Frames) | Period (milliseconds) |
+|-------------|---------------------------------|----------------------|-----------------------|
+| Application | 1ch, 44,100 Hz, Big Endian    | 22,596               | 512.3                 |
+| Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
+
+This problem is solved in iOS 13.0, which supports low-delay mono and stereo application audio. Measured on an iPhone 7 Plus with iOS 13.0-beta8:
+
+| Sample Type | Format                          | Sample Size (Frames) | Period (milliseconds) |
+|-------------|---------------------------------|----------------------|-----------------------|
+| Application | 1 or 2ch, 44,100 Hz, Big Endian    | 1,024               | 23.2                 |
+| Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
+
+**7. RPScreenRecorder Content Sizing Error (12.x)**
+
+You might experience spurious failures while presenting the permissions dialog for `RSPScreenRecorder`  on iOS 12 devices.
+
+> Error Domain=com.apple.ReplayKit.RPRecordingErrorDomain Code=-5807 "Recording interrupted by multitasking and content resizing" UserInfo={NSLocalizedDescription=Recording interrupted by multitasking and content resizing})
+
+This issue may be resolved by upgrading your device to iOS 13.0 and above.
