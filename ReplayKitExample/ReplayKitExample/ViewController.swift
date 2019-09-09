@@ -19,7 +19,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var broadcastPickerView: UIView?
     @IBOutlet weak var conferenceButton: UIButton?
     @IBOutlet weak var infoLabel: UILabel?
-    @IBOutlet weak var settingsButton: UIBarButtonItem?
+    @IBOutlet var settingsButton: UIBarButtonItem?
 
     // Conference state.
     var screenTrack: LocalVideoTrack?
@@ -239,6 +239,8 @@ class ViewController: UIViewController {
                     self.spinner.stopAnimating()
                     self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
+                    self.navigationItem.rightBarButtonItem = self.settingsButton
+                    self.navigationItem.leftBarButtonItem = nil
 
                     self.videoSource = nil
                     self.screenTrack = nil
@@ -332,7 +334,8 @@ class ViewController: UIViewController {
 
                     let playVideo = UIBarButtonItem(title: "Play Video", style: .plain, target: self, action: #selector(self.pickDocument(_:)))
                     let browseWeb = UIBarButtonItem(title: "Browse Web", style: .plain, target: self, action: #selector(self.browseWeb(_:)))
-                    self.navigationItem.leftBarButtonItems = [playVideo, browseWeb]
+                    self.navigationItem.leftBarButtonItem = playVideo
+                    self.navigationItem.rightBarButtonItem = browseWeb
                 }
             }
         }
