@@ -302,10 +302,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             print("Frame sync stopped at rate: \(averageDelivered)")
         }
 
-        // TODO: Fix delivered frame rate.
         if let telecine = telecine,
             averageInput >= telecineInputFrameRate {
-//            averageDelivered >= ReplayKitVideoSource.kInverseTelecineMinimumFrameRate {
             if let lastSample = lastSampleBuffer {
                 return telecine.process(input: sampleBuffer, last: lastSample)
             }

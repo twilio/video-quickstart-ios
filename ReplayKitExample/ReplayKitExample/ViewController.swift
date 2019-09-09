@@ -111,8 +111,10 @@ class ViewController: UIViewController {
     func setupPickerView() {
         // Swap the button for an RPSystemBroadcastPickerView.
         #if !targetEnvironment(simulator)
-        // iOS 13.0 has a bug which causes a crash when RPSystemBroadcastPickerView is used to start a broadcast.
+        // iOS 13.0 throws an NSInvalidArgumentException when RPSystemBroadcastPickerView is used to start a broadcast.
+        // https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie
         if #available(iOS 13.0, *) {
+            // The issue is resolved in iOS 13.1.
             if #available(iOS 13.1, *) {
             } else {
                 broadcastButton.addTarget(self, action: #selector(tapBroadcastPickeriOS13(sender:)), for: UIControl.Event.touchUpInside)
@@ -569,7 +571,10 @@ extension ViewController : UIDocumentPickerDelegate {
 
         let playerItem = AVPlayerItem(asset: asset, automaticallyLoadedAssetKeys: assetKeysToPreload)
         let notificationCenter = NotificationCenter.default
-    notificationCenter.addObserver(self, selector: #selector(stopVideoPlayer), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
+        notificationCenter.addObserver(self,
+                                       selector: #selector(stopVideoPlayer),
+                                       name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                       object: playerItem)
 
         let player = AVPlayer(playerItem: playerItem)
         videoPlayer = player
