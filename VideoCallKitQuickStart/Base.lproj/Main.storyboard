@@ -49,7 +49,7 @@
                                     <constraint firstAttribute="height" constant="44" id="ZbX-w3-djY"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <state key="normal" title="Simulate Incoming Call">
+                                <state key="normal" title="Schedule Notification">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>

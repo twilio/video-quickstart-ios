@@ -103,6 +103,8 @@ class ViewController: UIViewController {
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
         self.view.addGestureRecognizer(tap)
+
+        self.registerForLocalNotifications()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
