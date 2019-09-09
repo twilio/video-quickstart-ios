@@ -31,10 +31,11 @@ The source offers several capabilities to optimize for different use cases:
 
 For performance reasons, `ReplayKit.framework` produces variable frame rate input. Importantly, this content has different properties depending on how screen capturing is being performed:
 
-| ReplayKit API | Max Frame Rate                          | Rotation Tags |
-|-------------|---------------------------------|----------------------|-----------------------|
-| RPScreenRecorder | 60 or 120 (iPad Pro)| No |
-| RPBroadcastSampleHandler  | 30 | Yes |
+| ReplayKit API | Device | Max Frame Rate | Rotation Tags |
+|-------------|----------------------|-----|-------|
+| RPScreenRecorder | iPhone, iPad | 60 | No |
+| RPScreenRecorder | iPad Pro | 120 | No |
+| RPBroadcastSampleHandler | All | 30 | Yes |
 
 **ExampleReplayKitAudioCapturer**
 
