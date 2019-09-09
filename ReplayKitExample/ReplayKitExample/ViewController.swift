@@ -259,9 +259,15 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     //MARK: RPScreenRecorderDelegate
     func screenRecorderDidChangeAvailability(_ screenRecorder: RPScreenRecorder) {
-        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
-        if (self.broadcastController == nil && screenTrack == nil) {
-            checkRecordingAvailability()
+        if Thread.isMainThread {
+            // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
+            if (self.broadcastController == nil && screenTrack == nil) {
+                checkRecordingAvailability()
+            }
+        } else {
+            DispatchQueue.main.async {
+                self.screenRecorderDidChangeAvailability(screenRecorder)
+            }
         }
     }
 
