@@ -90,7 +90,11 @@ It is not possible to capture application audio produced by AVPlayer, by Safari 
 
 **3. RPSystemBroadcastPickerView crashes (13.0-beta8)**
 
-There is a serious bug in iOS 13.0-beta8 where tapping `RPSystemBroadcastPickerView` causes a crash. The example disables usage of the picker in the iOS 13.0.x version range. The issue is resolved in iOS 13.1-beta releases.
+There is a [serious bug](https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie) in iOS 13.0-beta8 where tapping `RPSystemBroadcastPickerView` throws an exception. Since the issue is specific to iOS 13.0, and is fixed in 13.1-beta2, the example disables usage of the picker in the iOS 13.0.x.
+
+> *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'Application tried to present UIModalTransitionStylePartialCurl to or from non-fullscreen view controller <UIApplicationRotationFollowingController: 0x104f31220>.'
+
+<kbd><img src="../images/quickstart/replaykit-broadcast-picker-ios-13.0.png"/></kbd>
 
 **4. RPScreenRecorder Debugging**
 
