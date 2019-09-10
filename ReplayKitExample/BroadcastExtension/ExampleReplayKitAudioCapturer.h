@@ -32,4 +32,4 @@ typedef struct ExampleAudioContext {
 /// @param capturer The capturer to deliver the samples to.
 /// @param sampleBuffer A CMSampleBuffer which contains an audio sample.
 OSStatus ExampleCoreAudioDeviceCapturerCallback(ExampleReplayKitAudioCapturer * _Nonnull capturer,
-                                              CMSampleBufferRef _Nonnull sampleBuffer);
+                                                CMSampleBufferRef _Nonnull sampleBuffer);
