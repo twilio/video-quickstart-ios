@@ -73,15 +73,23 @@ It is highly recommended that you use Group Rooms with your ReplayKit extension,
 
 It is not possible to capture application audio produced by AVPlayer, by Safari video playback (even if no Fairplay DRM is used), or by the Music app.
 
-**3. RPSystemBroadcastPickerView crashes (13.0-beta8)**
+**3. RPSystemBroadcastPickerView crashes (iOS 13.0-beta8)**
 
 There is a [serious bug](https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie) in iOS 13.0-beta8 where tapping `RPSystemBroadcastPickerView` throws an exception. Since the issue is specific to iOS 13.0, and is fixed in 13.1-beta2, the example disables usage of the picker in the iOS 13.0.x.
 
 > *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'Application tried to present UIModalTransitionStylePartialCurl to or from non-fullscreen view controller <UIApplicationRotationFollowingController: 0x104f31220>.'
 
-<kbd><img src="../images/quickstart/replaykit-broadcast-picker-ios-13.0.png"/></kbd>
+<img src="../images/quickstart/replaykit-broadcast-picker-ios-13.0.png"/>
 
-**4. RPScreenRecorder Debugging**
+**4. RPBroadcastSampleHandler and RPSampleBufferType.audioMic leak (iOS 13.0-beta8)**
+
+There is a memory leak in iOS 13.0-beta8 when broadcasting the screen with the microphone enabled. The leaked memory builds up and causes the extension to crash when it reaches its 50 MB resource limit. During this time, published audio might be delayed or distorted.
+
+<img src="../images/quickstart/replaykit-broadcast-mic-ios13-audio-resource-limit.png"/>
+
+Testing with iOS 13.1-beta2 shows that the resource leak has been fixed in the upcoming release. If you use `RPSampleBufferType.audioMic` in an extension, then urge your customers to wait for iOS 13.1 instead.
+
+**5. RPScreenRecorder Debugging**
 
 It is possible to get ReplayKit into an inconsistent state when setting breakpoints in `RPScreenRecorder` callbacks. If you notice that capture is starting but no audio/video samples are being produced, then you should reset Media Services on your device.
 
@@ -91,7 +99,7 @@ First, end your debugging session and then navigate to:
 
 <kbd><img width="400px" src="../images/quickstart/replaykit-reset-media-services.png"/></kbd>
 
-**5. Extension Debugging**
+**6. Extension Debugging**
 
 It is possible to get ReplayKit into an inconsistent state when debugging `RPBroadcastSampleHandler` callbacks. If this occurs you may notice the following error:
 
@@ -99,7 +107,7 @@ It is possible to get ReplayKit into an inconsistent state when debugging `RPBro
 
 This problem may be solved by deleting and re-installing the example app.
 
-**6. Application Audio Delay (iOS 12.x)**
+**7. Application Audio Delay (iOS 12)**
 
 An `RPSampleHandler` receives both application and microphone audio samples. We have found that, while microphone samples are suitable for realtime usage, application audio samples are significantly delayed in iOS 12 releases. This delay results in poor audio quality for subscribers (even under ideal network conditions), since the extension delivers audio in bursts rather than continuously.
 
@@ -117,7 +125,7 @@ This problem is solved in iOS 13.0, which supports low-delay mono and stereo app
 | Application | 1 or 2ch, 44,100 Hz, Big Endian    | 1,024               | 23.2                 |
 | Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
 
-**7. RPScreenRecorder Content Sizing Error (12.x)**
+**8. RPScreenRecorder Content Sizing Error (iOS 12)**
 
 You might experience spurious failures while presenting the permissions dialog for `RSPScreenRecorder`  on iOS 12 devices.
 
