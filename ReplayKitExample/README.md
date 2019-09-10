@@ -87,7 +87,7 @@ There is a memory leak in iOS 13.0-beta8 when broadcasting the screen with the m
 
 <img src="../images/quickstart/replaykit-broadcast-mic-ios13-audio-resource-limit.png"/>
 
-Testing with iOS 13.1-beta2 shows that the resource leak has been fixed in the upcoming release. If you use `RPSampleBufferType.audioMic` in an extension, then urge your customers to avoid using iOS 13.0, and wait for 13.1 instead.
+Testing with iOS 13.1-beta2 shows that the resource leak has been fixed in the upcoming release. If you use `RPSampleBufferType.audioMic` in an extension, then urge your customers to wait for iOS 13.1 instead.
 
 **5. RPScreenRecorder Debugging**
 
