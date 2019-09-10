@@ -94,6 +94,17 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
     func setupPickerView() {
         // Swap the button for an RPSystemBroadcastPickerView.
         #if !targetEnvironment(simulator)
+        // iOS 13.0 throws an NSInvalidArgumentException when RPSystemBroadcastPickerView is used to start a broadcast.
+        // https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie
+        if #available(iOS 13.0, *) {
+            if #available(iOS 13.1, *) {
+                // The issue is resolved in iOS 13.1.
+            } else {
+                broadcastButton.addTarget(self, action: #selector(tapBroadcastPickeriOS13(sender:)), for: UIControl.Event.touchUpInside)
+                return
+            }
+        }
+
         let pickerView = RPSystemBroadcastPickerView(frame: CGRect(x: 0,
                                                                    y: 0,
                                                                    width: view.bounds.width,
@@ -145,6 +156,30 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
                                         constant: 0);
         self.view.addConstraint(height)
         #endif
+    }
+
+    @objc func tapBroadcastPickeriOS13(sender: UIButton) {
+        let message = "ReplayKit broadcasts can not be started using the broadcast picker on iOS 13.0. Please upgrade to iOS 13.1+, or start a broadcast from the screen recording widget in control center instead."
+        let alertController = UIAlertController(title: "Start Broadcast", message: message, preferredStyle: .actionSheet)
+
+        let settingsButton = UIAlertAction(title: "Launch Settings App", style: .default, handler: { (action) -> Void in
+            // Launch the settings app, with control center if possible.
+            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:]) { (success) in
+            }
+        })
+
+        alertController.addAction(settingsButton)
+
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            alertController.popoverPresentationController?.sourceView = sender
+            alertController.popoverPresentationController?.sourceRect = sender.bounds
+        } else {
+            // Adding the cancel action
+            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+            })
+            alertController.addAction(cancelButton)
+        }
+        self.navigationController!.present(alertController, animated: true, completion: nil)
     }
 
     // This action is only invoked on iOS 11.x. On iOS 12.0 this is handled by RPSystemBroadcastPickerView.
@@ -259,9 +294,15 @@ class ViewController: UIViewController, RPBroadcastActivityViewControllerDelegat
 
     //MARK: RPScreenRecorderDelegate
     func screenRecorderDidChangeAvailability(_ screenRecorder: RPScreenRecorder) {
-        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
-        if (self.broadcastController == nil && screenTrack == nil) {
-            checkRecordingAvailability()
+        if Thread.isMainThread {
+            // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
+            if (self.broadcastController == nil && screenTrack == nil) {
+                checkRecordingAvailability()
+            }
+        } else {
+            DispatchQueue.main.async {
+                self.screenRecorderDidChangeAvailability(screenRecorder)
+            }
         }
     }
 

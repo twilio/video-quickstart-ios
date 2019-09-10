@@ -17,6 +17,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
     var videoSource: ReplayKitVideoSource?
     var screenTrack: TVILocalVideoTrack?
     var disconnectSemaphore: DispatchSemaphore?
+    let audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
     let accessTokenUrl = "http://127.0.0.1:5000/"
@@ -34,7 +35,7 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
-        TwilioVideo.audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
+        TwilioVideo.audioDevice = self.audioDevice
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
@@ -129,13 +130,13 @@ class SampleHandler: RPBroadcastSampleHandler, TVIRoomDelegate {
 
         case RPSampleBufferType.audioApp:
             if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioApp) {
-                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+                ExampleCoreAudioDeviceCapturerCallback(audioDevice, sampleBuffer)
             }
             break
 
         case RPSampleBufferType.audioMic:
             if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioMic) {
-                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+                ExampleCoreAudioDeviceCapturerCallback(audioDevice, sampleBuffer)
             }
             break
         }
