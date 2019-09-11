@@ -239,13 +239,21 @@ class ViewController: UIViewController {
                 let useCaptureSession = true
                 if useCaptureSession {
                     let session = AVCaptureSession()
-                    session.sessionPreset = .photo
+                    if session.canSetSessionPreset(.hd1280x720) {
+                        session.sessionPreset = .hd1280x720
+                    } else {
+                        session.sessionPreset = .photo
+                    }
                     do {
                         let input = try AVCaptureDeviceInput(device: captureDevice)
                         session.addInput(input)
 
                         let vdo = AVCaptureVideoDataOutput()
                         session.addOutput(vdo)
+                        if #available(iOS 13.0, *) {
+                            vdo.automaticallyConfiguresOutputBufferDimensions = false
+                            vdo.deliversPreviewSizedOutputBuffers = false
+                        }
                     } catch {
                     }
 
