@@ -5,6 +5,8 @@
 # Twilio Video Quickstart for iOS
 
 > NOTE: These sample applications use the Twilio Video 2.x APIs. For examples using our 3.0.0-beta APIs, please see the [3.0.0-beta](https://github.com/twilio/video-quickstart-ios/tree/3.0.0-beta) branch. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-ios/tree/1.x) branch.
+> 
+> Please see our [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md) for the latest information on iOS 13 and iPadOS 13.
 
 Get started with Video on iOS:
 
@@ -151,6 +153,7 @@ You can find more documentation on getting started as well as our latest Docs be
 
 * [Getting Started](https://www.twilio.com/docs/video/ios-v2-getting-started)
 * [Docs](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
+* [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md)
 
 ## Issues and Support
 
