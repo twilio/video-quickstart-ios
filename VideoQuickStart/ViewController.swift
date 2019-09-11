@@ -5,6 +5,7 @@
 //  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
 //
 
+import AVFoundation
 import UIKit
 
 import TwilioVideo
@@ -234,11 +235,43 @@ class ViewController: UIViewController {
             }
 
             if let newDevice = newDevice {
-                camera.select(newDevice) { (captureDevice, videoFormat, error) in
-                    if let error = error {
-                        self.logMessage(messageText: "Error selecting capture device.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
-                    } else {
-                        self.previewView.shouldMirror = (captureDevice.position == .front)
+                // Cause an interruption.
+                let useCaptureSession = true
+                if useCaptureSession {
+                    let session = AVCaptureSession()
+                    session.sessionPreset = .photo
+                    do {
+                        let input = try AVCaptureDeviceInput(device: captureDevice)
+                        session.addInput(input)
+
+                        let vdo = AVCaptureVideoDataOutput()
+                        session.addOutput(vdo)
+                    } catch {
+                    }
+
+                    session.startRunning()
+
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(2)) {
+                        session.stopRunning()
+                    }
+                } else {
+                    var interruptingCamera = TVICameraSource(delegate: self)
+                    var interruptingVideoTrack = TVILocalVideoTrack(source: interruptingCamera!, enabled: true, name: "Camera")
+
+                    // Add renderer to video track for local preview
+                    logMessage(messageText: "Interrupting video track created")
+
+                    interruptingCamera!.startCapture(with: newDevice) { (captureDevice, videoFormat, error) in
+                        if let error = error {
+                            self.logMessage(messageText: "Capture failed with error.\ncode = \((error as NSError).code) error = \(error.localizedDescription)")
+                        } else {
+                            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(2)) {
+                                interruptingCamera?.stopCapture(completion: { (error) in
+                                    interruptingCamera = nil
+                                    interruptingVideoTrack = nil
+                                })
+                            }
+                        }
                     }
                 }
             }
@@ -497,5 +530,13 @@ extension ViewController : TVIVideoViewDelegate {
 extension ViewController : TVICameraSourceDelegate {
     func cameraSource(_ source: TVICameraSource, didFailWithError error: Error) {
         logMessage(messageText: "Camera source failed with error: \(error.localizedDescription)")
+    }
+
+    func cameraSourceWasInterrupted(_ source: TVICameraSource, reason: AVCaptureSession.InterruptionReason) {
+        logMessage(messageText: "Camera source was interrupted with reason \(reason.rawValue).")
+    }
+
+    func cameraSourceInterruptionEnded(_ source: TVICameraSource) {
+        logMessage(messageText: "Camera source was interruption ended.")
     }
 }
