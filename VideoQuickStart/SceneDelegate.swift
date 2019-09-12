@@ -19,13 +19,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     // UIWindowScene delegate
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        if let userActivity = connectionOptions.userActivities.first ?? session.stateRestorationActivity {
-            if !configure(window: window, with: userActivity) {
-                print("Failed to restore from \(userActivity)")
-            }
-        }
+        print(#function)
 
-        // If there were no user activities, we don't have to do anything.
+        // The example does not support user activities & state restoration at this time.
         // The `window` property will automatically be loaded with the storyboard's initial view controller.
     }
 
@@ -48,18 +44,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillEnterForeground(_ scene: UIScene) {
         print(#function)
     }
-
-    // Utilities
-
-    func configure(window: UIWindow?, with activity: NSUserActivity) -> Bool {
-        if activity.title == "Room" {
-            if let roomName = activity.userInfo?["RoomName"] as? String {
-                // TODO: Restore the room name field, or reconnect to the Room.
-            }
-        }
-        return false
-    }
-
+    
 }
 #endif
 
