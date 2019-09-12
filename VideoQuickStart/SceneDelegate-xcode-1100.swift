@@ -8,6 +8,7 @@
 
 import UIKit
 
+// Ensure that iOS 13 specific code is not called unless Xcode 11 is present
 @available(iOS 13.0, *)
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -51,7 +52,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func configure(window: UIWindow?, with activity: NSUserActivity) -> Bool {
         if activity.title == "Room" {
             if let roomName = activity.userInfo?["RoomName"] as? String {
-                // TODO: Allow connecting directly to a named Room.
+                // TODO: Restore the room name field, or reconnect to the Room.
             }
         }
         return false
