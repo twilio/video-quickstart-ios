@@ -18,6 +18,7 @@
 		4B63DD331F73032D00F0737E /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B63DD321F73032D00F0737E /* SettingsTableViewController.swift */; };
 		4B63DD381F730C1A00F0737E /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B63DD371F730C1A00F0737E /* Settings.swift */; };
 		4BAA74EB1D8B5CBE00239F19 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BAA74EA1D8B5CBE00239F19 /* Utils.swift */; };
+		8AE134702329DE8300E7DA1A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AE1346F2329DE8300E7DA1A /* SceneDelegate.swift */; };
 		8B79D46A1C2252A100489AA5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B79D4691C2252A100489AA5 /* AppDelegate.swift */; };
 		8B79D46C1C2252A100489AA5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B79D46B1C2252A100489AA5 /* ViewController.swift */; };
 		8B79D46F1C2252A100489AA5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8B79D46D1C2252A100489AA5 /* Main.storyboard */; };
@@ -50,6 +51,7 @@
 		4B63DD321F73032D00F0737E /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
 		4B63DD371F730C1A00F0737E /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		4BAA74EA1D8B5CBE00239F19 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		8AE1346F2329DE8300E7DA1A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		8B79D4661C2252A100489AA5 /* VideoQuickStart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoQuickStart.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B79D4691C2252A100489AA5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8B79D46B1C2252A100489AA5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -144,6 +146,7 @@
 			isa = PBXGroup;
 			children = (
 				8B79D4691C2252A100489AA5 /* AppDelegate.swift */,
+				8AE1346F2329DE8300E7DA1A /* SceneDelegate.swift */,
 				8B79D46B1C2252A100489AA5 /* ViewController.swift */,
 			);
 			name = Source;
@@ -237,6 +240,7 @@
 				8B79D46A1C2252A100489AA5 /* AppDelegate.swift in Sources */,
 				4BAA74EB1D8B5CBE00239F19 /* Utils.swift in Sources */,
 				4B63DD381F730C1A00F0737E /* Settings.swift in Sources */,
+				8AE134702329DE8300E7DA1A /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
