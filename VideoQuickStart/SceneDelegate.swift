@@ -51,14 +51,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func configure(window: UIWindow?, with activity: NSUserActivity) -> Bool {
         if activity.title == "Room" {
             if let roomName = activity.userInfo?["RoomName"] as? String {
-//                if let photoDetailViewController = PhotoDetailViewController.loadFromStoryboard() {
-//                    photoDetailViewController.photo = Photo(name: photoID)
-//
-//                    if let navigationController = window?.rootViewController as? UINavigationController {
-//                        navigationController.pushViewController(photoDetailViewController, animated: false)
-//                        return true
-//                    }
-//                }
+                // TODO: Allow connecting directly to a named Room.
             }
         }
         return false
