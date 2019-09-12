@@ -8,7 +8,10 @@
 
 import UIKit
 
-// Ensure that iOS 13 specific code is not called unless Xcode 11 is present
+// Xcode 10.x will compile SceneDelegate even with the availability macro in place.
+#if XCODE_1100
+
+// Ensure that iOS 13 specific code is not called on earlier OS versions.
 @available(iOS 13.0, *)
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -59,3 +62,5 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
 }
+#endif
+
