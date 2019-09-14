@@ -127,14 +127,14 @@ This problem may be solved by deleting and re-installing the example app.
 
 An `RPSampleHandler` receives both application and microphone audio samples. We have found that, while microphone samples are suitable for realtime usage, application audio samples are significantly delayed in iOS 12 releases. This delay results in poor audio quality for subscribers (even under ideal network conditions), since the extension delivers audio in bursts rather than continuously.
 
-The following table shows what you can expect in the field (mesaured on iOS 12.4.1, and an iPhone X).
+The following table shows measurements from an iPhone X running iOS 12.4.1.
 
 | Sample Type | Format                          | Sample Size (Frames) | Period (milliseconds) |
 |-------------|---------------------------------|----------------------|-----------------------|
 | Application | 1ch, 44,100 Hz, Big Endian    | 22,596               | 512.3                 |
 | Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
 
-This problem is solved in iOS 13.0, which supports low-delay mono and stereo application audio. Measured on an iPhone 7 Plus with iOS 13.0:
+This problem is solved in iOS 13.0, which supports low-delay mono and stereo application audio. The following table shows measurements from an iPhone 7 Plus running iOS 13.0:
 
 | Sample Type | Format                          | Sample Size (Frames) | Period (milliseconds) |
 |-------------|---------------------------------|----------------------|-----------------------|
