@@ -73,17 +73,17 @@ It is highly recommended that you use Group Rooms with your ReplayKit extension,
 
 It is not possible to capture application audio produced by AVPlayer, by Safari video playback (even if no Fairplay DRM is used), or by the Music app.
 
-**3. RPSystemBroadcastPickerView crashes (iOS 13.0-beta8)**
+**3. RPSystemBroadcastPickerView crashes (iOS 13.0)**
 
-There is a [serious bug](https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie) in iOS 13.0-beta8 where tapping `RPSystemBroadcastPickerView` throws an exception. Since the issue is specific to iOS 13.0, and is fixed in 13.1-beta2, the example disables usage of the picker on iOS 13.0.x releases.
+There is a [serious bug](https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie) in iOS 13.0 where tapping `RPSystemBroadcastPickerView` throws an exception. Since the issue is specific to iOS 13.0, and is fixed in 13.1-beta2, the example disables usage of the picker on iOS 13.0.x releases.
 
 > *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'Application tried to present UIModalTransitionStylePartialCurl to or from non-fullscreen view controller <UIApplicationRotationFollowingController: 0x104f31220>.'
 
 <img src="../images/quickstart/replaykit-broadcast-picker-ios-13.0.png"/>
 
-**4. RPBroadcastSampleHandler and RPSampleBufferType.audioMic leak (iOS 13.0-beta8)**
+**4. RPBroadcastSampleHandler and RPSampleBufferType.audioMic leak (iOS 13.0)**
 
-There is a memory leak in iOS 13.0-beta8 when broadcasting the screen with the microphone enabled. The leaked memory builds up and causes the extension to crash when it reaches its 50 MB resource limit. During this time, published audio might be delayed or distorted.
+There is a memory leak in iOS 13.0 when broadcasting the screen with the microphone enabled. The leaked memory builds up and causes the extension to crash when it reaches its 50 MB resource limit. During this time, published audio might be delayed or distorted.
 
 <img src="../images/quickstart/replaykit-broadcast-mic-ios13-audio-resource-limit.png"/>
 
