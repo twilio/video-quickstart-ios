@@ -134,7 +134,7 @@ The following table shows what you can expect in the field (mesaured on iOS 12.4
 | Application | 1ch, 44,100 Hz, Big Endian    | 22,596               | 512.3                 |
 | Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
 
-This problem is solved in iOS 13.0, which supports low-delay mono and stereo application audio. Measured on an iPhone 7 Plus with iOS 13.0-beta8:
+This problem is solved in iOS 13.0, which supports low-delay mono and stereo application audio. Measured on an iPhone 7 Plus with iOS 13.0:
 
 | Sample Type | Format                          | Sample Size (Frames) | Period (milliseconds) |
 |-------------|---------------------------------|----------------------|-----------------------|
