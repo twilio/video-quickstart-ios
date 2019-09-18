@@ -89,17 +89,17 @@ It is highly recommended that you use Group Rooms with your ReplayKit extension,
 
 It is not possible to capture application audio produced by AVPlayer, by Safari video playback (even if no Fairplay DRM is used), or by the Music app.
 
-**3. RPSystemBroadcastPickerView crashes (iOS 13.0-beta8)**
+**3. RPSystemBroadcastPickerView crashes (iOS 13.0)**
 
-There is a [serious bug](https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie) in iOS 13.0-beta8 where tapping `RPSystemBroadcastPickerView` throws an exception. Since the issue is specific to iOS 13.0, and is fixed in 13.1-beta2, the example disables usage of the picker on iOS 13.0.x releases.
+There is a [serious bug](https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie) in iOS 13.0 where tapping `RPSystemBroadcastPickerView` throws an exception. Since the issue is specific to iOS 13.0, and is fixed in 13.1-beta2, the example disables usage of the picker on iOS 13.0.x releases.
 
 > *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'Application tried to present UIModalTransitionStylePartialCurl to or from non-fullscreen view controller <UIApplicationRotationFollowingController: 0x104f31220>.'
 
 <img src="../images/quickstart/replaykit-broadcast-picker-ios-13.0.png"/>
 
-**4. RPBroadcastSampleHandler and RPSampleBufferType.audioMic leak (iOS 13.0-beta8)**
+**4. RPBroadcastSampleHandler and RPSampleBufferType.audioMic leak (iOS 13.0)**
 
-There is a memory leak in iOS 13.0-beta8 when broadcasting the screen with the microphone enabled. The leaked memory builds up and causes the extension to crash when it reaches its 50 MB resource limit. During this time, published audio might be delayed or distorted.
+There is a memory leak in iOS 13.0 when broadcasting the screen with the microphone enabled. The leaked memory builds up and causes the extension to crash when it reaches its 50 MB resource limit. During this time, published audio might be delayed or distorted.
 
 <img src="../images/quickstart/replaykit-broadcast-mic-ios13-audio-resource-limit.png"/>
 
@@ -127,14 +127,14 @@ This problem may be solved by deleting and re-installing the example app.
 
 An `RPSampleHandler` receives both application and microphone audio samples. We have found that, while microphone samples are suitable for realtime usage, application audio samples are significantly delayed in iOS 12 releases. This delay results in poor audio quality for subscribers (even under ideal network conditions), since the extension delivers audio in bursts rather than continuously.
 
-The following table shows what you can expect in the field (mesaured on iOS 12.4.1, and an iPhone X).
+The following table shows measurements from an iPhone X running iOS 12.4.1.
 
 | Sample Type | Format                          | Sample Size (Frames) | Period (milliseconds) |
 |-------------|---------------------------------|----------------------|-----------------------|
 | Application | 1ch, 44,100 Hz, Big Endian    | 22,596               | 512.3                 |
 | Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
 
-This problem is solved in iOS 13.0, which supports low-delay mono and stereo application audio. Measured on an iPhone 7 Plus with iOS 13.0-beta8:
+This problem is solved in iOS 13.0, which supports low-delay mono and stereo application audio. The following table shows measurements from an iPhone 7 Plus running iOS 13.0:
 
 | Sample Type | Format                          | Sample Size (Frames) | Period (milliseconds) |
 |-------------|---------------------------------|----------------------|-----------------------|
