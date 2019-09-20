@@ -26,7 +26,7 @@ If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio
 
 ### CocoaPods
 
-1. Install [CocoaPods 1.7.0 or newer](https://guides.cocoapods.org/using/getting-started.html).
+1. Install [CocoaPods 1.7.5 or newer](https://guides.cocoapods.org/using/getting-started.html).
 
 2. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up an `xcworkspace`.
 
