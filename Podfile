@@ -63,6 +63,8 @@ abstract_target 'TwilioVideo' do
   target 'AVPlayerExample' do
     platform :ios, '9.0'
     project 'AVPlayerExample.xcproject'
+
+    pod 'TPCircularBuffer', '~> 1.6'
   end
 
 end
