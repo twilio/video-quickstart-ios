@@ -169,7 +169,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             }
         }
 
-        return (EncodingParameters(audioBitrate: audioBitrate, videoBitrate: videoBitrate,
+        return (EncodingParameters(audioBitrate: audioBitrate, videoBitrate: videoBitrate),
                 formatRequestToDownscale(maxWidthOrHeight: maxWidthOrHeight, maxFrameRate: maxFrameRate))
     }
 
