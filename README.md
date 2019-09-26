@@ -1,6 +1,6 @@
 
-[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://github.com/twilio/twilio-video-ios/releases/download/3.0.0-beta4/TwilioVideo.framework.zip)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta4/index.html)
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://github.com/twilio/twilio-video-ios/releases/download/3.0.0-beta5/TwilioVideo.framework.zip)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta5/index.html)
 
 # Twilio Video Quickstart for iOS
 
@@ -26,11 +26,11 @@ If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio
 
 ### CocoaPods
 
-1. Install [CocoaPods 1.0.0+](https://guides.cocoapods.org/using/getting-started.html).
+1. Install [CocoaPods 1.7.5 or newer](https://guides.cocoapods.org/using/getting-started.html).
 
-1. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up an `xcworkspace`.
+2. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up an `xcworkspace`.
 
-1. Open `VideoQuickStart.xcworkspace`.
+3. Open `VideoQuickStart.xcworkspace`.
 
 Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com/CocoaPods/Specs) by running `pod repo update master` in order to fetch the latest specs for TwilioVideo.
 
@@ -152,7 +152,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/video/ios-v3-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta4/index.html)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta5/index.html)
 * [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md)
 
 ## Issues and Support
