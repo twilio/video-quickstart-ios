@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import TwilioVideo
 
 // Xcode 10.x will compile SceneDelegate even with the availability macro in place.
 #if XCODE_1100
@@ -43,6 +44,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneWillEnterForeground(_ scene: UIScene) {
         print(#function)
+    }
+
+    func windowScene(_ windowScene: UIWindowScene,
+                     didUpdate previousCoordinateSpace: UICoordinateSpace,
+                     interfaceOrientation previousInterfaceOrientation: UIInterfaceOrientation,
+                     traitCollection previousTraitCollection: UITraitCollection) {
+        // Forward WindowScene changes to Twilio
+        UserInterfaceTracker.sceneInterfaceOrientationDidChange(windowScene)
     }
     
 }

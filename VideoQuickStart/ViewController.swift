@@ -201,8 +201,17 @@ class ViewController: UIViewController {
         let backCamera = CameraSource.captureDevice(position: .back)
 
         if (frontCamera != nil || backCamera != nil) {
+
+            let options = CameraSourceOptions { (builder) in
+                // Track UIWindowScene events. Conditionally compiled to support Xcode 10.x.
+                #if XCODE_1100
+                if #available(iOS 13.0, *) {
+                    builder.orientationTracker = UserInterfaceTracker(scene: self.view.window!.windowScene!)
+                }
+                #endif
+            }
             // Preview our local camera track in the local video preview view.
-            camera = CameraSource(delegate: self)
+            camera = CameraSource(options: options, delegate: self)
             localVideoTrack = LocalVideoTrack(source: camera!, enabled: true, name: "Camera")
 
             // Add renderer to video track for local preview
