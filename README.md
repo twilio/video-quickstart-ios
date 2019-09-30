@@ -1,6 +1,6 @@
 
-[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://github.com/twilio/twilio-video-ios/releases/download/3.0.0-beta5/TwilioVideo.framework.zip)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta5/index.html)
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://github.com/twilio/twilio-video-ios/releases/download/3.0.0-beta6/TwilioVideo.framework.zip)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta6/index.html)
 
 # Twilio Video Quickstart for iOS
 
@@ -152,7 +152,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/video/ios-v3-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta5/index.html)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta6/index.html)
 * [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md)
 
 ## Issues and Support
