@@ -14,11 +14,12 @@ struct CaptureDeviceUtils {
     static let kOneToOneVideoBitrate = UInt(1120)
     static let kMultipartyFrameRate = UInt(15)
     static let kMultipartyVideoBitrate = UInt(600)
-    // Simulcast bitrate is multiplied by the number of spatial layers.
-    static let kSimulcastVideoBitrate = UInt(720)
+    static let kSimulcastVideoBitrate = UInt(1800)
     static let kOneToOneVideoDimensions = CMVideoDimensions(width: 640, height: 480)
     static let kMultipartyVideoDimensions = CMVideoDimensions(width: 480, height: 360)
-    static let kSimulcastVideoDimensions = CMVideoDimensions(width: 1280, height: 960)
+    // Produce 3 spatial layers ~ {1024x768, 512x336, 256x192}
+    static let kSimulcastVideoDimensions = CMVideoDimensions(width: 1024, height: 768)
+    static let kSimulcastVideoFrameRate = UInt(20)
 
     static let kFormatByRatioMinimumSize = UInt(640)
     static let kFormatByRatioMaxDelta = Float(0.4)
@@ -92,12 +93,14 @@ struct CaptureDeviceUtils {
     }
 
     static func selectVideoFormat(multiparty: Bool, device: AVCaptureDevice) -> VideoFormat {
-        let frameRate = multiparty ? CaptureDeviceUtils.kMultipartyFrameRate : CaptureDeviceUtils.kOneToOneFrameRate
+        var frameRate = multiparty ? CaptureDeviceUtils.kMultipartyFrameRate : CaptureDeviceUtils.kOneToOneFrameRate
+        frameRate = MultiPartyViewController.isSimulcast ? kSimulcastVideoFrameRate : frameRate
         var dimensions = multiparty ? CaptureDeviceUtils.kMultipartyVideoDimensions : CaptureDeviceUtils.kOneToOneVideoDimensions
         dimensions = MultiPartyViewController.isSimulcast ? CaptureDeviceUtils.kSimulcastVideoDimensions : dimensions
 
         let format = CaptureDeviceUtils.selectFormatBySize(device: device, targetSize: dimensions)
         format.frameRate = frameRate
+        print("Selected format: \(format)")
         return format
     }
 }
