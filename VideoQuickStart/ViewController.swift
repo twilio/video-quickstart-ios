@@ -206,7 +206,7 @@ class ViewController: UIViewController {
                 // Track UIWindowScene events. Conditionally compiled to support Xcode 10.x.
                 #if XCODE_1100
                 if #available(iOS 13.0, *) {
-                    builder.orientationTracker = UserInterfaceTracker(scene: self.view.window!.windowScene!)
+                    builder.orientationTracker = UserInterfaceTracker(scene: UIApplication.shared.keyWindow!.windowScene!)
                 }
                 #endif
             }
