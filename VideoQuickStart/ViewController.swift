@@ -203,9 +203,11 @@ class ViewController: UIViewController {
         if (frontCamera != nil || backCamera != nil) {
 
             let options = CameraSourceOptions { (builder) in
-                // Track UIWindowScene events. Conditionally compiled to support Xcode 10.x.
+                // To support building with Xcode 10.x.
                 #if XCODE_1100
                 if #available(iOS 13.0, *) {
+                    // Track UIWindowScene events for the key window's scene.
+                    // The example app disables multi-window support in the .plist (see UIApplicationSceneManifestKey).
                     builder.orientationTracker = UserInterfaceTracker(scene: UIApplication.shared.keyWindow!.windowScene!)
                 }
                 #endif
