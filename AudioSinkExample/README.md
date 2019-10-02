@@ -4,7 +4,7 @@ The project demonstrates how to use Twilio's Programmable Video SDK to access ra
 
 ### Setup
 
-See the master [README](https://github.com/twilio/video-quickstart-ios/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
+See the master [README](https://github.com/twilio/video-quickstart-ios/blob/2.x/README.md) for instructions on how to generate access tokens and connect to a Room.
 
 This example requires Xcode 9.0 and the iOS 11.0 SDK, as well as a device running iOS 10.0 or above.
 
