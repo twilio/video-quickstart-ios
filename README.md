@@ -162,4 +162,4 @@ For general inquiries related to the Video SDK you can file a [support ticket](h
 
 ## License
 
-[MIT License](https://github.com/twilio/video-quickstart-ios/blob/master/LICENSE)
+[MIT License](https://github.com/twilio/video-quickstart-ios/blob/1.x/LICENSE)
