@@ -43,7 +43,7 @@ You will need to provide a hardcoded token, or token server URL in [MainViewCont
 
 <kbd><img src="../images/quickstart/console-room-topology-group.png"/></kbd>
 
-This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device or simulator running iOS 11.0 or above. Sharing video from the camera is not supported on an iOS simulator.
+This example requires Xcode 11.0 and the iOS 12.0 SDK, as well as a device or simulator running iOS 11.0 or above. Sharing video from the camera is not supported on an iOS simulator.
 
 ### Running
 
