@@ -4,7 +4,7 @@
 
 # Twilio Video Quickstart for iOS
 
-> NOTE: These sample applications use the Twilio Video 1.x APIs. For examples using our 2.x APIs, please see the [master](https://github.com/twilio/video-quickstart-ios/tree/master) branch.
+> NOTE: These sample applications use the Twilio Video 1.x APIs. For examples using our 3.x APIs, please see the [master](https://github.com/twilio/video-quickstart-ios/tree/master) branch. For examples using our 2.x APIs, please see the [2.x](https://github.com/twilio/video-quickstart-ios/tree/2.x) branch.
 >
 > **Deprecation Notice - Versions 1.0.0-beta9 and earlier**
 >
@@ -162,4 +162,4 @@ For general inquiries related to the Video SDK you can file a [support ticket](h
 
 ## License
 
-[MIT License](https://github.com/twilio/video-quickstart-ios/blob/master/LICENSE)
+[MIT License](https://github.com/twilio/video-quickstart-ios/blob/1.x/LICENSE)
