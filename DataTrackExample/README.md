@@ -9,7 +9,7 @@ In this example, participants can join a Room and begin drawing on a UIView. The
 
 ### Setup
 
-See the master [README](https://github.com/twilio/video-quickstart-ios/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
+See the master [README](https://github.com/twilio/video-quickstart-ios/blob/2.x/README.md) for instructions on how to generate access tokens and connect to a Room.
 
 ### <a name="bullet2"></a>Run the application 
 

@@ -14,7 +14,7 @@ Use an `RPBroadcastSampleHandler` to receive audio and video samples. Video samp
 
 An iOS 12.0 extension is not limited to capturing the screen of a single application. In fact, it is possible to capture video from any application including the home screen.
 
-In order to reduce memory usage, the extension configures `ReplayKitVideoSource` to downscale incoming video frames, and prefers the H.264 video codec by default. In a Group Room, the extension connects as a publish-only Participant ([TVIConnectOptionsBuilder.automaticSubscriptionEnabled](https://twilio.github.io/twilio-video-ios/docs/latest/Classes/TVIConnectOptionsBuilder.html#//api/name/automaticSubscriptionEnabled)) to further reduce bandwidth, memory, and CPU requirements.
+In order to reduce memory usage, the extension configures `ReplayKitVideoSource` to downscale incoming video frames, and prefers the H.264 video codec by default. In a Group Room, the extension connects as a publish-only Participant ([TVIConnectOptionsBuilder.automaticSubscriptionEnabled](https://twilio.github.io/twilio-video-ios/docs/latest2.x/Classes/TVIConnectOptionsBuilder.html#//api/name/automaticSubscriptionEnabled)) to further reduce bandwidth, memory, and CPU requirements.
 
 ### Key Classes
 
@@ -28,7 +28,7 @@ Audio capture in an extension is handled by `ExampleReplayKitAudioCapturer`, whi
 
 ### Setup
 
-See the master [README](https://github.com/twilio/video-quickstart-ios/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
+See the master [README](https://github.com/twilio/video-quickstart-ios/blob/2.x/README.md) for instructions on how to generate access tokens and connect to a Room.
 
 You will need to provide a hardcoded token, or token server URL in [ViewController.swift](ReplayKitExample/ViewController.swift) for conferencing and in [SampleHandler.swift](BroadcastExtension/SampleHandler.swift) for the broadcast extension.
 
