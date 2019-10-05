@@ -47,7 +47,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    [self logMessage:[NSString stringWithFormat:@"TwilioVideo v%@", [TwilioVideo version]]];
+    [self logMessage:[NSString stringWithFormat:@"TwilioVideo v%@", [TwilioVideoSDK sdkVersion]]];
 
     // Configure access token for testing. Create one manually in the console
     // at https://www.twilio.com/console/video/runtime/testing-tools
@@ -216,7 +216,7 @@
     }];
     
     // Connect to the Room using the options we provided.
-    self.room = [TwilioVideo connectWithOptions:connectOptions delegate:self];
+    self.room = [TwilioVideoSDK connectWithOptions:connectOptions delegate:self];
     
     [self logMessage:[NSString stringWithFormat:@"Attempting to connect to room %@", self.roomTextField.text]];
 }
@@ -366,7 +366,7 @@
 #pragma mark - TVIRemoteParticipantDelegate
 
 - (void)remoteParticipant:(TVIRemoteParticipant *)participant
-      publishedVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
+     didPublishVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
     
     // Remote Participant has offered to share the video Track.
 
@@ -375,7 +375,7 @@
 }
 
 - (void)remoteParticipant:(TVIRemoteParticipant *)participant
-    unpublishedVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
+   didUnpublishVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
     
     // Remote Participant has stopped sharing the video Track.
     
@@ -384,7 +384,7 @@
 }
 
 - (void)remoteParticipant:(TVIRemoteParticipant *)participant
-      publishedAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
+     didPublishAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
     
     // Remote Participant has offered to share the audio Track.
     
@@ -393,7 +393,7 @@
 }
 
 - (void)remoteParticipant:(TVIRemoteParticipant *)participant
-    unpublishedAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
+   didUnpublishAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
     
     // Remote Participant has stopped sharing the audio Track.
     
@@ -401,9 +401,9 @@
                       participant.identity, publication.trackName]];
 }
 
-- (void)subscribedToVideoTrack:(TVIRemoteVideoTrack *)videoTrack
-                   publication:(TVIRemoteVideoTrackPublication *)publication
-                forParticipant:(TVIRemoteParticipant *)participant {
+- (void)didSubscribeToVideoTrack:(TVIRemoteVideoTrack *)videoTrack
+                     publication:(TVIRemoteVideoTrackPublication *)publication
+                  forParticipant:(TVIRemoteParticipant *)participant {
     
     // We are subscribed to the remote Participant's audio Track. We will start receiving the
     // remote Participant's video frames now.
@@ -417,9 +417,9 @@
     }
 }
 
-- (void)unsubscribedFromVideoTrack:(TVIRemoteVideoTrack *)videoTrack
-                       publication:(TVIRemoteVideoTrackPublication *)publication
-                    forParticipant:(TVIRemoteParticipant *)participant {
+- (void)didUnsubscribeFromVideoTrack:(TVIRemoteVideoTrack *)videoTrack
+                         publication:(TVIRemoteVideoTrackPublication *)publication
+                      forParticipant:(TVIRemoteParticipant *)participant {
     
     // We are unsubscribed from the remote Participant's video Track. We will no longer receive the
     // remote Participant's video.
@@ -433,9 +433,9 @@
     }
 }
 
-- (void)subscribedToAudioTrack:(TVIRemoteAudioTrack *)audioTrack
-                   publication:(TVIRemoteAudioTrackPublication *)publication
-                forParticipant:(TVIRemoteParticipant *)participant {
+- (void)didSubscribeToAudioTrack:(TVIRemoteAudioTrack *)audioTrack
+                     publication:(TVIRemoteAudioTrackPublication *)publication
+                  forParticipant:(TVIRemoteParticipant *)participant {
     
     // We are subscribed to the remote Participant's audio Track. We will start receiving the
     // remote Participant's audio now.
@@ -444,9 +444,9 @@
                       publication.trackName, participant.identity]];
 }
 
-- (void)unsubscribedFromAudioTrack:(TVIRemoteAudioTrack *)audioTrack
-                       publication:(TVIRemoteAudioTrackPublication *)publication
-                    forParticipant:(TVIRemoteParticipant *)participant {
+- (void)didUnsubscribeFromAudioTrack:(TVIRemoteAudioTrack *)audioTrack
+                         publication:(TVIRemoteAudioTrackPublication *)publication
+                      forParticipant:(TVIRemoteParticipant *)participant {
     
     // We are unsubscribed from the remote Participant's audio Track. We will no longer receive the
     // remote Participant's audio.
@@ -456,39 +456,39 @@
 }
 
 - (void)remoteParticipant:(TVIRemoteParticipant *)participant
-        enabledVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
+      didEnableVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
     [self logMessage:[NSString stringWithFormat:@"Participant %@ enabled %@ video track.",
                       participant.identity, publication.trackName]];
 }
 
 - (void)remoteParticipant:(TVIRemoteParticipant *)participant
-       disabledVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
+     didDisableVideoTrack:(TVIRemoteVideoTrackPublication *)publication {
     [self logMessage:[NSString stringWithFormat:@"Participant %@ disabled %@ video track.",
                       participant.identity, publication.trackName]];
 }
 
 - (void)remoteParticipant:(TVIRemoteParticipant *)participant
-        enabledAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
+      didEnableAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
     [self logMessage:[NSString stringWithFormat:@"Participant %@ enabled %@ audio track.",
                       participant.identity, publication.trackName]];
 }
 
 - (void)remoteParticipant:(TVIRemoteParticipant *)participant
-       disabledAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
+     didDisableAudioTrack:(TVIRemoteAudioTrackPublication *)publication {
     [self logMessage:[NSString stringWithFormat:@"Participant %@ disabled %@ audio track.",
                       participant.identity, publication.trackName]];
 }
 
-- (void)failedToSubscribeToAudioTrack:(TVIRemoteAudioTrackPublication *)publication
-                                error:(NSError *)error
-                       forParticipant:(TVIRemoteParticipant *)participant {
+- (void)didFailToSubscribeToAudioTrack:(TVIRemoteAudioTrackPublication *)publication
+                                 error:(NSError *)error
+                        forParticipant:(TVIRemoteParticipant *)participant {
     [self logMessage:[NSString stringWithFormat:@"Participant %@ failed to subscribe to %@ audio track.",
                       participant.identity, publication.trackName]];
 }
 
-- (void)failedToSubscribeToVideoTrack:(TVIRemoteVideoTrackPublication *)publication
-                                error:(NSError *)error
-                       forParticipant:(TVIRemoteParticipant *)participant {
+- (void)didFailToSubscribeToVideoTrack:(TVIRemoteVideoTrackPublication *)publication
+                                 error:(NSError *)error
+                        forParticipant:(TVIRemoteParticipant *)participant {
     [self logMessage:[NSString stringWithFormat:@"Participant %@ failed to subscribe to %@ video track.",
                       participant.identity, publication.trackName]];
 }

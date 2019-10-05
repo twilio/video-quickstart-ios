@@ -2,7 +2,7 @@
 //  ExampleReplayKitAudioCapturer.h
 //  ReplayKitExample
 //
-//  Copyright © 2018 Twilio, Inc. All rights reserved.
+//  Copyright © 2018-2019 Twilio, Inc. All rights reserved.
 //
 
 #import <ReplayKit/ReplayKit.h>
@@ -32,4 +32,4 @@ typedef struct ExampleAudioContext {
 /// @param capturer The capturer to deliver the samples to.
 /// @param sampleBuffer A CMSampleBuffer which contains an audio sample.
 OSStatus ExampleCoreAudioDeviceCapturerCallback(ExampleReplayKitAudioCapturer * _Nonnull capturer,
-                                                CMSampleBufferRef _Nonnull sampleBuffer);
+                                              CMSampleBufferRef _Nonnull sampleBuffer);

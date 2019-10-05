@@ -10,7 +10,7 @@ import TwilioVideo
 
 class MainViewController: UIViewController {
 
-    // MARK: View Controller Members
+    // MARK:- View Controller Members
 
     // Configure access token manually for testing, if desired! Create one manually in the console
     // at https://www.twilio.com/console/video/runtime/testing-tools
@@ -19,17 +19,14 @@ class MainViewController: UIViewController {
     // Configure remote URL to fetch token from
     var tokenUrl = "http://localhost:8000/token.php"
 
-    // Maximum bitrate (in kbps) used to send video.
-    static let kMaxVideoBitrate = UInt(1500)
-
-    // MARK: UI Element Outlets and handles
+    // MARK:- UI Element Outlets and handles
     @IBOutlet weak var connectButton: UIButton?
     @IBOutlet weak var roomTextField: UITextField?
     @IBOutlet weak var roomLine: UIView?
     @IBOutlet weak var roomLabel: UILabel?
     @IBOutlet weak var messageLabel: UILabel?
 
-    // MARK: UIViewController
+    // MARK:- UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -41,12 +38,10 @@ class MainViewController: UIViewController {
         view.addGestureRecognizer(tap)
 
         /*
-         * Choose default settings that are appropriate for a multi-party Group Room.
-         * In order to ensure good quality of service for all users, the Client prefers VP8 simulcast.
-         * Since the video being shared is VGA the Client restricts the amount of bandwidth used for publishing video.
+         * Choose H.264 by default for multi-party scenarios because it uses the least CPU and battery on iOS devices.
+         * The example may also be used with VP8 with or without simulcast.
          */
-        Settings.shared.videoCodec = TVIVp8Codec(simulcast: true)
-        Settings.shared.maxVideoBitrate = 1024 * MainViewController.kMaxVideoBitrate
+        Settings.shared.videoCodec = H264Codec()
 
         roomTextField?.becomeFirstResponder()
     }
@@ -54,7 +49,7 @@ class MainViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         roomTextField?.text = ""
-        logMessage(messageText: "Twilio Video v\(TwilioVideo.version())")
+        logMessage(messageText: "Twilio Video v\(TwilioVideoSDK.sdkVersion())")
     }
 
     @objc func dismissKeyboard() {
@@ -104,7 +99,7 @@ class MainViewController: UIViewController {
     }
 }
 
-// MARK: UITextFieldDelegate
+// MARK:- UITextFieldDelegate
 extension MainViewController : UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         connect(textField)

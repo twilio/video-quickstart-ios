@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  ARKitExample
 //
-//  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2016-2019 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
@@ -21,13 +21,13 @@ class ViewController: UIViewController {
     // Configure access token for testing. Create one manually in the console
     // at https://www.twilio.com/console/video/runtime/testing-tools
     var accessToken = "TWILIO_ACCESS_TOKEN"
-    var room: TVIRoom?
-    weak var sink: TVIVideoSink?
-    var frame: TVIVideoFrame?
+    var room: Room?
+    weak var sink: VideoSink?
+    var frame: VideoFrame?
     var displayLink: CADisplayLink?
 
-    var videoTrack: TVILocalVideoTrack?
-    var audioTrack: TVILocalAudioTrack?
+    var videoTrack: LocalVideoTrack?
+    var audioTrack: LocalAudioTrack?
 
     deinit {
         stop()
@@ -52,19 +52,19 @@ class ViewController: UIViewController {
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
         sceneView.scene = scene
 
-        self.videoTrack = TVILocalVideoTrack.init(source: self)
+        self.videoTrack = LocalVideoTrack(source: self)
 
-        let format = TVIVideoFormat.init()
+        let format = VideoFormat()
         format.frameRate = UInt(sceneView.preferredFramesPerSecond)
-        format.pixelFormat = TVIPixelFormat.format32BGRA
+        format.pixelFormat = PixelFormat.format32BGRA
         format.dimensions = CMVideoDimensions(width: Int32(UIScreen.main.bounds.size.width),
                                               height: Int32(UIScreen.main.bounds.size.height))
-        self.requestOutputFormat(format);
+        self.requestOutputFormat(format)
         start()
 
-        self.audioTrack = TVILocalAudioTrack.init()
+        self.audioTrack = LocalAudioTrack()
 
-        let options = TVIConnectOptions.init(token: accessToken, block: {(builder: TVIConnectOptionsBuilder) -> Void in
+        let options = ConnectOptions(token: accessToken, block: { (builder) in
             if let videoTrack = self.videoTrack {
                 builder.videoTracks = [videoTrack]
             }
@@ -74,7 +74,7 @@ class ViewController: UIViewController {
             builder.roomName = "arkit"
         })
 
-        self.room = TwilioVideo.connect(with: options, delegate: self)
+        self.room = TwilioVideoSDK.connect(options: options, delegate: self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -103,11 +103,11 @@ class ViewController: UIViewController {
             return
         }
 
-        // As a TVIVideoSource, we must deliver CVPixelBuffers and not CGImages to the consumer.
+        // A VideoSource must deliver CVPixelBuffers (and not CGImages) to a VideoSink.
         if let pixelBuffer = self.copyPixelbufferFromCGImageProvider(image: imageRef) {
-            self.frame = TVIVideoFrame(timeInterval: timer.timestamp,
-                                       buffer: pixelBuffer,
-                                       orientation: TVIVideoOrientation.up)
+            self.frame = VideoFrame(timeInterval: timer.timestamp,
+                                    buffer: pixelBuffer,
+                                    orientation: VideoOrientation.up)
             self.sink!.onVideoFrame(self.frame!)
         }
     }
@@ -147,7 +147,7 @@ class ViewController: UIViewController {
         let status = CVPixelBufferCreateWithBytes(nil,
                                                   image.width,
                                                   image.height,
-                                                  TVIPixelFormat.format32BGRA.rawValue,
+                                                  PixelFormat.format32BGRA.rawValue,
                                                   UnsafeMutableRawPointer( mutating: baseAddress!),
                                                   image.bytesPerRow,
                                                   { releaseContext, baseAddress in
@@ -165,7 +165,7 @@ class ViewController: UIViewController {
     }
 }
 
-// MARK: ARSCNViewDelegate
+// MARK:- ARSCNViewDelegate
 extension ViewController: ARSCNViewDelegate {
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
@@ -185,20 +185,20 @@ extension ViewController: ARSCNViewDelegate {
     }
 }
 
-// MARK: TVIRoomDelegate
-extension ViewController: TVIRoomDelegate {
-    func didConnect(to room: TVIRoom) {
-        print("Connected to Room /(room.name).")
+// MARK:- RoomDelegate
+extension ViewController: RoomDelegate {
+    func roomDidConnect(room: Room) {
+        print("Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")")
     }
 
-    func room(_ room: TVIRoom, didFailToConnectWithError error: Error) {
+    func roomDidFailToConnect(room: Room, error: Error) {
         print("Failed to connect to a Room: \(error).")
 
-        let alertController = UIAlertController.init(title: "Connection Failed",
-                                                     message: "Couldn't connect to Room \(room.name). code:\(error._code) \(error.localizedDescription)",
-                                                     preferredStyle: UIAlertController.Style.alert)
+        let alertController = UIAlertController(title: "Connection Failed",
+                                                message: "Couldn't connect to Room \(room.name). code:\(error._code) \(error.localizedDescription)",
+                                                preferredStyle: UIAlertController.Style.alert)
 
-        let cancelAction = UIAlertAction.init(title: "Okay", style: UIAlertAction.Style.default, handler: nil)
+        let cancelAction = UIAlertAction(title: "Okay", style: UIAlertAction.Style.default, handler: nil)
         alertController.addAction(cancelAction)
 
         self.present(alertController, animated: true) {
@@ -207,7 +207,7 @@ extension ViewController: TVIRoomDelegate {
         }
     }
 
-    func room(_ room: TVIRoom, didDisconnectWithError error: Error?) {
+    func roomDidDisconnect(room: Room, error: Error?) {
         if let error = error {
             print("Disconnected from the Room with an error:", error)
         } else {
@@ -217,31 +217,31 @@ extension ViewController: TVIRoomDelegate {
         self.setNeedsUpdateOfHomeIndicatorAutoHidden()
     }
 
-    func room(_ room: TVIRoom, isReconnectingWithError error: Error) {
+    func roomIsReconnecting(room: Room, error: Error) {
         print("Reconnecting to room \(room.name), error = \(String(describing: error))")
     }
 
-    func didReconnect(to room: TVIRoom) {
+    func roomDidReconnect(room: Room) {
         print("Reconnected to room \(room.name)")
     }
 
-    func room(_ room: TVIRoom, participantDidConnect participant: TVIRemoteParticipant) {
+    func participantDidConnect(room: Room, participant: RemoteParticipant) {
         print("Participant \(participant.identity) connected to \(room.name).")
     }
 
-    func room(_ room: TVIRoom, participantDidDisconnect participant: TVIRemoteParticipant) {
+    func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
         print("Participant \(participant.identity) disconnected from \(room.name).")
     }
 }
 
-// MARK: TVIVideoSource
-extension ViewController: TVIVideoSource {
+// MARK:- VideoSource
+extension ViewController: VideoSource {
     var isScreencast: Bool {
         // We want fluid AR content, maintaining the original frame rate.
         return false
     }
 
-    func requestOutputFormat(_ outputFormat: TVIVideoFormat) {
+    func requestOutputFormat(_ outputFormat: VideoFormat) {
         if let sink = sink {
             sink.onVideoFormatRequest(outputFormat)
         }

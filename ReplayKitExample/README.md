@@ -20,7 +20,22 @@ In order to reduce memory usage, the extension configures `ReplayKitVideoSource`
 
 **ReplayKitVideoSource**
 
-This `TVIVideoSource` produces `TVIVideoFrame`s from `CMSampleBuffer`s captured by ReplayKit. In order to reduce memory usage, this class may be configured (via a format request) to downscale the captured content.
+This `TVIVideoSource` produces `TVIVideoFrame`s from `CMSampleBuffer`s captured by ReplayKit. In order to reduce memory usage, instances may be configured (via a format request) to downscale the captured content.
+
+The source offers several capabilities to optimize for different use cases:
+
+1. Screencast mode (In-App Conferencing). This setting preserves resolution (detail) over all else. The input from ReplayKit is always capped at 15 fps, and is not downscaled.
+2. Video mode (Broadcast Extension). This setting balances spatial and temporal resolution, and is content aware. When app content is shown, the input is capped at 15 fps. However, when playback of 24 fps video content is detected the input cap is raised to preserve the native cadence of the video.
+3. Real-time [Inverse Telecine (IVTC)](https://en.wikipedia.org/wiki/Telecine#Reverse_telecine_(a.k.a._inverse_telecine_(IVTC),_reverse_pulldown)). The source removes duplicate frames when it detects 24 or 25 frame / second content with 3:2 pulldown applied. Some apps (that do not use AVPlayer for playback) perform a telecine by drawing the same frame to screen multiple times.
+4. A helper method to generate `EncodingParameters` and `VideoFormat` configuration based upon `VideoCodec` information and operating mode.
+
+For performance reasons, `ReplayKit.framework` produces variable frame rate input. Importantly, this content has different properties depending on how screen capturing is being performed:
+
+| ReplayKit API | Device | Max Frame Rate | Rotation Tags |
+|-------------|----------------------|-----|-------|
+| RPScreenRecorder | iPhone, iPad | 60 | No |
+| RPScreenRecorder | iPad Pro | 120 | No |
+| RPBroadcastSampleHandler | All | 30 | Yes |
 
 **ExampleReplayKitAudioCapturer**
 
@@ -32,7 +47,7 @@ See the master [README](https://github.com/twilio/video-quickstart-ios/blob/mast
 
 You will need to provide a hardcoded token, or token server URL in [ViewController.swift](ReplayKitExample/ViewController.swift) for conferencing and in [SampleHandler.swift](BroadcastExtension/SampleHandler.swift) for the broadcast extension.
 
-This example requires Xcode 10.0 and the iOS 12.0 SDK, as well as a device running iOS 11.0 or above. While the app launches on an iPhone Simulator, ReplayKit is non-functional.
+This example requires Xcode 11.0 and the iOS 12.0 SDK, as well as a device running iOS 11.0 or above. While the app launches on an iPhone Simulator, ReplayKit is non-functional.
 
 ### Running
 
@@ -46,18 +61,19 @@ Once you have setup your access token, install and run the example. You will be 
 
 <kbd><img width="360px" src="../images/quickstart/replaykit-launch-ios11.png"/></kbd>
 
-From here you can tap "Start Broadcast" to begin using the broadcast extension. The extension will automatically join a room called "Broadcast", unless a Room is specified in your access token grants. Other participants can join using the QuickStart example, or any other example app which can display remote video.
+From here you can tap "Start Broadcast" to begin using the broadcast extension. The extension will automatically join a room called "Broadcast", unless a Room is specified in your access token grants. Other Participants can join using the QuickStart example, or any other example app which can display remote video.
 
 <kbd><img width="360px" src="../images/quickstart/replaykit-picker-ios12.png"/></kbd>
 
-Tapping "Start Conference" begins capturing and sharing the screen from within the main application. Please note that backgrounding the app during a conference will cause in-app capture to be suspended.
+Tapping "Start Conference" begins capturing and sharing the screen from within the main application. Once you accept the screen recording permission, you can tap "Play Video" to select any mp4, or m4v video using `UIDocumentPickerViewController` and `AVPlayerViewController`. You can also tap "Browse Web" to visit a website using `SFSafariViewController`.
+
+Please note that backgrounding the app during a conference will cause in-app capture to be suspended.
 
 ### Betterments
 
 1. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
 2. Share the camera using ReplayKit, or `TVICameraSource`.
 3. Resolve tearing issues when scrolling vertically, and image corruption when sharing video. (ISDK-2478)
-4. Quantize ReplayKit video timestamps and use them to drop from 60 / 120 fps peaks to a lower rate (15 / 30).
 
 ### Known Issues
 

@@ -2,7 +2,7 @@
 //  SettingsTableViewController.swift
 //  VideoQuickStart
 //
-//  Copyright © 2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2017-2019 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
@@ -10,19 +10,22 @@ import TwilioVideo
 
 class SettingsTableViewController: UITableViewController {
     
+    static let signalingRegionLabel = "Region"
     static let audioCodecLabel = "Audio Codec"
     static let videoCodecLabel = "Video Codec"
-    static let maxAudioBitrate = "Max Audio Bitrate (bps)"
-    static let maxVideoBitrate = "Max Video Bitrate (bps)"
+    static let maxAudioBitrateLabel = "Max Audio Bitrate (Kbps)"
+    static let maxVideoBitrateLabel = "Max Video Bitrate (Kbps)"
     static let defaultStr = "Default"
+    static let signalingRegionDisclaimerText = "Set your preferred region. Global Low Latency (gll) is the default value."
     static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported in Group Rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported. VP8 Simulcast should only be enabled in a Group Room."
     static let encodingParamsDisclaimerText = "Set sender bandwidth constraints. Zero represents the WebRTC default which varies by codec."
     
-    let disclaimers = [codecDisclaimerText, encodingParamsDisclaimerText]
+    let disclaimers = [signalingRegionDisclaimerText, codecDisclaimerText, encodingParamsDisclaimerText]
     let settings = Settings.shared
     let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.footnote)
-    var labels: [[String]] = [[SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
-                             [SettingsTableViewController.maxAudioBitrate, SettingsTableViewController.maxVideoBitrate]]
+    var labels: [[String]] = [[signalingRegionLabel],
+                              [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
+                              [SettingsTableViewController.maxAudioBitrateLabel, SettingsTableViewController.maxVideoBitrateLabel]]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -72,26 +75,22 @@ class SettingsTableViewController: UITableViewController {
         var detailText = SettingsTableViewController.defaultStr
         
         switch (label) {
+            case SettingsTableViewController.signalingRegionLabel:
+                if let signalingRegion = settings.signalingRegion {
+                    detailText = settings.supportedSignalingRegionDisplayString[signalingRegion]!
+                }
             case SettingsTableViewController.audioCodecLabel:
                 if let codec = settings.audioCodec {
                     detailText = codec.name
                 }
-                break;
-            
             case SettingsTableViewController.videoCodecLabel:
                 if let codec = settings.videoCodec {
                     detailText = self.getDisplayStrForVideoCodec(codec: codec)
                 }
-                break;
-            
-            case SettingsTableViewController.maxAudioBitrate:
+            case SettingsTableViewController.maxAudioBitrateLabel:
                 detailText = String(settings.maxAudioBitrate)
-                break;
-            
-            case SettingsTableViewController.maxVideoBitrate:
+            case SettingsTableViewController.maxVideoBitrateLabel:
                 detailText = String(settings.maxVideoBitrate)
-                break;
-
             default:
                 break;
         }
@@ -103,22 +102,16 @@ class SettingsTableViewController: UITableViewController {
         let tappedLabel = self.labels[indexPath.section][indexPath.row]
         
         switch (tappedLabel) {
+            case SettingsTableViewController.signalingRegionLabel:
+                didSelectSignalingRegionRow(indexPath: indexPath)
             case SettingsTableViewController.audioCodecLabel:
                 didSelectAudioCodecRow(indexPath: indexPath)
-                break;
-
             case SettingsTableViewController.videoCodecLabel:
                 didSelectVideoCodecRow(indexPath: indexPath)
-                break;
-
-            case SettingsTableViewController.maxAudioBitrate:
+            case SettingsTableViewController.maxAudioBitrateLabel:
                 didSelectMaxAudioBitRateRow(indexPath: indexPath)
-                break
-            
-            case SettingsTableViewController.maxVideoBitrate:
+            case SettingsTableViewController.maxVideoBitrateLabel:
                 didSelectMaxVideoBitRateRow(indexPath: indexPath)
-                break
-            
             default:
                 break;
         }
@@ -143,7 +136,54 @@ class SettingsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return getDisclaimerSizeForString(string: disclaimers[section]).height + 10
     }
-    
+
+    func didSelectSignalingRegionRow(indexPath: IndexPath) {
+        var selectedButton : UIAlertAction!
+        var defaultButton: UIAlertAction!
+
+        let alertController = UIAlertController(title: self.labels[indexPath.section][indexPath.row], message: nil, preferredStyle: .actionSheet)
+        let selectionArray = settings.supportedSignalingRegions
+
+        for signalingRegion in selectionArray {
+            let selectionButton = UIAlertAction(title: settings.supportedSignalingRegionDisplayString[signalingRegion], style: .default, handler: { (action) -> Void in
+                self.settings.signalingRegion = signalingRegion
+                self.reloadSelectedRowOrTableView()
+            })
+
+            if (settings.signalingRegion == signalingRegion) {
+                selectedButton = selectionButton;
+            }
+
+            alertController.addAction(selectionButton)
+        }
+
+        // The default action
+        defaultButton = UIAlertAction(title: "Default", style: .default, handler: { (action) -> Void in
+            self.settings.signalingRegion = nil
+            self.reloadSelectedRowOrTableView()
+        })
+
+        if selectedButton == nil {
+            selectedButton = defaultButton;
+        }
+
+        alertController.addAction(defaultButton!)
+
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            alertController.popoverPresentationController?.sourceView = tableView.cellForRow(at: indexPath)
+            alertController.popoverPresentationController?.sourceRect = (tableView.cellForRow(at: indexPath)?.bounds)!
+        } else {
+            selectedButton?.setValue("true", forKey: "checked")
+
+            // Adding the cancel action
+            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+                self.deselectSelectedRow()
+            })
+            alertController.addAction(cancelButton)
+        }
+        self.navigationController!.present(alertController, animated: true, completion: nil)
+    }
+
     func didSelectAudioCodecRow(indexPath: IndexPath) {
         var selectedButton : UIAlertAction!
         var defaultButton: UIAlertAction!
@@ -211,17 +251,7 @@ class SettingsTableViewController: UITableViewController {
             })
             
             if (settings.videoCodec == codec) {
-
-                // Workaround for https://github.com/twilio/twilio-video-ios/issues/12
-                if settings.videoCodec!.isKind(of: TVIVp8Codec.self) {
-                    if codec.isKind(of: TVIVp8Codec.self) {
-                        if ((codec as! TVIVp8Codec).isSimulcast == (settings.videoCodec as! TVIVp8Codec).isSimulcast) {
-                            selectedButton = selectionButton;
-                        }
-                    }
-                } else {
-                    selectedButton = selectionButton;
-                }
+                selectedButton = selectionButton;
             }
             
             alertController.addAction(selectionButton)
@@ -308,10 +338,10 @@ class SettingsTableViewController: UITableViewController {
         self.navigationController!.present(alertController, animated: true, completion: nil)
     }
 
-    func getDisplayStrForVideoCodec(codec: TVIVideoCodec) -> String {
+    func getDisplayStrForVideoCodec(codec: VideoCodec) -> String {
         var str = codec.name
-        if codec.isKind(of: TVIVp8Codec.self) {
-            let vp8Codec = codec as! TVIVp8Codec
+
+        if let vp8Codec = codec as? Vp8Codec {
             str += vp8Codec.isSimulcast ? " Simulcast" : ""
         }
         return str;

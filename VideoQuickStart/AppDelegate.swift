@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  VideoQuickStart
 //
-//  Copyright © 2015-2017 Twilio, Inc. All rights reserved.
+//  Copyright © 2015-2019 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
@@ -10,14 +10,30 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-  var window: UIWindow?
+    var window: UIWindow?
 
-  func application(_ application: UIApplication,
-      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-    // Override point for customization after application launch.
-    
-    return true
-  }
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Override point for customization after application launch.
 
+        return true
+    }
+
+    // These methods will not be called on iOS 13 where the SceneDelegate is invoked instead.
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        print(#function)
+    }
+
+    func applicationWillResignActive(_ application: UIApplication) {
+        print(#function)
+    }
+
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        print(#function)
+    }
+
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        print(#function)
+    }
 }
 

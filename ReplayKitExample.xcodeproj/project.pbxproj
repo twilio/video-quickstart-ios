@@ -29,7 +29,9 @@
 		8A50FEFE215DDC6100297C7A /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */; };
 		8A50FF00215DDC6100297C7A /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
 		8A50FF03215DDC6100297C7A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
-		8A59F6A3216B08F8003CA9A4 /* ExampleReplayKitAudioCapturer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BB0385820EB45940095CDA8 /* ExampleReplayKitAudioCapturer.m */; };
+		8A57F4A32319C2A1001561EA /* Telecine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD6D6E522FFE7CD00EBF279 /* Telecine.swift */; };
+		8A57F4A42319CD6B001561EA /* Telecine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD6D6E522FFE7CD00EBF279 /* Telecine.swift */; };
+		8A992CEB2320C1DC00D549F6 /* ExampleReplayKitAudioCapturer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BB0385820EB45940095CDA8 /* ExampleReplayKitAudioCapturer.m */; };
 		8ADE7A71215DE2D40092D17F /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */; };
 		8ADE7A72215DE2D70092D17F /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
 		8ADE7A74215DE3070092D17F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
@@ -69,7 +71,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		24B657B422B18BAD0057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ReplayKitExample/README.md; sourceTree = "<group>"; };
+		24B657BA22B1F8980057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ReplayKitExample/README.md; sourceTree = "<group>"; };
 		4B20000420E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BroadcastExtensionSetupUI.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B20000620E9CB9C00FE9F2C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		4B20000920E9CB9C00FE9F2C /* BroadcastSetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastSetupViewController.swift; sourceTree = "<group>"; };
@@ -95,6 +97,9 @@
 		8A50FEFC215DDC6100297C7A /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		8A50FEFD215DDC6100297C7A /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		8A92FE2F2168006000DDD912 /* BroadcastExtension-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BroadcastExtension-Bridging-Header.h"; sourceTree = "<group>"; };
+		8A992CEC2320C26C00D549F6 /* ReplayKitExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ReplayKitExample-Bridging-Header.h"; sourceTree = "<group>"; };
+		8A992CED2320C2A300D549F6 /* ExampleReplayKitAudioCapturerDispatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleReplayKitAudioCapturerDispatch.h; sourceTree = "<group>"; };
+		8AD6D6E522FFE7CD00EBF279 /* Telecine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Telecine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,7 +153,7 @@
 				4B20000820E9CB9C00FE9F2C /* BroadcastExtensionSetupUI */,
 				4B20FFF920E9CB9C00FE9F2C /* Frameworks */,
 				4B20FFE020E9CB8500FE9F2C /* Products */,
-				24B657B422B18BAD0057EBE6 /* README.md */,
+				24B657BA22B1F8980057EBE6 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -167,11 +172,13 @@
 			children = (
 				4B20FFE220E9CB8500FE9F2C /* AppDelegate.swift */,
 				8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */,
+				8A992CEC2320C26C00D549F6 /* ReplayKitExample-Bridging-Header.h */,
 				4B20FFE420E9CB8500FE9F2C /* ViewController.swift */,
 				4B20FFE620E9CB8500FE9F2C /* Main.storyboard */,
 				4B20FFE920E9CB8600FE9F2C /* Assets.xcassets */,
 				4B20FFEB20E9CB8600FE9F2C /* LaunchScreen.storyboard */,
 				4B20FFEE20E9CB8600FE9F2C /* Info.plist */,
+				8AD6D6E522FFE7CD00EBF279 /* Telecine.swift */,
 			);
 			name = ReplayKitExample;
 			path = ReplayKitExample/ReplayKitExample;
@@ -195,6 +202,7 @@
 				4B20FFFD20E9CB9C00FE9F2C /* SampleHandler.swift */,
 				4BB0385720EB45940095CDA8 /* ExampleReplayKitAudioCapturer.h */,
 				4BB0385820EB45940095CDA8 /* ExampleReplayKitAudioCapturer.m */,
+				8A992CED2320C2A300D549F6 /* ExampleReplayKitAudioCapturerDispatch.h */,
 				4B20FFFF20E9CB9C00FE9F2C /* Info.plist */,
 			);
 			name = BroadcastExtension;
@@ -369,9 +377,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A59F6A3216B08F8003CA9A4 /* ExampleReplayKitAudioCapturer.m in Sources */,
 				8A390D932161D4430013D6E5 /* ReplayKitVideoSource.swift in Sources */,
+				8A57F4A32319C2A1001561EA /* Telecine.swift in Sources */,
 				8ADE7A75215DE3220092D17F /* Utils.swift in Sources */,
+				8A992CEB2320C1DC00D549F6 /* ExampleReplayKitAudioCapturer.m in Sources */,
 				4B20FFE520E9CB8500FE9F2C /* ViewController.swift in Sources */,
 				4B20FFE320E9CB8500FE9F2C /* AppDelegate.swift in Sources */,
 				8A50FF00215DDC6100297C7A /* Settings.swift in Sources */,
@@ -386,6 +395,7 @@
 				8A437271216350CA00436765 /* ReplayKitVideoSource.swift in Sources */,
 				8ADE7A74215DE3070092D17F /* Utils.swift in Sources */,
 				4BB0385920EB45950095CDA8 /* ExampleReplayKitAudioCapturer.m in Sources */,
+				8A57F4A42319CD6B001561EA /* Telecine.swift in Sources */,
 				4B20FFFE20E9CB9C00FE9F2C /* SampleHandler.swift in Sources */,
 				8ADE7A72215DE2D70092D17F /* Settings.swift in Sources */,
 				8ADE7A71215DE2D40092D17F /* SettingsTableViewController.swift in Sources */,
@@ -434,7 +444,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = ReplayKitExample/BroadcastExtensionSetupUI/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -454,7 +463,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = ReplayKitExample/BroadcastExtensionSetupUI/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -473,7 +481,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = ReplayKitExample/BroadcastExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -494,7 +501,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = ReplayKitExample/BroadcastExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -559,7 +565,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -614,7 +620,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -632,14 +638,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = ReplayKitExample/ReplayKitExample/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/ReplayKitExample/ReplayKitExample-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -652,14 +657,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = ReplayKitExample/ReplayKitExample/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ReplayKitExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/BroadcastExtension/BroadcastExtension-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "ReplayKitExample/ReplayKitExample/ReplayKitExample-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

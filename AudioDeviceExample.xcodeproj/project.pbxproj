@@ -21,7 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		24A82E5E22B18A6B001EFC32 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = AudioDeviceExample/README.md; sourceTree = "<group>"; };
+		24B657B622B1F8400057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ARKitExample/README.md; sourceTree = "<group>"; };
 		4B7AD1F62049CC81002DDBA6 /* ExampleAVAudioEngineDevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleAVAudioEngineDevice.h; sourceTree = "<group>"; };
 		4B7AD1F72049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleAVAudioEngineDevice.m; sourceTree = "<group>"; };
 		4B7AD1F9204A0510002DDBA6 /* mixLoop.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = mixLoop.caf; sourceTree = "<group>"; };
@@ -57,7 +57,7 @@
 				8A713C7C202A585B009E776A /* AudioDeviceExample */,
 				8A713C93202A7087009E776A /* Utils */,
 				8A713C7B202A585B009E776A /* Products */,
-				24A82E5E22B18A6B001EFC32 /* README.md */,
+				24B657B622B1F8400057EBE6 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -262,6 +262,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -314,6 +315,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -328,7 +330,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = AudioDeviceExample/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AudioDeviceExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -345,7 +346,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = AudioDeviceExample/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AudioDeviceExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";

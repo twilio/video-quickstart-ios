@@ -2,7 +2,7 @@
 //  ExampleCoreAudioDevice.m
 //  AudioDeviceExample
 //
-//  Copyright © 2018 Twilio, Inc. All rights reserved.
+//  Copyright © 2018-2019 Twilio, Inc. All rights reserved.
 //
 
 #import "ExampleCoreAudioDevice.h"
@@ -129,9 +129,6 @@ static size_t kMaximumFramesPerBuffer = 1156;
     }
 
     BOOL success = [self startAudioUnit];
-    if (success) {
-        TVIAudioSessionActivated(context);
-    }
     return success;
 }
 
@@ -140,8 +137,6 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
     @synchronized(self) {
         NSAssert(self.renderingContext != NULL, @"Should have a rendering context.");
-        TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
-
         [self teardownAudioUnit];
 
         free(self.renderingContext);
@@ -373,15 +368,6 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
     [center addObserver:self selector:@selector(handleAudioInterruption:) name:AVAudioSessionInterruptionNotification object:nil];
-    /*
-     * Interruption handling is different on iOS 9.x. If your application becomes interrupted while it is in the
-     * background then you will not get a corresponding notification when the interruption ends. We workaround this
-     * by handling UIApplicationDidBecomeActiveNotification and treating it as an interruption end.
-     */
-    if (![[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 0, 0}]) {
-        [center addObserver:self selector:@selector(handleApplicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
-    }
-
     [center addObserver:self selector:@selector(handleRouteChange:) name:AVAudioSessionRouteChangeNotification object:nil];
     [center addObserver:self selector:@selector(handleMediaServiceLost:) name:AVAudioSessionMediaServicesWereLostNotification object:nil];
     [center addObserver:self selector:@selector(handleMediaServiceRestored:) name:AVAudioSessionMediaServicesWereResetNotification object:nil];
@@ -399,31 +385,10 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
                     NSLog(@"Interruption began.");
                     self.interrupted = YES;
                     [self stopAudioUnit];
-                    TVIAudioSessionDeactivated(context);
                 } else {
                     NSLog(@"Interruption ended.");
                     self.interrupted = NO;
-                    if ([self startAudioUnit]) {
-                        TVIAudioSessionActivated(context);
-                    }
-                }
-            });
-        }
-    }
-}
-
-- (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
-    @synchronized(self) {
-        // If the worker block is executed, then context is guaranteed to be valid.
-        TVIAudioDeviceContext context = self.renderingContext ? self.renderingContext->deviceContext : NULL;
-        if (context) {
-            TVIAudioDeviceExecuteWorkerBlock(context, ^{
-                if (self.isInterrupted) {
-                    NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
-                    self.interrupted = NO;
-                    if ([self startAudioUnit]) {
-                        TVIAudioSessionActivated(context);
-                    }
+                    [self startAudioUnit];
                 }
             });
         }
@@ -489,7 +454,6 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
         if (self.renderingContext) {
             TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
                 [self stopAudioUnit];
-                TVIAudioSessionDeactivated(self.renderingContext->deviceContext);
             });
         }
     }
@@ -501,9 +465,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
         TVIAudioDeviceContext context = self.renderingContext ? self.renderingContext->deviceContext : NULL;
         if (context) {
             TVIAudioDeviceExecuteWorkerBlock(context, ^{
-                if ([self startAudioUnit]) {
-                    TVIAudioSessionActivated(context);
-                }
+                [self startAudioUnit];
             });
         }
     }
