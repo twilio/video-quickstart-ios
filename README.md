@@ -1,10 +1,10 @@
 
-[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://github.com/twilio/twilio-video-ios/releases/download/3.0.0-beta6/TwilioVideo.framework.zip)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta6/index.html)
+[ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 
 # Twilio Video Quickstart for iOS
 
-> NOTE: These sample applications use the Twilio Video 3.x APIs. For examples using our 2.x APIs, please see the [master](https://github.com/twilio/video-quickstart-ios) branch. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-ios/tree/1.x) branch.
+> NOTE: These sample applications use the Twilio Video 3.x APIs. For examples using our 2.x APIs, please see the [2.x](https://github.com/twilio/video-quickstart-ios/tree/2.x) branch. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-ios/tree/1.x) branch.
 > 
 > Please see our [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md) for the latest information on iOS 13 and iPadOS 13.
 
@@ -108,7 +108,7 @@ You will also find additional examples that provide more advanced use cases of t
 
 - [AudioDevice](AudioDeviceExample) - Provide your own means to playback and record audio using a custom `TVIAudioDevice` and [CoreAudio](https://developer.apple.com/documentation/coreaudio).
 - [AudioSink](AudioSinkExample) - Access raw audio samples and record them to disk using [AVFoundation](https://developer.apple.com/documentation/avfoundation). Perform live voice recognition using Apple's [Speech](https://developer.apple.com/documentation/speech) framework.
-- [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `TVIRoom` via a custom `TVIVideoSource` source. This app requires Xcode 9 & iOS 11.
+- [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `TVIRoom` via a custom `TVIVideoSource` source. This app requires Xcode 11 & iOS 11.
 - [AVPlayer](AVPlayerExample) - Shows how to use `AVPlayer` to stream Audio & Video content while connected to a `TVIRoom`.
 - [CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit](https://developer.apple.com/reference/callkit) framework.
 - [DataTrack](DataTrackExample) - Shows how to use the Data Track APIs for interactive drawing.
@@ -152,7 +152,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/video/ios-v3-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/3.0.0-beta6/index.html)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 * [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md)
 
 ## Issues and Support
