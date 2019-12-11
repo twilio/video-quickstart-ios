@@ -303,21 +303,42 @@ class ViewController: UIViewController {
         }
     }
     
-    func cleanupRemoteParticipant() {
-        if ((self.remoteParticipant) != nil) {
-            if ((self.remoteParticipant?.videoTracks.count)! > 0) {
-                let remoteVideoTrack = self.remoteParticipant?.remoteVideoTracks[0].remoteTrack
-                remoteVideoTrack?.removeRenderer(self.remoteView!)
-                self.remoteView?.removeFromSuperview()
-                self.remoteView = nil
-            }
-        }
-        self.remoteParticipant = nil
-    }
-    
     func logMessage(messageText: String) {
         NSLog(messageText)
         messageLabel.text = messageText
+    }
+
+    func renderRemoteParticipant(participant : RemoteParticipant) -> Bool {
+        // This example renders the first subscribed RemoteVideoTrack from the RemoteParticipant.
+        let videoPublications = participant.remoteVideoTracks
+        for publication in videoPublications {
+            if let subscribedVideoTrack = publication.remoteTrack,
+                publication.isTrackSubscribed {
+                setupRemoteVideoView()
+                subscribedVideoTrack.addRenderer(self.remoteView!)
+                self.remoteParticipant = participant
+                return true
+            }
+        }
+        return false
+    }
+
+    func renderRemoteParticipants(participants : Array<RemoteParticipant>) {
+        for participant in participants {
+            // Find the first renderable track.
+            if participant.remoteVideoTracks.count > 0,
+                renderRemoteParticipant(participant: participant) {
+                break
+            }
+        }
+    }
+
+    func cleanupRemoteParticipant() {
+        if self.remoteParticipant != nil {
+            self.remoteView?.removeFromSuperview()
+            self.remoteView = nil
+            self.remoteParticipant = nil
+        }
     }
 }
 
@@ -332,13 +353,11 @@ extension ViewController : UITextFieldDelegate {
 // MARK:- RoomDelegate
 extension ViewController : RoomDelegate {
     func roomDidConnect(room: Room) {
-        // At the moment, this example only supports rendering one Participant at a time.
-
         logMessage(messageText: "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")")
-        
-        if (room.remoteParticipants.count > 0) {
-            self.remoteParticipant = room.remoteParticipants[0]
-            self.remoteParticipant?.delegate = self
+
+        // This example only renders 1 RemoteVideoTrack at a time. Listen for all events to decide which track to render.
+        for remoteParticipant in room.remoteParticipants {
+            remoteParticipant.delegate = self
         }
     }
 
@@ -367,18 +386,16 @@ extension ViewController : RoomDelegate {
     }
 
     func participantDidConnect(room: Room, participant: RemoteParticipant) {
-        if (self.remoteParticipant == nil) {
-            self.remoteParticipant = participant
-            self.remoteParticipant?.delegate = self
-        }
-       logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
+        // Listen for events from all Participants to decide which RemoteVideoTrack to render.
+        participant.delegate = self
+
+        logMessage(messageText: "Participant \(participant.identity) connected with \(participant.remoteAudioTracks.count) audio and \(participant.remoteVideoTracks.count) video tracks")
     }
 
     func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
-        if (self.remoteParticipant == participant) {
-            cleanupRemoteParticipant()
-        }
         logMessage(messageText: "Room \(room.name), Participant \(participant.identity) disconnected")
+
+        // Nothing to do in this example. Subscription events are used to add/remove renderers.
     }
 }
 
@@ -410,14 +427,12 @@ extension ViewController : RemoteParticipantDelegate {
     }
 
     func didSubscribeToVideoTrack(videoTrack: RemoteVideoTrack, publication: RemoteVideoTrackPublication, participant: RemoteParticipant) {
-        // We are subscribed to the remote Participant's video Track. We will start receiving the
-        // remote Participant's video frames now.
-        
+        // The LocalParticipant is subscribed to the RemoteParticipant's video Track. Frames will begin to arrive now.
+
         logMessage(messageText: "Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
 
-        if (self.remoteParticipant == participant) {
-            setupRemoteVideoView()
-            videoTrack.addRenderer(self.remoteView!)
+        if (self.remoteParticipant == nil) {
+            _ = renderRemoteParticipant(participant: participant)
         }
     }
     
@@ -427,10 +442,14 @@ extension ViewController : RemoteParticipantDelegate {
         
         logMessage(messageText: "Unsubscribed from \(publication.trackName) video track for Participant \(participant.identity)")
 
-        if (self.remoteParticipant == participant) {
-            videoTrack.removeRenderer(self.remoteView!)
-            self.remoteView?.removeFromSuperview()
-            self.remoteView = nil
+        if self.remoteParticipant == participant {
+            cleanupRemoteParticipant()
+
+            // Find another Participant video to render, if possible.
+            var remainingParticipants = room?.remoteParticipants
+            let index = remainingParticipants?.index(of: participant)
+            remainingParticipants?.remove(at: index!)
+            renderRemoteParticipants(participants: remainingParticipants!)
         }
     }
 
