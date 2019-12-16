@@ -446,10 +446,11 @@ extension ViewController : RemoteParticipantDelegate {
             cleanupRemoteParticipant()
 
             // Find another Participant video to render, if possible.
-            var remainingParticipants = room?.remoteParticipants
-            let index = remainingParticipants?.index(of: participant)
-            remainingParticipants?.remove(at: index!)
-            renderRemoteParticipants(participants: remainingParticipants!)
+            if var remainingParticipants = room?.remoteParticipants,
+                let index = remainingParticipants.index(of: participant) {
+                remainingParticipants.remove(at: index)
+                renderRemoteParticipants(participants: remainingParticipants)
+            }
         }
     }
 
