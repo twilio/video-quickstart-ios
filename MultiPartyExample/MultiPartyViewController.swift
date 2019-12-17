@@ -258,8 +258,11 @@ class MultiPartyViewController: UIViewController {
         let backCamera = CameraSource.captureDevice(position: .back)
 
         if (frontCamera != nil || backCamera != nil) {
-            // Preview our local camera track in the local video preview view.
-            camera = CameraSource(delegate: self)
+            // This example is optimized for multi-party in a Group Room. Remove rotation tags for improved performance.
+            let options = CameraSourceOptions { (builder) in
+                builder.rotationTags = .remove
+            }
+            camera = CameraSource(options: options, delegate: self)
 
             if let camera = camera {
                 localVideoTrack = LocalVideoTrack(source: camera, enabled: true, name: "Camera")
