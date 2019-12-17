@@ -17,7 +17,7 @@ struct CaptureDeviceUtils {
     static let kSimulcastVideoBitrate = UInt(1800)
     static let kOneToOneVideoDimensions = CMVideoDimensions(width: 640, height: 480)
     static let kMultipartyVideoDimensions = CMVideoDimensions(width: 480, height: 360)
-    // Produce 3 spatial layers ~ {1024x768, 512x336, 256x192}
+    // Produce 3 spatial layers ~ {1024x768, 512x384, 256x192}
     static let kSimulcastVideoDimensions = CMVideoDimensions(width: 1024, height: 768)
     static let kSimulcastVideoFrameRate = UInt(20)
 
