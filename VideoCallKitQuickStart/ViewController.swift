@@ -73,6 +73,12 @@ class ViewController: UIViewController {
     deinit {
         // CallKit has an odd API contract where the developer must call invalidate or the CXProvider is leaked.
         callKitProvider.invalidate()
+        
+        // We are done with camera
+        if let camera = self.camera {
+            camera.stopCapture()
+            self.camera = nil
+        }
     }
 
     // MARK:- UIViewController

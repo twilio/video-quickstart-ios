@@ -72,6 +72,12 @@ NSString *const kStatusKey   = @"status";
 - (void)dealloc {
     // We are done with AVAudioSession
     [self stopAudioDevice];
+    
+    // We are done with camera
+    if (self.camera) {
+        [self.camera stopCapture];
+        self.camera = nil;
+    }
 }
 
 #pragma mark - UIViewController

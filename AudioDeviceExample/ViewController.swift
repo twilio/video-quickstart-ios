@@ -46,6 +46,14 @@ class ViewController: UIViewController {
 
     static let coreAudioDeviceText = "CoreAudio Device"
     static let engineAudioDeviceText = "AVAudioEngine Device"
+    
+    deinit {
+        // We are done with camera
+        if let camera = self.camera {
+            camera.stopCapture()
+            self.camera = nil
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()

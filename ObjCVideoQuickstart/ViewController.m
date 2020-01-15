@@ -42,6 +42,14 @@
 
 @implementation ViewController
 
+- (void)dealloc {
+    // We are done with camera
+    if (self.camera) {
+        [self.camera stopCapture];
+        self.camera = nil;
+    }
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
