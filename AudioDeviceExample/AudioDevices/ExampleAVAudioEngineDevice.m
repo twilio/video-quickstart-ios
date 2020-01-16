@@ -101,8 +101,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
     self = [super init];
 
     if (self) {
-        [self setupAVAudioSession];
-
         /*
          * Initialize rendering and capturing context. The deviceContext will be be filled in when startRendering or
          * startCapturing gets called.
@@ -121,6 +119,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
         self.capturingContext = malloc(sizeof(AudioCapturerContext));
         memset(self.capturingContext, 0, sizeof(AudioCapturerContext));
         self.capturingContext->bufferList = &_captureBufferList;
+        
+        [self setupAVAudioSession];
 
         // Setup the AVAudioEngine along with the rendering context
         if (![self setupRecordAudioEngine]) {

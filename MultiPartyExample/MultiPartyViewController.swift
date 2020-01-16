@@ -162,6 +162,14 @@ class MultiPartyViewController: UIViewController {
                 CaptureDeviceUtils.kSimulcastVideoBitrate : CaptureDeviceUtils.kOneToOneVideoBitrate
         }
     }
+    
+    deinit {
+        // We are done with camera
+        if let camera = self.camera {
+            camera.stopCapture()
+            self.camera = nil
+        }
+    }
 
     // MARK:- UIViewController
     override func viewDidLoad() {

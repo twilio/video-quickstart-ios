@@ -40,6 +40,14 @@ class ViewController: UIViewController {
     @IBOutlet weak var roomLine: UIView!
     @IBOutlet weak var roomLabel: UILabel!
     @IBOutlet weak var micButton: UIButton!
+    
+    deinit {
+        // We are done with camera
+        if let camera = self.camera {
+            camera.stopCapture()
+            self.camera = nil
+        }
+    }
 
     // MARK:- UIViewController
     override func viewDidLoad() {

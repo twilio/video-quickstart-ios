@@ -53,6 +53,14 @@ class ViewController: UIViewController {
     let kPreviewPadding = CGFloat(10)
     let kTextBottomPadding = CGFloat(4)
     let kMaxRemoteVideos = Int(2)
+    
+    deinit {
+        // We are done with camera
+        if let camera = self.camera {
+            camera.stopCapture()
+            self.camera = nil
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
