@@ -92,8 +92,6 @@ extension ViewController : CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         NSLog("provider:performEndCallAction:")
 
-        // AudioDevice is enabled by default
-        self.audioDevice.isEnabled = true
         room?.disconnect()
 
         action.fulfill()
