@@ -110,8 +110,8 @@ class MultiPartyViewController: UIViewController {
     // MARK:- View Controller Members
     var roomName: String?
     var accessToken: String?
-    var remoteParticipantViews: [RemoteParticipantView] = []
-    var localParticipantView: LocalParticipantView = LocalParticipantView(frame: CGRect.zero)
+    var remoteParticipantViews: [ParticipantView] = []
+    var localParticipantView: ParticipantView = ParticipantView(frame: CGRect.zero)
 
     static let kMaxRemoteParticipants = 3
 
@@ -391,6 +391,9 @@ class MultiPartyViewController: UIViewController {
             // Enable Network Quality
             builder.isNetworkQualityEnabled = true
 
+            builder.networkQualityConfiguration = NetworkQualityConfiguration(localVerbosity: .minimal,
+                                                                              remoteVerbosity: .minimal)
+
             // Use the local media that we prepared earlier.
             if let localAudioTrack = self.localAudioTrack {
                 builder.audioTracks = [localAudioTrack]
@@ -459,7 +462,7 @@ class MultiPartyViewController: UIViewController {
 
     func setupRemoteParticipantView(remoteParticipant: RemoteParticipant) {
         // Create a `VideoView` programmatically
-        let remoteView = RemoteParticipantView(frame: CGRect.zero)
+        let remoteView = ParticipantView(frame: CGRect.zero)
 
         // We will bet that a hash collision between two unique SIDs is very rare.
         remoteView.tag = remoteParticipant.hashValue
@@ -468,9 +471,13 @@ class MultiPartyViewController: UIViewController {
         remoteParticipantViews.append(remoteView)
     }
 
-    func removeRemoteParticipantView(remoteParticipant: RemoteParticipant) {
+    func remoteParticipantVideoView(_ remoteParticipant: RemoteParticipant) -> ParticipantView? {
         let viewTag = remoteParticipant.hashValue
-        if let remoteView = view.viewWithTag(viewTag) {
+        return view.viewWithTag(viewTag) as? ParticipantView
+    }
+
+    func removeRemoteParticipantView(remoteParticipant: RemoteParticipant) {
+        if let remoteView = remoteParticipantVideoView(remoteParticipant) {
             remoteView.removeFromSuperview()
             remoteParticipantViews.removeAll { (item) -> Bool in
                 return item == remoteView
@@ -480,8 +487,7 @@ class MultiPartyViewController: UIViewController {
 
     func displayVideoTrack(_ videoTrack: RemoteVideoTrack,
                            for participant: RemoteParticipant) {
-        let viewTag = participant.hashValue
-        if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
+        if let remoteView = remoteParticipantVideoView(participant) {
             // Start rendering
             videoTrack.addRenderer(remoteView.videoView);
             remoteView.hasVideo = true
@@ -490,8 +496,7 @@ class MultiPartyViewController: UIViewController {
 
     func removeVideoTrack(_ videoTrack: RemoteVideoTrack,
                           for participant: RemoteParticipant) {
-        let viewTag = participant.hashValue
-        if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
+        if let remoteView = remoteParticipantVideoView(participant) {
             // Stop rendering
             videoTrack.removeRenderer(remoteView.videoView);
             remoteView.hasVideo = false
@@ -500,15 +505,13 @@ class MultiPartyViewController: UIViewController {
 
     func updateDominantSpeaker(dominantSpeaker: RemoteParticipant?) {
         if let currentDominantSpeaker = currentDominantSpeaker {
-            let viewTag = currentDominantSpeaker.hashValue
-            if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
+            if let remoteView = remoteParticipantVideoView(currentDominantSpeaker) {
                 remoteView.isDominantSpeaker = false
             }
         }
 
         if let dominantSpeaker = dominantSpeaker {
-            let viewTag = dominantSpeaker.hashValue
-            if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
+            if let remoteView = remoteParticipantVideoView(dominantSpeaker) {
                 remoteView.isDominantSpeaker = true
             }
         }
@@ -518,8 +521,7 @@ class MultiPartyViewController: UIViewController {
 
     func updateAudioState(hasAudio: Bool,
                           for participant: RemoteParticipant) {
-        let viewTag = participant.hashValue
-        if let remoteView = view.viewWithTag(viewTag) as? RemoteParticipantView {
+        if let remoteView = remoteParticipantVideoView(participant) {
             // Stop rendering
             remoteView.hasAudio = hasAudio
         }
@@ -537,8 +539,15 @@ class MultiPartyViewController: UIViewController {
     }
 
     func updateLocalNetworkQualityLevel(networkQualityLevel: NetworkQualityLevel) {
-        logMessage(messageText: "Network Quality Level: \(networkQualityLevel.rawValue)")
+        logMessage(messageText: "Local Participant Network Quality Level: \(networkQualityLevel.rawValue)")
         localParticipantView.networkQualityLevel = networkQualityLevel
+    }
+
+    func updateRemoteNetworkQualityLevel(networkQualityLevel: NetworkQualityLevel, participant: RemoteParticipant) {
+        logMessage(messageText: "Remote Participant (\(participant.identity) Network Quality Level: \(networkQualityLevel.rawValue)")
+        if let remoteView = remoteParticipantVideoView(participant) {
+            remoteView.networkQualityLevel = networkQualityLevel
+        }
     }
 
     func checkVideoSenderSettings(room: Room) {
@@ -680,7 +689,7 @@ extension MultiPartyViewController : RoomDelegate {
 // MARK:- LocalParticipantDelegate
 extension MultiPartyViewController : LocalParticipantDelegate {
     func localParticipantNetworkQualityLevelDidChange(participant: LocalParticipant, networkQualityLevel: NetworkQualityLevel) {
-        // Local Participant netwrk quality level has changed
+        // Local Participant network quality level has changed
         updateLocalNetworkQualityLevel(networkQualityLevel: networkQualityLevel)
     }
 
@@ -697,6 +706,11 @@ extension MultiPartyViewController : LocalParticipantDelegate {
 
 // MARK:- RemoteParticipantDelegate
 extension MultiPartyViewController : RemoteParticipantDelegate {
+    func remoteParticipantNetworkQualityLevelDidChange(participant: RemoteParticipant, networkQualityLevel: NetworkQualityLevel) {
+        // Remote Participant network quality level has changed
+        updateRemoteNetworkQualityLevel(networkQualityLevel: networkQualityLevel, participant: participant)
+    }
+
     func remoteParticipantDidPublishVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         // Remote Participant has offered to share the video Track.
 

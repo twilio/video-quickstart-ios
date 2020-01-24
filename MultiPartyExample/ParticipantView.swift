@@ -1,24 +1,50 @@
 //
-//  LocalParticipantView.swift
+//  ParticipantView.swift
 //  MultiPartyExample
 //
-//  Created by Ryan Payne on 4/17/19.
-//  Copyright © 2019 Twilio, Inc. All rights reserved.
+//  Copyright © 2020 Twilio, Inc. All rights reserved.
 //
 
 import UIKit
 import TwilioVideo
 
 @IBDesignable
-class LocalParticipantView: UIView {
+class ParticipantView: UIView {
 
     @IBOutlet var contentView: UIView!
+    @IBOutlet weak var containerView: UIView!
     @IBOutlet weak var videoView: VideoView!
     @IBOutlet weak var noVideoImage: UIImageView!
     @IBOutlet weak var audioIndicator: UIImageView!
     @IBOutlet weak var networkQualityLevelIndicator: UIImageView!
+    @IBOutlet weak var identityContainerView: UIView!
+    @IBOutlet weak var identityLabel : UILabel!
 
     var recognizerDoubleTap: UITapGestureRecognizer?
+
+    var identity: String? {
+        willSet {
+            guard let newIdentity = newValue, !newIdentity.isEmpty else {
+                identityContainerView.isHidden = true
+                identityLabel.isHidden = true
+                return
+            }
+
+            identityContainerView.isHidden = false
+            identityLabel.isHidden = false
+            identityLabel.text = newValue
+        }
+    }
+
+    var isDominantSpeaker: Bool = false {
+        willSet {
+            if newValue == true {
+                contentView.backgroundColor = UIColor.Twilio.Status.Orange
+            } else {
+                contentView.backgroundColor = UIColor.black
+            }
+        }
+    }
 
     var hasAudio: Bool = false {
         willSet {
@@ -57,10 +83,15 @@ class LocalParticipantView: UIView {
     }
 
     private func setup() {
-        Bundle.main.loadNibNamed("LocalParticipantView", owner: self, options: nil)
+        Bundle.main.loadNibNamed("ParticipantView", owner: self, options: nil)
         addSubview(contentView)
         contentView.frame = self.bounds
         contentView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
+
+        identityContainerView.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        identityContainerView.layer.allowsGroupOpacity = true
+        identityContainerView.isHidden = true
+        identityLabel.isHidden = true
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
         audioIndicator.layer.backgroundColor = UIColor.black.withAlphaComponent(0.75).cgColor
@@ -76,25 +107,24 @@ class LocalParticipantView: UIView {
         videoView.delegate = self
 
         // Double tap to change the content mode.
-        recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(changeLocalVideoAspect))
+        recognizerDoubleTap = UITapGestureRecognizer(target: self, action: #selector(changeVideoAspect))
         if let recognizerDoubleTap = recognizerDoubleTap {
             recognizerDoubleTap.numberOfTapsRequired = 2
             videoView.addGestureRecognizer(recognizerDoubleTap)
         }
     }
 
-    @objc private func changeLocalVideoAspect(gestureRecognizer: UIGestureRecognizer) {
-        guard let localView = gestureRecognizer.view else {
+    @objc private func changeVideoAspect(gestureRecognizer: UIGestureRecognizer) {
+        guard let view = gestureRecognizer.view else {
             print("Couldn't find a view attached to the tap recognizer. \(gestureRecognizer)")
             return;
         }
 
-        if (localView.contentMode == .scaleAspectFit) {
-            localView.contentMode = .scaleAspectFill
+        if (view.contentMode == .scaleAspectFit) {
+            view.contentMode = .scaleAspectFill
         } else {
-            localView.contentMode = .scaleAspectFit
+            view.contentMode = .scaleAspectFit
         }
-
     }
 
     private func networkQualityIndicatorImage(forLevel networkQualityLevel: NetworkQualityLevel) -> UIImage? {
@@ -126,7 +156,7 @@ class LocalParticipantView: UIView {
 }
 
 // MARK:- VideoViewDelegate
-extension LocalParticipantView : VideoViewDelegate {
+extension ParticipantView : VideoViewDelegate {
     func videoViewDimensionsDidChange(view: VideoView, dimensions: CMVideoDimensions) {
         self.contentView.setNeedsLayout()
     }
