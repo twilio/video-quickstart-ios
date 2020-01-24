@@ -23,7 +23,6 @@ class MainViewController: UIViewController {
     @IBOutlet weak var connectButton: UIButton?
     @IBOutlet weak var roomTextField: UITextField?
     @IBOutlet weak var roomLine: UIView?
-    @IBOutlet weak var roomLabel: UILabel?
     @IBOutlet weak var messageLabel: UILabel?
 
     // MARK:- UIViewController
