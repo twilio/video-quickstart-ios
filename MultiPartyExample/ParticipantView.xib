@@ -23,7 +23,7 @@
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" id="xhF-bo-3wH">
             <rect key="frame" x="0.0" y="0.0" width="207" height="328"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WfB-wR-6NP" userLabel="Container View">
                     <rect key="frame" x="2" y="2" width="203" height="324"/>
@@ -34,7 +34,7 @@
                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <viewLayoutGuide key="safeArea" id="74F-mO-XNF"/>
                 </view>
-                <view opaque="NO" contentMode="scaleToFill" id="wWI-Z7-e1F" userLabel="Identity Container View">
+                <view opaque="NO" contentMode="scaleToFill" ambiguous="YES" id="wWI-Z7-e1F" userLabel="Identity Container View">
                     <rect key="frame" x="4" y="4" width="199" height="46"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <viewLayoutGuide key="safeArea" id="AoB-0H-5XP"/>
@@ -82,14 +82,15 @@
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="4" id="KSC-0w-KOT"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="WfB-wR-6NP" secondAttribute="trailing" constant="2" id="LBF-02-Bxc"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="eLV-re-ffH" secondAttribute="bottom" constant="20" id="PiB-vy-nYl"/>
+                <constraint firstItem="wWI-Z7-e1F" firstAttribute="leading" secondItem="WfB-wR-6NP" secondAttribute="leading" id="SFz-Em-Cg6"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="bottom" secondItem="DnR-nN-jn3" secondAttribute="bottom" constant="4" id="SlU-0c-zqL"/>
                 <constraint firstItem="BW5-2W-nxs" firstAttribute="leading" secondItem="1Jt-2h-zap" secondAttribute="leading" constant="8" id="TxE-Tk-B4p"/>
                 <constraint firstItem="DnR-nN-jn3" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="4" id="VU4-Yl-8W5"/>
                 <constraint firstItem="BW5-2W-nxs" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="12" id="WLU-XM-MsG"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="eLV-re-ffH" secondAttribute="trailing" constant="16" id="ar4-WB-owc"/>
+                <constraint firstItem="wWI-Z7-e1F" firstAttribute="top" secondItem="WfB-wR-6NP" secondAttribute="top" id="dbZ-Tz-rEe"/>
                 <constraint firstItem="1Jt-2h-zap" firstAttribute="trailing" secondItem="DnR-nN-jn3" secondAttribute="trailing" constant="4" id="kfM-D2-oUh"/>
                 <constraint firstItem="C3c-00-Xd3" firstAttribute="centerX" secondItem="1Jt-2h-zap" secondAttribute="centerX" id="p3m-Jw-8o4"/>
-                <constraint firstItem="wWI-Z7-e1F" firstAttribute="leading" secondItem="WfB-wR-6NP" secondAttribute="trailing" constant="-201" id="u86-Fc-kWS"/>
                 <constraint firstItem="WfB-wR-6NP" firstAttribute="top" secondItem="1Jt-2h-zap" secondAttribute="top" constant="2" id="z74-ae-cOc"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
