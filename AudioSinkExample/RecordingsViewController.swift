@@ -66,9 +66,7 @@ class RecordingsViewController: UITableViewController {
         let player = AVPlayer(url: item)
         let playerVC = AVPlayerViewController()
         playerVC.player = player
-        if #available(iOS 11.0, *) {
-            playerVC.entersFullScreenWhenPlaybackBegins = true
-        }
+        playerVC.entersFullScreenWhenPlaybackBegins = true
 
         self.showDetailViewController(playerVC, sender: self)
 

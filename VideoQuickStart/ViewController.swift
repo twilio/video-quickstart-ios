@@ -300,9 +300,7 @@ class ViewController: UIViewController {
         UIApplication.shared.isIdleTimerDisabled = inRoom
 
         // Show / hide the automatic home indicator on modern iPhones.
-        if #available(iOS 11.0, *) {
-            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
-        }
+        self.setNeedsUpdateOfHomeIndicatorAutoHidden()
     }
     
     @objc func dismissKeyboard() {
