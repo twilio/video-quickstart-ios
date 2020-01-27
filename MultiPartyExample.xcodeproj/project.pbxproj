@@ -85,10 +85,10 @@
 			isa = PBXGroup;
 			children = (
 				24064F9D222EE48900BBA411 /* AppDelegate.swift */,
+				2462F07C23DF52130070CDA6 /* ClippingView.swift */,
 				24064F9F222EE48900BBA411 /* MainViewController.swift */,
 				24D52665223169E900455F6B /* MultiPartyViewController.swift */,
 				2462F07723DB3C460070CDA6 /* ParticipantView.swift */,
-				2462F07C23DF52130070CDA6 /* ClippingView.swift */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -117,8 +117,8 @@
 			isa = PBXGroup;
 			children = (
 				24064FA6222EE48B00BBA411 /* LaunchScreen.storyboard */,
-				241B5CB82267DD050035590C /* ParticipantView.xib */,
 				24064FA1222EE48900BBA411 /* Main.storyboard */,
+				241B5CB82267DD050035590C /* ParticipantView.xib */,
 			);
 			name = Storyboards;
 			sourceTree = "<group>";
