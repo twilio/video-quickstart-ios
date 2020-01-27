@@ -54,9 +54,6 @@
                                 <constraint firstItem="BW5-2W-nxs" firstAttribute="leading" secondItem="AoB-0H-5XP" secondAttribute="leading" constant="4" id="xiM-eg-nIf"/>
                             </constraints>
                             <viewLayoutGuide key="safeArea" id="AoB-0H-5XP"/>
-                            <connections>
-                                <outlet property="clipView" destination="cFq-2D-bKN" id="cui-Gt-chx"/>
-                            </connections>
                         </view>
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="network-quality-level-0" translatesAutoresizingMaskIntoConstraints="NO" id="cFq-2D-bKN" userLabel="Network Quality Level Indicator">
                             <rect key="frame" x="165" y="8" width="30" height="30"/>

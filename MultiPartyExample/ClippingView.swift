@@ -9,19 +9,28 @@ import UIKit
 
 class ClippingView: UIView {
 
-    @IBOutlet var clipView: UIView!
+    var clippingTarget: UIView?
+
+    var shouldClip: Bool = false {
+        didSet {
+            self.setNeedsLayout()
+        }
+    }
 
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let path = UIBezierPath(rect: self.convert(clipView.frame, from: self.superview))
+        guard shouldClip == true, let clippingTarget = clippingTarget else {
+            return
+        }
+
+        let path = UIBezierPath(roundedRect: convert(clippingTarget.frame, from: superview), cornerRadius:1.5)
         let maskLayer = CAShapeLayer()
 
-        path.append(UIBezierPath(rect: self.bounds))
+        path.append(UIBezierPath(rect: bounds))
         maskLayer.fillRule = .evenOdd
         maskLayer.path = path.cgPath
 
-        self.layer.mask = maskLayer
+        layer.mask = maskLayer
     }
-
 }

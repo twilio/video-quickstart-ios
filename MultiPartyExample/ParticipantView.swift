@@ -17,7 +17,7 @@ class ParticipantView: UIView {
     @IBOutlet weak var noVideoImage: UIImageView!
     @IBOutlet weak var audioIndicator: UIImageView!
     @IBOutlet weak var networkQualityLevelIndicator: UIImageView!
-    @IBOutlet weak var identityContainerView: UIView!
+    @IBOutlet weak var identityContainerView: ClippingView!
     @IBOutlet weak var identityLabel : UILabel!
 
     var recognizerDoubleTap: UITapGestureRecognizer?
@@ -69,7 +69,7 @@ class ParticipantView: UIView {
 
             networkQualityLevelIndicator.isHidden = false
             networkQualityLevelIndicator.image = networkQualityLevelImage
-            self.setNeedsLayout()
+            identityContainerView.shouldClip = true
         }
     }
 
@@ -89,6 +89,7 @@ class ParticipantView: UIView {
         contentView.frame = self.bounds
         contentView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
 
+        identityContainerView.clippingTarget = networkQualityLevelIndicator;
         identityContainerView.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
         identityContainerView.isHidden = true
         identityLabel.isHidden = true
