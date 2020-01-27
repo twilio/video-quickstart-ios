@@ -25,12 +25,12 @@ class ParticipantView: UIView {
     var identity: String? {
         willSet {
             guard let newIdentity = newValue, !newIdentity.isEmpty else {
-                identityContainerView.isHidden = true
+                identityContainerView.backgroundColor = .clear
                 identityLabel.isHidden = true
                 return
             }
 
-            identityContainerView.isHidden = false
+            identityContainerView.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
             identityLabel.isHidden = false
             identityLabel.text = newValue
         }
@@ -89,9 +89,7 @@ class ParticipantView: UIView {
         contentView.frame = self.bounds
         contentView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
 
-        identityContainerView.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
-        identityContainerView.isHidden = true
-
+        identityContainerView.backgroundColor = .clear
         identityLabel.isHidden = true
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
@@ -114,23 +112,6 @@ class ParticipantView: UIView {
             videoView.addGestureRecognizer(recognizerDoubleTap)
         }
     }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        if networkQualityLevel != .unknown {
-            let path = UIBezierPath(rect: networkQualityLevelIndicator.frame)
-            let maskLayer = CAShapeLayer()
-            
-            path.append(UIBezierPath(rect: identityContainerView.bounds))
-            maskLayer.fillRule = .evenOdd
-            maskLayer.path = path.cgPath
-            
-            identityContainerView.layer.mask = maskLayer
-        }
-    }
-
-
 
     @objc private func changeVideoAspect(gestureRecognizer: UIGestureRecognizer) {
         guard let view = gestureRecognizer.view else {
