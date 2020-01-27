@@ -541,7 +541,7 @@ class MultiPartyViewController: UIViewController {
     }
 
     func updateRemoteNetworkQualityLevel(networkQualityLevel: NetworkQualityLevel, participant: RemoteParticipant) {
-        logMessage(messageText: "Remote Participant (\(participant.identity) Network Quality Level: \(networkQualityLevel.rawValue)")
+        logMessage(messageText: "Remote Participant (\(participant.identity)) Network Quality Level: \(networkQualityLevel.rawValue)")
         if let remoteView = remoteParticipantVideoView(participant) {
             remoteView.networkQualityLevel = networkQualityLevel
         }
