@@ -200,12 +200,9 @@ class MultiPartyViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
-        var layoutFrame = self.containerView.bounds
-        if #available(iOS 11.0, *) {
-            // Ensure the preview fits in the safe area.
-            let safeAreaGuide = self.containerView.safeAreaLayoutGuide
-            layoutFrame = safeAreaGuide.layoutFrame
-        }
+        // Ensure the preview fits in the safe area.
+        let safeAreaGuide = self.containerView.safeAreaLayoutGuide
+        let layoutFrame = safeAreaGuide.layoutFrame
 
         let topY = layoutFrame.origin.y
         let totalHeight = layoutFrame.height
@@ -608,9 +605,7 @@ extension MultiPartyViewController : RoomDelegate {
 
         checkVideoSenderSettings(room: room)
 
-        if #available(iOS 11.0, *) {
-            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
-        }
+        self.setNeedsUpdateOfHomeIndicatorAutoHidden()
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {
