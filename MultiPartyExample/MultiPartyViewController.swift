@@ -524,6 +524,13 @@ class MultiPartyViewController: UIViewController {
         }
     }
 
+    func updateVideoState(hasVideo: Bool,
+                          for participant: RemoteParticipant) {
+        if let remoteView = remoteParticipantVideoView(participant) {
+            remoteView.hasVideo = hasVideo
+        }
+    }
+
     func updateLocalAudioState(hasAudio: Bool, isPublished: Bool) {
         self.localParticipantView.hasAudio = hasAudio
         audioMuteButton.isSelected = !hasAudio
@@ -764,10 +771,12 @@ extension MultiPartyViewController : RemoteParticipantDelegate {
 
     func remoteParticipantDidEnableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) enabled \(publication.trackName) video track")
+        updateVideoState(hasVideo: true, for: participant)
     }
 
     func remoteParticipantDidDisableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         logMessage(messageText: "Participant \(participant.identity) disabled \(publication.trackName) video track")
+        updateVideoState(hasVideo: false, for: participant)
     }
 
     func remoteParticipantDidEnableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
