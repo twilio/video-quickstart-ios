@@ -25,12 +25,12 @@ class ParticipantView: UIView {
     var identity: String? {
         willSet {
             guard let newIdentity = newValue, !newIdentity.isEmpty else {
-                identityContainerView.backgroundColor = .clear
+                identityContainerView.isHidden = true
                 identityLabel.isHidden = true
                 return
             }
 
-            identityContainerView.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
+            identityContainerView.isHidden = false
             identityLabel.isHidden = false
             identityLabel.text = newValue
         }
@@ -89,7 +89,8 @@ class ParticipantView: UIView {
         contentView.frame = self.bounds
         contentView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
 
-        identityContainerView.backgroundColor = .clear
+        identityContainerView.layer.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        identityContainerView.isHidden = true
         identityLabel.isHidden = true
 
         audioIndicator.layer.cornerRadius = audioIndicator.bounds.size.width / 2.0;
