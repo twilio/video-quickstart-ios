@@ -20,7 +20,7 @@ Coordinates a Video conference in a Room, including:
 2. Connecting to the Room.
 3. Rendering local and remote video.
 4. Routing dominant speaker events to the appropriate subviews.
-5. Displaying the Local Participant's [Network Quality Level](https://www.twilio.com/docs/video/using-network-quality-api).
+5. Displaying the Participant's [Network Quality Level](https://www.twilio.com/docs/video/using-network-quality-api).
 6. Raising fatal errors to the developer.
 7. Disconnecting from the Room, and stopping `TVICameraSource`.
 
@@ -31,9 +31,9 @@ In order to conserve bandwidth, the controller will unpublish the Participant's 
 <kbd><img width="860px" src="../images/quickstart/multi-party-audio-send-bandwidth.png"/></kbd>
 *A Participant connects with a `LocalAudioTrack`, and then disables it. The Track is unpublished after a period of inactivity in order to conserve bandwidth. When the Participant is ready to speak, audio is published on demand.*
 
-**RemoteParticipantView**
+**ParticipantView**
 
-Displays a single `TVIRemoteParticipant`, with up to one `TVIRemoteVideoTrack` and handles [Dominant Speaker](https://www.twilio.com/docs/video/detecting-dominant-speaker) events.
+Displays a single `TVIParticipant`, with up to one `TVIVideoTrack` and handles [Dominant Speaker](https://www.twilio.com/docs/video/detecting-dominant-speaker) events.
 
 ### Setup
 
@@ -51,7 +51,7 @@ Once you have setup your access token, install and run the example. You will be 
 
 <kbd><img width="360px" src="../images/quickstart/multi-party-home-screen.png"/></kbd>
 
-Tapping "Connect" will authorize your Client, and then connect to a Room sharing audio and video. Once you've connected, video from up to 3 Remote Participants is shown, and the most recent dominant speaker is highlighted. Single tap on your Participant to mute and un-mute audio. Double tap on your Participant to switch the camera from front to back.
+Tapping "Connect" will authorize your Client, and then connect to a Room sharing audio and video. Once you've connected, video from up to 3 Remote Participants is shown, and the most recent dominant speaker is highlighted. Single tap on your  Participant to switch the camera from front to back. Double tap on your Participant to change the video aspect of the video view.
 
 ### Known Issues
 

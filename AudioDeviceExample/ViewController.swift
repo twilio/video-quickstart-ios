@@ -76,51 +76,31 @@ class ViewController: UIViewController {
     }
 
     @IBAction func selectAudioDevice() {
-        var coreAudioDeviceButton : UIAlertAction!
-        var audioEngineDeviceButton : UIAlertAction?
-
         var selectedButton : UIAlertAction!
 
         let alertController = UIAlertController(title: "Select Audio Device", message: nil, preferredStyle: .actionSheet)
 
         // ExampleCoreAudioDevice
-        coreAudioDeviceButton = UIAlertAction(title: ViewController.coreAudioDeviceText,
-                                              style: .default,
-                                              handler: { (action) -> Void in
-                                                self.coreAudioDeviceSelected()
+        let coreAudioDeviceButton = UIAlertAction(title: ViewController.coreAudioDeviceText,
+                                                  style: .default,
+                                                  handler: { (action) -> Void in
+                                                    self.coreAudioDeviceSelected()
         })
-        alertController.addAction(coreAudioDeviceButton!)
+        alertController.addAction(coreAudioDeviceButton)
 
         // EngineAudioDevice
-        var audioEngineDeviceTitle = ""
-        if #available(iOS 11.0, *) {
-            audioEngineDeviceTitle = ViewController.engineAudioDeviceText
-        } else {
-            audioEngineDeviceTitle = "AVAudioEngine Device (iOS 11+ only)"
-        }
-        audioEngineDeviceButton = UIAlertAction(title: audioEngineDeviceTitle,
-                                                style: .default,
-                                                handler: { (action) -> Void in
-                                                    self.avAudioEngineDeviceSelected()
+        let audioEngineDeviceButton = UIAlertAction(title: ViewController.engineAudioDeviceText,
+                                                    style: .default,
+                                                    handler: { (action) -> Void in
+                                                        self.avAudioEngineDeviceSelected()
         })
 
-        // EXampleAVAudioEngineDevice is supported only on iOS 11+
-        if let deviceButton = audioEngineDeviceButton {
-            if #available(iOS 11.0, *) {
-                deviceButton.isEnabled = true
-            } else {
-                deviceButton.isEnabled = false
-            }
-        }
-
-        alertController.addAction(audioEngineDeviceButton!)
+        alertController.addAction(audioEngineDeviceButton)
 
         if (self.audioDevice is ExampleCoreAudioDevice) {
             selectedButton = coreAudioDeviceButton
-        } else if #available(iOS 11.0, *) {
-            if (self.audioDevice is ExampleAVAudioEngineDevice) {
-                selectedButton = audioEngineDeviceButton
-            }
+        } else if (self.audioDevice is ExampleAVAudioEngineDevice) {
+            selectedButton = audioEngineDeviceButton
         }
 
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -151,19 +131,17 @@ class ViewController: UIViewController {
     }
 
     func avAudioEngineDeviceSelected() {
-        if #available(iOS 11.0, *) {
-            /*
-             * To set an audio device on Video SDK, it is necessary to destroyed the media engine first. By cleaning up the
-             * Room and Tracks the media engine gets destroyed.
-             */
-            self.unprepareLocalMedia()
+        /*
+         * To set an audio device on Video SDK, it is necessary to destroyed the media engine first. By cleaning up the
+         * Room and Tracks the media engine gets destroyed.
+         */
+        self.unprepareLocalMedia()
 
-            self.audioDevice = ExampleAVAudioEngineDevice()
-            self.audioDeviceButton.setTitle(ViewController.engineAudioDeviceText, for: .normal)
-            self.logMessage(messageText: ViewController.coreAudioDeviceText + " Selected")
+        self.audioDevice = ExampleAVAudioEngineDevice()
+        self.audioDeviceButton.setTitle(ViewController.engineAudioDeviceText, for: .normal)
+        self.logMessage(messageText: ViewController.coreAudioDeviceText + " Selected")
 
-            self.prepareLocalMedia()
-        }
+        self.prepareLocalMedia()
     }
 
     // MARK:- IBActions
@@ -234,10 +212,8 @@ class ViewController: UIViewController {
 
 
     @IBAction func playMusic(sender: UIButton) {
-        if #available(iOS 11.0, *) {
-            if let audioDevice = self.audioDevice as? ExampleAVAudioEngineDevice {
-                audioDevice.playMusic()
-            }
+        if let audioDevice = self.audioDevice as? ExampleAVAudioEngineDevice {
+            audioDevice.playMusic()
         }
     }
 
@@ -247,13 +223,12 @@ class ViewController: UIViewController {
         // Layout the preview view.
         if let previewView = self.camera?.previewView {
             var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
-            if #available(iOS 11.0, *) {
-                // Ensure the preview fits in the safe area.
-                let safeAreaGuide = self.view.safeAreaLayoutGuide
-                let layoutFrame = safeAreaGuide.layoutFrame
-                bottomRight.x = layoutFrame.origin.x + layoutFrame.width
-                bottomRight.y = layoutFrame.origin.y + layoutFrame.height
-            }
+
+            // Ensure the preview fits in the safe area.
+            let safeAreaGuide = self.view.safeAreaLayoutGuide
+            let layoutFrame = safeAreaGuide.layoutFrame
+            bottomRight.x = layoutFrame.origin.x + layoutFrame.width
+            bottomRight.y = layoutFrame.origin.y + layoutFrame.height
 
             let dimensions = previewView.videoDimensions
             var previewBounds = CGRect(origin: CGPoint.zero, size: CGSize(width: 160, height: 160))
@@ -298,13 +273,11 @@ class ViewController: UIViewController {
         self.audioDeviceButton.isHidden = inRoom
         self.audioDeviceButton.isEnabled = !inRoom
 
-        if #available(iOS 11.0, *) {
-            if ((self.audioDevice as? ExampleAVAudioEngineDevice) != nil) {
-                self.musicButton.isHidden = !inRoom
-                self.musicButton.isEnabled = inRoom
-            }
-            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
+        if ((self.audioDevice as? ExampleAVAudioEngineDevice) != nil) {
+            self.musicButton.isHidden = !inRoom
+            self.musicButton.isEnabled = inRoom
         }
+        self.setNeedsUpdateOfHomeIndicatorAutoHidden()
 
         self.setNeedsStatusBarAppearanceUpdate()
 
@@ -358,11 +331,9 @@ class ViewController: UIViewController {
          */
         TwilioVideoSDK.audioDevice = self.audioDevice
 
-        if #available(iOS 11.0, *) {
-            // Only the ExampleAVAudioEngineDevice supports local audio capturing.
-            if (TwilioVideoSDK.audioDevice is ExampleAVAudioEngineDevice) {
-                localAudioTrack = LocalAudioTrack()
-            }
+        // Only the ExampleAVAudioEngineDevice supports local audio capturing.
+        if (TwilioVideoSDK.audioDevice is ExampleAVAudioEngineDevice) {
+            localAudioTrack = LocalAudioTrack()
         }
 
         /*

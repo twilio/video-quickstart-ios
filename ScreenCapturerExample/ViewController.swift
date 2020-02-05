@@ -69,13 +69,11 @@ class ViewController : UIViewController {
         if let remoteView = self.localView {
             if remoteView.hasVideoData {
                 var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
-                if #available(iOS 11.0, *) {
-                    // Ensure the preview fits in the safe area.
-                    let safeAreaGuide = self.view.safeAreaLayoutGuide
-                    let layoutFrame = safeAreaGuide.layoutFrame
-                    bottomRight.x = layoutFrame.origin.x + layoutFrame.width
-                    bottomRight.y = layoutFrame.origin.y + layoutFrame.height
-                }
+                // Ensure the preview fits in the safe area.
+                let safeAreaGuide = self.view.safeAreaLayoutGuide
+                let layoutFrame = safeAreaGuide.layoutFrame
+                bottomRight.x = layoutFrame.origin.x + layoutFrame.width
+                bottomRight.y = layoutFrame.origin.y + layoutFrame.height
                 let dimensions = remoteView.videoDimensions
                 let remoteRect = remoteViewSize()
                 let aspect = CGSize(width: CGFloat(dimensions.width), height: CGFloat(dimensions.height))
