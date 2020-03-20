@@ -2,6 +2,9 @@
 [ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
 [![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 
+**NEW:** Please check out the newly open-sourced [video collaboration app](https://github.com/twilio/twilio-video-app-ios)
+built with iOS Video SDK.
+
 # Twilio Video Quickstart for iOS
 
 > NOTE: These sample applications use the Twilio Video 3.x APIs. For examples using our 2.x APIs, please see the [2.x](https://github.com/twilio/video-quickstart-ios/tree/2.x) branch. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-ios/tree/1.x) branch.
