@@ -85,10 +85,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
 @property (nonatomic, strong) AVAudioEngine *playoutEngine;
 @property (nonatomic, strong) AVAudioPlayerNode *playoutFilePlayer;
 @property (nonatomic, strong) AVAudioUnitReverb *playoutReverb;
-
 @property (nonatomic, strong) AVAudioEngine *recordEngine;
 @property (nonatomic, strong) AVAudioPlayerNode *recordFilePlayer;
 @property (nonatomic, strong) AVAudioUnitReverb *recordReverb;
+
+@property (nonatomic, strong) AVAudioPCMBuffer *musicBuffer;
 
 @end
 
@@ -338,44 +339,48 @@ static size_t kMaximumFramesPerBuffer = 3072;
     return YES;
 }
 
-- (void)teardownAudioEngine {
-    [self teardownPlayer];
-    [_playoutEngine stop];
-    _playoutEngine = nil;
-
+- (void)teardownRecordAudioEngine {
     [_recordEngine stop];
     _recordEngine = nil;
 }
 
-- (void)playMusic {
-    NSString *fileName = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], @"mixLoop.caf"];
-    NSURL *url = [NSURL fileURLWithPath:fileName];
-    AVAudioFile *file = [[AVAudioFile alloc] initForReading:url error:nil];
+- (void)teardownPlayoutAudioEngine {
+    [_playoutEngine stop];
+    _playoutEngine = nil;
+}
 
-    AVAudioPCMBuffer *buffer = [[AVAudioPCMBuffer alloc] initWithPCMFormat:file.processingFormat
-                                                             frameCapacity:(AVAudioFrameCount)file.length];
-    NSError *error = nil;
+- (void)teardownAudioEngine {
+    [self teardownFilePlayers];
 
-    /*
-     * The sample app plays a small in size file `mixLoop.caf`, but if you are playing a bigger file, to unblock the
-     * calling (main) thread, you should execute `[file readIntoBuffer:buffer error:&error]` on a background thread,
-     * and once the read is completed, schedule buffer playout from the calling (main) thread.
-     */
-    BOOL success = [file readIntoBuffer:buffer error:&error];
-    if (!success) {
-        NSLog(@"Failed to read audio file into buffer. error = %@", error);
-        return;
+    [self teardownPlayoutAudioEngine];
+    [self teardownRecordAudioEngine];
+}
+
+- (AVAudioPCMBuffer *)musicBuffer {
+    if (_musicBuffer) {
+        NSString *fileName = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], @"mixLoop.caf"];
+        NSURL *url = [NSURL fileURLWithPath:fileName];
+        AVAudioFile *file = [[AVAudioFile alloc] initForReading:url error:nil];
+
+        _musicBuffer = [[AVAudioPCMBuffer alloc] initWithPCMFormat:file.processingFormat
+                                                     frameCapacity:(AVAudioFrameCount)file.length];
+        NSError *error = nil;
+
+        /*
+         * The sample app plays a small in size file `mixLoop.caf`, but if you are playing a bigger file, to unblock the
+         * calling (main) thread, you should execute `[file readIntoBuffer:buffer error:&error]` on a background thread,
+         * and once the read is completed, schedule buffer playout from the calling (main) thread.
+         */
+        BOOL success = [file readIntoBuffer:_musicBuffer error:&error];
+        if (!success) {
+            NSLog(@"Failed to read audio file into buffer. error = %@", error);
+        }
     }
+    return _musicBuffer;
+}
 
-    [self.playoutFilePlayer scheduleBuffer:buffer
-                                    atTime:nil
-                                   options:AVAudioPlayerNodeBufferInterrupts
-                         completionHandler:^{
-        NSLog(@"Upstream file player finished buffer playing");
-    }];
-    [self.playoutFilePlayer play];
-
-    [self.recordFilePlayer scheduleBuffer:buffer
+- (void)scheduleMusicOnRecordEngine {
+    [self.recordFilePlayer scheduleBuffer:self.musicBuffer
                                    atTime:nil
                                   options:AVAudioPlayerNodeBufferInterrupts
                         completionHandler:^{
@@ -387,6 +392,26 @@ static size_t kMaximumFramesPerBuffer = 3072;
      * TODO: The upstream AVAudioPlayerNode and downstream AVAudioPlayerNode schedule playout of the buffer
      * "now". In order to ensure full synchronization, choose a time in the near future when scheduling playback.
      */
+}
+
+- (void)scheduleMusicOnPlayoutEngine {
+    [self.playoutFilePlayer scheduleBuffer:self.musicBuffer
+                                    atTime:nil
+                                   options:AVAudioPlayerNodeBufferInterrupts
+                         completionHandler:^{
+        NSLog(@"Upstream file player finished buffer playing");
+    }];
+    [self.playoutFilePlayer play];
+    
+    /*
+     * TODO: The upstream AVAudioPlayerNode and downstream AVAudioPlayerNode schedule playout of the buffer
+     * "now". In order to ensure full synchronization, choose a time in the near future when scheduling playback.
+     */
+}
+
+- (void)playMusic {
+    [self scheduleMusicOnPlayoutEngine];
+    [self scheduleMusicOnRecordEngine];
 }
 
 - (void)attachMusicNodeToEngine:(AVAudioEngine *)engine {
@@ -429,7 +454,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
     }
 }
 
-- (void)teardownPlayer {
+- (void)teardownRecordFilePlayer {
     if (self.recordFilePlayer) {
         if (self.recordFilePlayer.isPlaying) {
             [self.recordFilePlayer stop];
@@ -438,7 +463,9 @@ static size_t kMaximumFramesPerBuffer = 3072;
         [self.recordEngine detachNode:self.recordReverb];
         self.recordReverb = nil;
     }
+}
 
+- (void)teardownPlayoutFilePlayer {
     if (self.playoutFilePlayer) {
         if (self.playoutFilePlayer.isPlaying) {
             [self.playoutFilePlayer stop];
@@ -447,6 +474,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
         [self.playoutEngine detachNode:self.playoutReverb];
         self.playoutReverb = nil;
     }
+}
+
+- (void)teardownFilePlayers {
+    [self teardownRecordFilePlayer];
+    [self teardownPlayoutFilePlayer];
 }
 
 #pragma mark - TVIAudioDeviceRenderer
