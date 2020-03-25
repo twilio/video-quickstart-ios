@@ -75,7 +75,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
 @property (nonatomic, assign, getter=isInterrupted) BOOL interrupted;
 @property (nonatomic, assign) AudioUnit audioUnit;
 @property (nonatomic, assign) AudioBufferList captureBufferList;
-@property (nonatomic, assign, getter=isRestartAudioUnit) BOOL restartAudioUnit;
 
 @property (nonatomic, strong, nullable) TVIAudioFormat *renderingFormat;
 @property (nonatomic, strong, nullable) TVIAudioFormat *capturingFormat;
@@ -1047,8 +1046,6 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     // Notify Video SDK about the format change
     if (![activeFormat isEqual:_renderingFormat] ||
         ![activeFormat isEqual:_capturingFormat]) {
-
-        _restartAudioUnit = YES;
 
         NSLog(@"Format changed, restarting with %@", activeFormat);
 
