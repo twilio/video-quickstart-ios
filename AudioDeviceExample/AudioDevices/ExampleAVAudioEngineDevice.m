@@ -101,8 +101,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
     self = [super init];
 
     if (self) {
-        [self setupAVAudioSession];
-
         /*
          * Initialize rendering and capturing context. The deviceContext will be be filled in when startRendering or
          * startCapturing gets called.
@@ -126,6 +124,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
         if (![self setupRecordAudioEngine]) {
             NSLog(@"Failed to setup AVAudioEngine");
         }
+        
+        [self setupAVAudioSession];
     }
 
     return self;
@@ -357,7 +357,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
 }
 
 - (AVAudioPCMBuffer *)musicBuffer {
-    if (_musicBuffer) {
+    if (!_musicBuffer) {
         NSString *fileName = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath], @"mixLoop.caf"];
         NSURL *url = [NSURL fileURLWithPath:fileName];
         AVAudioFile *file = [[AVAudioFile alloc] initForReading:url error:nil];
@@ -975,9 +975,9 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 #pragma mark - NSNotification Observers
 
 - (TVIAudioDeviceContext)deviceContext {
-    if (self.renderingContext && self.renderingContext->deviceContext) {
+    if (self.renderingContext->deviceContext) {
         return self.renderingContext->deviceContext;
-    } else if (self.capturingContext && self.capturingContext->deviceContext) {
+    } else if (self.capturingContext->deviceContext) {
         return self.capturingContext->deviceContext;
     }
     return NULL;
