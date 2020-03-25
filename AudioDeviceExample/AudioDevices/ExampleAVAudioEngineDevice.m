@@ -519,8 +519,9 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
         dispatch_async(dispatch_get_main_queue(), ^{
-            TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:self.playoutEngine.manualRenderingFormat.channelCount
-                                                                         sampleRate:self.playoutEngine.manualRenderingFormat.sampleRate
+            AVAudioFormat *manualRenderingFormat  = self.playoutEngine.manualRenderingFormat;
+            TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:manualRenderingFormat.channelCount
+                                                                         sampleRate:manualRenderingFormat.sampleRate
                                                                     framesPerBuffer:kMaximumFramesPerBuffer];
             if ([engineFormat isEqual:[[self class] activeFormat]]) {
                 if (self.playoutEngine.isRunning) {
@@ -616,8 +617,9 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
         dispatch_async(dispatch_get_main_queue(), ^{
-            TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:self.recordEngine.manualRenderingFormat.channelCount
-                                                                         sampleRate:self.recordEngine.manualRenderingFormat.sampleRate
+            AVAudioFormat *manualRenderingFormat  = self.recordEngine.manualRenderingFormat;
+            TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:manualRenderingFormat.channelCount
+                                                                         sampleRate:manualRenderingFormat.sampleRate
                                                                     framesPerBuffer:kMaximumFramesPerBuffer];
             if ([engineFormat isEqual:[[self class] activeFormat]]) {
                 if (self.recordEngine.isRunning) {
