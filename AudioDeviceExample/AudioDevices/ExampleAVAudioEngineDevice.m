@@ -519,16 +519,22 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (self.playoutFilePlayer.isPlaying) {
-                [self.playoutFilePlayer stop];
-            }
-            if (self.playoutEngine.isRunning) {
-                [self.playoutEngine stop];
-            }
-
-            NSError *error = nil;
-            if (![self.playoutEngine startAndReturnError:&error]) {
-                NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+            TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:self.playoutEngine.manualRenderingFormat.channelCount
+                                                                         sampleRate:self.playoutEngine.manualRenderingFormat.sampleRate
+                                                                    framesPerBuffer:kMaximumFramesPerBuffer];
+            if ([engineFormat isEqual:[[self class] activeFormat]]) {
+                if (self.playoutEngine.isRunning) {
+                    [self.playoutEngine stop];
+                }
+                
+                NSError *error = nil;
+                if (![self.playoutEngine startAndReturnError:&error]) {
+                    NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+                }
+            } else {
+                [self teardownPlayoutFilePlayer];
+                [self teardownPlayoutAudioEngine];
+                [self setupPlayoutAudioEngine];
             }
         });
 
@@ -612,16 +618,22 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (self.recordFilePlayer.isPlaying) {
-                [self.recordFilePlayer stop];
-            }
-            if (self.recordEngine.isRunning) {
-                [self.recordEngine stop];
-            }
-
-            NSError *error = nil;
-            if (![self.recordEngine startAndReturnError:&error]) {
-                NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+            TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:self.recordEngine.manualRenderingFormat.channelCount
+                                                                         sampleRate:self.recordEngine.manualRenderingFormat.sampleRate
+                                                                    framesPerBuffer:kMaximumFramesPerBuffer];
+            if ([engineFormat isEqual:[[self class] activeFormat]]) {
+                if (self.recordEngine.isRunning) {
+                    [self.recordEngine stop];
+                }
+                
+                NSError *error = nil;
+                if (![self.recordEngine startAndReturnError:&error]) {
+                    NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+                }
+            } else {
+                [self teardownRecordFilePlayer];
+                [self teardownRecordAudioEngine];
+                [self setupRecordAudioEngine];
             }
         });
 
