@@ -967,9 +967,9 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 #pragma mark - NSNotification Observers
 
 - (TVIAudioDeviceContext)deviceContext {
-    if (self.renderingContext->deviceContext) {
+    if (self.renderingContext && self.renderingContext->deviceContext) {
         return self.renderingContext->deviceContext;
-    } else if (self.capturingContext->deviceContext) {
+    } else if (self.capturingContext && self.capturingContext->deviceContext) {
         return self.capturingContext->deviceContext;
     }
     return NULL;
