@@ -553,22 +553,20 @@ static size_t kMaximumFramesPerBuffer = 3072;
     @synchronized(self) {
         // If the capturer is runnning, we will not stop the audio unit.
         if (!self.capturingContext->deviceContext) {
-
-            // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (self.playoutFilePlayer.isPlaying) {
-                    [self.playoutFilePlayer stop];
-                }
-                if (self.playoutEngine.isRunning) {
-                    [self.playoutEngine stop];
-                }
-            });
-
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
-
         self.renderingContext->deviceContext = NULL;
+        
+        // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (self.playoutFilePlayer.isPlaying) {
+                [self.playoutFilePlayer stop];
+            }
+            if (self.playoutEngine.isRunning) {
+                [self.playoutEngine stop];
+            }
+        });
     }
 
     return YES;
@@ -653,22 +651,20 @@ static size_t kMaximumFramesPerBuffer = 3072;
     @synchronized(self) {
         // If the renderer is runnning, we will not stop the audio unit.
         if (!self.renderingContext->deviceContext) {
-
-            // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (self.recordFilePlayer.isPlaying) {
-                    [self.recordFilePlayer stop];
-                }
-                if (self.recordEngine.isRunning) {
-                    [self.recordEngine stop];
-                }
-            });
-
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
-
         self.capturingContext->deviceContext = NULL;
+        
+        // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (self.recordFilePlayer.isPlaying) {
+                [self.recordFilePlayer stop];
+            }
+            if (self.recordEngine.isRunning) {
+                [self.recordEngine stop];
+            }
+        });
     }
 
     return YES;
