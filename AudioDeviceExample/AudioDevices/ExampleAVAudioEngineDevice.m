@@ -374,6 +374,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
         BOOL success = [file readIntoBuffer:_musicBuffer error:&error];
         if (!success) {
             NSLog(@"Failed to read audio file into buffer. error = %@", error);
+            _musicBuffer = nil;
         }
     }
     return _musicBuffer;
@@ -1099,15 +1100,6 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
             TVIAudioDeviceContext context = [self deviceContext];
             if (context) {
                 TVIAudioDeviceFormatChanged(context);
-
-                TVIAudioDeviceExecuteWorkerBlock(context, ^{
-                    // Restart the AVAudioEngine with new format
-                    TVIAudioFormat *activeFormat = [[self class] activeFormat];
-                    if (![activeFormat isEqual:self->_renderingFormat]) {
-                        [self teardownAudioEngine];
-                        [self setupAudioEngine];
-                    }
-                });
             }
         }
     }
