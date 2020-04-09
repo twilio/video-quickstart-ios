@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6499D9B3C58736FAFCDC6DAE /* libPods-TwilioVideo-ScreenCapturerExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17ABBFD0C54471BB78EDB037 /* libPods-TwilioVideo-ScreenCapturerExample.a */; };
 		8AB81D9B1DED183B0021868E /* ExampleWebViewSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AB81D9A1DED183B0021868E /* ExampleWebViewSource.swift */; };
 		8AC2285F1DECF14D00AF58EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC2285D1DECF14D00AF58EA /* AppDelegate.swift */; };
 		8AC228601DECF14D00AF58EA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC2285E1DECF14D00AF58EA /* ViewController.swift */; };
@@ -16,7 +17,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		17ABBFD0C54471BB78EDB037 /* libPods-TwilioVideo-ScreenCapturerExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TwilioVideo-ScreenCapturerExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		24B657BB22B1F8AE0057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ScreenCapturerExample/README.md; sourceTree = "<group>"; };
+		7347EAB7C75354A39F70F121 /* Pods-TwilioVideo-ScreenCapturerExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TwilioVideo-ScreenCapturerExample.debug.xcconfig"; path = "Target Support Files/Pods-TwilioVideo-ScreenCapturerExample/Pods-TwilioVideo-ScreenCapturerExample.debug.xcconfig"; sourceTree = "<group>"; };
 		8AB81D9A1DED183B0021868E /* ExampleWebViewSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleWebViewSource.swift; sourceTree = "<group>"; };
 		8AC2285D1DECF14D00AF58EA /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ScreenCapturerExample/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
 		8AC2285E1DECF14D00AF58EA /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ScreenCapturerExample/ViewController.swift; sourceTree = SOURCE_ROOT; };
@@ -25,6 +28,7 @@
 		8AC2286B1DECF34E00AF58EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8AC2286D1DECF34E00AF58EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		8AF6E8491DECEEF600DFBE3E /* ScreenCapturerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScreenCapturerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F221D9E234E70CC493BE5D58 /* Pods-TwilioVideo-ScreenCapturerExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TwilioVideo-ScreenCapturerExample.release.xcconfig"; path = "Target Support Files/Pods-TwilioVideo-ScreenCapturerExample/Pods-TwilioVideo-ScreenCapturerExample.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,18 +36,29 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6499D9B3C58736FAFCDC6DAE /* libPods-TwilioVideo-ScreenCapturerExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0ADB201FAA60C9AB7BDF5BF3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				17ABBFD0C54471BB78EDB037 /* libPods-TwilioVideo-ScreenCapturerExample.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		8AF6E8401DECEEF600DFBE3E = {
 			isa = PBXGroup;
 			children = (
 				8AF6E84B1DECEEF600DFBE3E /* ScreenCapturerExample */,
 				8AF6E84A1DECEEF600DFBE3E /* Products */,
 				24B657BB22B1F8AE0057EBE6 /* README.md */,
+				AFAE9B4DF9BE560A47A66F0D /* Pods */,
+				0ADB201FAA60C9AB7BDF5BF3 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -93,6 +108,16 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		AFAE9B4DF9BE560A47A66F0D /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				7347EAB7C75354A39F70F121 /* Pods-TwilioVideo-ScreenCapturerExample.debug.xcconfig */,
+				F221D9E234E70CC493BE5D58 /* Pods-TwilioVideo-ScreenCapturerExample.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -100,9 +125,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8AF6E85B1DECEEF600DFBE3E /* Build configuration list for PBXNativeTarget "ScreenCapturerExample" */;
 			buildPhases = (
+				44EDA73D10705F05DEC4EAFC /* [CP] Check Pods Manifest.lock */,
 				8AF6E8451DECEEF600DFBE3E /* Sources */,
 				8AF6E8461DECEEF600DFBE3E /* Frameworks */,
 				8AF6E8471DECEEF600DFBE3E /* Resources */,
+				A11F235BC225652F91DFECB5 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -161,6 +188,49 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		44EDA73D10705F05DEC4EAFC /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-TwilioVideo-ScreenCapturerExample-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A11F235BC225652F91DFECB5 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TwilioVideo-ScreenCapturerExample/Pods-TwilioVideo-ScreenCapturerExample-frameworks.sh",
+				"${PODS_ROOT}/TwilioVideo/Build/iOS/TwilioVideo.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TwilioVideo.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TwilioVideo-ScreenCapturerExample/Pods-TwilioVideo-ScreenCapturerExample-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8AF6E8451DECEEF600DFBE3E /* Sources */ = {
@@ -313,6 +383,7 @@
 		};
 		8AF6E85C1DECEEF600DFBE3E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7347EAB7C75354A39F70F121 /* Pods-TwilioVideo-ScreenCapturerExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -328,6 +399,7 @@
 		};
 		8AF6E85D1DECEEF600DFBE3E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F221D9E234E70CC493BE5D58 /* Pods-TwilioVideo-ScreenCapturerExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
