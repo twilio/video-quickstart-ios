@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		4B7AD1F82049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B7AD1F72049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m */; };
 		4B7AD1FA204A0510002DDBA6 /* mixLoop.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4B7AD1F9204A0510002DDBA6 /* mixLoop.caf */; };
-		65607BE078270026984FCCEE /* libPods-TwilioVideo-AudioDeviceExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B80AFDECE6C6D21CD53B7F5 /* libPods-TwilioVideo-AudioDeviceExample.a */; };
 		8A713C7E202A585C009E776A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A713C7D202A585C009E776A /* AppDelegate.swift */; };
 		8A713C80202A585C009E776A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A713C7F202A585C009E776A /* ViewController.swift */; };
 		8A713C83202A585C009E776A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A713C81202A585C009E776A /* Main.storyboard */; };
@@ -26,7 +25,6 @@
 		4B7AD1F62049CC81002DDBA6 /* ExampleAVAudioEngineDevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleAVAudioEngineDevice.h; sourceTree = "<group>"; };
 		4B7AD1F72049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleAVAudioEngineDevice.m; sourceTree = "<group>"; };
 		4B7AD1F9204A0510002DDBA6 /* mixLoop.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = mixLoop.caf; sourceTree = "<group>"; };
-		4B80AFDECE6C6D21CD53B7F5 /* libPods-TwilioVideo-AudioDeviceExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TwilioVideo-AudioDeviceExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A713C7A202A585B009E776A /* AudioDeviceExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioDeviceExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A713C7D202A585C009E776A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8A713C7F202A585C009E776A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -40,8 +38,6 @@
 		8A713C95202A7087009E776A /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
 		8A713C96202A7087009E776A /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		8A713C9A202A723A009E776A /* AudioDevices-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudioDevices-Bridging-Header.h"; sourceTree = "<group>"; };
-		A9A130CA23B6D5705EB44986 /* Pods-TwilioVideo-AudioDeviceExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TwilioVideo-AudioDeviceExample.release.xcconfig"; path = "Target Support Files/Pods-TwilioVideo-AudioDeviceExample/Pods-TwilioVideo-AudioDeviceExample.release.xcconfig"; sourceTree = "<group>"; };
-		FC0AE1EE28E54409DFE2FD04 /* Pods-TwilioVideo-AudioDeviceExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TwilioVideo-AudioDeviceExample.debug.xcconfig"; path = "Target Support Files/Pods-TwilioVideo-AudioDeviceExample/Pods-TwilioVideo-AudioDeviceExample.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,7 +45,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65607BE078270026984FCCEE /* libPods-TwilioVideo-AudioDeviceExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,8 +58,6 @@
 				8A713C93202A7087009E776A /* Utils */,
 				8A713C7B202A585B009E776A /* Products */,
 				24B657B622B1F8400057EBE6 /* README.md */,
-				97397842438A13AB9ADE0086 /* Pods */,
-				AC28DA9F23FE798691CEE0F6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -113,24 +106,6 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
-		97397842438A13AB9ADE0086 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				FC0AE1EE28E54409DFE2FD04 /* Pods-TwilioVideo-AudioDeviceExample.debug.xcconfig */,
-				A9A130CA23B6D5705EB44986 /* Pods-TwilioVideo-AudioDeviceExample.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		AC28DA9F23FE798691CEE0F6 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				4B80AFDECE6C6D21CD53B7F5 /* libPods-TwilioVideo-AudioDeviceExample.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -138,11 +113,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8A713C8C202A585C009E776A /* Build configuration list for PBXNativeTarget "AudioDeviceExample" */;
 			buildPhases = (
-				70D046F2A2D82E4F2ADADD5E /* [CP] Check Pods Manifest.lock */,
 				8A713C76202A585B009E776A /* Sources */,
 				8A713C77202A585B009E776A /* Frameworks */,
 				8A713C78202A585B009E776A /* Resources */,
-				F0751B741062EC244BA48FD1 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -201,49 +174,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		70D046F2A2D82E4F2ADADD5E /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TwilioVideo-AudioDeviceExample-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		F0751B741062EC244BA48FD1 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TwilioVideo-AudioDeviceExample/Pods-TwilioVideo-AudioDeviceExample-frameworks.sh",
-				"${PODS_ROOT}/TwilioVideo/Build/iOS/TwilioVideo.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TwilioVideo.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TwilioVideo-AudioDeviceExample/Pods-TwilioVideo-AudioDeviceExample-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8A713C76202A585B009E776A /* Sources */ = {
@@ -399,7 +329,6 @@
 		};
 		8A713C8D202A585C009E776A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FC0AE1EE28E54409DFE2FD04 /* Pods-TwilioVideo-AudioDeviceExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -416,7 +345,6 @@
 		};
 		8A713C8E202A585C009E776A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A9A130CA23B6D5705EB44986 /* Pods-TwilioVideo-AudioDeviceExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
