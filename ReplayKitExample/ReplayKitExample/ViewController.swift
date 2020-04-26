@@ -377,6 +377,23 @@ class ViewController: UIViewController {
         }
     }
 
+    private func connectToPresentation() {
+        // Configure access token either from server or manually.
+        // If the default wasn't changed, try fetching from server.
+        if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
+            do {
+                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
+            } catch {
+                return
+            }
+        }
+
+        let vc = PresentationViewController()
+        vc.accessToken = accessToken
+        self.navigationController?.pushViewController(vc, animated: true)
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
+    }
+
     private func connectToRoom(name: String, encodingParameters: EncodingParameters) {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
