@@ -63,7 +63,6 @@ class SampleHandler: RPBroadcastSampleHandler {
 
             // Use the local media that we prepared earlier.
             builder.audioTracks = [self.audioTrack!]
-            builder.videoTracks = [self.screenTrack!]
 
             // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
             builder.preferredVideoCodecs = [SampleHandler.kVideoCodec]
