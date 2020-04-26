@@ -150,6 +150,13 @@ extension SampleHandler : RoomDelegate {
 
         disconnectSemaphore = DispatchSemaphore(value: 0)
 
+        if let track = self.screenTrack,
+            let participant = room.localParticipant {
+            // The screen content is of great importance so indicate this to subscribers.
+            let options = LocalTrackPublicationOptions(priority: .high)
+            participant.publishVideoTrack(track, publicationOptions: options)
+        }
+
         #if DEBUG
         statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
             room.getStats({ (reports: [StatsReport]) in
@@ -157,6 +164,11 @@ extension SampleHandler : RoomDelegate {
                     let videoStats = report.localVideoTrackStats.first!
                     print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
                     print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
+                    for candidatePair in report.iceCandidatePairStats {
+                        if candidatePair.isActiveCandidatePair {
+                            print("Send = \(candidatePair.availableOutgoingBitrate)")
+                        }
+                    }
                 }
             })
         })
