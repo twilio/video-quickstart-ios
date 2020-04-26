@@ -92,6 +92,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
     private var lastSampleBuffer: CMSampleBuffer?
 
+    let context = CIContext(options: [CIContextOption.outputColorSpace: NSNull(), CIContextOption.workingColorSpace: NSNull()])
+
     init(isScreencast: Bool, telecineOptions: TelecineOptions) {
         screencastUsage = isScreencast
         // The minimum average input frame rate where IVTC is attempted.
@@ -193,7 +195,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             return
         }
 
-        guard let sourcePixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+        guard var sourcePixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             assertionFailure("SampleBuffer did not have an ImageBuffer")
             return
         }
@@ -228,8 +230,72 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         var videoOrientation = VideoOrientation.up
         if let sampleOrientation = CMGetAttachment(sampleBuffer, key: RPVideoSampleOrientationKey as CFString, attachmentModeOut: nil),
             let coreSampleOrientation = sampleOrientation.uint32Value {
+            let cgImageOrientation = CGImagePropertyOrientation(rawValue: coreSampleOrientation)
             videoOrientation
-                = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: CGImagePropertyOrientation(rawValue: coreSampleOrientation)!)
+                = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: cgImageOrientation!)
+            let ciImage = CIImage(cvPixelBuffer: sourcePixelBuffer)
+            let undoneOrientation = ReplayKitVideoSource.undoImageOrientation(imageOrientation: cgImageOrientation!)
+            let scaleFactor = 540.0 / CGFloat(CVPixelBufferGetWidth(sourcePixelBuffer))
+//            let cropRect = CGRect(x: 0, y: 0, width: 886, height: 1576)
+//            let cropped = ciImage.cropped(to: cropRect)
+//            let scaled = cropped.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
+            let scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
+            let rotatedAndScaled = scaled.oriented(undoneOrientation)
+
+            var copy: CVPixelBuffer?
+
+            if videoOrientation == .up || videoOrientation == .down {
+                CVPixelBufferCreate(
+                    nil,
+                    540,
+                    960,
+//                    Int(CGFloat(CVPixelBufferGetWidth(sourcePixelBuffer)) * scaleFactor),
+//                    Int(CGFloat(CVPixelBufferGetHeight(sourcePixelBuffer)) * scaleFactor),
+                    CVPixelBufferGetPixelFormatType(sourcePixelBuffer),
+                    CVBufferGetAttachments(sourcePixelBuffer, .shouldPropagate),
+                    &copy)
+            } else {
+                CVPixelBufferCreate(
+                    nil,
+                    960,
+                    540,
+//                    Int(CGFloat(CVPixelBufferGetHeight(sourcePixelBuffer)) * scaleFactor),
+//                    Int(CGFloat(CVPixelBufferGetWidth(sourcePixelBuffer)) * scaleFactor),
+                    CVPixelBufferGetPixelFormatType(sourcePixelBuffer),
+                    CVBufferGetAttachments(sourcePixelBuffer, .shouldPropagate),
+                    &copy)
+            }
+
+            context.render(rotatedAndScaled, to: copy!)
+            sourcePixelBuffer = copy!
+            videoOrientation = .up
+        } else {
+            let ciImage = CIImage(cvPixelBuffer: sourcePixelBuffer)
+            let scaleFactor: CGFloat
+            let width: Int
+            let height: Int
+            if (CVPixelBufferGetHeight(sourcePixelBuffer) > CVPixelBufferGetWidth(sourcePixelBuffer)) {
+                scaleFactor = 540.0 / CGFloat(CVPixelBufferGetWidth(sourcePixelBuffer))
+                width = 540
+                height = 960
+            } else {
+                scaleFactor = 540.0 / CGFloat(CVPixelBufferGetHeight(sourcePixelBuffer))
+                height = 540
+                width = 960
+            }
+            let scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
+
+            var copy: CVPixelBuffer?
+
+            CVPixelBufferCreate(
+                                nil,
+                                width,
+                                height,
+                                CVPixelBufferGetPixelFormatType(sourcePixelBuffer),
+                                CVBufferGetAttachments(sourcePixelBuffer, .shouldPropagate),
+                                &copy)
+            context.render(scaled, to: copy!)
+            sourcePixelBuffer = copy!
         }
 
         /*
@@ -436,4 +502,31 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
         return videoOrientation
     }
+
+    private static func undoImageOrientation(imageOrientation: CGImagePropertyOrientation) -> CGImagePropertyOrientation {
+        let undoneOrientation: CGImagePropertyOrientation
+
+        switch imageOrientation {
+        case .up:
+            undoneOrientation = .up
+        case .upMirrored:
+            undoneOrientation = .upMirrored
+        case .left:
+            undoneOrientation = .right
+        case .leftMirrored:
+            undoneOrientation = .rightMirrored
+        case .right:
+            undoneOrientation = .left
+        case .rightMirrored:
+            undoneOrientation = .rightMirrored
+        case .down:
+            undoneOrientation = .down
+        case .downMirrored:
+            undoneOrientation = .downMirrored
+        }
+
+        return undoneOrientation
+
+    }
+}
 }
