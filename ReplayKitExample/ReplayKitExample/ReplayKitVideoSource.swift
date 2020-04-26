@@ -529,4 +529,3 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     }
 }
-}
