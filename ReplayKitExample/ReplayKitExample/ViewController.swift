@@ -26,6 +26,7 @@ class ViewController: UIViewController {
     var videoSource: ReplayKitVideoSource?
     var conferenceRoom: Room?
     var videoPlayer: AVPlayer?
+    var statsTimer: Timer?
 
     // Broadcast state. Our extension will capture samples from ReplayKit, and publish them in a Room.
     var broadcastController: RPBroadcastController?
@@ -494,6 +495,27 @@ extension ViewController: RPScreenRecorderDelegate {
 extension ViewController: RoomDelegate {
     func roomDidConnect(room: Room) {
         print("Connected to Room: ", room)
+
+        #if DEBUG
+        statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
+            room.getStats({ (reports: [StatsReport]) in
+                for report in reports {
+                    let videoStats = report.localVideoTrackStats.first!
+                    print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
+                    print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
+                    for candidatePair in report.iceCandidatePairStats {
+                        if candidatePair.isActiveCandidatePair {
+                            print("Send = \(candidatePair.availableOutgoingBitrate)")
+                        }
+                    }
+                }
+            })
+        })
+
+        if let theTimer = statsTimer {
+            RunLoop.main.add(theTimer, forMode: .common)
+        }
+        #endif
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {
@@ -502,6 +524,7 @@ extension ViewController: RoomDelegate {
     }
 
     func roomDidDisconnect(room: Room, error: Error?) {
+        statsTimer?.invalidate()
         if let error = error {
             print("Disconnected with error: ", error)
         } else {
