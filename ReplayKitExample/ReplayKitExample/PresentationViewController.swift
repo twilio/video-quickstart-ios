@@ -78,7 +78,7 @@ class PresentationViewController : UIViewController {
 
         // `VideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit
         // scaleAspectFit is the default mode when you create `VideoView` programmatically.
-        self.remoteView?.contentMode = .scaleAspectFit;
+        self.remoteView?.contentMode = .scaleAspectFit
 
         let centerX = NSLayoutConstraint(item: self.remoteView!,
                                          attribute: NSLayoutConstraint.Attribute.centerX,
@@ -86,7 +86,7 @@ class PresentationViewController : UIViewController {
                                          toItem: self.view,
                                          attribute: NSLayoutConstraint.Attribute.centerX,
                                          multiplier: 1,
-                                         constant: 0);
+                                         constant: 0)
         self.view.addConstraint(centerX)
         let centerY = NSLayoutConstraint(item: self.remoteView!,
                                          attribute: NSLayoutConstraint.Attribute.centerY,
@@ -94,7 +94,7 @@ class PresentationViewController : UIViewController {
                                          toItem: self.view,
                                          attribute: NSLayoutConstraint.Attribute.centerY,
                                          multiplier: 1,
-                                         constant: 0);
+                                         constant: 0)
         self.view.addConstraint(centerY)
         let width = NSLayoutConstraint(item: self.remoteView!,
                                        attribute: NSLayoutConstraint.Attribute.width,
@@ -102,7 +102,7 @@ class PresentationViewController : UIViewController {
                                        toItem: self.view,
                                        attribute: NSLayoutConstraint.Attribute.width,
                                        multiplier: 1,
-                                       constant: 0);
+                                       constant: 0)
         self.view.addConstraint(width)
         let height = NSLayoutConstraint(item: self.remoteView!,
                                         attribute: NSLayoutConstraint.Attribute.height,
@@ -110,7 +110,7 @@ class PresentationViewController : UIViewController {
                                         toItem: self.view,
                                         attribute: NSLayoutConstraint.Attribute.height,
                                         multiplier: 1,
-                                        constant: 0);
+                                        constant: 0)
         self.view.addConstraint(height)
 
         publication.videoTrack?.addRenderer(self.remoteView!)
