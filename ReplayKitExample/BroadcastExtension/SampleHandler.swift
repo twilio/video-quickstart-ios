@@ -153,29 +153,9 @@ extension SampleHandler : RoomDelegate {
             let participant = room.localParticipant {
             // The screen content is of great importance so indicate this to subscribers.
             let options = LocalTrackPublicationOptions(priority: .high)
+            participant.delegate = self
             participant.publishVideoTrack(track, publicationOptions: options)
         }
-
-        #if DEBUG
-        statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
-            room.getStats({ (reports: [StatsReport]) in
-                for report in reports {
-                    let videoStats = report.localVideoTrackStats.first!
-                    print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
-                    print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
-                    for candidatePair in report.iceCandidatePairStats {
-                        if candidatePair.isActiveCandidatePair {
-                            print("Send = \(candidatePair.availableOutgoingBitrate)")
-                        }
-                    }
-                }
-            })
-        })
-
-        if let theTimer = statsTimer {
-            RunLoop.main.add(theTimer, forMode: .common)
-        }
-        #endif
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {
@@ -208,5 +188,30 @@ extension SampleHandler : RoomDelegate {
 
     func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
         print("participant: ", participant.identity, " didDisconnect")
+    }
+}
+
+extension SampleHandler : LocalParticipantDelegate {
+    func localParticipantDidPublishVideoTrack(participant: LocalParticipant, videoTrackPublication: LocalVideoTrackPublication) {
+        #if DEBUG
+        statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
+            self.room?.getStats({ (reports: [StatsReport]) in
+                for report in reports {
+                    let videoStats = report.localVideoTrackStats.first!
+                    print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
+                    print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
+                    for candidatePair in report.iceCandidatePairStats {
+                        if candidatePair.isActiveCandidatePair {
+                            print("Send = \(candidatePair.availableOutgoingBitrate)")
+                        }
+                    }
+                }
+            })
+        })
+
+        if let theTimer = statsTimer {
+            RunLoop.main.add(theTimer, forMode: .common)
+        }
+        #endif
     }
 }
