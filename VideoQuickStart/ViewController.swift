@@ -53,6 +53,21 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification,
+                                               object: nil,
+                                               queue: OperationQueue.main) { (notification) in
+                                                if let videoTrack = self.localVideoTrack {
+                                                    videoTrack.isEnabled = false
+                                                }
+        }
+        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification,
+                                               object: nil,
+                                               queue: OperationQueue.main) { (notification) in
+                                                if let videoTrack = self.localVideoTrack {
+                                                    videoTrack.isEnabled = true
+                                                }
+        }
+        
         self.title = "QuickStart"
         self.messageLabel.adjustsFontSizeToFitWidth = true;
         self.messageLabel.minimumScaleFactor = 0.75;
