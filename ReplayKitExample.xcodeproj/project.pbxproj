@@ -24,6 +24,8 @@
 		4BB0385E20EB45FB0095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
 		4BB0386020EB46040095CDA8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */; };
 		4BEA5E0820E9DB5900643AF1 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */; };
+		8A0913BB24819E4000999B86 /* CoreImagePixelBufferInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A0913BA24819E4000999B86 /* CoreImagePixelBufferInput.swift */; };
+		8A0913BC24819E4000999B86 /* CoreImagePixelBufferInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A0913BA24819E4000999B86 /* CoreImagePixelBufferInput.swift */; };
 		8A0B4C652454BC9B00001AE6 /* PresentationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A0B4C642454BC9B00001AE6 /* PresentationViewController.swift */; };
 		8A390D932161D4430013D6E5 /* ReplayKitVideoSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */; };
 		8A437271216350CA00436765 /* ReplayKitVideoSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */; };
@@ -93,6 +95,7 @@
 		4BB0385B20EB45F50095CDA8 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		4BB0385D20EB45FB0095CDA8 /* BroadcastExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BroadcastExtension.entitlements; sourceTree = "<group>"; };
 		4BEA5E0720E9DB5900643AF1 /* MainInterface.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainInterface.storyboard; sourceTree = "<group>"; };
+		8A0913BA24819E4000999B86 /* CoreImagePixelBufferInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreImagePixelBufferInput.swift; sourceTree = "<group>"; };
 		8A0B4C642454BC9B00001AE6 /* PresentationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationViewController.swift; sourceTree = "<group>"; };
 		8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayKitVideoSource.swift; sourceTree = "<group>"; };
 		8A50FEFB215DDC6100297C7A /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
@@ -386,6 +389,7 @@
 				8A992CEB2320C1DC00D549F6 /* ExampleReplayKitAudioCapturer.m in Sources */,
 				8A0B4C652454BC9B00001AE6 /* PresentationViewController.swift in Sources */,
 				4B20FFE520E9CB8500FE9F2C /* ViewController.swift in Sources */,
+				8A0913BB24819E4000999B86 /* CoreImagePixelBufferInput.swift in Sources */,
 				4B20FFE320E9CB8500FE9F2C /* AppDelegate.swift in Sources */,
 				8A50FF00215DDC6100297C7A /* Settings.swift in Sources */,
 				8A50FEFE215DDC6100297C7A /* SettingsTableViewController.swift in Sources */,
@@ -398,6 +402,7 @@
 			files = (
 				8A437271216350CA00436765 /* ReplayKitVideoSource.swift in Sources */,
 				8ADE7A74215DE3070092D17F /* Utils.swift in Sources */,
+				8A0913BC24819E4000999B86 /* CoreImagePixelBufferInput.swift in Sources */,
 				4BB0385920EB45950095CDA8 /* ExampleReplayKitAudioCapturer.m in Sources */,
 				8A57F4A42319CD6B001561EA /* Telecine.swift in Sources */,
 				4B20FFFE20E9CB9C00FE9F2C /* SampleHandler.swift in Sources */,
