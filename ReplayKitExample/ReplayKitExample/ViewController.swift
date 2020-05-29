@@ -232,6 +232,10 @@ class ViewController: UIViewController {
         }
     }
 
+    @IBAction func startViewer( sender: UIButton) {
+        connectToPresentation()
+    }
+
     // MARK:- Private
     private func checkRecordingAvailability() {
         let isScreenRecordingAvailable = RPScreenRecorder.shared().isAvailable
