@@ -92,7 +92,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
     private var lastSampleBuffer: CMSampleBuffer?
 
-    let context = CIContext(options: [CIContextOption.outputColorSpace: NSNull(), CIContextOption.workingColorSpace: NSNull()])
+    let vsyncInputAdapter: CoreImagePixelBufferInput?
 
     init(isScreencast: Bool, telecineOptions: TelecineOptions) {
         screencastUsage = isScreencast
@@ -101,13 +101,16 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         case .p60to24or25or30:
             telecine = InverseTelecine60p()
             telecineInputFrameRate = 58
+            vsyncInputAdapter = nil
             break
         case .p30to24or25:
             telecine = InverseTelecine30p()
             telecineInputFrameRate = 28
+            vsyncInputAdapter = CoreImagePixelBufferInput()
             break
         case .disabled:
             telecineInputFrameRate = 0
+            vsyncInputAdapter = nil
             break
         }
         super.init()
@@ -233,69 +236,23 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             let cgImageOrientation = CGImagePropertyOrientation(rawValue: coreSampleOrientation)
             videoOrientation
                 = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: cgImageOrientation!)
-            let ciImage = CIImage(cvPixelBuffer: sourcePixelBuffer)
-            let undoneOrientation = ReplayKitVideoSource.undoImageOrientation(imageOrientation: cgImageOrientation!)
-            let scaleFactor = 540.0 / CGFloat(CVPixelBufferGetWidth(sourcePixelBuffer))
+
+//            let cropRect = CGRect(x: 0, y: (1918-1576), width: 886, height: 1576)
 //            let cropRect = CGRect(x: 0, y: 0, width: 886, height: 1576)
-//            let cropped = ciImage.cropped(to: cropRect)
-//            let scaled = cropped.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
-            let scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
-            let rotatedAndScaled = scaled.oriented(undoneOrientation)
 
-            var copy: CVPixelBuffer?
-
-            if videoOrientation == .up || videoOrientation == .down {
-                CVPixelBufferCreate(
-                    nil,
-                    540,
-                    960,
-//                    Int(CGFloat(CVPixelBufferGetWidth(sourcePixelBuffer)) * scaleFactor),
-//                    Int(CGFloat(CVPixelBufferGetHeight(sourcePixelBuffer)) * scaleFactor),
-                    CVPixelBufferGetPixelFormatType(sourcePixelBuffer),
-                    CVBufferGetAttachments(sourcePixelBuffer, .shouldPropagate),
-                    &copy)
-            } else {
-                CVPixelBufferCreate(
-                    nil,
-                    960,
-                    540,
-//                    Int(CGFloat(CVPixelBufferGetHeight(sourcePixelBuffer)) * scaleFactor),
-//                    Int(CGFloat(CVPixelBufferGetWidth(sourcePixelBuffer)) * scaleFactor),
-                    CVPixelBufferGetPixelFormatType(sourcePixelBuffer),
-                    CVBufferGetAttachments(sourcePixelBuffer, .shouldPropagate),
-                    &copy)
+            if let adapter = vsyncInputAdapter,
+                let adapted = adapter.cropRotateScale(input: sourcePixelBuffer, orientation: cgImageOrientation!, cropRect: nil) {
+                sourcePixelBuffer = adapted
+                videoOrientation = .up
             }
-
-            context.render(rotatedAndScaled, to: copy!)
-            sourcePixelBuffer = copy!
-            videoOrientation = .up
         } else {
-            let ciImage = CIImage(cvPixelBuffer: sourcePixelBuffer)
-            let scaleFactor: CGFloat
-            let width: Int
-            let height: Int
-            if (CVPixelBufferGetHeight(sourcePixelBuffer) > CVPixelBufferGetWidth(sourcePixelBuffer)) {
-                scaleFactor = 540.0 / CGFloat(CVPixelBufferGetWidth(sourcePixelBuffer))
-                width = 540
-                height = 960
-            } else {
-                scaleFactor = 540.0 / CGFloat(CVPixelBufferGetHeight(sourcePixelBuffer))
-                height = 540
-                width = 960
+//            let cropRect = CGRect(x: 0, y: (1918-1576), width: 886, height: 1576)
+//            let cropRect = CGRect(x: 0, y: 0, width: 886, height: 1576)
+
+            if let adapter = vsyncInputAdapter,
+                let adapted = adapter.cropAndScale(input: sourcePixelBuffer, cropRect: nil) {
+                sourcePixelBuffer = adapted
             }
-            let scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
-
-            var copy: CVPixelBuffer?
-
-            CVPixelBufferCreate(
-                                nil,
-                                width,
-                                height,
-                                CVPixelBufferGetPixelFormatType(sourcePixelBuffer),
-                                CVBufferGetAttachments(sourcePixelBuffer, .shouldPropagate),
-                                &copy)
-            context.render(scaled, to: copy!)
-            sourcePixelBuffer = copy!
         }
 
         /*
@@ -501,31 +458,5 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         }
 
         return videoOrientation
-    }
-
-    private static func undoImageOrientation(imageOrientation: CGImagePropertyOrientation) -> CGImagePropertyOrientation {
-        let undoneOrientation: CGImagePropertyOrientation
-
-        switch imageOrientation {
-        case .up:
-            undoneOrientation = .up
-        case .upMirrored:
-            undoneOrientation = .upMirrored
-        case .left:
-            undoneOrientation = .right
-        case .leftMirrored:
-            undoneOrientation = .rightMirrored
-        case .right:
-            undoneOrientation = .left
-        case .rightMirrored:
-            undoneOrientation = .rightMirrored
-        case .down:
-            undoneOrientation = .down
-        case .downMirrored:
-            undoneOrientation = .downMirrored
-        }
-
-        return undoneOrientation
-
     }
 }
