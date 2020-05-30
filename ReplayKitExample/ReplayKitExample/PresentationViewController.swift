@@ -56,7 +56,7 @@ class PresentationViewController : UIViewController {
             // Track Switch Off mode: .detected, .predicted, .disabled
             builder.trackSwitchOffMode = .predicted
         }
-        let profile = TVIBandwidthProfileOptions(videoOptions: videoOptions)
+        let profile = BandwidthProfileOptions(videoOptions: videoOptions)
         let connectOptions = ConnectOptions(token: accessToken!) { (builder) in
             builder.bandwidthProfileOptions = profile
 
