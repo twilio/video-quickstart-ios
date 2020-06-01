@@ -24,13 +24,16 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     }
 
     // In order to save memory, the handler may request that the source downscale its output.
-    static let kDownScaledMaxWidthOrHeight = UInt(886)
-    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(1280)
+    static let kDownScaledMaxWidthOrHeight = UInt(1280)
+    // Simulcast with two spatial layers.
+    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(960)
+    static let kDownScaledMinWidthOrHeightSimulcast = CGFloat(448.0)
 
-    // Maximum bitrate (in kbps) used to send video.
+    // Maximum bitrate (in kbps) used to send unicast video.
     static let kMaxVideoBitrate = UInt(1440)
-    // The simulcast encoder allocates bits for each layer.
-    static let kMaxVideoBitrateSimulcast = UInt(1180)
+    // Bitrate hint (in kbps) for the simulcast encode.
+//    static let kMaxVideoBitrateSimulcast = UInt(1300)
+    static let kMaxVideoBitrateSimulcast = UInt(1440)
     static let kMaxScreenshareBitrate = UInt(1600)
 
     // Maximum frame rate to send video at.
