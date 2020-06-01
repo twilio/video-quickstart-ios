@@ -176,6 +176,7 @@
 			isa = PBXGroup;
 			children = (
 				4B20FFE220E9CB8500FE9F2C /* AppDelegate.swift */,
+				8A0913BA24819E4000999B86 /* CoreImagePixelBufferInput.swift */,
 				8A0B4C642454BC9B00001AE6 /* PresentationViewController.swift */,
 				8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */,
 				8A992CEC2320C26C00D549F6 /* ReplayKitExample-Bridging-Header.h */,
