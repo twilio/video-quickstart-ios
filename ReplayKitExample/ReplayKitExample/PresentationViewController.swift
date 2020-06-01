@@ -21,6 +21,12 @@ class PresentationViewController : UIViewController {
         connectToPresentation()
     }
 
+    override var prefersStatusBarHidden: Bool {
+        get {
+            return true
+        }
+    }
+
     func connectToPresentation() {
         TwilioVideoSDK.setLogLevel(.debug)
 
@@ -34,7 +40,7 @@ class PresentationViewController : UIViewController {
             builder.maxSubscriptionBitrate = 6000
 
             // Max number of visible RemoteVideoTracks. Other RemoteVideoTracks will be switched off
-            builder.maxTracks = 6
+            builder.maxTracks = 4
 
             // Subscription mode: collaboration, grid, presentation
             builder.mode = .presentation
@@ -43,7 +49,7 @@ class PresentationViewController : UIViewController {
             let renderDimensions = VideoRenderDimensions()
 
             // Desired render dimensions of RemoteVideoTracks with priority low.
-            renderDimensions.low = VideoDimensions(width: 352, height: 288)
+            renderDimensions.low = VideoDimensions(width: 160, height: 160)
 
             // Desired render dimensions of RemoteVideoTracks with priority standard.
             renderDimensions.standard = VideoDimensions(width: 640, height: 480)
@@ -59,6 +65,8 @@ class PresentationViewController : UIViewController {
         let profile = BandwidthProfileOptions(videoOptions: videoOptions)
         let connectOptions = ConnectOptions(token: accessToken!) { (builder) in
             builder.bandwidthProfileOptions = profile
+
+            builder.audioTracks = [LocalAudioTrack()!]
 
             // Use the preferred signaling region
             if let signalingRegion = Settings.shared.signalingRegion {
@@ -114,6 +122,17 @@ class PresentationViewController : UIViewController {
         self.view.addConstraint(height)
 
         publication.videoTrack?.addRenderer(self.remoteView!)
+
+        let recognizer = UITapGestureRecognizer(target: self, action: #selector(tappedScreenParticipant(sender:)))
+        recognizer.numberOfTapsRequired = 2;
+        self.remoteView!.addGestureRecognizer(recognizer)
+    }
+
+    @objc func tappedScreenParticipant(sender: UITapGestureRecognizer) {
+        if let view = sender.view {
+            view.contentMode = view.contentMode == UIView.ContentMode.scaleAspectFit ?
+                UIView.ContentMode.scaleAspectFill : UIView.ContentMode.scaleAspectFit
+        }
     }
 }
 
@@ -197,7 +216,7 @@ extension PresentationViewController : RemoteParticipantDelegate {
         print("Subscribed to \(publication.trackName) video track for Participant \(participant.identity)")
 
         // Start remote rendering, and add a touch handler.
-        if (self.remoteView == nil) {
+        if (self.remoteView == nil && publication.trackName == "Screen") {
             setupRemoteVideoView(publication: publication)
         }
     }

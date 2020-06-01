@@ -94,7 +94,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     private var lastSampleBuffer: CMSampleBuffer?
 
     // An input adapter that crops/rotates/scales the input frame using CoreImage while maintaining vsync.
-    // Workaround for ReplayKit tearing and lack of synchronization guarnatees when using CVPixelBufferGetBaseAddress()
+    // Workaround for ReplayKit tearing and lack of synchronization guarantees when using CVPixelBufferGetBaseAddress()
     let vsyncInputAdapter: CoreImagePixelBufferInput?
 
     init(isScreencast: Bool, telecineOptions: TelecineOptions) {
