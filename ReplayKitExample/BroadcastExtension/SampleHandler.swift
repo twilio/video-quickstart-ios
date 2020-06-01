@@ -28,8 +28,11 @@ class SampleHandler: RPBroadcastSampleHandler {
     // Which kind of audio samples we will capture. The example does not mix multiple types of samples together.
     static let kAudioSampleType = RPSampleBufferType.audioMic
 
+    // If the content should be treated as screencast (detail) or regular video (motion). Used to configure ReplayKitVideoSource.
+    static let isScreencast = true
+
     // The video codec to use for the broadcast. The encoding parameters and format request are built dynamically based upon the codec.
-    static let kVideoCodec = H264Codec()!
+    static let kVideoCodec = Vp8Codec(simulcast: false)
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
@@ -46,12 +49,12 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
 
         // This source will attempt to produce smaller buffers with fluid motion.
-        let options = ReplayKitVideoSource.TelecineOptions.p30to24or25
+        let options = SampleHandler.isScreencast ? ReplayKitVideoSource.TelecineOptions.disabled : ReplayKitVideoSource.TelecineOptions.p30to24or25
         let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: SampleHandler.kVideoCodec,
-                                                                                          isScreencast: false,
+                                                                                          isScreencast: SampleHandler.isScreencast,
                                                                                     telecineOptions: options)
 
-        videoSource = ReplayKitVideoSource(isScreencast: false, telecineOptions: options)
+        videoSource = ReplayKitVideoSource(isScreencast: SampleHandler.isScreencast, telecineOptions: options)
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
                                       name: "Screen")

@@ -35,6 +35,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     // Maximum frame rate to send video at.
     static let kMaxVideoFrameRate = UInt(15)
+    static let kMaxScreencastFrameRate = UInt(15)
 
     /*
      * Streaming video content at 30 fps or lower is ideal, especially in variable network conditions.
@@ -92,6 +93,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
     private var lastSampleBuffer: CMSampleBuffer?
 
+    // An input adapter that crops/rotates/scales the input frame using CoreImage while maintaining vsync.
+    // Workaround for ReplayKit tearing and lack of synchronization guarnatees when using CVPixelBufferGetBaseAddress()
     let vsyncInputAdapter: CoreImagePixelBufferInput?
 
     init(isScreencast: Bool, telecineOptions: TelecineOptions) {
@@ -110,7 +113,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             break
         case .disabled:
             telecineInputFrameRate = 0
-            vsyncInputAdapter = nil
+            vsyncInputAdapter = CoreImagePixelBufferInput()
             break
         }
         super.init()
@@ -165,13 +168,15 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         var videoBitrate = kMaxVideoBitrate
         var maxWidthOrHeight = isScreencast ? UInt(0) : kDownScaledMaxWidthOrHeight
         // TODO: IVTC in broadcast
-        let maxFrameRate = isScreencast ? kMaxVideoFrameRate : UInt(30)
+        let maxFrameRate = isScreencast ? kMaxScreencastFrameRate : UInt(30)
 
         if let vp8Codec = codec as? Vp8Codec {
             videoBitrate = vp8Codec.isSimulcast ? kMaxVideoBitrateSimulcast : kMaxVideoBitrate
             if (!isScreencast) {
                 maxWidthOrHeight = vp8Codec.isSimulcast ? kDownScaledMaxWidthOrHeightSimulcast : kDownScaledMaxWidthOrHeight
             }
+        } else if codec as? H264Codec != nil {
+            maxWidthOrHeight = 1280
         }
 
         return (EncodingParameters(audioBitrate: audioBitrate, videoBitrate: videoBitrate),
