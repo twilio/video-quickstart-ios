@@ -27,6 +27,12 @@ class PresentationViewController : UIViewController {
         }
     }
 
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        get {
+            return true
+        }
+    }
+
     func connectToPresentation() {
         TwilioVideoSDK.setLogLevel(.debug)
 
