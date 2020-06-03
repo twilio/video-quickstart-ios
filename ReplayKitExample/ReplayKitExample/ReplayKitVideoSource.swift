@@ -25,9 +25,9 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     // In order to save memory, the handler may request that the source downscale its output.
     static let kDownScaledMaxWidthOrHeight = UInt(1280)
-    // Simulcast with two spatial layers.
-    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(960)
-    static let kDownScaledMinWidthOrHeightSimulcast = CGFloat(448.0)
+    // 832x624: 35 - 41 MB (!!).
+    // 832x468: 30 - 35 - crash MB.
+    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(832)
 
     // Maximum bitrate (in kbps) used to send unicast video.
     static let kMaxVideoBitrate = UInt(1440)
@@ -38,7 +38,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     // Maximum frame rate to send video at.
     static let kMaxVideoFrameRate = UInt(15)
-    static let kMaxScreencastFrameRate = UInt(15)
+    static let kMaxScreencastFrameRate = UInt(10)
 
     /*
      * Streaming video content at 30 fps or lower is ideal, especially in variable network conditions.
@@ -245,18 +245,17 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             videoOrientation
                 = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: cgImageOrientation!)
 
-//            let cropRect = CGRect(x: 0, y: (1918-1576), width: 886, height: 1576)
-//            let cropRect = CGRect(x: 0, y: 0, width: 886, height: 1576)
-
             if let adapter = vsyncInputAdapter,
-                let adapted = adapter.cropRotateScale(input: sourcePixelBuffer, orientation: cgImageOrientation!, cropRect: nil) {
+                let adapted = adapter.scale(input: sourcePixelBuffer) {
                 sourcePixelBuffer = adapted
-                videoOrientation = .up
             }
-        } else {
-//            let cropRect = CGRect(x: 0, y: (1918-1576), width: 886, height: 1576)
-//            let cropRect = CGRect(x: 0, y: 0, width: 886, height: 1576)
 
+//            if let adapter = vsyncInputAdapter,
+//                let adapted = adapter.cropRotateScale(input: sourcePixelBuffer, orientation: cgImageOrientation!, cropRect: cropRect) {
+//                sourcePixelBuffer = adapted
+//                videoOrientation = .up
+//            }
+        } else {
             if let adapter = vsyncInputAdapter,
                 let adapted = adapter.cropAndScale(input: sourcePixelBuffer, cropRect: nil) {
                 sourcePixelBuffer = adapted
@@ -274,7 +273,9 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                      forceReschedule: false)
 
         // Hold on to the previous sample buffer to prevent tearing.
-        lastSampleBuffer = sampleBuffer
+        if ReplayKitVideoSource.retransmitLastFrame {
+            lastSampleBuffer = sampleBuffer
+        }
     }
 
     /// Process a frame, deciding if it should be dropped and remapping the timestamp if needed.

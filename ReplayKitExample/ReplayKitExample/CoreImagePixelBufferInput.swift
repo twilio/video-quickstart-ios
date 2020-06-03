@@ -38,7 +38,6 @@ class CoreImagePixelBufferInput {
     func cropRotateScale(input: CVPixelBuffer, orientation: CGImagePropertyOrientation, cropRect: CGRect?) -> CVPixelBuffer? {
         let ciImage = CIImage(cvPixelBuffer: input)
         let undoneOrientation = CoreImagePixelBufferInput.undoImageOrientation(imageOrientation: orientation)
-//        let scaleFactor = ReplayKitVideoSource.kDownScaledMinWidthOrHeightSimulcast / CGFloat(CVPixelBufferGetWidth(input))
         let scaleFactor = CGFloat(ReplayKitVideoSource.kDownScaledMaxWidthOrHeightSimulcast) / CGFloat(CVPixelBufferGetHeight(input))
         var scaled: CIImage
         if let rect = cropRect {
