@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="5RK-dJ-Jaz">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="5RK-dJ-Jaz">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -15,7 +13,7 @@
             <objects>
                 <navigationController id="5RK-dJ-Jaz" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="SiS-k6-Imd">
-                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
@@ -75,13 +73,30 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YgU-34-LAq">
+                                <rect key="frame" x="169" y="189.5" width="37" height="72"/>
+                                <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="72" id="Ma8-6g-QP7"/>
+                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="tUC-T9-tBZ"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                                <state key="normal" title="View">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="startViewerWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eQO-HL-eRY"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="B5H-o5-cmu" firstAttribute="top" secondItem="Xrv-9v-TZ3" secondAttribute="bottom" constant="16" id="23N-hn-jpv"/>
                             <constraint firstItem="B5H-o5-cmu" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="9wS-sD-9LP"/>
+                            <constraint firstItem="Xrv-9v-TZ3" firstAttribute="top" secondItem="YgU-34-LAq" secondAttribute="bottom" constant="16" id="CVD-fK-ByC"/>
                             <constraint firstItem="B5H-o5-cmu" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="900" constant="40" id="Eeb-y9-c9b"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="B5H-o5-cmu" secondAttribute="trailing" priority="900" constant="40" id="KTG-MI-HBC"/>
+                            <constraint firstItem="YgU-34-LAq" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Lsg-Ak-rSO"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Xrv-9v-TZ3" secondAttribute="trailing" priority="900" constant="40" id="NY2-nf-BbP"/>
                             <constraint firstItem="yXC-tS-vkj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QEo-WS-bAc"/>
                             <constraint firstItem="yXC-tS-vkj" firstAttribute="top" secondItem="B5H-o5-cmu" secondAttribute="bottom" constant="28" id="dg4-0Q-IpO"/>
@@ -120,7 +135,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="SETTINGS-REUSE-IDENTIFIER" textLabel="kJE-dw-VxP" detailTextLabel="5kB-eW-dxa" style="IBUITableViewCellStyleValue1" id="A0V-W7-Wml">
-                                <rect key="frame" x="0.0" y="28" width="375" height="44"/>
+                                <rect key="frame" x="0.0" y="28" width="375" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="A0V-W7-Wml" id="878-uw-KCn">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
