@@ -34,6 +34,8 @@ class SampleHandler: RPBroadcastSampleHandler {
     // The video codec to use for the broadcast. The encoding parameters and format request are built dynamically based upon the codec.
     static let kVideoCodec = Vp8Codec(simulcast: false)
 
+    var kFrameCounter = Int64(0)
+
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
         TwilioVideoSDK.audioDevice = self.audioDevice
