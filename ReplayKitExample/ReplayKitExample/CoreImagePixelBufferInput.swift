@@ -14,6 +14,27 @@ class CoreImagePixelBufferInput {
     let context = CIContext(options: [CIContextOption.outputColorSpace: NSNull(),
                                       CIContextOption.workingColorSpace: NSNull()]);
 
+    func scale(input: CVPixelBuffer) -> CVPixelBuffer? {
+        let ciImage = CIImage(cvPixelBuffer: input)
+        let scaleFactor = CGFloat(ReplayKitVideoSource.kDownScaledMaxWidthOrHeightSimulcast) / CGFloat(CVPixelBufferGetHeight(input))
+        var scaled: CIImage
+        scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
+
+        var copy: CVPixelBuffer?
+        CVPixelBufferCreate(
+            nil,
+            Int(CGFloat(CVPixelBufferGetWidth(input)) * scaleFactor),
+            Int(CGFloat(CVPixelBufferGetHeight(input)) * scaleFactor),
+            CVPixelBufferGetPixelFormatType(input),
+            CVBufferGetAttachments(input, .shouldPropagate),
+            &copy)
+
+        if let theCopy = copy {
+            context.render(scaled, to: theCopy)
+        }
+        return copy;
+    }
+
     func cropRotateScale(input: CVPixelBuffer, orientation: CGImagePropertyOrientation, cropRect: CGRect?) -> CVPixelBuffer? {
         let ciImage = CIImage(cvPixelBuffer: input)
         let undoneOrientation = CoreImagePixelBufferInput.undoImageOrientation(imageOrientation: orientation)
