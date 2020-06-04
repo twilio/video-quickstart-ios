@@ -17,7 +17,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     var videoSource: ReplayKitVideoSource?
     var screenTrack: LocalVideoTrack?
     var disconnectSemaphore: DispatchSemaphore?
-    let audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
+    let audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType ?? RPSampleBufferType.audioMic)
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
     let tokenUrl = "http://127.0.0.1:5000/"
@@ -25,8 +25,9 @@ class SampleHandler: RPBroadcastSampleHandler {
     var statsTimer: Timer?
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
 
-    // Which kind of audio samples we will capture. The example does not mix multiple types of samples together.
-    static let kAudioSampleType = RPSampleBufferType.audioMic
+    // Which kind of audio samples the handler will capture. The example does not support mixing.
+    // Pass `nil` to disable audio publishing and save ~512 KB of memory.
+    static let kAudioSampleType: RPSampleBufferType? = RPSampleBufferType.audioMic
 
     // If the content should be treated as screencast (detail) or regular video (motion). Used to configure ReplayKitVideoSource.
     static let isScreencast = true
@@ -62,12 +63,15 @@ class SampleHandler: RPBroadcastSampleHandler {
                                       name: "Screen")
 
         videoSource!.requestOutputFormat(outputFormat)
-        audioTrack = LocalAudioTrack()
+        if SampleHandler.kAudioSampleType != nil {
+            audioTrack = LocalAudioTrack()
+        }
 
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
-            // Use the local media that we prepared earlier.
-            builder.audioTracks = [self.audioTrack!]
+            if let audioTrack = self.audioTrack {
+                builder.audioTracks = [audioTrack]
+            }
 
             // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
             builder.preferredVideoCodecs = [SampleHandler.kVideoCodec]
