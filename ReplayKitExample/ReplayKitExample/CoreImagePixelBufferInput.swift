@@ -121,41 +121,6 @@ class CoreImagePixelBufferInput {
         return copy;
     }
 
-    func cropAndScale(input: CVPixelBuffer, cropRect: CGRect?) -> CVPixelBuffer? {
-        let ciImage = CIImage(cvPixelBuffer: input)
-        let scaleFactor: CGFloat
-        let width: Int
-        let height: Int
-        if (CVPixelBufferGetHeight(input) > CVPixelBufferGetWidth(input)) {
-            scaleFactor = 540.0 / CGFloat(CVPixelBufferGetWidth(input))
-            width = 540
-//                height = 960
-            height = 1170
-        } else {
-            scaleFactor = 540.0 / CGFloat(CVPixelBufferGetHeight(input))
-            height = 540
-//                width = 960
-            width = 1170
-        }
-        var scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
-
-        if cropRect != nil {
-            let cropped = ciImage.cropped(to: cropRect!)
-            scaled = cropped.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
-        }
-
-        var copy: CVPixelBuffer?
-        CVPixelBufferCreate(
-            nil,
-            width,
-            height,
-            CVPixelBufferGetPixelFormatType(input),
-            CVBufferGetAttachments(input, .shouldPropagate),
-            &copy)
-        context.render(scaled, to: copy!)
-        return copy
-    }
-
     private static func undoImageOrientation(imageOrientation: CGImagePropertyOrientation) -> CGImagePropertyOrientation {
         let undoneOrientation: CGImagePropertyOrientation
 
