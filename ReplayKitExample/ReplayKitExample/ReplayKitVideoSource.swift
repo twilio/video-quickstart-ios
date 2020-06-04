@@ -113,21 +113,19 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     init(isScreencast: Bool, telecineOptions: TelecineOptions, retransmitFrames: Bool) {
         screencastUsage = isScreencast
+        vsyncInputAdapter = CoreImagePixelBufferInput()
         // The minimum average input frame rate where IVTC is attempted.
         switch telecineOptions {
         case .p60to24or25or30:
             telecine = InverseTelecine60p()
             telecineInputFrameRate = 58
-            vsyncInputAdapter = CoreImagePixelBufferInput()
             break
         case .p30to24or25:
             telecine = InverseTelecine30p()
             telecineInputFrameRate = 28
-            vsyncInputAdapter = CoreImagePixelBufferInput()
             break
         case .disabled:
             telecineInputFrameRate = 0
-            vsyncInputAdapter = CoreImagePixelBufferInput()
             break
         }
         retransmitLastFrame = retransmitFrames

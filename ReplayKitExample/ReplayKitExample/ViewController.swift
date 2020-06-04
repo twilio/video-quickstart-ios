@@ -59,6 +59,7 @@ class ViewController: UIViewController {
         conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for: .normal)
         broadcastButton.layer.cornerRadius = 4
         conferenceButton?.layer.cornerRadius = 4
+        viewButton?.layer.cornerRadius = 4
 
         self.navigationController?.navigationBar.barTintColor = UIColor(red: 226.0/255.0,
                                                                         green: 29.0/255.0,

@@ -95,12 +95,12 @@
                             <constraint firstItem="B5H-o5-cmu" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="9wS-sD-9LP"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="top" secondItem="YgU-34-LAq" secondAttribute="bottom" constant="16" id="CVD-fK-ByC"/>
                             <constraint firstItem="B5H-o5-cmu" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="900" constant="40" id="Eeb-y9-c9b"/>
-                            <constraint firstItem="YgU-34-LAq" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="40" id="IIh-a1-aFe"/>
+                            <constraint firstItem="YgU-34-LAq" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="900" constant="40" id="IIh-a1-aFe"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="B5H-o5-cmu" secondAttribute="trailing" priority="900" constant="40" id="KTG-MI-HBC"/>
                             <constraint firstItem="YgU-34-LAq" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Lsg-Ak-rSO"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Xrv-9v-TZ3" secondAttribute="trailing" priority="900" constant="40" id="NY2-nf-BbP"/>
                             <constraint firstItem="yXC-tS-vkj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QEo-WS-bAc"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="YgU-34-LAq" secondAttribute="trailing" constant="40" id="cZG-ig-rcI"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="YgU-34-LAq" secondAttribute="trailing" priority="900" constant="40" id="cZG-ig-rcI"/>
                             <constraint firstItem="yXC-tS-vkj" firstAttribute="top" secondItem="B5H-o5-cmu" secondAttribute="bottom" constant="28" id="dg4-0Q-IpO"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="gaf-ZE-A5V"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="gnC-Ke-gmX"/>
