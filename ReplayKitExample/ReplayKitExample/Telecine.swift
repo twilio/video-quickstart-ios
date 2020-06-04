@@ -2,7 +2,6 @@
 //  Telecine.swift
 //  ReplayKitExample
 //
-//  Created by Chris Eagleston on 8/10/19.
 //  Copyright © 2019 Twilio. All rights reserved.
 //
 

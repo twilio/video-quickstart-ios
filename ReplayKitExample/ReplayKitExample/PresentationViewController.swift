@@ -2,7 +2,6 @@
 //  PresentationViewController.swift
 //  ReplayKitExample
 //
-//  Created by Chris Eagleston on 4/25/20.
 //  Copyright © 2020 Twilio. All rights reserved.
 //
 

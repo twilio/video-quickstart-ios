@@ -2,7 +2,6 @@
 //  CoreImagePixelBufferInput.swift
 //  ReplayKitExample
 //
-//  Created by Chris Eagleston on 5/29/20.
 //  Copyright © 2020 Twilio. All rights reserved.
 //
 
