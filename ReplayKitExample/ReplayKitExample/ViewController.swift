@@ -15,6 +15,7 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     @IBOutlet weak var broadcastButton: UIButton!
+    @IBOutlet weak var viewButton: UIButton?
     // Treat this view as generic, since RPSystemBroadcastPickerView is only available on iOS 12.0 and above.
     @IBOutlet weak var broadcastPickerView: UIView?
     @IBOutlet weak var conferenceButton: UIButton?
@@ -37,12 +38,12 @@ class ViewController: UIViewController {
     static let kBroadcastExtensionBundleId = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
     static let kBroadcastExtensionSetupUiBundleId = "com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI"
 
-    static let kStartBroadcastButtonTitle = "Start Broadcast"
+    static let kStartBroadcastButtonTitle = "Share Device Screen"
     static let kInProgressBroadcastButtonTitle = "Broadcasting"
-    static let kStopBroadcastButtonTitle = "Stop Broadcast"
-    static let kStartConferenceButtonTitle = "Start Conference"
-    static let kStopConferenceButtonTitle = "Stop Conference"
-    static let kRecordingAvailableInfo = "Ready to share the screen in a Broadcast (extension), or Conference (in-app)."
+    static let kStopBroadcastButtonTitle = "Stop Sharing Device Screen"
+    static let kStartConferenceButtonTitle = "Share App Screen"
+    static let kStopConferenceButtonTitle = "Stop Sharing App Screen"
+    static let kRecordingAvailableInfo = "Ready to share the screen."
     static let kRecordingNotAvailableInfo = "ReplayKit is not available at the moment. Another app might be recording, or AirPlay may be in use."
 
     // If the content should be treated as screencast (detail) or regular video (motion). Used to configure ReplayKitVideoSource.
@@ -76,6 +77,7 @@ class ViewController: UIViewController {
                 let title = isCaptured ? ViewController.kInProgressBroadcastButtonTitle : ViewController.kStartBroadcastButtonTitle
                 self.broadcastButton.setTitle(title, for: .normal)
                 self.conferenceButton?.isEnabled = !isCaptured
+                self.viewButton?.isEnabled = !isCaptured
                 isCaptured ? self.spinner.startAnimating() : self.spinner.stopAnimating()
             }
         }
@@ -276,6 +278,7 @@ class ViewController: UIViewController {
                     } else {
                         self.broadcastButton.isEnabled = true
                     }
+                    self.viewButton?.isHidden = false
                     self.spinner.stopAnimating()
                     self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
@@ -308,6 +311,7 @@ class ViewController: UIViewController {
             broadcastButton.isHidden = true
         }
         self.broadcastPickerView?.isHidden = true
+        self.viewButton?.isHidden = true
         self.infoLabel?.isHidden = true
         self.infoLabel?.text = ""
 

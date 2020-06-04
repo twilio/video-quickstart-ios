@@ -18,6 +18,7 @@ class CoreImagePixelBufferInput {
     var pixelBufferPool: CVPixelBufferPool?
 
     func createPixelBufferPool(width: Int32, height: Int32, maxBufferCount: Int32) -> CVPixelBufferPool? {
+        print("Creating a CVPixelBufferPool with size=\(width)x\(height), maxBuffers=\(maxBufferCount).")
         var outputPool: CVPixelBufferPool? = nil
 
         let poolAttributes: NSDictionary = [

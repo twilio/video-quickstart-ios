@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="5RK-dJ-Jaz">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="5RK-dJ-Jaz">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -33,18 +33,18 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="yXC-tS-vkj">
-                                <rect key="frame" x="169" y="465.5" width="37" height="37"/>
+                                <rect key="frame" x="169" y="485.5" width="37" height="37"/>
                                 <color key="color" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                             </activityIndicatorView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xrv-9v-TZ3">
-                                <rect key="frame" x="40" y="277.5" width="295" height="72"/>
+                                <rect key="frame" x="40" y="297.5" width="295" height="72"/>
                                 <color key="backgroundColor" red="0.094117647058823528" green="0.5607843137254902" blue="0.98431372549019602" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="Rrp-RO-kUW"/>
                                     <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="wNZ-nb-4Ir"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
-                                <state key="normal" title="Start Broadcast">
+                                <state key="normal" title="Share Device Screen">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
                                 <connections>
@@ -52,14 +52,14 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="B5H-o5-cmu">
-                                <rect key="frame" x="40" y="365.5" width="295" height="72"/>
+                                <rect key="frame" x="40" y="385.5" width="295" height="72"/>
                                 <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="P7e-Sn-l6U"/>
                                     <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="hPC-gS-41H"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
-                                <state key="normal" title="Start Conference">
+                                <state key="normal" title="Share App Screen">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
                                 <connections>
@@ -74,14 +74,14 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YgU-34-LAq">
-                                <rect key="frame" x="169" y="189.5" width="37" height="72"/>
+                                <rect key="frame" x="40" y="209.5" width="295" height="72"/>
                                 <color key="backgroundColor" red="0.8862745098" green="0.1137254902" blue="0.1450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="Ma8-6g-QP7"/>
                                     <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="tUC-T9-tBZ"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
-                                <state key="normal" title="View">
+                                <state key="normal" title="View Screen">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
                                 <connections>
@@ -95,12 +95,14 @@
                             <constraint firstItem="B5H-o5-cmu" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="9wS-sD-9LP"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="top" secondItem="YgU-34-LAq" secondAttribute="bottom" constant="16" id="CVD-fK-ByC"/>
                             <constraint firstItem="B5H-o5-cmu" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="900" constant="40" id="Eeb-y9-c9b"/>
+                            <constraint firstItem="YgU-34-LAq" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="40" id="IIh-a1-aFe"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="B5H-o5-cmu" secondAttribute="trailing" priority="900" constant="40" id="KTG-MI-HBC"/>
                             <constraint firstItem="YgU-34-LAq" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Lsg-Ak-rSO"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Xrv-9v-TZ3" secondAttribute="trailing" priority="900" constant="40" id="NY2-nf-BbP"/>
                             <constraint firstItem="yXC-tS-vkj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QEo-WS-bAc"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="YgU-34-LAq" secondAttribute="trailing" constant="40" id="cZG-ig-rcI"/>
                             <constraint firstItem="yXC-tS-vkj" firstAttribute="top" secondItem="B5H-o5-cmu" secondAttribute="bottom" constant="28" id="dg4-0Q-IpO"/>
-                            <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" constant="-20" id="gaf-ZE-A5V"/>
+                            <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="gaf-ZE-A5V"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="gnC-Ke-gmX"/>
                             <constraint firstItem="Xrv-9v-TZ3" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" priority="900" constant="40" id="or7-d7-g3p"/>
                         </constraints>
@@ -119,6 +121,7 @@
                         <outlet property="infoLabel" destination="eIC-rO-cxm" id="52g-bM-6Mj"/>
                         <outlet property="settingsButton" destination="Fm5-d3-gEW" id="bBH-Vc-nJW"/>
                         <outlet property="spinner" destination="yXC-tS-vkj" id="zx9-hU-wfA"/>
+                        <outlet property="viewButton" destination="YgU-34-LAq" id="HLC-VO-5gr"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
