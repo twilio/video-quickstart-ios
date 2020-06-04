@@ -138,6 +138,10 @@ class SampleHandler: RPBroadcastSampleHandler {
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
         switch sampleBufferType {
         case RPSampleBufferType.video:
+            /* CoreImagePixelBufferInput processes every frame even if TVIVideoSink might drop it.
+             * In an extension this can be particularly problematic and skipping frames helps prevent the device
+             * overload case where Apple maps 6-8 IOSurfaces into the extension and crashes it.
+             **/
             if SampleHandler.isScreencast,
                 kFrameCounter % 2 == 0 {
                 videoSource?.processFrame(sampleBuffer: sampleBuffer)
