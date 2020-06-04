@@ -25,20 +25,30 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     // In order to save memory, the handler may request that the source downscale its output.
     static let kDownScaledMaxWidthOrHeight = UInt(1280)
+    // 1152x531.
+    static let kDownScaledMaxWidthOrHeightScreencastApp = UInt(1152)
+    static let kDownScaledMaxWidthOrHeightScreencastExtension = UInt(768)
+    static let kDownScaledMaxWidthOrHeightScreencastExtensioniPad = UInt(832)
+
+    // 768x432: 28 - crash MB. 33% CPU
+    // 768x354: 30 MB (s), 48% CPU, 1000 Kbps
+    // iPhone 16:9
+    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(768)
+    static let kDownScaledMaxWidthOrHeightSimulcastApp = UInt(1280)
     // 832x624: 35 - 41 MB (!!).
     // 832x468: 30 - 35 - crash MB.
-    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(832)
+    // static let kDownScaledMaxWidthOrHeightSimulcast = UInt(832)
 
     // Maximum bitrate (in kbps) used to send unicast video.
     static let kMaxVideoBitrate = UInt(1440)
     // Bitrate hint (in kbps) for the simulcast encode.
-//    static let kMaxVideoBitrateSimulcast = UInt(1300)
-    static let kMaxVideoBitrateSimulcast = UInt(1440)
+    static let kMaxVideoBitrateSimulcast = UInt(1000)
     static let kMaxScreenshareBitrate = UInt(1600)
 
     // Maximum frame rate to send video at.
     static let kMaxVideoFrameRate = UInt(15)
-    static let kMaxScreencastFrameRate = UInt(10)
+    static let kMaxScreencastFrameRateApp = UInt(30)
+    static let kMaxScreencastFrameRate = UInt(15)
 
     /*
      * Streaming video content at 30 fps or lower is ideal, especially in variable network conditions.
@@ -58,12 +68,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // The minimum average delivery frame rate where IVTC is attempted. Add leeway due to 24 in 30 in 60 case.
     static let kInverseTelecineMinimumFrameRate = 23
 
-    /*
-     * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
-     * that your most recent frame eventually reaches subscribers, and that the publisher has a reasonable bandwidth estimate
-     * for the next time a new frame is captured.
-     */
-    static let retransmitLastFrame = true
     static let kFrameRetransmitIntervalMs = Int(250)
     static let kFrameRetransmitTimeInterval = CMTime(value: CMTimeValue(kFrameRetransmitIntervalMs),
                                                      timescale: CMTimeScale(1000))
@@ -92,22 +96,29 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     private var timerSource: DispatchSourceTimer?
     private var lastTransmitTimestamp: CMTime?
     private var lastFrameStorage: VideoFrame?
-    // ReplayKit reuses the underlying CVPixelBuffer if you release the CMSampleBuffer back to their pool.
-    // Holding on to the last frame is a poor-man's workaround to prevent image corruption.
-    private var lastSampleBuffer: CMSampleBuffer?
 
     // An input adapter that crops/rotates/scales the input frame using CoreImage while maintaining vsync.
     // Workaround for ReplayKit tearing and lack of synchronization guarantees when using CVPixelBufferGetBaseAddress()
     let vsyncInputAdapter: CoreImagePixelBufferInput?
 
-    init(isScreencast: Bool, telecineOptions: TelecineOptions) {
+    /*
+     * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
+     * that your most recent frame eventually reaches subscribers, and that the publisher has a reasonable bandwidth estimate
+     * for the next time a new frame is captured.
+     */
+    let retransmitLastFrame: Bool
+
+    // The previous sample buffer is used for retransmissions.
+    private var lastSampleBuffer: CMSampleBuffer?
+
+    init(isScreencast: Bool, telecineOptions: TelecineOptions, retransmitFrames: Bool) {
         screencastUsage = isScreencast
         // The minimum average input frame rate where IVTC is attempted.
         switch telecineOptions {
         case .p60to24or25or30:
             telecine = InverseTelecine60p()
             telecineInputFrameRate = 58
-            vsyncInputAdapter = nil
+            vsyncInputAdapter = CoreImagePixelBufferInput()
             break
         case .p30to24or25:
             telecine = InverseTelecine30p()
@@ -119,6 +130,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             vsyncInputAdapter = CoreImagePixelBufferInput()
             break
         }
+        retransmitLastFrame = retransmitFrames
         super.init()
     }
 
@@ -169,7 +181,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     static public func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool, telecineOptions: TelecineOptions) -> (EncodingParameters, VideoFormat) {
         let audioBitrate = UInt(0)
         var videoBitrate = kMaxVideoBitrate
-        var maxWidthOrHeight = isScreencast ? UInt(0) : kDownScaledMaxWidthOrHeight
+        var maxWidthOrHeight = kDownScaledMaxWidthOrHeight
         // TODO: IVTC in broadcast
         let maxFrameRate = isScreencast ? kMaxScreencastFrameRate : UInt(30)
 
@@ -245,20 +257,24 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             videoOrientation
                 = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: cgImageOrientation!)
 
-            if let adapter = vsyncInputAdapter,
-                let adapted = adapter.scale(input: sourcePixelBuffer) {
-                sourcePixelBuffer = adapted
+            // TODO: Derive scaled size from format request.
+            if let adapter = vsyncInputAdapter {
+                if let adapted = adapter.scale(input: sourcePixelBuffer, maxWidthOrHeight: ReplayKitVideoSource.kDownScaledMaxWidthOrHeightSimulcast) {
+                    sourcePixelBuffer = adapted
+                } else {
+                    print("CE: Dropping frame due to buffer already in flight!")
+                    return
+                }
             }
-
-//            if let adapter = vsyncInputAdapter,
-//                let adapted = adapter.cropRotateScale(input: sourcePixelBuffer, orientation: cgImageOrientation!, cropRect: cropRect) {
-//                sourcePixelBuffer = adapted
-//                videoOrientation = .up
-//            }
         } else {
-            if let adapter = vsyncInputAdapter,
-                let adapted = adapter.cropAndScale(input: sourcePixelBuffer, cropRect: nil) {
-                sourcePixelBuffer = adapted
+            // TODO: Derive scaled size from format request.
+            if let adapter = vsyncInputAdapter {
+                if let adapted = adapter.scale(input: sourcePixelBuffer, maxWidthOrHeight: ReplayKitVideoSource.kDownScaledMaxWidthOrHeightSimulcastApp) {
+                    sourcePixelBuffer = adapted
+                } else {
+                    print("CE: Dropping frame due to buffer already in flight!")
+                    return
+                }
             }
         }
 
@@ -272,8 +288,8 @@ class ReplayKitVideoSource: NSObject, VideoSource {
                      orientation: videoOrientation,
                      forceReschedule: false)
 
-        // Hold on to the previous sample buffer to prevent tearing.
-        if ReplayKitVideoSource.retransmitLastFrame {
+        // Hold on to the previous sample buffer for comparison (telecine) or retransmission
+        if retransmitLastFrame || telecine != nil {
             lastSampleBuffer = sampleBuffer
         }
     }
@@ -352,7 +368,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         to.onVideoFrame(frame)
 
         // Frame retransmission logic.
-        if (ReplayKitVideoSource.retransmitLastFrame) {
+        if (retransmitLastFrame) {
             lastFrameStorage = frame
             lastTransmitTimestamp = CMClockGetTime(CMClockGetHostTimeClock())
             dispatchRetransmissions(forceReschedule: forceReschedule)

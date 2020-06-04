@@ -45,8 +45,8 @@ class ViewController: UIViewController {
     static let kRecordingAvailableInfo = "Ready to share the screen in a Broadcast (extension), or Conference (in-app)."
     static let kRecordingNotAvailableInfo = "ReplayKit is not available at the moment. Another app might be recording, or AirPlay may be in use."
 
-    // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
-    static let kDownscaleBuffers = false
+    // If the content should be treated as screencast (detail) or regular video (motion). Used to configure ReplayKitVideoSource.
+    static let kScreencast = true
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -317,9 +317,10 @@ class ViewController: UIViewController {
         recorder.isCameraEnabled = false
 
         // The source produces either downscaled buffers with smoother motion, or an HD screen recording.
-        let options = ViewController.kDownscaleBuffers ? ReplayKitVideoSource.TelecineOptions.p60to24or25or30 : ReplayKitVideoSource.TelecineOptions.disabled
-        videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers,
-                                           telecineOptions: options)
+        let options = ViewController.kScreencast ? ReplayKitVideoSource.TelecineOptions.disabled : ReplayKitVideoSource.TelecineOptions.p60to24or25or30
+        videoSource = ReplayKitVideoSource(isScreencast: ViewController.kScreencast,
+                                           telecineOptions: options,
+                                           retransmitFrames: true)
 
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
@@ -327,7 +328,7 @@ class ViewController: UIViewController {
 
         let videoCodec = Settings.shared.videoCodec ?? Vp8Codec()!
         let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: videoCodec,
-                                                                                          isScreencast: !ViewController.kDownscaleBuffers,
+                                                                                          isScreencast: ViewController.kScreencast,
                                                                                        telecineOptions:options)
         videoSource?.requestOutputFormat(outputFormat)
 
@@ -413,11 +414,8 @@ class ViewController: UIViewController {
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
+            // The screen track will be published after connect at high priority
             builder.audioTracks = [LocalAudioTrack()!]
-
-            if let videoTrack = self.screenTrack {
-                builder.videoTracks = [videoTrack]
-            }
 
             // Use the preferred codecs
             if let preferredAudioCodec = Settings.shared.audioCodec {
@@ -517,13 +515,17 @@ extension ViewController: RoomDelegate {
     func roomDidConnect(room: Room) {
         print("Connected to Room: ", room)
 
+        room.localParticipant?.publishVideoTrack(screenTrack!,
+                                                 publicationOptions: LocalTrackPublicationOptions(priority: .high))
+
         #if DEBUG
         statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
             room.getStats({ (reports: [StatsReport]) in
                 for report in reports {
-                    let videoStats = report.localVideoTrackStats.first!
-                    print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
-                    print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
+                    if let videoStats = report.localVideoTrackStats.first {
+                        print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
+                        print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
+                    }
                     for candidatePair in report.iceCandidatePairStats {
                         if candidatePair.isActiveCandidatePair {
                             print("Send = \(candidatePair.availableOutgoingBitrate)")

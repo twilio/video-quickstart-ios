@@ -56,7 +56,7 @@ class SampleHandler: RPBroadcastSampleHandler {
                                                                                           isScreencast: SampleHandler.isScreencast,
                                                                                     telecineOptions: options)
 
-        videoSource = ReplayKitVideoSource(isScreencast: SampleHandler.isScreencast, telecineOptions: options)
+        videoSource = ReplayKitVideoSource(isScreencast: SampleHandler.isScreencast, telecineOptions: options, retransmitFrames: false)
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
                                       name: "Screen")
@@ -91,6 +91,11 @@ class SampleHandler: RPBroadcastSampleHandler {
                 builder.roomName = "Broadcast"
             } else {
                 builder.roomName = setupInfo?[SampleHandler.kBroadcastSetupInfoRoomNameKey] as? String
+            }
+
+            // Insights reporting requires at least one pthread with a dedicated 512 KB stack.
+            if SampleHandler.kVideoCodec.isKind(of: Vp8Codec.self) {
+                builder.areInsightsEnabled = false
             }
         }
 
@@ -130,7 +135,7 @@ class SampleHandler: RPBroadcastSampleHandler {
         switch sampleBufferType {
         case RPSampleBufferType.video:
             if SampleHandler.isScreencast,
-                kFrameCounter % 4 == 0 {
+                kFrameCounter % 2 == 0 {
                 videoSource?.processFrame(sampleBuffer: sampleBuffer)
             } else if !SampleHandler.isScreencast {
                 videoSource?.processFrame(sampleBuffer: sampleBuffer)
