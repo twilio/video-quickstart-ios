@@ -26,14 +26,14 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // In order to save memory, the handler may request that the source downscale its output.
     static let kDownScaledMaxWidthOrHeight = UInt(1280)
     // 1152x531.
+    // static let kDownScaledMaxWidthOrHeightScreencastApp = UInt(1152)
     static let kDownScaledMaxWidthOrHeightScreencastApp = UInt(1280)
-    static let kDownScaledMaxWidthOrHeightScreencastExtension = UInt(768)
-    static let kDownScaledMaxWidthOrHeightScreencastExtensioniPad = UInt(1024)
-
     // 768x432: 28 - crash MB. 33% CPU
     // 768x354: 30 MB (s), 48% CPU, 1000 Kbps
     // iPhone 16:9
-    static let kDownScaledMaxWidthOrHeightSimulcast = UInt(768)
+    static let kDownScaledMaxWidthOrHeightScreencastExtension = UInt(768)
+    static let kDownScaledMaxWidthOrHeightScreencastExtensioniPad = UInt(1024)
+
     static let kDownScaledMaxWidthOrHeightVideoExtension = UInt(768)
     static let kDownScaledMaxWidthOrHeightVideoApp = UInt(800)
     static let kDownScaledMaxWidthOrHeightSimulcastApp = UInt(1280)
@@ -116,7 +116,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
     init(isScreencast: Bool, telecineOptions: TelecineOptions, isExtension: Bool) {
         screencastUsage = isScreencast
-        vsyncInputAdapter = CoreImagePixelBufferInput()
 
         switch telecineOptions {
         case .p60to24or25or30:
@@ -139,11 +138,14 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             if isExtension {
                 inputMaxDimension = isScreencast ?
                     ReplayKitVideoSource.kDownScaledMaxWidthOrHeightScreencastExtensioniPad : ReplayKitVideoSource.kDownScaledMaxWidthOrHeightVideoExtension
+                vsyncInputAdapter = nil
             } else {
+                vsyncInputAdapter = CoreImagePixelBufferInput()
                 inputMaxDimension = isScreencast ?
                     ReplayKitVideoSource.kDownScaledMaxWidthOrHeightScreencastApp : ReplayKitVideoSource.kDownScaledMaxWidthOrHeightVideoApp
             }
         default:
+            vsyncInputAdapter = CoreImagePixelBufferInput()
             if isExtension {
                 inputMaxDimension = isScreencast ?
                     ReplayKitVideoSource.kDownScaledMaxWidthOrHeightScreencastExtension : ReplayKitVideoSource.kDownScaledMaxWidthOrHeightVideoExtension
