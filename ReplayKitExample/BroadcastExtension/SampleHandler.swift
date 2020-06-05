@@ -33,7 +33,11 @@ class SampleHandler: RPBroadcastSampleHandler {
     static let isScreencast = true
 
     // The video codec to use for the broadcast. The encoding parameters and format request are built dynamically based upon the codec.
-    static let kVideoCodec = Vp8Codec(simulcast: false)
+    static let kVideoCodec: VideoCodec = UIDevice.current.userInterfaceIdiom == .pad ?
+        H264Codec() : Vp8Codec(simulcast: false)
+
+    // Frame skip, deliver a frame once every `kScreencastFrameSkip` frames.
+    static let kScreencastFrameSkip = Int64(2)
 
     var kFrameCounter = Int64(0)
 
@@ -57,7 +61,7 @@ class SampleHandler: RPBroadcastSampleHandler {
                                                                                           isScreencast: SampleHandler.isScreencast,
                                                                                     telecineOptions: options)
 
-        videoSource = ReplayKitVideoSource(isScreencast: SampleHandler.isScreencast, telecineOptions: options, retransmitFrames: false)
+        videoSource = ReplayKitVideoSource(isScreencast: SampleHandler.isScreencast, telecineOptions: options, isExtension: true)
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
                                       name: "Screen")
@@ -140,10 +144,10 @@ class SampleHandler: RPBroadcastSampleHandler {
         case RPSampleBufferType.video:
             /* CoreImagePixelBufferInput processes every frame even if TVIVideoSink might drop it.
              * In an extension this can be particularly problematic and skipping frames helps prevent the device
-             * overload case where Apple maps 6-8 IOSurfaces into the extension and crashes it.
+             * from becoming overloaded where ReplayKit maps 6-8 IOSurfaces into the extension and crashes it.
              **/
             if SampleHandler.isScreencast,
-                kFrameCounter % 2 == 0 {
+                kFrameCounter % SampleHandler.kScreencastFrameSkip == 0 {
                 videoSource?.processFrame(sampleBuffer: sampleBuffer)
             } else if !SampleHandler.isScreencast {
                 videoSource?.processFrame(sampleBuffer: sampleBuffer)

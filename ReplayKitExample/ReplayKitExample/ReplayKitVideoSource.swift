@@ -26,14 +26,16 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // In order to save memory, the handler may request that the source downscale its output.
     static let kDownScaledMaxWidthOrHeight = UInt(1280)
     // 1152x531.
-    static let kDownScaledMaxWidthOrHeightScreencastApp = UInt(1152)
+    static let kDownScaledMaxWidthOrHeightScreencastApp = UInt(1280)
     static let kDownScaledMaxWidthOrHeightScreencastExtension = UInt(768)
-    static let kDownScaledMaxWidthOrHeightScreencastExtensioniPad = UInt(832)
+    static let kDownScaledMaxWidthOrHeightScreencastExtensioniPad = UInt(1024)
 
     // 768x432: 28 - crash MB. 33% CPU
     // 768x354: 30 MB (s), 48% CPU, 1000 Kbps
     // iPhone 16:9
     static let kDownScaledMaxWidthOrHeightSimulcast = UInt(768)
+    static let kDownScaledMaxWidthOrHeightVideoExtension = UInt(768)
+    static let kDownScaledMaxWidthOrHeightVideoApp = UInt(800)
     static let kDownScaledMaxWidthOrHeightSimulcastApp = UInt(1280)
     // 832x624: 35 - 41 MB (!!).
     // 832x468: 30 - 35 - crash MB.
@@ -100,6 +102,7 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // An input adapter that crops/rotates/scales the input frame using CoreImage while maintaining vsync.
     // Workaround for ReplayKit tearing and lack of synchronization guarantees when using CVPixelBufferGetBaseAddress()
     let vsyncInputAdapter: CoreImagePixelBufferInput?
+    let inputMaxDimension: UInt
 
     /*
      * Enable retransmission of the last sent frame. This feature consumes some memory, CPU, and bandwidth but it ensures
@@ -111,24 +114,46 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     // The previous sample buffer is used for retransmissions.
     private var lastSampleBuffer: CMSampleBuffer?
 
-    init(isScreencast: Bool, telecineOptions: TelecineOptions, retransmitFrames: Bool) {
+    init(isScreencast: Bool, telecineOptions: TelecineOptions, isExtension: Bool) {
         screencastUsage = isScreencast
         vsyncInputAdapter = CoreImagePixelBufferInput()
-        // The minimum average input frame rate where IVTC is attempted.
+
         switch telecineOptions {
         case .p60to24or25or30:
             telecine = InverseTelecine60p()
+            // The minimum average input frame rate where IVTC is attempted.
             telecineInputFrameRate = 58
             break
         case .p30to24or25:
             telecine = InverseTelecine30p()
+            // The minimum average input frame rate where IVTC is attempted.
             telecineInputFrameRate = 28
             break
         case .disabled:
             telecineInputFrameRate = 0
             break
         }
-        retransmitLastFrame = retransmitFrames
+
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            if isExtension {
+                inputMaxDimension = isScreencast ?
+                    ReplayKitVideoSource.kDownScaledMaxWidthOrHeightScreencastExtensioniPad : ReplayKitVideoSource.kDownScaledMaxWidthOrHeightVideoExtension
+            } else {
+                inputMaxDimension = isScreencast ?
+                    ReplayKitVideoSource.kDownScaledMaxWidthOrHeightScreencastApp : ReplayKitVideoSource.kDownScaledMaxWidthOrHeightVideoApp
+            }
+        default:
+            if isExtension {
+                inputMaxDimension = isScreencast ?
+                    ReplayKitVideoSource.kDownScaledMaxWidthOrHeightScreencastExtension : ReplayKitVideoSource.kDownScaledMaxWidthOrHeightVideoExtension
+            } else {
+                inputMaxDimension = isScreencast ?
+                ReplayKitVideoSource.kDownScaledMaxWidthOrHeightScreencastApp : ReplayKitVideoSource.kDownScaledMaxWidthOrHeightVideoApp
+            }
+        }
+
+        retransmitLastFrame = !isExtension
         super.init()
     }
 
@@ -185,9 +210,6 @@ class ReplayKitVideoSource: NSObject, VideoSource {
 
         if let vp8Codec = codec as? Vp8Codec {
             videoBitrate = vp8Codec.isSimulcast ? kMaxVideoBitrateSimulcast : kMaxVideoBitrate
-            if (!isScreencast) {
-                maxWidthOrHeight = vp8Codec.isSimulcast ? kDownScaledMaxWidthOrHeightSimulcast : kDownScaledMaxWidthOrHeight
-            }
         } else if codec as? H264Codec != nil {
             maxWidthOrHeight = 1280
         }
@@ -254,25 +276,15 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             let cgImageOrientation = CGImagePropertyOrientation(rawValue: coreSampleOrientation)
             videoOrientation
                 = ReplayKitVideoSource.imageOrientationToVideoOrientation(imageOrientation: cgImageOrientation!)
+        }
 
-            // TODO: Derive scaled size from format request.
-            if let adapter = vsyncInputAdapter {
-                if let adapted = adapter.scale(input: sourcePixelBuffer, maxWidthOrHeight: ReplayKitVideoSource.kDownScaledMaxWidthOrHeightSimulcast) {
-                    sourcePixelBuffer = adapted
-                } else {
-                    print("CE: Dropping frame due to buffer already in flight!")
-                    return
-                }
-            }
-        } else {
-            // TODO: Derive scaled size from format request.
-            if let adapter = vsyncInputAdapter {
-                if let adapted = adapter.scale(input: sourcePixelBuffer, maxWidthOrHeight: ReplayKitVideoSource.kDownScaledMaxWidthOrHeightSimulcastApp) {
-                    sourcePixelBuffer = adapted
-                } else {
-                    print("CE: Dropping frame due to buffer already in flight!")
-                    return
-                }
+        // Input adaptation.
+        if let adapter = vsyncInputAdapter {
+            if let adapted = adapter.scale(input: sourcePixelBuffer, maxWidthOrHeight: inputMaxDimension) {
+                sourcePixelBuffer = adapted
+            } else {
+                print("CE: Dropping frame due to buffer already in flight!")
+                return
             }
         }
 

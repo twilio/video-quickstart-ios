@@ -13,7 +13,6 @@ class CoreImagePixelBufferInput {
     let context = CIContext(options: [CIContextOption.outputColorSpace: NSNull(),
                                       CIContextOption.workingColorSpace: NSNull()]);
 
-
     /// Avoids reallocating memory.
     var pixelBufferPool: CVPixelBufferPool?
 
@@ -71,79 +70,6 @@ class CoreImagePixelBufferInput {
             print("Buffer creation failed: \(status)")
         }
         return copy;
-    }
-
-    func cropRotateScale(input: CVPixelBuffer, orientation: CGImagePropertyOrientation, cropRect: CGRect?) -> CVPixelBuffer? {
-        let ciImage = CIImage(cvPixelBuffer: input)
-        let undoneOrientation = CoreImagePixelBufferInput.undoImageOrientation(imageOrientation: orientation)
-        let scaleFactor = CGFloat(ReplayKitVideoSource.kDownScaledMaxWidthOrHeightSimulcast) / CGFloat(CVPixelBufferGetHeight(input))
-        var scaled: CIImage
-        if let rect = cropRect {
-            let cropped = ciImage.cropped(to: rect)
-            scaled = cropped.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
-        } else {
-            scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scaleFactor, y: scaleFactor))
-        }
-        let rotatedAndScaled = scaled.oriented(undoneOrientation)
-
-        var copy: CVPixelBuffer?
-
-        switch undoneOrientation {
-        case .up:
-            fallthrough
-        case .upMirrored:
-            fallthrough
-        case .down:
-            fallthrough
-        case .downMirrored:
-            CVPixelBufferCreate(
-                nil,
-//                540,
-//                960,
-                Int(CGFloat(CVPixelBufferGetWidth(input)) * scaleFactor),
-                Int(CGFloat(CVPixelBufferGetHeight(input)) * scaleFactor),
-                CVPixelBufferGetPixelFormatType(input),
-                CVBufferGetAttachments(input, .shouldPropagate),
-                &copy)
-        default:
-            CVPixelBufferCreate(
-                nil,
-//                960,
-//                540,
-                Int(CGFloat(CVPixelBufferGetHeight(input)) * scaleFactor),
-                Int(CGFloat(CVPixelBufferGetWidth(input)) * scaleFactor),
-                CVPixelBufferGetPixelFormatType(input),
-                CVBufferGetAttachments(input, .shouldPropagate),
-                &copy)
-        }
-
-        context.render(rotatedAndScaled, to: copy!)
-        return copy;
-    }
-
-    private static func undoImageOrientation(imageOrientation: CGImagePropertyOrientation) -> CGImagePropertyOrientation {
-        let undoneOrientation: CGImagePropertyOrientation
-
-        switch imageOrientation {
-        case .up:
-            undoneOrientation = .up
-        case .upMirrored:
-            undoneOrientation = .upMirrored
-        case .left:
-            undoneOrientation = .right
-        case .leftMirrored:
-            undoneOrientation = .rightMirrored
-        case .right:
-            undoneOrientation = .left
-        case .rightMirrored:
-            undoneOrientation = .rightMirrored
-        case .down:
-            undoneOrientation = .down
-        case .downMirrored:
-            undoneOrientation = .downMirrored
-        }
-
-        return undoneOrientation
     }
 
 }

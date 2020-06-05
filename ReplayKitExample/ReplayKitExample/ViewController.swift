@@ -325,7 +325,7 @@ class ViewController: UIViewController {
         let options = ViewController.kScreencast ? ReplayKitVideoSource.TelecineOptions.disabled : ReplayKitVideoSource.TelecineOptions.p60to24or25or30
         videoSource = ReplayKitVideoSource(isScreencast: ViewController.kScreencast,
                                            telecineOptions: options,
-                                           retransmitFrames: true)
+                                           isExtension: false)
 
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
@@ -534,6 +534,7 @@ extension ViewController: RoomDelegate {
                     for candidatePair in report.iceCandidatePairStats {
                         if candidatePair.isActiveCandidatePair {
                             print("Send = \(candidatePair.availableOutgoingBitrate)")
+                            print("Receive = \(candidatePair.availableIncomingBitrate)")
                         }
                     }
                 }
