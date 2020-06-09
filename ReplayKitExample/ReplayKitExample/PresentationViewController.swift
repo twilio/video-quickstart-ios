@@ -12,6 +12,7 @@ class PresentationViewController : UIViewController {
 
     var room: Room?
     var remoteView : VideoView?
+    var scrollView : UIScrollView?
     var accessToken: String?
 
     override func viewDidLoad() {
@@ -33,7 +34,7 @@ class PresentationViewController : UIViewController {
     }
 
     func connectToPresentation() {
-        TwilioVideoSDK.setLogLevel(.debug)
+        TwilioVideoSDK.setLogLevel(.info)
 
         UIApplication.shared.isIdleTimerDisabled = true
 
@@ -82,49 +83,47 @@ class PresentationViewController : UIViewController {
         self.room = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        self.scrollView?.frame = self.view.bounds
+        self.scrollView?.contentInset = self.additionalSafeAreaInsets
+        let contentBounds = self.view.bounds
+
+        if let dimensions = remoteView?.videoDimensions,
+            remoteView?.hasVideoData == true {
+            let contentRect = AVMakeRect(aspectRatio: CGSize(width: Int(dimensions.width),
+                height: Int(dimensions.height)), insideRect: contentBounds).integral
+//            let size = CGSize(width: CGFloat(dimensions.width) / scale, height: CGFloat(dimensions.height) / scale)
+//            print("\(size)")
+            scrollView?.contentSize = contentRect.size
+            scrollView?.maximumZoomScale = 2
+            scrollView?.minimumZoomScale = 1
+            remoteView?.bounds = CGRect(origin: .zero, size: contentRect.size)
+            remoteView?.center = CGPoint(x: contentRect.midX, y: contentRect.midY)
+        }
+    }
+
     func setupRemoteVideoView(publication: RemoteVideoTrackPublication) {
         // Creating `VideoView` programmatically
-        self.remoteView = VideoView(frame: CGRect.zero, delegate: nil)
+        self.remoteView = VideoView(frame: CGRect(origin: CGPoint.zero, size: CGSize(width: 640, height: 480)), delegate: self)
         self.remoteView?.tag = publication.trackSid.hashValue
 
-        self.view.insertSubview(self.remoteView!, at: 0)
+        let scrollView = UIScrollView()
+        scrollView.contentSize = CGSize(width: 640, height: 480)
+        scrollView.delegate = self
+        scrollView.backgroundColor = nil
+        scrollView.scrollsToTop = false
+        scrollView.contentInsetAdjustmentBehavior = .always
+        self.scrollView = scrollView
+
+        // self.view.insertSubview(remoteView!, at: 0)
+        self.view.insertSubview(scrollView, at: 0)
+        self.scrollView?.addSubview(self.remoteView!)
 
         // `VideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit
         // scaleAspectFit is the default mode when you create `VideoView` programmatically.
         self.remoteView?.contentMode = .scaleAspectFit
-
-        let centerX = NSLayoutConstraint(item: self.remoteView!,
-                                         attribute: NSLayoutConstraint.Attribute.centerX,
-                                         relatedBy: NSLayoutConstraint.Relation.equal,
-                                         toItem: self.view,
-                                         attribute: NSLayoutConstraint.Attribute.centerX,
-                                         multiplier: 1,
-                                         constant: 0)
-        self.view.addConstraint(centerX)
-        let centerY = NSLayoutConstraint(item: self.remoteView!,
-                                         attribute: NSLayoutConstraint.Attribute.centerY,
-                                         relatedBy: NSLayoutConstraint.Relation.equal,
-                                         toItem: self.view,
-                                         attribute: NSLayoutConstraint.Attribute.centerY,
-                                         multiplier: 1,
-                                         constant: 0)
-        self.view.addConstraint(centerY)
-        let width = NSLayoutConstraint(item: self.remoteView!,
-                                       attribute: NSLayoutConstraint.Attribute.width,
-                                       relatedBy: NSLayoutConstraint.Relation.equal,
-                                       toItem: self.view,
-                                       attribute: NSLayoutConstraint.Attribute.width,
-                                       multiplier: 1,
-                                       constant: 0)
-        self.view.addConstraint(width)
-        let height = NSLayoutConstraint(item: self.remoteView!,
-                                        attribute: NSLayoutConstraint.Attribute.height,
-                                        relatedBy: NSLayoutConstraint.Relation.equal,
-                                        toItem: self.view,
-                                        attribute: NSLayoutConstraint.Attribute.height,
-                                        multiplier: 1,
-                                        constant: 0)
-        self.view.addConstraint(height)
 
         publication.videoTrack?.addRenderer(self.remoteView!)
 
@@ -138,6 +137,39 @@ class PresentationViewController : UIViewController {
             view.contentMode = view.contentMode == UIView.ContentMode.scaleAspectFit ?
                 UIView.ContentMode.scaleAspectFill : UIView.ContentMode.scaleAspectFit
         }
+    }
+}
+
+extension PresentationViewController : UIScrollViewDelegate {
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        print("scrollViewDidZoom \(scrollView)")
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        print("scrollViewDidScroll \(scrollView)")
+    }
+
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return self.remoteView
+    }
+
+    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+        print("scrollViewDidEndZooming \(scrollView) with view \(view!) at scale \(scale)")
+    }
+}
+
+extension PresentationViewController : VideoViewDelegate {
+    func videoViewDidReceiveData(view: VideoView) {
+        if view == self.remoteView {
+            self.scrollView?.isScrollEnabled = true
+            self.view.setNeedsLayout()
+        }
+    }
+
+    func videoViewDimensionsDidChange(view: VideoView, dimensions: CMVideoDimensions) {
+        let scale = UIScreen.main.nativeScale
+        scrollView?.contentSize = CGSize(width: CGFloat(dimensions.width) / scale, height: CGFloat(dimensions.height) / scale)
+        scrollView?.maximumZoomScale = 2
     }
 }
 
@@ -236,6 +268,9 @@ extension PresentationViewController : RemoteParticipantDelegate {
         if (publication.trackSid.hashValue == self.remoteView?.tag) {
             self.remoteView?.removeFromSuperview()
             self.remoteView = nil
+
+            self.scrollView?.removeFromSuperview()
+            self.scrollView = nil
         }
     }
 
