@@ -21,7 +21,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Use microphone to broadcast.</string>
+	<string>${PRODUCT_NAME} shares your microphone with other Participants during a screencast. Tap to mute yourself.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>${PRODUCT_NAME} shares your camera with other Participants during a screencast.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

@@ -10,13 +10,31 @@ import TwilioVideo
 
 class PresentationViewController : UIViewController {
 
+    static let kCellReuseId = "VideoCellReuseId"
+
+    var cameraSource: CameraSource?
+    var localVideoTrack: LocalVideoTrack?
+    var localAudioTrack: LocalAudioTrack?
     var room: Room?
-    var remoteView : VideoView?
-    var scrollView : UIScrollView?
+
+    var statsTimer: Timer?
+    weak var remoteView: VideoView?
+    weak var scrollView: UIScrollView?
     var accessToken: String?
+    weak var collectionView: UICollectionView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+        collectionView.backgroundColor = nil
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.register(VideoCollectionViewCell.self, forCellWithReuseIdentifier: PresentationViewController.kCellReuseId)
+        self.collectionView = collectionView
+
+        self.view.addSubview(collectionView)
 
         connectToPresentation()
     }
@@ -31,6 +49,52 @@ class PresentationViewController : UIViewController {
         get {
             return true
         }
+    }
+
+    func startCamera() {
+        guard let device = CameraSource.captureDevice(position: .front) else {
+            return
+        }
+
+        let options = CameraSourceOptions { builder in
+            builder.rotationTags = .remove
+        }
+
+        let cameraFormat = VideoFormat()
+        cameraFormat.frameRate = 15
+        cameraFormat.dimensions = CMVideoDimensions(width: 480, height: 360)
+        cameraFormat.pixelFormat = .formatYUV420BiPlanarFullRange
+        guard let camera = CameraSource(options: options, delegate: self) else {
+            return
+        }
+
+        guard let videoTrack = LocalVideoTrack(source: camera) else {
+            return
+        }
+
+        // Crop and scale to 360x360 square
+        let sendFormat = VideoFormat()
+        sendFormat.dimensions = CMVideoDimensions(width: 360, height: 360)
+        camera.requestOutputFormat(sendFormat)
+        camera.startCapture(device: device, format: cameraFormat) { (device, format, error) in
+
+        }
+
+        self.localVideoTrack = videoTrack
+    }
+
+    func publishCamera() {
+        guard let participant = self.room?.localParticipant else {
+            return
+        }
+        participant.delegate = self
+
+        guard let videoTrack = self.localVideoTrack else {
+            return
+        }
+
+        let publishOptions = LocalTrackPublicationOptions(priority: .low)
+        participant.publishVideoTrack(videoTrack, publicationOptions: publishOptions)
     }
 
     func connectToPresentation() {
@@ -72,15 +136,23 @@ class PresentationViewController : UIViewController {
         let connectOptions = ConnectOptions(token: accessToken!) { (builder) in
             builder.bandwidthProfileOptions = profile
 
-            builder.audioTracks = [LocalAudioTrack()!]
+            if let audioTrack = LocalAudioTrack() {
+                builder.audioTracks = [audioTrack]
+                self.localAudioTrack = audioTrack
+            }
 
             // Use the preferred signaling region
             if let signalingRegion = Settings.shared.signalingRegion {
                 builder.region = signalingRegion
             }
+
+            // Viewers will publish smaller "thumbnail" videos at lower bandwidth
+            builder.encodingParameters = EncodingParameters(audioBitrate: 16, videoBitrate: 400)
         }
 
         self.room = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
+
+        self.startCamera()
     }
 
     override func viewDidLayoutSubviews() {
@@ -89,6 +161,10 @@ class PresentationViewController : UIViewController {
         self.scrollView?.frame = self.view.bounds
         self.scrollView?.contentInset = self.additionalSafeAreaInsets
         let contentBounds = self.view.bounds
+
+        let width = 80
+        self.collectionView?.bounds = CGRect(x: 0, y: 0, width: width, height: Int(contentBounds.size.height))
+        self.collectionView?.center = CGPoint(x: width/2, y: Int(contentBounds.size.height)/2)
 
         if let dimensions = remoteView?.videoDimensions,
             remoteView?.hasVideoData == true {
@@ -106,8 +182,8 @@ class PresentationViewController : UIViewController {
 
     func setupRemoteVideoView(publication: RemoteVideoTrackPublication) {
         // Creating `VideoView` programmatically
-        self.remoteView = VideoView(frame: CGRect(origin: CGPoint.zero, size: CGSize(width: 640, height: 480)), delegate: self)
-        self.remoteView?.tag = publication.trackSid.hashValue
+        let videoView = VideoView(frame: CGRect(origin: CGPoint.zero, size: CGSize(width: 640, height: 480)), delegate: self)
+        videoView?.tag = publication.trackSid.hashValue
 
         let scrollView = UIScrollView()
         scrollView.contentSize = CGSize(width: 640, height: 480)
@@ -119,17 +195,19 @@ class PresentationViewController : UIViewController {
 
         // self.view.insertSubview(remoteView!, at: 0)
         self.view.insertSubview(scrollView, at: 0)
-        self.scrollView?.addSubview(self.remoteView!)
+        self.scrollView?.addSubview(videoView!)
 
         // `VideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit
         // scaleAspectFit is the default mode when you create `VideoView` programmatically.
-        self.remoteView?.contentMode = .scaleAspectFit
+        videoView?.contentMode = .scaleAspectFit
 
-        publication.videoTrack?.addRenderer(self.remoteView!)
+        publication.videoTrack?.addRenderer(videoView!)
 
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(tappedScreenParticipant(sender:)))
         recognizer.numberOfTapsRequired = 2;
-        self.remoteView!.addGestureRecognizer(recognizer)
+        videoView?.addGestureRecognizer(recognizer)
+
+        self.remoteView = videoView
     }
 
     @objc func tappedScreenParticipant(sender: UITapGestureRecognizer) {
@@ -140,6 +218,17 @@ class PresentationViewController : UIViewController {
     }
 }
 
+
+
+// MARK:- LocalParticipantDelegate
+
+extension PresentationViewController : LocalParticipantDelegate {
+    func localParticipantDidPublishVideoTrack(participant: LocalParticipant, videoTrackPublication: LocalVideoTrackPublication) {
+        self.collectionView?.insertItems(at: [IndexPath(row: 0, section: 0)])
+    }
+}
+
+// MARK:- UIScrollViewDelegate
 extension PresentationViewController : UIScrollViewDelegate {
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         print("scrollViewDidZoom \(scrollView)")
@@ -158,6 +247,49 @@ extension PresentationViewController : UIScrollViewDelegate {
     }
 }
 
+// MARK:- UICollectionViewDelegateFlowLayout
+extension PresentationViewController : UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        // TODO: Update local audio track enabled/disabled state here.
+
+        // TODO: It would be nice to have the ability to pin remote Participants or maybe your own video.
+    }
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: 72, height: 72)
+    }
+}
+
+// MARK:- UICollectionViewDataSource
+extension PresentationViewController : UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return self.room?.localParticipant != nil ? 1 : 0
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PresentationViewController.kCellReuseId,
+                                                      for: indexPath) as? VideoCollectionViewCell
+
+        if cell != nil {
+            cell?.setParticipant(participant: (self.room?.localParticipant)!)
+        }
+
+        return cell!
+    }
+}
+
+// MARK:- CameraSourceDelegate
+extension PresentationViewController : CameraSourceDelegate {
+    func cameraSourceWasInterrupted(source: CameraSource, reason: AVCaptureSession.InterruptionReason) {
+        self.localVideoTrack?.isEnabled = false
+    }
+
+    func cameraSourceInterruptionEnded(source: CameraSource) {
+        self.localVideoTrack?.isEnabled = true
+    }
+}
+
+// MARK:- VideoViewDelegate
 extension PresentationViewController : VideoViewDelegate {
     func videoViewDidReceiveData(view: VideoView) {
         if view == self.remoteView {
@@ -167,6 +299,7 @@ extension PresentationViewController : VideoViewDelegate {
     }
 
     func videoViewDimensionsDidChange(view: VideoView, dimensions: CMVideoDimensions) {
+        // TODO: Are updates needed here?
         let scale = UIScreen.main.nativeScale
         scrollView?.contentSize = CGSize(width: CGFloat(dimensions.width) / scale, height: CGFloat(dimensions.height) / scale)
         scrollView?.maximumZoomScale = 2
@@ -183,6 +316,31 @@ extension PresentationViewController : RoomDelegate {
 
         let connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
         print(connectMessage)
+
+        self.publishCamera()
+
+        #if DEBUG
+        statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
+            room.getStats({ (reports: [StatsReport]) in
+                for report in reports {
+                    if let videoStats = report.localVideoTrackStats.first {
+                        print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
+                        print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
+                    }
+                    for candidatePair in report.iceCandidatePairStats {
+                        if candidatePair.isActiveCandidatePair {
+                            print("Send = \(candidatePair.availableOutgoingBitrate)")
+                            print("Receive = \(candidatePair.availableIncomingBitrate)")
+                        }
+                    }
+                }
+            })
+        })
+
+        if let theTimer = statsTimer {
+            RunLoop.main.add(theTimer, forMode: .common)
+        }
+        #endif
     }
 
     func roomDidDisconnect(room: Room, error: Error?) {
@@ -193,6 +351,7 @@ extension PresentationViewController : RoomDelegate {
         }
 
         self.room = nil
+        self.statsTimer?.invalidate()
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {
