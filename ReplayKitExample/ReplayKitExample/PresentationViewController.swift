@@ -8,6 +8,11 @@
 import UIKit
 import TwilioVideo
 
+enum DataSourceError: Error {
+    // The room is not connected.
+    case notConnected
+}
+
 class PresentationViewController : UIViewController {
 
     static let kCellReuseId = "VideoCellReuseId"
@@ -16,6 +21,8 @@ class PresentationViewController : UIViewController {
     var localVideoTrack: LocalVideoTrack?
     var localAudioTrack: LocalAudioTrack?
     var room: Room?
+
+    var remoteParticipants: [RemoteParticipant] = []
 
     var statsTimer: Timer?
     weak var remoteView: VideoView?
@@ -119,7 +126,7 @@ class PresentationViewController : UIViewController {
             let renderDimensions = VideoRenderDimensions()
 
             // Desired render dimensions of RemoteVideoTracks with priority low.
-            renderDimensions.low = VideoDimensions(width: 160, height: 160)
+            renderDimensions.low = VideoDimensions(width: 640, height: 480)
 
             // Desired render dimensions of RemoteVideoTracks with priority standard.
             renderDimensions.standard = VideoDimensions(width: 640, height: 480)
@@ -133,7 +140,7 @@ class PresentationViewController : UIViewController {
             builder.trackSwitchOffMode = .predicted
         }
         let profile = BandwidthProfileOptions(videoOptions: videoOptions)
-        let connectOptions = ConnectOptions(token: accessToken!) { (builder) in
+        let connectOptions = ConnectOptions(token: accessToken!) { builder in
             builder.bandwidthProfileOptions = profile
 
             if let audioTrack = LocalAudioTrack() {
@@ -180,7 +187,7 @@ class PresentationViewController : UIViewController {
         }
     }
 
-    func setupRemoteVideoView(publication: RemoteVideoTrackPublication) {
+    func setupScreenshareVideo(publication: RemoteVideoTrackPublication) {
         // Creating `VideoView` programmatically
         let videoView = VideoView(frame: CGRect(origin: CGPoint.zero, size: CGSize(width: 640, height: 480)), delegate: self)
         videoView?.tag = publication.trackSid.hashValue
@@ -197,8 +204,6 @@ class PresentationViewController : UIViewController {
         self.view.insertSubview(scrollView, at: 0)
         self.scrollView?.addSubview(videoView!)
 
-        // `VideoView` supports scaleToFill, scaleAspectFill and scaleAspectFit
-        // scaleAspectFit is the default mode when you create `VideoView` programmatically.
         videoView?.contentMode = .scaleAspectFit
 
         publication.videoTrack?.addRenderer(videoView!)
@@ -224,7 +229,7 @@ class PresentationViewController : UIViewController {
 
 extension PresentationViewController : LocalParticipantDelegate {
     func localParticipantDidPublishVideoTrack(participant: LocalParticipant, videoTrackPublication: LocalVideoTrackPublication) {
-        self.collectionView?.insertItems(at: [IndexPath(row: 0, section: 0)])
+        print("localParticipantDidPublishVideoTrack: \(videoTrackPublication.trackSid)")
     }
 }
 
@@ -235,7 +240,7 @@ extension PresentationViewController : UIScrollViewDelegate {
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        print("scrollViewDidScroll \(scrollView)")
+        print("scrollViewDidScroll")
     }
 
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
@@ -243,14 +248,30 @@ extension PresentationViewController : UIScrollViewDelegate {
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-        print("scrollViewDidEndZooming \(scrollView) with view \(view!) at scale \(scale)")
+        print("scrollViewDidEndZooming with view \(view!) at scale \(scale)")
+    }
+}
+
+extension PresentationViewController : UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        if otherGestureRecognizer.view == self.scrollView {
+            return true
+        } else {
+            return false
+        }
     }
 }
 
 // MARK:- UICollectionViewDelegateFlowLayout
 extension PresentationViewController : UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("didSelectItemAtIndexPath: \(indexPath)")
         // TODO: Update local audio track enabled/disabled state here.
+
+        if indexPath.row == 0,
+            let audioTrack = self.localAudioTrack {
+            audioTrack.isEnabled = !audioTrack.isEnabled
+        }
 
         // TODO: It would be nice to have the ability to pin remote Participants or maybe your own video.
     }
@@ -263,18 +284,45 @@ extension PresentationViewController : UICollectionViewDelegateFlowLayout {
 // MARK:- UICollectionViewDataSource
 extension PresentationViewController : UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.room?.localParticipant != nil ? 1 : 0
+        guard let room = self.room else {
+            return 0
+        }
+
+        guard room.localParticipant != nil else {
+            return 0
+        }
+
+        return 1 + self.remoteParticipants.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PresentationViewController.kCellReuseId,
                                                       for: indexPath) as? VideoCollectionViewCell
 
-        if cell != nil {
-            cell?.setParticipant(participant: (self.room?.localParticipant)!)
+        do {
+            let participant = try self.participantForIndexPath(index: indexPath)
+            if cell != nil {
+                cell?.setParticipant(participant: participant, localVideoTrack: indexPath.row == 0 ? self.localVideoTrack : nil)
+            }
+        } catch DataSourceError.notConnected {
+            print("The Room does not exist!")
+        } catch {
+
         }
 
         return cell!
+    }
+
+    func participantForIndexPath(index: IndexPath) throws -> Participant {
+        guard let room = self.room else {
+            throw DataSourceError.notConnected
+        }
+
+        if index.row == 0 {
+            return room.localParticipant!
+        } else {
+            return self.remoteParticipants[index.row - 1]
+        }
     }
 }
 
@@ -318,6 +366,8 @@ extension PresentationViewController : RoomDelegate {
         print(connectMessage)
 
         self.publishCamera()
+
+        self.collectionView?.insertItems(at: [IndexPath(row: 0, section: 0)])
 
         #if DEBUG
         statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
@@ -376,6 +426,11 @@ extension PresentationViewController : RoomDelegate {
 
     func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
         print("Room \(room.name), Participant \(participant.identity) disconnected")
+
+        if let index = self.remoteParticipants.firstIndex(of: participant) {
+            self.remoteParticipants.remove(at: index)
+            self.collectionView?.reloadData()
+        }
     }
 }
 
@@ -413,7 +468,10 @@ extension PresentationViewController : RemoteParticipantDelegate {
 
         // Start remote rendering, and add a touch handler.
         if (self.remoteView == nil && publication.trackName == "Screen") {
-            setupRemoteVideoView(publication: publication)
+            setupScreenshareVideo(publication: publication)
+        } else {
+            self.remoteParticipants.append(participant)
+            self.collectionView?.reloadData()
         }
     }
 
@@ -471,4 +529,13 @@ extension PresentationViewController : RemoteParticipantDelegate {
     func didFailToSubscribeToVideoTrack(publication: RemoteVideoTrackPublication, error: Error, participant: RemoteParticipant) {
         print( "FailedToSubscribe \(publication.trackName) video track, error = \(String(describing: error))")
     }
+
+    func remoteParticipantSwitchedOffVideoTrack(participant: RemoteParticipant, track: RemoteVideoTrack) {
+        print( "remoteParticipantSwitchedOffVideoTrack \(track)")
+    }
+
+    func remoteParticipantSwitchedOnVideoTrack(participant: RemoteParticipant, track: RemoteVideoTrack) {
+        print( "remoteParticipantSwitchedOnVideoTrack \(track)")
+    }
+
 }

@@ -15,7 +15,7 @@ class VideoCollectionViewCell : UICollectionViewCell {
     var participant: Participant?
 
     override func prepareForReuse() {
-        // Remove from Track.
+        // Stop rendering the Track.
         if let view = videoView {
             videoTrack?.removeRenderer(view)
         }
@@ -27,7 +27,7 @@ class VideoCollectionViewCell : UICollectionViewCell {
         videoView?.frame = self.bounds
     }
 
-    func setParticipant(participant: Participant) {
+    func setParticipant(participant: Participant, localVideoTrack: LocalVideoTrack?) {
         var videoView = self.videoView
         if videoView == nil {
             videoView = VideoView(frame: .zero)
@@ -37,10 +37,16 @@ class VideoCollectionViewCell : UICollectionViewCell {
             self.videoView = videoView
         }
 
-        for trackPublication in participant.videoTracks {
-            if let videoTrack = trackPublication.videoTrack {
-                videoTrack.addRenderer(videoView!)
+        if let videoTrack = localVideoTrack {
+            self.videoTrack = videoTrack
+        } else {
+            for trackPublication in participant.videoTracks {
+                if let videoTrack = trackPublication.videoTrack {
+                    self.videoTrack = videoTrack
+                }
             }
         }
+
+        self.videoTrack?.addRenderer(videoView!)
     }
 }
