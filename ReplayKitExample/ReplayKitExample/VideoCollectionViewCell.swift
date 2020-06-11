@@ -13,18 +13,24 @@ class VideoCollectionViewCell : UICollectionViewCell {
     weak var videoView: VideoView?
     var videoTrack: VideoTrack?
     var participant: Participant?
+    weak var iconImageView: UIImageView?
+
+    static let kImagePadding = CGFloat(2)
 
     override func prepareForReuse() {
         // Stop rendering the Track.
         if let view = videoView {
             videoTrack?.removeRenderer(view)
         }
+
+        iconImageView?.removeFromSuperview()
+        iconImageView = nil
     }
 
     override var isHighlighted: Bool {
         set {
             super.isHighlighted = newValue
-            if super.isHighlighted || super.isSelected {
+            if newValue {
                 self.videoView?.alpha = 0.94
             } else {
                 self.videoView?.alpha = 1.0
@@ -39,7 +45,7 @@ class VideoCollectionViewCell : UICollectionViewCell {
     override var isSelected: Bool {
         set {
             super.isSelected = newValue
-            if super.isHighlighted || super.isSelected {
+            if newValue {
                 self.videoView?.alpha = 0.94
             } else {
                 self.videoView?.alpha = 1.0
@@ -55,9 +61,15 @@ class VideoCollectionViewCell : UICollectionViewCell {
         super.layoutSubviews()
 
         videoView?.frame = self.bounds
+
+        if let imageView = iconImageView {
+            let imageSize = imageView.intrinsicContentSize
+            imageView.frame = CGRect(origin: CGPoint(x: VideoCollectionViewCell.kImagePadding, y: self.bounds.size.height - imageSize.height - VideoCollectionViewCell.kImagePadding),
+                                     size: imageSize)
+        }
     }
 
-    func setParticipant(participant: Participant, localVideoTrack: LocalVideoTrack?) {
+    func setParticipant(participant: Participant, localVideoTrack: LocalVideoTrack?, localAudioTrack: LocalAudioTrack?) {
         var videoView = self.videoView
         if videoView == nil {
             videoView = VideoView(frame: .zero)
@@ -74,6 +86,19 @@ class VideoCollectionViewCell : UICollectionViewCell {
                 if let videoTrack = trackPublication.videoTrack {
                     self.videoTrack = videoTrack
                 }
+            }
+        }
+
+        if let audioTrack = localAudioTrack,
+            !audioTrack.isEnabled {
+            if #available(iOS 13.0, *) {
+                let imageView = UIImageView(image: UIImage(systemName: "mic.slash.fill"))
+                imageView.tintColor = UIColor(red: 226.0/255.0,
+                                              green: 29.0/255.0,
+                                              blue: 37.0/255.0,
+                                              alpha: 1.0)
+                self.contentView.addSubview(imageView)
+                self.iconImageView = imageView
             }
         }
 

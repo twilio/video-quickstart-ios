@@ -395,8 +395,12 @@ extension PresentationViewController : UICollectionViewDataSource {
 
         do {
             let participant = try self.participantForIndexPath(index: indexPath)
-            if cell != nil {
-                cell?.setParticipant(participant: participant, localVideoTrack: indexPath.row == 0 ? self.localVideoTrack : nil)
+            if let videoCell = cell {
+                if indexPath.row == 0 {
+                    videoCell.setParticipant(participant: participant, localVideoTrack: self.localVideoTrack, localAudioTrack: self.localAudioTrack)
+                } else {
+                    videoCell.setParticipant(participant: participant, localVideoTrack: nil, localAudioTrack: nil)
+                }
             }
         } catch DataSourceError.notConnected {
             print("The Room does not exist!")
