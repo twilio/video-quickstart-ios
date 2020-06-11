@@ -431,10 +431,8 @@ extension PresentationViewController : VideoViewDelegate {
     }
 
     func videoViewDimensionsDidChange(view: VideoView, dimensions: CMVideoDimensions) {
-        // TODO: Are updates needed here?
-        let scale = UIScreen.main.nativeScale
-        scrollView?.contentSize = CGSize(width: CGFloat(dimensions.width) / scale, height: CGFloat(dimensions.height) / scale)
-        scrollView?.maximumZoomScale = 2
+        // Trigger a layout pass to resize the scroll view & video view contents
+        self.view.setNeedsLayout()
     }
 }
 
