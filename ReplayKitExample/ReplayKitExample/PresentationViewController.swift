@@ -87,6 +87,7 @@ class PresentationViewController : UIViewController {
 
         }
 
+        self.cameraSource = camera
         self.localVideoTrack = videoTrack
     }
 
@@ -200,7 +201,6 @@ class PresentationViewController : UIViewController {
         scrollView.contentInsetAdjustmentBehavior = .always
         self.scrollView = scrollView
 
-        // self.view.insertSubview(remoteView!, at: 0)
         self.view.insertSubview(scrollView, at: 0)
         self.scrollView?.addSubview(videoView!)
 
@@ -220,6 +220,26 @@ class PresentationViewController : UIViewController {
             view.contentMode = view.contentMode == UIView.ContentMode.scaleAspectFit ?
                 UIView.ContentMode.scaleAspectFill : UIView.ContentMode.scaleAspectFit
         }
+    }
+
+    func roomDisconnected(error: Error?) {
+        // TODO: Presenting the error would be nice!
+
+        if let source = self.cameraSource {
+            source.stopCapture(completion: { error in
+                print("Camera stopped.")
+                self.localVideoTrack = nil
+                self.cameraSource = nil
+
+                self.navigationController?.popViewController(animated: true)
+            })
+        } else {
+            self.navigationController?.popViewController(animated: true)
+        }
+
+        self.statsTimer?.invalidate()
+        self.room = nil
+        UIApplication.shared.isIdleTimerDisabled = false
     }
 }
 
@@ -290,8 +310,6 @@ extension PresentationViewController : UIGestureRecognizerDelegate {
 extension PresentationViewController : UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("didSelectItemAtIndexPath: \(indexPath)")
-        // TODO: Update local audio track enabled/disabled state here.
-
         if indexPath.row == 0,
             let audioTrack = self.localAudioTrack {
             audioTrack.isEnabled = !audioTrack.isEnabled
@@ -390,7 +408,6 @@ extension PresentationViewController : RoomDelegate {
         print(connectMessage)
 
         self.publishCamera()
-
         self.collectionView?.insertItems(at: [IndexPath(row: 0, section: 0)])
     }
 
@@ -401,14 +418,13 @@ extension PresentationViewController : RoomDelegate {
             print("Disconnected from \(room.name)")
         }
 
-        self.room = nil
-        self.statsTimer?.invalidate()
+        roomDisconnected(error: error)
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {
         print("Failed to connect to Room:\n\(error.localizedDescription)")
 
-        self.room = nil
+        roomDisconnected(error: error)
     }
 
     func roomIsReconnecting(room: Room, error: Error) {
@@ -437,30 +453,6 @@ extension PresentationViewController : RoomDelegate {
 
 // MARK:- RemoteParticipantDelegate
 extension PresentationViewController : RemoteParticipantDelegate {
-    func remoteParticipantDidPublishVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
-        // Remote Participant has offered to share the video Track.
-
-        print("Participant \(participant.identity) published \(publication.trackName) video track")
-    }
-
-    func remoteParticipantDidUnpublishVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
-        // Remote Participant has stopped sharing the video Track.
-
-        print( "Participant \(participant.identity) unpublished \(publication.trackName) video track")
-    }
-
-    func remoteParticipantDidPublishAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
-        // Remote Participant has offered to share the audio Track.
-
-        print( "Participant \(participant.identity) published \(publication.trackName) audio track")
-    }
-
-    func remoteParticipantDidUnpublishAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
-        // Remote Participant has stopped sharing the audio Track.
-
-        print("Participant \(participant.identity) unpublished \(publication.trackName) audio track")
-    }
-
     func didSubscribeToVideoTrack(videoTrack: RemoteVideoTrack, publication: RemoteVideoTrackPublication, participant: RemoteParticipant) {
         // We are subscribed to the remote Participant's video Track. We will start receiving the
         // remote Participant's video frames now.
