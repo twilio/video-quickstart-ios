@@ -79,7 +79,7 @@ class PresentationViewController : UIViewController {
             return
         }
 
-        // Crop and scale to 360x360 square
+        // Crop to 360x360 square
         let sendFormat = VideoFormat()
         sendFormat.dimensions = CMVideoDimensions(width: 360, height: 360)
         camera.requestOutputFormat(sendFormat)
@@ -223,13 +223,37 @@ class PresentationViewController : UIViewController {
     }
 }
 
-
-
 // MARK:- LocalParticipantDelegate
-
 extension PresentationViewController : LocalParticipantDelegate {
     func localParticipantDidPublishVideoTrack(participant: LocalParticipant, videoTrackPublication: LocalVideoTrackPublication) {
         print("localParticipantDidPublishVideoTrack: \(videoTrackPublication.trackSid)")
+
+        #if DEBUG
+        statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
+            guard let room = self.room else {
+                self.statsTimer?.invalidate()
+                return
+            }
+            room.getStats({ (reports: [StatsReport]) in
+                for report in reports {
+                    if let videoStats = report.localVideoTrackStats.first {
+                        print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
+                        print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
+                    }
+                    for candidatePair in report.iceCandidatePairStats {
+                        if candidatePair.isActiveCandidatePair {
+                            print("Send = \(candidatePair.availableOutgoingBitrate)")
+                            print("Receive = \(candidatePair.availableIncomingBitrate)")
+                        }
+                    }
+                }
+            })
+        })
+
+        if let theTimer = statsTimer {
+            RunLoop.main.add(theTimer, forMode: .common)
+        }
+        #endif
     }
 }
 
@@ -368,29 +392,6 @@ extension PresentationViewController : RoomDelegate {
         self.publishCamera()
 
         self.collectionView?.insertItems(at: [IndexPath(row: 0, section: 0)])
-
-        #if DEBUG
-        statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
-            room.getStats({ (reports: [StatsReport]) in
-                for report in reports {
-                    if let videoStats = report.localVideoTrackStats.first {
-                        print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
-                        print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
-                    }
-                    for candidatePair in report.iceCandidatePairStats {
-                        if candidatePair.isActiveCandidatePair {
-                            print("Send = \(candidatePair.availableOutgoingBitrate)")
-                            print("Receive = \(candidatePair.availableIncomingBitrate)")
-                        }
-                    }
-                }
-            })
-        })
-
-        if let theTimer = statsTimer {
-            RunLoop.main.add(theTimer, forMode: .common)
-        }
-        #endif
     }
 
     func roomDidDisconnect(room: Room, error: Error?) {
