@@ -209,7 +209,7 @@ class PresentationViewController : UIViewController {
         videoView?.tag = publication.trackSid.hashValue
 
         let scrollView = UIScrollView()
-        scrollView.contentSize = CGSize(width: 640, height: 480)
+        scrollView.contentSize = self.view.bounds.size
         scrollView.delegate = self
         scrollView.backgroundColor = nil
         scrollView.scrollsToTop = false
@@ -436,6 +436,14 @@ extension PresentationViewController : UICollectionViewDataSource {
             return self.remoteParticipants[index.row - 1]
         }
     }
+
+    func indexPathForRemoteParticipant(participant: RemoteParticipant) -> IndexPath? {
+        if let index = self.remoteParticipants.index(of: participant) {
+            return IndexPath(row: index + 1, section: 0)
+        } else {
+            return nil
+        }
+    }
 }
 
 // MARK:- CameraSourceDelegate
@@ -578,13 +586,25 @@ extension PresentationViewController : RemoteParticipantDelegate {
 
     func remoteParticipantDidEnableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
         print( "Participant \(participant.identity) enabled \(publication.trackName) audio track")
-        // TODO: Showing remote track enabled would be nice
+        // Update the audio enabled state.
+        guard let indexPath = self.indexPathForRemoteParticipant(participant: participant) else {
+            return
+        }
+        if let theCell = collectionView?.cellForItem(at: indexPath) as? VideoCollectionViewCell {
+            theCell.updateMute(enabled: true)
+        }
     }
 
     func remoteParticipantDidDisableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
-        // We will continue to record silence and/or recognize audio while a Track is disabled.
         print( "Participant \(participant.identity) disabled \(publication.trackName) audio track")
-        // TODO: Showing remote track enabled would be nice
+
+        // Update the audio enabled state.
+        guard let indexPath = self.indexPathForRemoteParticipant(participant: participant) else {
+            return
+        }
+        if let theCell = collectionView?.cellForItem(at: indexPath) as? VideoCollectionViewCell {
+            theCell.updateMute(enabled: false)
+        }
     }
 
     func didFailToSubscribeToAudioTrack(publication: RemoteAudioTrackPublication, error: Error, participant: RemoteParticipant) {
