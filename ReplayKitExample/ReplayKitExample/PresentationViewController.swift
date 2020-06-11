@@ -170,7 +170,7 @@ class PresentationViewController : UIViewController {
         self.scrollView?.contentInset = self.additionalSafeAreaInsets
         let contentBounds = self.view.bounds
 
-        let width = 80
+        let width = 82
         self.collectionView?.bounds = CGRect(x: 0, y: 0, width: width, height: Int(contentBounds.size.height))
         self.collectionView?.center = CGPoint(x: width/2, y: Int(contentBounds.size.height)/2)
 
@@ -178,8 +178,6 @@ class PresentationViewController : UIViewController {
             remoteView?.hasVideoData == true {
             let contentRect = AVMakeRect(aspectRatio: CGSize(width: Int(dimensions.width),
                 height: Int(dimensions.height)), insideRect: contentBounds).integral
-//            let size = CGSize(width: CGFloat(dimensions.width) / scale, height: CGFloat(dimensions.height) / scale)
-//            print("\(size)")
             scrollView?.contentSize = contentRect.size
             scrollView?.maximumZoomScale = 2
             scrollView?.minimumZoomScale = 1
@@ -310,31 +308,32 @@ extension PresentationViewController : UIGestureRecognizerDelegate {
 extension PresentationViewController : UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("didSelectItemAtIndexPath: \(indexPath)")
+        // Quick tap to mute/unmute UI. Long press for more options.
         if indexPath.row == 0,
             let audioTrack = self.localAudioTrack {
             audioTrack.isEnabled = !audioTrack.isEnabled
         }
-
-        // TODO: It would be nice to have the ability to pin remote Participants or maybe your own video?
     }
 
     @available(iOS 13.0, *)
     func collectionView(_ collectionView: UICollectionView,
                         contextMenuConfigurationForItemAt indexPath: IndexPath,
                         point: CGPoint) -> UIContextMenuConfiguration? {
+        // Long press to disconnect or mute.
         if indexPath.row == 0 {
             return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions in
                 let muteTitle = self.localAudioTrack?.isEnabled ?? false ? "Mute" : "Unmute"
+                let muteIcon = self.localAudioTrack?.isEnabled ?? false ? "mic.slash.fill" : "mic.fill"
 
                 // Create an action for muting
-                let mute = UIAction(title: muteTitle, image: UIImage(systemName: "square.and.pencil")) { action in
+                let mute = UIAction(title: muteTitle, image: UIImage(systemName: muteIcon)) { action in
                     if let audioTrack = self.localAudioTrack {
                         audioTrack.isEnabled = !audioTrack.isEnabled
                     }
                 }
 
                 // Here we specify the "destructive" attribute to show that it’s destructive in nature
-                let delete = UIAction(title: "Disconnect", image: UIImage(systemName: "trash"), attributes: .destructive) { action in
+                let delete = UIAction(title: "Disconnect", image: UIImage(systemName: "phone.down.fill"), attributes: .destructive) { action in
                     self.room?.disconnect()
                 }
 
