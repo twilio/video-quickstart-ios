@@ -32,8 +32,10 @@ class VideoCollectionViewCell : UICollectionViewCell {
             super.isHighlighted = newValue
             if newValue {
                 self.videoView?.alpha = 0.94
+                self.backgroundColor = .white
             } else {
                 self.videoView?.alpha = 1.0
+                self.backgroundColor = nil
             }
         }
 
@@ -47,8 +49,10 @@ class VideoCollectionViewCell : UICollectionViewCell {
             super.isSelected = newValue
             if newValue {
                 self.videoView?.alpha = 0.94
+                self.backgroundColor = .white
             } else {
                 self.videoView?.alpha = 1.0
+                self.backgroundColor = nil
             }
         }
 

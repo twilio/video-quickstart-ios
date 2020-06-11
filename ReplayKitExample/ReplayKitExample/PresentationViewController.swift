@@ -332,6 +332,7 @@ extension PresentationViewController : UIGestureRecognizerDelegate {
 extension PresentationViewController : UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("didSelectItemAtIndexPath: \(indexPath)")
+
         // Quick tap to mute/unmute UI. Long press for more options.
         if indexPath.row == 0,
             let audioTrack = self.localAudioTrack {
@@ -343,6 +344,8 @@ extension PresentationViewController : UICollectionViewDelegateFlowLayout {
                 theCell.updateMute(enabled: enabled)
             }
         }
+
+        collectionView.deselectItem(at: indexPath, animated: true)
     }
 
     @available(iOS 13.0, *)
@@ -565,19 +568,23 @@ extension PresentationViewController : RemoteParticipantDelegate {
 
     func remoteParticipantDidEnableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         print( "Participant \(participant.identity) enabled \(publication.trackName) video track")
+        // TODO: Update track disabled UI
     }
 
     func remoteParticipantDidDisableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         print( "Participant \(participant.identity) disabled \(publication.trackName) video track")
+        // TODO: Update track disabled UI
     }
 
     func remoteParticipantDidEnableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
         print( "Participant \(participant.identity) enabled \(publication.trackName) audio track")
+        // TODO: Showing remote track enabled would be nice
     }
 
     func remoteParticipantDidDisableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
         // We will continue to record silence and/or recognize audio while a Track is disabled.
         print( "Participant \(participant.identity) disabled \(publication.trackName) audio track")
+        // TODO: Showing remote track enabled would be nice
     }
 
     func didFailToSubscribeToAudioTrack(publication: RemoteAudioTrackPublication, error: Error, participant: RemoteParticipant) {
