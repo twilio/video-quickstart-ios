@@ -16,6 +16,8 @@ enum DataSourceError: Error {
 class PresentationViewController : UIViewController {
 
     static let kCellReuseId = "VideoCellReuseId"
+    static let kLargeCellSize = 160
+    static let kSmallCellSize = 78
 
     var cameraSource: CameraSource?
     var localVideoTrack: LocalVideoTrack?
@@ -149,6 +151,8 @@ class PresentationViewController : UIViewController {
                 self.localAudioTrack = audioTrack
             }
 
+            builder.preferredVideoCodecs = [Vp8Codec(simulcast: true)]
+
             // Use the preferred signaling region
             if let signalingRegion = Settings.shared.signalingRegion {
                 builder.region = signalingRegion
@@ -180,7 +184,9 @@ class PresentationViewController : UIViewController {
         self.scrollView?.contentInset = self.additionalSafeAreaInsets
         let contentBounds = self.view.bounds
 
-        let width = 82
+        var width = UIDevice.current.userInterfaceIdiom == .pad ?
+            PresentationViewController.kLargeCellSize : PresentationViewController.kSmallCellSize
+        width += 10
         self.collectionView?.bounds = CGRect(x: 0, y: 0, width: width, height: Int(contentBounds.size.height))
         self.collectionView?.center = CGPoint(x: width/2, y: Int(contentBounds.size.height)/2)
 
@@ -385,7 +391,11 @@ extension PresentationViewController : UICollectionViewDelegateFlowLayout {
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 72, height: 72)
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            return CGSize(width: PresentationViewController.kLargeCellSize, height: PresentationViewController.kLargeCellSize)
+        } else {
+            return CGSize(width: PresentationViewController.kSmallCellSize, height: PresentationViewController.kSmallCellSize)
+        }
     }
 }
 
