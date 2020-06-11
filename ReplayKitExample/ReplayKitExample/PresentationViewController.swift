@@ -178,11 +178,18 @@ class PresentationViewController : UIViewController {
             remoteView?.hasVideoData == true {
             let contentRect = AVMakeRect(aspectRatio: CGSize(width: Int(dimensions.width),
                 height: Int(dimensions.height)), insideRect: contentBounds).integral
-            scrollView?.contentSize = contentRect.size
-            scrollView?.maximumZoomScale = 2
+            scrollView?.contentSize = contentBounds.size
+            scrollView?.maximumZoomScale = max(max(contentBounds.width / contentRect.width,
+                                               contentBounds.height / contentRect.height),
+                                               2)
             scrollView?.minimumZoomScale = 1
             remoteView?.bounds = CGRect(origin: .zero, size: contentRect.size)
-            remoteView?.center = CGPoint(x: contentRect.midX, y: contentRect.midY)
+            remoteView?.center = CGPoint(x: contentBounds.midX, y: contentBounds.midY)
+
+            // Use additional insets so that the user can't pixel peep the black bars too closely.. :)
+            let xInset = contentBounds.width - contentRect.width
+            let yInset = contentBounds.height - contentRect.height
+            scrollView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: yInset, right: xInset)
         }
     }
 
@@ -214,9 +221,16 @@ class PresentationViewController : UIViewController {
     }
 
     @objc func tappedScreenParticipant(sender: UITapGestureRecognizer) {
-        if let view = sender.view {
-            view.contentMode = view.contentMode == UIView.ContentMode.scaleAspectFit ?
-                UIView.ContentMode.scaleAspectFill : UIView.ContentMode.scaleAspectFit
+        if let scrollView = self.scrollView,
+            sender.view == self.remoteView {
+            if scrollView.zoomScale > scrollView.minimumZoomScale + CGFloat(Double.ulpOfOne) {
+                // Zoom out to fit the entire content.
+                scrollView.zoom(to: CGRect(origin: .zero, size: scrollView.contentSize), animated: true)
+            } else {
+                // Zoom in to aspect fill the content
+                let zoomedRect = AVMakeRect(aspectRatio: scrollView.bounds.size, insideRect: self.remoteView?.bounds ?? .zero)
+                scrollView.zoom(to: zoomedRect, animated: true)
+            }
         }
     }
 
