@@ -163,6 +163,16 @@ class PresentationViewController : UIViewController {
         self.startCamera()
     }
 
+    override func viewWillTransition(to size: CGSize,
+                                     with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+
+        // Workaround to fix content bugs after rotating while zoomed past minimum zoom.
+        if let scrollView = self.scrollView {
+            scrollView.zoomScale = scrollView.minimumZoomScale
+        }
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 

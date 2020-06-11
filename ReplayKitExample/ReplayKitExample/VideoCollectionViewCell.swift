@@ -21,6 +21,36 @@ class VideoCollectionViewCell : UICollectionViewCell {
         }
     }
 
+    override var isHighlighted: Bool {
+        set {
+            super.isHighlighted = newValue
+            if super.isHighlighted || super.isSelected {
+                self.videoView?.alpha = 0.94
+            } else {
+                self.videoView?.alpha = 1.0
+            }
+        }
+
+        get {
+            return super.isHighlighted
+        }
+    }
+
+    override var isSelected: Bool {
+        set {
+            super.isSelected = newValue
+            if super.isHighlighted || super.isSelected {
+                self.videoView?.alpha = 0.94
+            } else {
+                self.videoView?.alpha = 1.0
+            }
+        }
+
+        get {
+            return super.isSelected
+        }
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
 
