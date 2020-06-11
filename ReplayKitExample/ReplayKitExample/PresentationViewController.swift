@@ -520,9 +520,10 @@ extension PresentationViewController : RoomDelegate {
     func participantDidDisconnect(room: Room, participant: RemoteParticipant) {
         print("Room \(room.name), Participant \(participant.identity) disconnected")
 
+        // The Participant might not have be visible yet if the video was never subscribed.
         if let index = self.remoteParticipants.firstIndex(of: participant) {
             self.remoteParticipants.remove(at: index)
-            self.collectionView?.reloadData()
+            self.collectionView?.deleteItems(at: [IndexPath(row: index + 1, section: 0)])
         }
     }
 }
@@ -540,7 +541,7 @@ extension PresentationViewController : RemoteParticipantDelegate {
             setupScreenshareVideo(publication: publication)
         } else {
             self.remoteParticipants.append(participant)
-            self.collectionView?.reloadData()
+            self.collectionView?.insertItems(at: [IndexPath(row: self.remoteParticipants.count, section: 0)])
         }
     }
 
@@ -617,10 +618,24 @@ extension PresentationViewController : RemoteParticipantDelegate {
 
     func remoteParticipantSwitchedOffVideoTrack(participant: RemoteParticipant, track: RemoteVideoTrack) {
         print( "remoteParticipantSwitchedOffVideoTrack \(track)")
+
+        guard let indexPath = self.indexPathForRemoteParticipant(participant: participant) else {
+            return
+        }
+        if let theCell = collectionView?.cellForItem(at: indexPath) as? VideoCollectionViewCell {
+            theCell.updateVideoSwitchedOff(switchedOff: true)
+        }
     }
 
     func remoteParticipantSwitchedOnVideoTrack(participant: RemoteParticipant, track: RemoteVideoTrack) {
         print( "remoteParticipantSwitchedOnVideoTrack \(track)")
+
+        guard let indexPath = self.indexPathForRemoteParticipant(participant: participant) else {
+            return
+        }
+        if let theCell = collectionView?.cellForItem(at: indexPath) as? VideoCollectionViewCell {
+            theCell.updateVideoSwitchedOff(switchedOff: false)
+        }
     }
 
 }

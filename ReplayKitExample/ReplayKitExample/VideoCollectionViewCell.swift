@@ -12,8 +12,8 @@ import TwilioVideo
 class VideoCollectionViewCell : UICollectionViewCell {
     weak var videoView: VideoView?
     var videoTrack: VideoTrack?
-    var participant: Participant?
     weak var iconImageView: UIImageView?
+    weak var videoPlaceholderImageView: UIImageView?
 
     static let kImagePadding = CGFloat(2)
 
@@ -21,10 +21,14 @@ class VideoCollectionViewCell : UICollectionViewCell {
         // Stop rendering the Track.
         if let view = videoView {
             videoTrack?.removeRenderer(view)
+            videoTrack = nil
         }
 
         iconImageView?.removeFromSuperview()
         iconImageView = nil
+
+        videoPlaceholderImageView?.removeFromSuperview()
+        videoPlaceholderImageView = nil
     }
 
     override var isHighlighted: Bool {
@@ -71,6 +75,10 @@ class VideoCollectionViewCell : UICollectionViewCell {
             imageView.frame = CGRect(origin: CGPoint(x: VideoCollectionViewCell.kImagePadding, y: self.bounds.size.height - imageSize.height - VideoCollectionViewCell.kImagePadding),
                                      size: imageSize)
         }
+
+        if let imageView = videoPlaceholderImageView {
+            imageView.frame = self.contentView.bounds
+        }
     }
 
     func setParticipant(participant: Participant, localVideoTrack: LocalVideoTrack?, localAudioTrack: LocalAudioTrack?) {
@@ -78,27 +86,33 @@ class VideoCollectionViewCell : UICollectionViewCell {
         if videoView == nil {
             videoView = VideoView(frame: .zero)
             videoView?.contentMode = .scaleAspectFill
-            videoView?.shouldMirror = true
             self.contentView.addSubview(videoView!)
             self.videoView = videoView
         }
 
+        let mirror: Bool
         if let videoTrack = localVideoTrack {
             self.videoTrack = videoTrack
+            mirror = true
         } else {
-            for trackPublication in participant.videoTracks {
-                if let videoTrack = trackPublication.videoTrack {
-                    self.videoTrack = videoTrack
-                }
+            mirror = false
+            let trackPublication = participant.videoTracks.first
+            if let videoTrack = trackPublication?.videoTrack {
+                self.videoTrack = videoTrack
             }
         }
 
         if let audioTrack = localAudioTrack,
             !audioTrack.isEnabled {
             updateMute(enabled: false)
+        } else {
+            if let trackPublication = participant.audioTracks.first {
+                updateMute(enabled: trackPublication.isTrackEnabled)
+            }
         }
 
         self.videoTrack?.addRenderer(videoView!)
+        videoView?.shouldMirror = mirror
     }
 
     func updateMute(enabled: Bool) {
@@ -115,6 +129,26 @@ class VideoCollectionViewCell : UICollectionViewCell {
             } else {
                 self.iconImageView?.removeFromSuperview()
                 self.iconImageView = nil
+            }
+        }
+    }
+
+    func updateVideoSwitchedOff(switchedOff: Bool) {
+        if #available(iOS 13.0, *) {
+            if switchedOff {
+                let imageView = UIImageView(image: UIImage(systemName: "video.slash.fill"))
+                imageView.tintColor = UIColor(red: 226.0/255.0,
+                                              green: 29.0/255.0,
+                                              blue: 37.0/255.0,
+                                              alpha: 1.0)
+                imageView.contentMode = .center
+                self.contentView.addSubview(imageView)
+                self.videoPlaceholderImageView = imageView
+                self.videoPlaceholderImageView?.backgroundColor = UIColor(white: 0, alpha: 0.8)
+                self.setNeedsLayout()
+            } else {
+                self.videoPlaceholderImageView?.removeFromSuperview()
+                self.videoPlaceholderImageView = nil
             }
         }
     }
