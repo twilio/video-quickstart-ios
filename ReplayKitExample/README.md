@@ -1,20 +1,28 @@
 # Twilio Video ReplayKit Example
 
-The project demonstrates how to integrate Twilio's Programmable Video SDK with `ReplayKit.framework`. Two distinct use cases are covered:
+The project demonstrates how to integrate Twilio's Programmable Video SDK with `ReplayKit.framework`. Three distinct use cases are covered:
 
-**Conferencing (In-App)**
+**View Screen**
+
+A viewer Participant that uses the [TVIBandwidthProfileOptions](https://twilio.github.io/twilio-video-ios/docs/latest/Classes/TVIBandwidthProfileOptions) API to prioritize high quality screenshare content. Viewers also share their microphone and thumbnail sized video.
+
+**Share App Screen**
 
 Use an `RPScreenRecorder` to capture the screen and play/record audio using `TVIDefaultAudioDevice`. After joining a Room you will be able to hear other Participants, and they will be able to hear you, and see the contents of your screen.
 
 When using the in-process `RPScreenRecorder` APIs, you may only capture content from your own application. Screen capture is suspended upon entering the backround. Once you being capturing, your application is locked to its current interface orientation.
 
-**Broadcast (Extension)**
+The screenshare is always published using high priority so that this content receives the most bandwidth and is presented in the best quality possible.
+
+**Share Device Screen (Extension)**
 
 Use an `RPBroadcastSampleHandler` to receive audio and video samples. Video samples are routed to `ReplayKitVideoSource`, while `ExampleReplayKitAudioCapturer` handles audio.
 
-An iOS 12.0 extension is not limited to capturing the screen of a single application. In fact, it is possible to capture video from any application including the home screen.
+An iOS 12.0+ extension is not limited to capturing the screen of a single application. In fact, it is possible to capture video from any application including the home screen.
 
-In order to reduce memory usage, the extension configures `ReplayKitVideoSource` to downscale incoming video frames, and prefers the H.264 video codec by default. In a Group Room, the extension connects as a publish-only Participant ([TVIConnectOptionsBuilder.automaticSubscriptionEnabled](https://twilio.github.io/twilio-video-ios/docs/latest/Classes/TVIConnectOptionsBuilder.html#//api/name/automaticSubscriptionEnabled)) to further reduce bandwidth, memory, and CPU requirements.
+In order to reduce memory usage, the extension configures `ReplayKitVideoSource` to downscale incoming video frames, and prefers the H.264 video codec on iPads. In a Group Room, the extension connects as a publish-only Participant ([TVIConnectOptionsBuilder.automaticSubscriptionEnabled](https://twilio.github.io/twilio-video-ios/docs/latest/Classes/TVIConnectOptionsBuilder.html#//api/name/automaticSubscriptionEnabled)) to further reduce bandwidth, memory, and CPU requirements.
+
+The screenshare is always published using high priority so that this content receives the most bandwidth and is presented in the best quality possible for an extension.
 
 ### Key Classes
 
@@ -24,8 +32,8 @@ This `TVIVideoSource` produces `TVIVideoFrame`s from `CMSampleBuffer`s captured 
 
 The source offers several capabilities to optimize for different use cases:
 
-1. Screencast mode (In-App Conferencing). This setting preserves resolution (detail) over all else. The input from ReplayKit is always capped at 15 fps, and is not downscaled.
-2. Video mode (Broadcast Extension). This setting balances spatial and temporal resolution, and is content aware. When app content is shown, the input is capped at 15 fps. However, when playback of 24 fps video content is detected the input cap is raised to preserve the native cadence of the video.
+1. Screencast mode (default). This setting preserves resolution (detail) over all else. The input from ReplayKit is always capped at 15 fps, and may be downscaled to reduce memory.
+2. Video mode (Broadcast Extension). This setting balances spatial and temporal resolution, and is content aware. Frame rates of up to 30 frames / second are possible.
 3. Real-time [Inverse Telecine (IVTC)](https://en.wikipedia.org/wiki/Telecine#Reverse_telecine_(a.k.a._inverse_telecine_(IVTC),_reverse_pulldown)). The source removes duplicate frames when it detects 24 or 25 frame / second content with 3:2 pulldown applied. Some apps (that do not use AVPlayer for playback) perform a telecine by drawing the same frame to screen multiple times.
 4. A helper method to generate `EncodingParameters` and `VideoFormat` configuration based upon `VideoCodec` information and operating mode.
 
@@ -73,13 +81,12 @@ Please note that backgrounding the app during a conference will cause in-app cap
 
 1. Support capturing both application and microphone audio at the same time, in an extension. Down-mix the resulting audio samples into a single stream.
 2. Share the camera using ReplayKit, or `TVICameraSource`.
-3. Resolve tearing issues when scrolling vertically, and image corruption when sharing video. (ISDK-2478)
 
 ### Known Issues
 
 **1. Memory Usage**
 
-The memory usage of a ReplayKit Broadcast Extension is limited to 50 MB (as of iOS 12.2). There are cases where Twilio Video can use more than this amount, especially when capturing larger 2x and 3x retina screens in a Peer-to-Peer Room. This example uses format requests, and H.264 to reduce the amount of memory needed by the extension.
+The memory usage of a ReplayKit Broadcast Extension is limited to 50 MB (as of iOS 13.5.1). There are cases where Twilio Video can use more than this amount, especially when capturing larger 2x and 3x retina screens in a Peer-to-Peer Room. This example uses format requests, and H.264 to reduce the amount of memory needed by the extension.
 
 <kbd><img width="400px" src="../images/quickstart/replaykit-extension-memory.png"/></kbd>
 
@@ -91,7 +98,7 @@ It is not possible to capture application audio produced by AVPlayer, by Safari 
 
 **3. RPSystemBroadcastPickerView crashes (iOS 13.0)**
 
-There is a [serious bug](https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie) in iOS 13.0 where tapping `RPSystemBroadcastPickerView` throws an exception. Since the issue is specific to iOS 13.0, and is fixed in 13.1-beta2, the example disables usage of the picker on iOS 13.0.x releases.
+There is a [serious bug](https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie) in iOS 13.0 where tapping `RPSystemBroadcastPickerView` throws an exception. Since the issue is specific to iOS 13.0, and is fixed in 13.1, the example disables usage of the picker on iOS 13.0.x releases.
 
 > *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'Application tried to present UIModalTransitionStylePartialCurl to or from non-fullscreen view controller <UIApplicationRotationFollowingController: 0x104f31220>.'
 
@@ -123,7 +130,7 @@ It is possible to get ReplayKit into an inconsistent state when debugging `RPBro
 
 This problem may be solved by deleting and re-installing the example app.
 
-**7. Application Audio Delay (iOS 12)**
+**7. Application Audio Delay (iOS 12.x)**
 
 An `RPSampleHandler` receives both application and microphone audio samples. We have found that, while microphone samples are suitable for realtime usage, application audio samples are significantly delayed in iOS 12 releases. This delay results in poor audio quality for subscribers (even under ideal network conditions), since the extension delivers audio in bursts rather than continuously.
 
@@ -141,7 +148,7 @@ This problem is solved in iOS 13.0, which supports low-delay mono and stereo app
 | Application | 1 or 2ch, 44,100 Hz, Big Endian    | 1,024               | 23.2                 |
 | Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
 
-**8. RPScreenRecorder Content Sizing Error (iOS 12)**
+**8. RPScreenRecorder Content Sizing Error (iOS 12.x)**
 
 You might experience spurious failures while presenting the permissions dialog for `RSPScreenRecorder`  on iOS 12 devices.
 
