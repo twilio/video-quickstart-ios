@@ -335,7 +335,13 @@ extension PresentationViewController : UICollectionViewDelegateFlowLayout {
         // Quick tap to mute/unmute UI. Long press for more options.
         if indexPath.row == 0,
             let audioTrack = self.localAudioTrack {
-            audioTrack.isEnabled = !audioTrack.isEnabled
+            let enabled = !audioTrack.isEnabled
+            audioTrack.isEnabled = enabled
+
+            // Update muting state.
+            if let theCell = collectionView.cellForItem(at: indexPath) as? VideoCollectionViewCell {
+                theCell.updateMute(enabled: enabled)
+            }
         }
     }
 
@@ -352,7 +358,12 @@ extension PresentationViewController : UICollectionViewDelegateFlowLayout {
                 // Create an action for muting
                 let mute = UIAction(title: muteTitle, image: UIImage(systemName: muteIcon)) { action in
                     if let audioTrack = self.localAudioTrack {
-                        audioTrack.isEnabled = !audioTrack.isEnabled
+                        let enabled = !audioTrack.isEnabled
+                        audioTrack.isEnabled = enabled
+                        // Update muting state.
+                        if let theCell = collectionView.cellForItem(at: indexPath) as? VideoCollectionViewCell {
+                            theCell.updateMute(enabled: enabled)
+                        }
                     }
                 }
 

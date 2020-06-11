@@ -91,7 +91,15 @@ class VideoCollectionViewCell : UICollectionViewCell {
 
         if let audioTrack = localAudioTrack,
             !audioTrack.isEnabled {
-            if #available(iOS 13.0, *) {
+            updateMute(enabled: false)
+        }
+
+        self.videoTrack?.addRenderer(videoView!)
+    }
+
+    func updateMute(enabled: Bool) {
+        if #available(iOS 13.0, *) {
+            if !enabled {
                 let imageView = UIImageView(image: UIImage(systemName: "mic.slash.fill"))
                 imageView.tintColor = UIColor(red: 226.0/255.0,
                                               green: 29.0/255.0,
@@ -99,9 +107,11 @@ class VideoCollectionViewCell : UICollectionViewCell {
                                               alpha: 1.0)
                 self.contentView.addSubview(imageView)
                 self.iconImageView = imageView
+                self.setNeedsLayout()
+            } else {
+                self.iconImageView?.removeFromSuperview()
+                self.iconImageView = nil
             }
         }
-
-        self.videoTrack?.addRenderer(videoView!)
     }
 }
