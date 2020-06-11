@@ -315,7 +315,36 @@ extension PresentationViewController : UICollectionViewDelegateFlowLayout {
             audioTrack.isEnabled = !audioTrack.isEnabled
         }
 
-        // TODO: It would be nice to have the ability to pin remote Participants or maybe your own video.
+        // TODO: It would be nice to have the ability to pin remote Participants or maybe your own video?
+    }
+
+    @available(iOS 13.0, *)
+    func collectionView(_ collectionView: UICollectionView,
+                        contextMenuConfigurationForItemAt indexPath: IndexPath,
+                        point: CGPoint) -> UIContextMenuConfiguration? {
+        if indexPath.row == 0 {
+            return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions in
+                let muteTitle = self.localAudioTrack?.isEnabled ?? false ? "Mute" : "Unmute"
+
+                // Create an action for muting
+                let mute = UIAction(title: muteTitle, image: UIImage(systemName: "square.and.pencil")) { action in
+                    if let audioTrack = self.localAudioTrack {
+                        audioTrack.isEnabled = !audioTrack.isEnabled
+                    }
+                }
+
+                // Here we specify the "destructive" attribute to show that it’s destructive in nature
+                let delete = UIAction(title: "Disconnect", image: UIImage(systemName: "trash"), attributes: .destructive) { action in
+                    self.room?.disconnect()
+                }
+
+                // Create and return a UIMenu with all of the actions as children
+                return UIMenu(title: "", children: [mute, delete])
+            }
+        } else {
+            // No actions are possible at this time. The app could mute, pin video, something else?
+            return UIContextMenuConfiguration()
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
