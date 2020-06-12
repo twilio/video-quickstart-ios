@@ -44,7 +44,6 @@ class PresentationViewController : UIViewController {
         self.collectionView = collectionView
 
         self.view.addSubview(collectionView)
-
         connectToPresentation()
     }
 
@@ -219,7 +218,7 @@ class PresentationViewController : UIViewController {
         scrollView.delegate = self
         scrollView.backgroundColor = nil
         scrollView.scrollsToTop = false
-        scrollView.contentInsetAdjustmentBehavior = .always
+        scrollView.contentInsetAdjustmentBehavior = .scrollableAxes
         self.scrollView = scrollView
 
         self.view.insertSubview(scrollView, at: 0)
@@ -587,12 +586,22 @@ extension PresentationViewController : RemoteParticipantDelegate {
 
     func remoteParticipantDidEnableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         print( "Participant \(participant.identity) enabled \(publication.trackName) video track")
-        // TODO: Update track disabled UI
+        guard let indexPath = self.indexPathForRemoteParticipant(participant: participant) else {
+            return
+        }
+        if let theCell = collectionView?.cellForItem(at: indexPath) as? VideoCollectionViewCell {
+            theCell.updateVideoSwitchedOff(switchedOff: false)
+        }
     }
 
     func remoteParticipantDidDisableVideoTrack(participant: RemoteParticipant, publication: RemoteVideoTrackPublication) {
         print( "Participant \(participant.identity) disabled \(publication.trackName) video track")
-        // TODO: Update track disabled UI
+        guard let indexPath = self.indexPathForRemoteParticipant(participant: participant) else {
+            return
+        }
+        if let theCell = collectionView?.cellForItem(at: indexPath) as? VideoCollectionViewCell {
+            theCell.updateVideoSwitchedOff(switchedOff: true)
+        }
     }
 
     func remoteParticipantDidEnableAudioTrack(participant: RemoteParticipant, publication: RemoteAudioTrackPublication) {
