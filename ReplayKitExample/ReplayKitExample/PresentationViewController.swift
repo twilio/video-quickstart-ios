@@ -13,6 +13,7 @@ enum DataSourceError: Error {
     case notConnected
 }
 
+// MARK:- UIViewController
 class PresentationViewController : UIViewController {
 
     static let kCellReuseId = "VideoCellReuseId"
@@ -31,6 +32,7 @@ class PresentationViewController : UIViewController {
     weak var scrollView: UIScrollView?
     var accessToken: String?
     weak var collectionView: UICollectionView?
+    weak var connectionLabel: UILabel?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,6 +45,13 @@ class PresentationViewController : UIViewController {
         collectionView.contentInsetAdjustmentBehavior = .scrollableAxes
         collectionView.register(VideoCollectionViewCell.self, forCellWithReuseIdentifier: PresentationViewController.kCellReuseId)
         self.collectionView = collectionView
+
+        self.view.backgroundColor = .white
+
+        let label = UILabel()
+        label.text = "Connecting ..."
+        self.view.addSubview(label)
+        self.connectionLabel = label
 
         self.view.addSubview(collectionView)
         connectToPresentation()
@@ -59,6 +68,66 @@ class PresentationViewController : UIViewController {
             return true
         }
     }
+
+    override func viewWillTransition(to size: CGSize,
+                                     with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+
+        // Workaround to fix content bugs after rotating while zoomed past minimum zoom.
+        if let scrollView = self.scrollView {
+            scrollView.zoomScale = scrollView.minimumZoomScale
+        }
+
+        self.view.setNeedsLayout()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        self.scrollView?.frame = self.view.bounds
+        self.scrollView?.contentInset = self.additionalSafeAreaInsets
+        let contentBounds = self.view.bounds
+
+        // Size the collection view
+        var width = UIDevice.current.userInterfaceIdiom == .pad ?
+            PresentationViewController.kLargeCellSize : PresentationViewController.kSmallCellSize
+        width += 10
+        self.collectionView?.bounds = CGRect(x: 0, y: 0, width: width, height: Int(contentBounds.size.height))
+        self.collectionView?.center = CGPoint(x: width/2 + Int(self.view.safeAreaInsets.left),
+                                              y: Int(contentBounds.size.height)/2)
+
+        // Manually apply insets on the axis of scrolling
+        self.collectionView?.contentInset = UIEdgeInsets(top: self.view.safeAreaInsets.top,
+                                                         left: 0,
+                                                         bottom: self.view.safeAreaInsets.bottom,
+                                                         right: 0)
+
+        if let dimensions = remoteView?.videoDimensions,
+            remoteView?.hasVideoData == true {
+            let contentRect = AVMakeRect(aspectRatio: CGSize(width: Int(dimensions.width),
+                height: Int(dimensions.height)), insideRect: contentBounds).integral
+            scrollView?.contentSize = contentBounds.size
+            scrollView?.maximumZoomScale = max(max(contentBounds.width / contentRect.width,
+                                               contentBounds.height / contentRect.height),
+                                               2)
+            scrollView?.minimumZoomScale = 1
+            remoteView?.bounds = CGRect(origin: .zero, size: contentRect.size)
+            remoteView?.center = CGPoint(x: contentBounds.midX, y: contentBounds.midY)
+
+            // Use additional insets so that the user can't pixel peep the black bars too closely.. :)
+            let xInset = contentBounds.width - contentRect.width
+            let yInset = contentBounds.height - contentRect.height
+            scrollView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: yInset, right: xInset)
+        }
+
+        if let label = self.connectionLabel {
+            label.sizeToFit()
+            label.center = CGPoint(x: self.view.bounds.midX, y: self.view.bounds.midY)
+        }
+    }
+}
+
+private extension PresentationViewController {
 
     func startCamera() {
         guard let device = CameraSource.captureDevice(position: .front) else {
@@ -167,56 +236,6 @@ class PresentationViewController : UIViewController {
         self.startCamera()
     }
 
-    override func viewWillTransition(to size: CGSize,
-                                     with coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransition(to: size, with: coordinator)
-
-        // Workaround to fix content bugs after rotating while zoomed past minimum zoom.
-        if let scrollView = self.scrollView {
-            scrollView.zoomScale = scrollView.minimumZoomScale
-        }
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        self.scrollView?.frame = self.view.bounds
-        self.scrollView?.contentInset = self.additionalSafeAreaInsets
-        let contentBounds = self.view.bounds
-
-        // Manually apply insets on the axis of scrolling
-        self.collectionView?.contentInset = UIEdgeInsets(top: self.view.safeAreaInsets.top,
-                                                         left: 0,
-                                                         bottom: self.view.safeAreaInsets.bottom,
-                                                         right: 0)
-
-        // Size the collection view
-        var width = UIDevice.current.userInterfaceIdiom == .pad ?
-            PresentationViewController.kLargeCellSize : PresentationViewController.kSmallCellSize
-        width += 10
-        self.collectionView?.bounds = CGRect(x: 0, y: 0, width: width, height: Int(contentBounds.size.height))
-        self.collectionView?.center = CGPoint(x: width/2 + Int(self.view.safeAreaInsets.left),
-                                              y: Int(contentBounds.size.height)/2)
-
-        if let dimensions = remoteView?.videoDimensions,
-            remoteView?.hasVideoData == true {
-            let contentRect = AVMakeRect(aspectRatio: CGSize(width: Int(dimensions.width),
-                height: Int(dimensions.height)), insideRect: contentBounds).integral
-            scrollView?.contentSize = contentBounds.size
-            scrollView?.maximumZoomScale = max(max(contentBounds.width / contentRect.width,
-                                               contentBounds.height / contentRect.height),
-                                               2)
-            scrollView?.minimumZoomScale = 1
-            remoteView?.bounds = CGRect(origin: .zero, size: contentRect.size)
-            remoteView?.center = CGPoint(x: contentBounds.midX, y: contentBounds.midY)
-
-            // Use additional insets so that the user can't pixel peep the black bars too closely.. :)
-            let xInset = contentBounds.width - contentRect.width
-            let yInset = contentBounds.height - contentRect.height
-            scrollView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: yInset, right: xInset)
-        }
-    }
-
     func setupScreenshareVideo(publication: RemoteVideoTrackPublication) {
         // Creating `VideoView` programmatically
         let videoView = VideoView(frame: CGRect(origin: CGPoint.zero, size: CGSize(width: 640, height: 480)), delegate: self)
@@ -242,6 +261,11 @@ class PresentationViewController : UIViewController {
         videoView?.addGestureRecognizer(recognizer)
 
         self.remoteView = videoView
+
+        UIView.animate(withDuration: 0.3) {
+            self.view.backgroundColor = .black
+            self.connectionLabel?.alpha = 0
+        }
     }
 
     @objc func tappedScreenParticipant(sender: UITapGestureRecognizer) {
@@ -498,8 +522,10 @@ extension PresentationViewController : RoomDelegate {
             remoteParticipant.delegate = self
         }
 
-        let connectMessage = "Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")."
+        let connectMessage = "Connected to \(room.name) as \(room.localParticipant?.identity ?? "")."
         print(connectMessage)
+        self.connectionLabel?.text = connectMessage
+        self.view.setNeedsLayout()
 
         self.publishCamera()
         self.collectionView?.insertItems(at: [IndexPath(row: 0, section: 0)])
@@ -522,11 +548,15 @@ extension PresentationViewController : RoomDelegate {
     }
 
     func roomIsReconnecting(room: Room, error: Error) {
-        print("Reconnecting to room \(room.name), error = \(String(describing: error))")
+        print("Reconnecting to \(room.name), error = \(String(describing: error))")
+
+        self.connectionLabel?.text = "Reconnecting ..."
     }
 
     func roomDidReconnect(room: Room) {
-        print("Reconnected to room \(room.name)")
+        let message = "Connected to \(room.name)."
+        print(message)
+        self.connectionLabel?.text = message
     }
 
     func participantDidConnect(room: Room, participant: RemoteParticipant) {
@@ -571,11 +601,17 @@ extension PresentationViewController : RemoteParticipantDelegate {
 
         // Stop remote rendering.
         if (publication.trackSid.hashValue == self.remoteView?.tag) {
-            self.remoteView?.removeFromSuperview()
-            self.remoteView = nil
+            UIView.animate(withDuration: 0.3, animations: {
+                self.scrollView?.alpha = 0.0
+                self.view.backgroundColor = .white
+                self.connectionLabel?.alpha = 1.0
+            }) { finished in
+                self.remoteView?.removeFromSuperview()
+                self.remoteView = nil
 
-            self.scrollView?.removeFromSuperview()
-            self.scrollView = nil
+                self.scrollView?.removeFromSuperview()
+                self.scrollView = nil
+            }
         }
     }
 
