@@ -30,12 +30,12 @@ class PresentationViewController : UIViewController {
     weak var remoteView: VideoView?
     weak var scrollView: UIScrollView?
     var accessToken: String?
-    weak var collectionView: VideoCollectionView?
+    weak var collectionView: UICollectionView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let collectionView = VideoCollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
         collectionView.backgroundColor = nil
         collectionView.delegate = self
         collectionView.dataSource = self

@@ -153,13 +153,3 @@ class VideoCollectionViewCell : UICollectionViewCell {
         }
     }
 }
-
-class VideoCollectionView : UICollectionView {
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        if let hitView = super.hitTest(point, with: event) {
-            return hitView as? VideoCollectionViewCell
-        } else {
-            return nil
-        }
-    }
-}
