@@ -40,6 +40,7 @@ class PresentationViewController : UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.contentInsetAdjustmentBehavior = .scrollableAxes
         collectionView.register(VideoCollectionViewCell.self, forCellWithReuseIdentifier: PresentationViewController.kCellReuseId)
         self.collectionView = collectionView
 
@@ -183,11 +184,19 @@ class PresentationViewController : UIViewController {
         self.scrollView?.contentInset = self.additionalSafeAreaInsets
         let contentBounds = self.view.bounds
 
+        // Manually apply insets on the axis of scrolling
+        self.collectionView?.contentInset = UIEdgeInsets(top: self.view.safeAreaInsets.top,
+                                                         left: 0,
+                                                         bottom: self.view.safeAreaInsets.bottom,
+                                                         right: 0)
+
+        // Size the collection view
         var width = UIDevice.current.userInterfaceIdiom == .pad ?
             PresentationViewController.kLargeCellSize : PresentationViewController.kSmallCellSize
         width += 10
         self.collectionView?.bounds = CGRect(x: 0, y: 0, width: width, height: Int(contentBounds.size.height))
-        self.collectionView?.center = CGPoint(x: width/2, y: Int(contentBounds.size.height)/2)
+        self.collectionView?.center = CGPoint(x: width/2 + Int(self.view.safeAreaInsets.left),
+                                              y: Int(contentBounds.size.height)/2)
 
         if let dimensions = remoteView?.videoDimensions,
             remoteView?.hasVideoData == true {
