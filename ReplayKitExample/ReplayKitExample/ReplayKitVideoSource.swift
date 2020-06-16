@@ -285,7 +285,9 @@ class ReplayKitVideoSource: NSObject, VideoSource {
             if let adapted = adapter.scale(input: sourcePixelBuffer, maxWidthOrHeight: inputMaxDimension) {
                 sourcePixelBuffer = adapted
             } else {
-                print("CE: Dropping frame due to buffer already in flight!")
+                #if DEBUG
+                print("Dropping frame due to buffer already in flight!")
+                #endif
                 return
             }
         }
