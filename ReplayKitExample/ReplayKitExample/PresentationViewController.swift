@@ -59,13 +59,13 @@ class PresentationViewController : UIViewController {
 
     override var prefersStatusBarHidden: Bool {
         get {
-            return true
+            return self.remoteView != nil
         }
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
         get {
-            return true
+            return self.remoteView != nil
         }
     }
 
@@ -89,15 +89,19 @@ class PresentationViewController : UIViewController {
         let contentBounds = self.view.bounds
 
         // Size the collection view
-        var width = UIDevice.current.userInterfaceIdiom == .pad ?
-            PresentationViewController.kLargeCellSize : PresentationViewController.kSmallCellSize
+        var width = CGFloat(UIDevice.current.userInterfaceIdiom == .pad ?
+            PresentationViewController.kLargeCellSize : PresentationViewController.kSmallCellSize)
         width += 10
-        self.collectionView?.bounds = CGRect(x: 0, y: 0, width: width, height: Int(contentBounds.size.height))
-        self.collectionView?.center = CGPoint(x: width/2 + Int(self.view.safeAreaInsets.left),
-                                              y: Int(contentBounds.size.height)/2)
+        let height = contentBounds.size.height - self.view.safeAreaInsets.top
+        self.collectionView?.bounds = CGRect(x: 0,
+                                             y: 0,
+                                             width: width,
+                                             height: height)
+        self.collectionView?.center = CGPoint(x: width/2 + self.view.safeAreaInsets.left,
+                                              y: (height / 2) + self.view.safeAreaInsets.top)
 
         // Manually apply insets on the axis of scrolling
-        self.collectionView?.contentInset = UIEdgeInsets(top: self.view.safeAreaInsets.top,
+        self.collectionView?.contentInset = UIEdgeInsets(top: 0,
                                                          left: 0,
                                                          bottom: self.view.safeAreaInsets.bottom,
                                                          right: 0)
@@ -265,6 +269,9 @@ private extension PresentationViewController {
         UIView.animate(withDuration: 0.3) {
             self.view.backgroundColor = .black
             self.connectionLabel?.alpha = 0
+
+            self.setNeedsFocusUpdate()
+            self.setNeedsStatusBarAppearanceUpdate()
         }
     }
 
@@ -611,6 +618,9 @@ extension PresentationViewController : RemoteParticipantDelegate {
 
                 self.scrollView?.removeFromSuperview()
                 self.scrollView = nil
+
+                self.setNeedsStatusBarAppearanceUpdate()
+                self.setNeedsFocusUpdate()
             }
         }
     }
