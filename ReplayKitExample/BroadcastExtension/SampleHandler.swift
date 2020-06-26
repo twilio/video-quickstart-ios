@@ -101,7 +101,7 @@ class SampleHandler: RPBroadcastSampleHandler {
                 builder.roomName = setupInfo?[SampleHandler.kBroadcastSetupInfoRoomNameKey] as? String
             }
 
-            // Insights reporting requires at least one pthread with a 512 KB stack. The iPad is the most memory constrained.
+            // Insights reporting requires at least one pthread with a 512 KB stack. The iPad is the most memory constrained due to large frames.
             if SampleHandler.kVideoCodec.isKind(of: Vp8Codec.self) || UIDevice.current.userInterfaceIdiom == .pad {
                 builder.areInsightsEnabled = false
             }

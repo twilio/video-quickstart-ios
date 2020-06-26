@@ -323,13 +323,14 @@ class ViewController: UIViewController {
 
         // The source produces either downscaled buffers with smoother motion, or an HD screen recording.
         let options = ViewController.kScreencast ? ReplayKitVideoSource.TelecineOptions.disabled : ReplayKitVideoSource.TelecineOptions.p60to24or25or30
-        videoSource = ReplayKitVideoSource(isScreencast: ViewController.kScreencast,
+        if let videoSource = ReplayKitVideoSource(isScreencast: ViewController.kScreencast,
                                            telecineOptions: options,
-                                           isExtension: false)
+                                           isExtension: false) {
 
-        screenTrack = LocalVideoTrack(source: videoSource!,
-                                      enabled: true,
-                                      name: "Screen")
+            screenTrack = LocalVideoTrack(source: videoSource,
+                                          enabled: true,
+                                          name: "Screen")
+        }
 
         let videoCodec = Settings.shared.videoCodec ?? Vp8Codec()!
         let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: videoCodec,
@@ -419,7 +420,12 @@ class ViewController: UIViewController {
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
-            // The screen track will be published after connect at high priority
+            /**
+             * The screen track will be published after connect at high priority. 
+             * At present SDK doesn't support sharing a track with the configured priority. In future we plan to ship APIs
+             * to allow publishing track with priority while connecting to a Room.
+             */
+             
             builder.audioTracks = [LocalAudioTrack()!]
 
             // Use the preferred codecs

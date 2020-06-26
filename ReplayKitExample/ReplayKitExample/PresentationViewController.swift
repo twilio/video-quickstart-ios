@@ -175,7 +175,7 @@ private extension PresentationViewController {
         guard let videoTrack = self.localVideoTrack else {
             return
         }
-
+        // To allow screen track to use maximum bandwidth, publishing local camera with low priority. 
         let publishOptions = LocalTrackPublicationOptions(priority: .low)
         participant.publishVideoTrack(videoTrack, publicationOptions: publishOptions)
     }
