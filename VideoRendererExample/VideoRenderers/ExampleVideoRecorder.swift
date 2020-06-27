@@ -47,19 +47,11 @@ class ExampleVideoRecorder : NSObject, VideoRenderer {
         self.recorderTimestamp = frame.timestamp
 
         // Determine width and height dynamically (based upon the first frame). This works well for local content.
-        let outputSettings: [String : Any]
-        if #available(iOS 11.0, *) {
-            outputSettings = [
-                AVVideoCodecKey : AVVideoCodecType.h264,
-                AVVideoWidthKey : frame.width,
-                AVVideoHeightKey : frame.height,
-                AVVideoScalingModeKey : AVVideoScalingModeResizeAspect] as [String : Any]
-        } else {
-            outputSettings = [
-                AVVideoWidthKey : frame.width,
-                AVVideoHeightKey : frame.height,
-                AVVideoScalingModeKey : AVVideoScalingModeResizeAspect] as [String : Any]
-        }
+        let outputSettings = [
+            AVVideoCodecKey : AVVideoCodecType.h264,
+            AVVideoWidthKey : frame.width,
+            AVVideoHeightKey : frame.height,
+            AVVideoScalingModeKey : AVVideoScalingModeResizeAspect] as [String : Any]
 
         videoRecorderInput = AVAssetWriterInput(mediaType: AVMediaType.video, outputSettings: outputSettings)
         videoRecorderInput?.expectsMediaDataInRealTime = true
