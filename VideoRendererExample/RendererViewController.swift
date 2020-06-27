@@ -357,8 +357,7 @@ class RendererViewController: UIViewController {
 
 // MARK: RoomDelegate
 extension RendererViewController : RoomDelegate {
-    func didConnect(to room: Room) {
-
+    func roomDidConnect(room: Room) {
         // Listen to events from RemoteParticipants that are already connected.
         for remoteParticipant in room.remoteParticipants {
             remoteParticipant.delegate = self
