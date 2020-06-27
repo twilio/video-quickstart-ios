@@ -31,7 +31,7 @@ abstract_target 'TwilioVideo' do
   end
 
   target 'VideoRendererExample' do
-    platform :ios, '9.0'
+    platform :ios, '11.0'
     project 'VideoRendererExample.xcproject'
   end
 
