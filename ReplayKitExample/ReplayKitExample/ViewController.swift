@@ -323,20 +323,23 @@ class ViewController: UIViewController {
 
         // The source produces either downscaled buffers with smoother motion, or an HD screen recording.
         let options = ViewController.kScreencast ? ReplayKitVideoSource.TelecineOptions.disabled : ReplayKitVideoSource.TelecineOptions.p60to24or25or30
-        if let videoSource = ReplayKitVideoSource(isScreencast: ViewController.kScreencast,
+        let videoSource = ReplayKitVideoSource(isScreencast: ViewController.kScreencast,
                                            telecineOptions: options,
-                                           isExtension: false) {
+                                           isExtension: false)
 
-            screenTrack = LocalVideoTrack(source: videoSource,
-                                          enabled: true,
-                                          name: "Screen")
+        guard let screenTrack = LocalVideoTrack(source: videoSource,
+                                               enabled: true,
+                                               name: "Screen") else {
+            return
         }
+
+        self.screenTrack = screenTrack
 
         let videoCodec = Settings.shared.videoCodec ?? Vp8Codec()!
         let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: videoCodec,
                                                                                           isScreencast: ViewController.kScreencast,
                                                                                        telecineOptions:options)
-        videoSource?.requestOutputFormat(outputFormat)
+        videoSource.requestOutputFormat(outputFormat)
 
         recorder.startCapture(handler: { (sampleBuffer, type, error) in
             if error != nil {
