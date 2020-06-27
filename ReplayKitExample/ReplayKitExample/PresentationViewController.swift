@@ -346,20 +346,8 @@ extension PresentationViewController : LocalParticipantDelegate {
 
 // MARK:- UIScrollViewDelegate
 extension PresentationViewController : UIScrollViewDelegate {
-    func scrollViewDidZoom(_ scrollView: UIScrollView) {
-        print("scrollViewDidZoom \(scrollView)")
-    }
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        print("scrollViewDidScroll")
-    }
-
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return self.remoteView
-    }
-
-    func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-        print("scrollViewDidEndZooming with view \(view!) at scale \(scale)")
     }
 }
 
