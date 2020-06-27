@@ -162,7 +162,7 @@ extension ExampleSampleBufferView {
             self.videoOrientation = orientation
 
             // TODO: Should we be doing this here, or delegating to a view controller?
-            [UIView .animate(withDuration: animate ? 0.3 : 0, animations: {
+            UIView.animate(withDuration: animate ? 0.3 : 0, animations: {
                 let size = videoSize
                 let scaleFactor = size.height > size.width ? CGFloat(size.height) / CGFloat(size.width) : CGFloat(size.width) / CGFloat(size.height)
                 switch (orientation) {
@@ -183,7 +183,7 @@ extension ExampleSampleBufferView {
                     self.transform = CGAffineTransform(rotationAngle: CGFloat.pi * 3 / 2).concatenating(scale)
                     break
                 }
-            })];
+            })
         }
     }
 
