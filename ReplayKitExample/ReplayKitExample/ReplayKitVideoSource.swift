@@ -241,13 +241,13 @@ class ReplayKitVideoSource: NSObject, VideoSource {
         }
 
         guard var sourcePixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            assertionFailure("SampleBuffer did not have an ImageBuffer")
+            assertionFailure("SampleBuffer did not have an ImageBuffer.")
             return
         }
         // The source only supports NV12 (full-range) buffers.
         let pixelFormat = CVPixelBufferGetPixelFormatType(sourcePixelBuffer);
         if (pixelFormat != kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) {
-            assertionFailure("Extension assumes the incoming frames are of type NV12")
+            assertionFailure("ReplayKitVideoSource assumes the ReplayKit frames are of pixel format type NV12.")
             return
         }
 
