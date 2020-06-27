@@ -59,7 +59,7 @@ class ViewController: UIViewController {
         format.pixelFormat = PixelFormat.format32BGRA
         format.dimensions = CMVideoDimensions(width: Int32(UIScreen.main.bounds.size.width),
                                               height: Int32(UIScreen.main.bounds.size.height))
-        self.requestOutputFormat(format);
+        self.requestOutputFormat(format)
         start()
 
         self.audioTrack = LocalAudioTrack()
@@ -188,7 +188,7 @@ extension ViewController: ARSCNViewDelegate {
 // MARK:- RoomDelegate
 extension ViewController: RoomDelegate {
     func roomDidConnect(room: Room) {
-        print("Connected to Room /(room.name).")
+        print("Connected to room \(room.name) as \(room.localParticipant?.identity ?? "")")
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {

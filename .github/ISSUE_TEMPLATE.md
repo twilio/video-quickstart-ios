@@ -39,6 +39,11 @@ or sensitive account information (API keys, credentials, etc.) when reporting an
 [What percentage of the time does it reproduce?]
 
 #### Logs
+Debug level logs are helpful when investigating issues. To enable debug level logging, add the following code to your application:
+
+```.swift
+TwilioVideoSDK.setLogLevel(.debug)
+```
 
 ```
 // Log output when the issue occurs

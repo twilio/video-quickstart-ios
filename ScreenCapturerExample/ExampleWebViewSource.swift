@@ -9,7 +9,6 @@ import Accelerate
 import TwilioVideo
 import WebKit
 
-@available(iOS 11.0, *)
 class ExampleWebViewSource: NSObject {
 
     // TVIVideoSource
@@ -210,7 +209,6 @@ class ExampleWebViewSource: NSObject {
     }
 }
 
-@available(iOS 11.0, *)
 extension ExampleWebViewSource: VideoSource {
     func requestOutputFormat(_ outputFormat: VideoFormat) {
         /*

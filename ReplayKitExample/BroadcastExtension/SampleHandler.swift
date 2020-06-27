@@ -17,29 +17,28 @@ class SampleHandler: RPBroadcastSampleHandler {
     var videoSource: ReplayKitVideoSource?
     var screenTrack: LocalVideoTrack?
     var disconnectSemaphore: DispatchSemaphore?
+    let audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
-    let accessTokenUrl = "http://127.0.0.1:5000/"
+    let tokenUrl = "http://127.0.0.1:5000/"
 
+    var statsTimer: Timer?
     static let kBroadcastSetupInfoRoomNameKey = "roomName"
-
-    // In order to save memory, we request that our source downscale its output.
-    static let kDownScaledMaxWidthOrHeight = 720
-
-    // Maximum bitrate (in kbps) used to send video.
-    static let kMaxVideoBitrate = UInt(1400)
 
     // Which kind of audio samples we will capture. The example does not mix multiple types of samples together.
     static let kAudioSampleType = RPSampleBufferType.audioMic
 
+    // The video codec to use for the broadcast. The encoding parameters and format request are built dynamically based upon the codec.
+    static let kVideoCodec = H264Codec()!
+
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
 
-        TwilioVideoSDK.audioDevice = ExampleReplayKitAudioCapturer(sampleType: SampleHandler.kAudioSampleType)
+        TwilioVideoSDK.audioDevice = self.audioDevice
 
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
             do {
-                accessToken = try TokenUtils.fetchToken(url: self.accessTokenUrl)
+                accessToken = try TokenUtils.fetchToken(url: self.tokenUrl)
             } catch {
                 let message = "Failed to fetch access token."
                 print(message)
@@ -47,9 +46,12 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
 
         // This source will attempt to produce smaller buffers with fluid motion.
-        let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: SampleHandler.kDownScaledMaxWidthOrHeight)
+        let options = ReplayKitVideoSource.TelecineOptions.p30to24or25
+        let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: SampleHandler.kVideoCodec,
+                                                                                          isScreencast: false,
+                                                                                    telecineOptions: options)
 
-        videoSource = ReplayKitVideoSource(isScreencast: false)
+        videoSource = ReplayKitVideoSource(isScreencast: false, telecineOptions: options)
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
                                       name: "Screen")
@@ -64,14 +66,13 @@ class SampleHandler: RPBroadcastSampleHandler {
             builder.videoTracks = [self.screenTrack!]
 
             // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
-            builder.preferredVideoCodecs = [H264Codec()]
+            builder.preferredVideoCodecs = [SampleHandler.kVideoCodec]
 
             /*
              * Constrain the bitrate to improve QoS for subscribers when simulcast is not used, and to reduce overall
              * bandwidth usage for the broadcaster.
              */
-            builder.encodingParameters = EncodingParameters(audioBitrate: 0,
-                                                            videoBitrate: UInt(1024) * SampleHandler.kMaxVideoBitrate)
+            builder.encodingParameters = encodingParams
 
             /*
              * A broadcast extension has no need to subscribe to Tracks, and connects as a publish-only
@@ -124,18 +125,18 @@ class SampleHandler: RPBroadcastSampleHandler {
     override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
         switch sampleBufferType {
         case RPSampleBufferType.video:
-            videoSource?.processVideoSampleBuffer(sampleBuffer)
+            videoSource?.processFrame(sampleBuffer: sampleBuffer)
             break
 
         case RPSampleBufferType.audioApp:
             if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioApp) {
-                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+                ExampleCoreAudioDeviceCapturerCallback(audioDevice, sampleBuffer)
             }
             break
 
         case RPSampleBufferType.audioMic:
             if (SampleHandler.kAudioSampleType == RPSampleBufferType.audioMic) {
-                ExampleCoreAudioDeviceRecordCallback(sampleBuffer)
+                ExampleCoreAudioDeviceCapturerCallback(audioDevice, sampleBuffer)
             }
             break
         }
@@ -148,6 +149,22 @@ extension SampleHandler : RoomDelegate {
         print("didConnectToRoom: ", room)
 
         disconnectSemaphore = DispatchSemaphore(value: 0)
+
+        #if DEBUG
+        statsTimer = Timer(fire: Date(timeIntervalSinceNow: 1), interval: 10, repeats: true, block: { (Timer) in
+            room.getStats({ (reports: [StatsReport]) in
+                for report in reports {
+                    let videoStats = report.localVideoTrackStats.first!
+                    print("Capture \(videoStats.captureDimensions) @ \(videoStats.captureFrameRate) fps.")
+                    print("Send \(videoStats.dimensions) @ \(videoStats.frameRate) fps. RTT = \(videoStats.roundTripTime) ms")
+                }
+            })
+        })
+
+        if let theTimer = statsTimer {
+            RunLoop.main.add(theTimer, forMode: .common)
+        }
+        #endif
     }
 
     func roomDidFailToConnect(room: Room, error: Error) {
@@ -156,6 +173,7 @@ extension SampleHandler : RoomDelegate {
     }
 
     func roomDidDisconnect(room: Room, error: Error?) {
+        statsTimer?.invalidate()
         if let semaphore = self.disconnectSemaphore {
             semaphore.signal()
         }

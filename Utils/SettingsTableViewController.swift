@@ -10,20 +10,20 @@ import TwilioVideo
 
 class SettingsTableViewController: UITableViewController {
     
-    static let participantRegionLabel = "Region"
+    static let signalingRegionLabel = "Region"
     static let audioCodecLabel = "Audio Codec"
     static let videoCodecLabel = "Video Codec"
-    static let maxAudioBitrateLabel = "Max Audio Bitrate (bps)"
-    static let maxVideoBitrateLabel = "Max Video Bitrate (bps)"
+    static let maxAudioBitrateLabel = "Max Audio Bitrate (Kbps)"
+    static let maxVideoBitrateLabel = "Max Video Bitrate (Kbps)"
     static let defaultStr = "Default"
-    static let participantRegionDisclaimerText = "Set your Participant's region. Global Low Latency (gll) is the default value."
+    static let signalingRegionDisclaimerText = "Set your preferred region. Global Low Latency (gll) is the default value."
     static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported in Group Rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported. VP8 Simulcast should only be enabled in a Group Room."
     static let encodingParamsDisclaimerText = "Set sender bandwidth constraints. Zero represents the WebRTC default which varies by codec."
     
-    let disclaimers = [participantRegionDisclaimerText, codecDisclaimerText, encodingParamsDisclaimerText]
+    let disclaimers = [signalingRegionDisclaimerText, codecDisclaimerText, encodingParamsDisclaimerText]
     let settings = Settings.shared
     let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.footnote)
-    var labels: [[String]] = [[participantRegionLabel],
+    var labels: [[String]] = [[signalingRegionLabel],
                               [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
                               [SettingsTableViewController.maxAudioBitrateLabel, SettingsTableViewController.maxVideoBitrateLabel]]
 
@@ -75,7 +75,7 @@ class SettingsTableViewController: UITableViewController {
         var detailText = SettingsTableViewController.defaultStr
         
         switch (label) {
-            case SettingsTableViewController.participantRegionLabel:
+            case SettingsTableViewController.signalingRegionLabel:
                 if let signalingRegion = settings.signalingRegion {
                     detailText = settings.supportedSignalingRegionDisplayString[signalingRegion]!
                 }
@@ -102,7 +102,7 @@ class SettingsTableViewController: UITableViewController {
         let tappedLabel = self.labels[indexPath.section][indexPath.row]
         
         switch (tappedLabel) {
-            case SettingsTableViewController.participantRegionLabel:
+            case SettingsTableViewController.signalingRegionLabel:
                 didSelectSignalingRegionRow(indexPath: indexPath)
             case SettingsTableViewController.audioCodecLabel:
                 didSelectAudioCodecRow(indexPath: indexPath)

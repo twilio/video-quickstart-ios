@@ -5,8 +5,10 @@
 //  Copyright © 2018-2019 Twilio. All rights reserved.
 //
 
+import AVKit
 import UIKit
 import ReplayKit
+import SafariServices
 import TwilioVideo
 
 class ViewController: UIViewController {
@@ -17,18 +19,19 @@ class ViewController: UIViewController {
     @IBOutlet weak var broadcastPickerView: UIView?
     @IBOutlet weak var conferenceButton: UIButton?
     @IBOutlet weak var infoLabel: UILabel?
-    @IBOutlet weak var settingsButton: UIBarButtonItem?
+    @IBOutlet var settingsButton: UIBarButtonItem?
 
     // Conference state.
     var screenTrack: LocalVideoTrack?
     var videoSource: ReplayKitVideoSource?
     var conferenceRoom: Room?
+    var videoPlayer: AVPlayer?
 
     // Broadcast state. Our extension will capture samples from ReplayKit, and publish them in a Room.
     var broadcastController: RPBroadcastController?
 
     var accessToken: String = "TWILIO_ACCESS_TOKEN"
-    let accessTokenUrl = "http://127.0.0.1:5000/"
+    let tokenUrl = "http://127.0.0.1:5000/"
 
     static let kBroadcastExtensionBundleId = "com.twilio.ReplayKitExample.BroadcastVideoExtension"
     static let kBroadcastExtensionSetupUiBundleId = "com.twilio.ReplayKitExample.BroadcastVideoExtensionSetupUI"
@@ -43,10 +46,6 @@ class ViewController: UIViewController {
 
     // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
     static let kDownscaleBuffers = false
-    static let kDownscaledMaxWidthOrHeight = 720
-    // Maximum bitrate (in kbps) used to send downscaled video.
-    static let kMaxDownscaledVideoBitrate = UInt(1500)
-
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -70,10 +69,6 @@ class ViewController: UIViewController {
         RPScreenRecorder.shared().delegate = self
         checkRecordingAvailability()
 
-        if (ViewController.kDownscaleBuffers) {
-            Settings.shared.maxVideoBitrate = 1024 * ViewController.kMaxDownscaledVideoBitrate
-        }
-
         NotificationCenter.default.addObserver(forName: UIScreen.capturedDidChangeNotification, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
             if self.broadcastPickerView != nil && self.screenTrack == nil {
                 let isCaptured = UIScreen.main.isCaptured
@@ -90,10 +85,43 @@ class ViewController: UIViewController {
         }
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+
+    @IBAction func pickDocument(_ sender: Any) {
+        let documents = [AVFileType.mov.rawValue, AVFileType.mp4.rawValue, AVFileType.m4v.rawValue]
+        let pickerVC = UIDocumentPickerViewController(documentTypes: documents, in: .`import`)
+        pickerVC.delegate = self
+        self.navigationController?.present(pickerVC, animated: true, completion: nil)
+    }
+
+    @IBAction func browseWeb(_ sender: Any) {
+        let url = URL(string: "https://www.apple.com")!
+        let config = SFSafariViewController.Configuration()
+        config.barCollapsingEnabled = false
+        let safariVC = SFSafariViewController(url: url, configuration: config)
+        safariVC.delegate = self
+        self.navigationController?.pushViewController(safariVC, animated: true)
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
+    }
+
     @available(iOS 12.0, *)
     func setupPickerView() {
         // Swap the button for an RPSystemBroadcastPickerView.
         #if !targetEnvironment(simulator)
+        // iOS 13.0 throws an NSInvalidArgumentException when RPSystemBroadcastPickerView is used to start a broadcast.
+        // https://stackoverflow.com/questions/57163212/get-nsinvalidargumentexception-when-trying-to-present-rpsystembroadcastpickervie
+        if #available(iOS 13.0, *) {
+            // The issue is resolved in iOS 13.1.
+            if #available(iOS 13.1, *) {
+            } else {
+                broadcastButton.addTarget(self, action: #selector(tapBroadcastPickeriOS13(sender:)), for: UIControl.Event.touchUpInside)
+                return
+            }
+        }
+
         let pickerView = RPSystemBroadcastPickerView(frame: CGRect(x: 0,
                                                                    y: 0,
                                                                    width: view.bounds.width,
@@ -147,6 +175,30 @@ class ViewController: UIViewController {
         #endif
     }
 
+    @objc func tapBroadcastPickeriOS13(sender: UIButton) {
+        let message = "ReplayKit broadcasts can not be started using the broadcast picker on iOS 13.0. Please upgrade to iOS 13.1+, or start a broadcast from the screen recording widget in control center instead."
+        let alertController = UIAlertController(title: "Start Broadcast", message: message, preferredStyle: .actionSheet)
+
+        let settingsButton = UIAlertAction(title: "Launch Settings App", style: .default, handler: { (action) -> Void in
+            // Launch the settings app, with control center if possible.
+            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:]) { (success) in
+            }
+        })
+
+        alertController.addAction(settingsButton)
+
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            alertController.popoverPresentationController?.sourceView = sender
+            alertController.popoverPresentationController?.sourceRect = sender.bounds
+        } else {
+            // Adding the cancel action
+            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+            })
+            alertController.addAction(cancelButton)
+        }
+        self.navigationController!.present(alertController, animated: true, completion: nil)
+    }
+
     // This action is only invoked on iOS 11.x. On iOS 12.0 this is handled by RPSystemBroadcastPickerView.
     @IBAction func startBroadcast(_ sender: Any) {
         if let controller = self.broadcastController {
@@ -180,14 +232,14 @@ class ViewController: UIViewController {
     }
 
     // MARK:- Private
-    func checkRecordingAvailability() {
+    private func checkRecordingAvailability() {
         let isScreenRecordingAvailable = RPScreenRecorder.shared().isAvailable
         broadcastButton.isHidden = !isScreenRecordingAvailable
         conferenceButton?.isHidden = !isScreenRecordingAvailable
         infoLabel?.text = isScreenRecordingAvailable ? ViewController.kRecordingAvailableInfo : ViewController.kRecordingNotAvailableInfo
     }
 
-    func startBroadcast() {
+    private func startBroadcast() {
         self.broadcastController?.startBroadcast { [unowned self] error in
             DispatchQueue.main.async {
                 if let theError = error {
@@ -201,7 +253,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func stopConference(error: Error?) {
+    private func stopConference(error: Error?) {
         // Stop recording the screen.
         let recorder = RPScreenRecorder.shared()
         recorder.stopCapture { (captureError) in
@@ -210,6 +262,7 @@ class ViewController: UIViewController {
             } else {
                 print("Screen capture stopped.")
                 DispatchQueue.main.async {
+                    self.navigationItem.leftBarButtonItem = nil
                     self.conferenceButton?.isEnabled = true
                     self.infoLabel?.isHidden = false
                     if let picker = self.broadcastPickerView {
@@ -221,6 +274,8 @@ class ViewController: UIViewController {
                     self.spinner.stopAnimating()
                     self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
                     self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
+                    self.navigationItem.rightBarButtonItem = self.settingsButton
+                    self.navigationItem.leftBarButtonItem = nil
 
                     self.videoSource = nil
                     self.screenTrack = nil
@@ -240,7 +295,7 @@ class ViewController: UIViewController {
         }
     }
 
-    func startConference() {
+    private func startConference() {
         self.broadcastButton.isEnabled = false
         if let picker = self.broadcastPickerView {
             picker.isHidden = true
@@ -256,18 +311,20 @@ class ViewController: UIViewController {
         recorder.isMicrophoneEnabled = false
         recorder.isCameraEnabled = false
 
-        // Our source produces either downscaled buffers with smoother motion, or an HD screen recording.
-        videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers)
+        // The source produces either downscaled buffers with smoother motion, or an HD screen recording.
+        let options = ViewController.kDownscaleBuffers ? ReplayKitVideoSource.TelecineOptions.p60to24or25or30 : ReplayKitVideoSource.TelecineOptions.disabled
+        videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers,
+                                           telecineOptions: options)
 
         screenTrack = LocalVideoTrack(source: videoSource!,
                                       enabled: true,
                                       name: "Screen")
 
-        if (ViewController.kDownscaleBuffers) {
-            // Make a format request, apply it to the source.
-            let outputFormat = ReplayKitVideoSource.formatRequestToDownscale(maxWidthOrHeight: ViewController.kDownscaledMaxWidthOrHeight)
-            videoSource?.requestOutputFormat(outputFormat)
-        }
+        let videoCodec = Settings.shared.videoCodec ?? Vp8Codec()!
+        let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: videoCodec,
+                                                                                          isScreencast: !ViewController.kDownscaleBuffers,
+                                                                                       telecineOptions:options)
+        videoSource?.requestOutputFormat(outputFormat)
 
         recorder.startCapture(handler: { (sampleBuffer, type, error) in
             if error != nil {
@@ -277,7 +334,7 @@ class ViewController: UIViewController {
 
             switch type {
             case RPSampleBufferType.video:
-                self.videoSource?.processVideoSampleBuffer(sampleBuffer)
+                self.videoSource?.processFrame(sampleBuffer: sampleBuffer)
                 break
             case RPSampleBufferType.audioApp:
                 break
@@ -308,18 +365,23 @@ class ViewController: UIViewController {
                     self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
                     self.spinner.startAnimating()
                     self.infoLabel?.isHidden = true
-                    self.connectToRoom(name: "conference")
+                    self.connectToRoom(name: "conference", encodingParameters: encodingParams)
+
+                    let playVideo = UIBarButtonItem(title: "Play Video", style: .plain, target: self, action: #selector(self.pickDocument(_:)))
+                    let browseWeb = UIBarButtonItem(title: "Browse Web", style: .plain, target: self, action: #selector(self.browseWeb(_:)))
+                    self.navigationItem.leftBarButtonItem = playVideo
+                    self.navigationItem.rightBarButtonItem = browseWeb
                 }
             }
         }
     }
 
-    func connectToRoom(name: String) {
+    private func connectToRoom(name: String, encodingParameters: EncodingParameters) {
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
             do {
-                accessToken = try TokenUtils.fetchToken(url: accessTokenUrl)
+                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
             } catch {
                 stopConference(error: error)
                 return
@@ -344,9 +406,7 @@ class ViewController: UIViewController {
             }
 
             // Use the preferred encoding parameters
-            if let encodingParameters = Settings.shared.getEncodingParameters() {
-                builder.encodingParameters = encodingParameters
-            }
+            builder.encodingParameters = encodingParameters
 
             // Use the preferred signaling region
             if let signalingRegion = Settings.shared.signalingRegion {
@@ -417,9 +477,15 @@ extension ViewController: RPBroadcastControllerDelegate {
 // MARK:- RPScreenRecorderDelegate
 extension ViewController: RPScreenRecorderDelegate {
     func screenRecorderDidChangeAvailability(_ screenRecorder: RPScreenRecorder) {
-        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
-        if (self.broadcastController == nil && screenTrack == nil) {
-            checkRecordingAvailability()
+        if Thread.isMainThread {
+            // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
+            if (self.broadcastController == nil && screenTrack == nil) {
+                checkRecordingAvailability()
+            }
+        } else {
+            DispatchQueue.main.async {
+                self.screenRecorderDidChangeAvailability(screenRecorder)
+            }
         }
     }
 }
@@ -438,6 +504,8 @@ extension ViewController: RoomDelegate {
     func roomDidDisconnect(room: Room, error: Error?) {
         if let error = error {
             print("Disconnected with error: ", error)
+        } else {
+            print("Disconnected from: \(room.name)")
         }
 
         if self.screenTrack != nil {
@@ -453,5 +521,78 @@ extension ViewController: RoomDelegate {
 
     func roomDidReconnect(room: Room) {
         print("Reconnected to room \(room.name)")
+    }
+}
+
+// MARK:- SFSafariViewControllerDelegate
+extension ViewController : SFSafariViewControllerDelegate {
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        self.navigationController?.popViewController(animated: true)
+        self.navigationController?.setNavigationBarHidden(false, animated: true)
+    }
+}
+
+// MARK:- UIDocumentPickerDelegate
+extension ViewController : UIDocumentPickerDelegate {
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        print(#function)
+
+        if let url = urls.first {
+            startVideoPlayer(url: url)
+            let moviePlayer = AVPlayerViewController()
+            moviePlayer.player = videoPlayer!
+            moviePlayer.allowsPictureInPicturePlayback = false
+            moviePlayer.entersFullScreenWhenPlaybackBegins = true
+            moviePlayer.exitsFullScreenWhenPlaybackEnds = true
+            self.navigationController?.pushViewController(moviePlayer, animated: true)
+            self.navigationController?.setNavigationBarHidden(true, animated: true)
+        }
+    }
+
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        print(#function)
+    }
+
+    func startVideoPlayer(url: URL) {
+        print(#function)
+
+        if let player = self.videoPlayer {
+            player.play()
+            return
+        }
+
+        let asset = AVAsset(url: url)
+        let assetKeysToPreload = [
+            "hasProtectedContent",
+            "playable",
+            "tracks"
+        ]
+        print("Created asset with tracks:", asset.tracks as Any)
+
+        let playerItem = AVPlayerItem(asset: asset, automaticallyLoadedAssetKeys: assetKeysToPreload)
+        let notificationCenter = NotificationCenter.default
+        notificationCenter.addObserver(self,
+                                       selector: #selector(stopVideoPlayer),
+                                       name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                       object: playerItem)
+
+        let player = AVPlayer(playerItem: playerItem)
+        videoPlayer = player
+        player.play()
+    }
+
+    @objc func stopVideoPlayer() {
+        print(#function)
+
+        if let player = videoPlayer {
+            player.pause()
+            NotificationCenter.default.removeObserver(self,
+                                                      name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                                      object: nil)
+            player.replaceCurrentItem(with: nil)
+            videoPlayer = nil
+        }
+
+        self.navigationController?.popViewController(animated: true)
     }
 }

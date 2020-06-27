@@ -53,6 +53,14 @@ class ViewController: UIViewController {
     let kPreviewPadding = CGFloat(10)
     let kTextBottomPadding = CGFloat(4)
     let kMaxRemoteVideos = Int(2)
+    
+    deinit {
+        // We are done with camera
+        if let camera = self.camera {
+            camera.stopCapture()
+            self.camera = nil
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -144,14 +152,12 @@ class ViewController: UIViewController {
 
         var bottomRight = CGPoint(x: view.bounds.width, y: view.bounds.height)
         var layoutWidth = view.bounds.width
-        if #available(iOS 11.0, *) {
-            // Ensure the preview fits in the safe area.
-            let safeAreaGuide = self.view.safeAreaLayoutGuide
-            let layoutFrame = safeAreaGuide.layoutFrame
-            bottomRight.x = layoutFrame.origin.x + layoutFrame.width
-            bottomRight.y = layoutFrame.origin.y + layoutFrame.height
-            layoutWidth = layoutFrame.width
-        }
+        // Ensure the preview fits in the safe area.
+        let safeAreaGuide = self.view.safeAreaLayoutGuide
+        let layoutFrame = safeAreaGuide.layoutFrame
+        bottomRight.x = layoutFrame.origin.x + layoutFrame.width
+        bottomRight.y = layoutFrame.origin.y + layoutFrame.height
+        layoutWidth = layoutFrame.width
 
         // Layout the speech label.
         if let speechLabel = self.speechLabel {
@@ -213,9 +219,7 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = !inRoom
         self.disconnectButton.isEnabled = inRoom
         UIApplication.shared.isIdleTimerDisabled = inRoom
-        if #available(iOS 11.0, *) {
-            self.setNeedsUpdateOfHomeIndicatorAutoHidden()
-        }
+        self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         self.setNeedsStatusBarAppearanceUpdate()
 
         self.navigationController?.setNavigationBarHidden(inRoom, animated: true)
