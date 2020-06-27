@@ -2,7 +2,7 @@
 //  ExampleSnapshotRecorder.swift
 //  VideoRendererExample
 //
-//  Copyright © 2017 Twilio Inc. All rights reserved.
+//  Copyright © 2020 Twilio Inc. All rights reserved.
 //
 
 import CoreImage
@@ -31,8 +31,8 @@ class ExampleSnapshotRecorder : NSObject, VideoRenderer {
          * Use CoreImage to convert a CVPixelBuffer which may be in RGB or video pixel formats to an RGB UIImage.
          * This may be somewhat wasteful, but is sufficient considering the recorder only needs a single frame at a time.
          */
-        let ciImage = CIImage.init(cvPixelBuffer: buffer)
-        let context = CIContext.init()
+        let ciImage = CIImage(cvPixelBuffer: buffer)
+        let context = CIContext()
         let rect = CGRect.init(x: 0,
                                y: 0,
                                width: CVPixelBufferGetWidth(buffer),

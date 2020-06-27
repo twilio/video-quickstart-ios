@@ -2,7 +2,7 @@
 //  ExampleSampleBufferView.swift
 //  VideoRendererExample
 //
-//  Copyright © 2017 Twilio Inc. All rights reserved.
+//  Copyright © 2020 Twilio Inc. All rights reserved.
 //
 
 import AVFoundation
@@ -246,7 +246,7 @@ extension ExampleSampleBufferView {
         } else if let sampleBuffer = sampleBuffer,
                   let displayLayer = cachedDisplayLayer,
             let sampleAttachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: true) as NSArray? {
-            // Force immediate display of the buffer, since our renderer receives them just in time.
+            // Force immediate display of the buffer, since the renderer receives samples just in time.
             let firstAttachment  = sampleAttachments.firstObject as! NSMutableDictionary?
             firstAttachment?[kCMSampleAttachmentKey_DisplayImmediately] = true
 

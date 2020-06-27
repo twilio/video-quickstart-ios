@@ -2,8 +2,7 @@
 //  ConnectViewController.swift
 //  VideoRendererExample
 //
-//  Created by Chris Eagleston on 4/25/19.
-//  Copyright © 2019 Twilio Inc. All rights reserved.
+//  Copyright © 2020 Twilio Inc. All rights reserved.
 //
 
 import UIKit

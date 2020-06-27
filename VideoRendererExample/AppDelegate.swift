@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  VideoRendererExample
 //
-//  Copyright © 2017 Twilio Inc. All rights reserved.
+//  Copyright © 2020 Twilio Inc. All rights reserved.
 //
 
 import UIKit

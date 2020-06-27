@@ -2,7 +2,7 @@
 //  RendererViewController.swift
 //  VideoRendererExample
 //
-//  Copyright © 2019 Twilio Inc. All rights reserved.
+//  Copyright © 2020 Twilio Inc. All rights reserved.
 //
 
 import AVFoundation
