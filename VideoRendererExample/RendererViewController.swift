@@ -142,7 +142,7 @@ class RendererViewController: UIViewController {
         }
 
         // The example will render the camera using CameraPreviewView.
-        let cameraSourceOptions = CameraSourceOptions.init { (builder) in
+        let cameraSourceOptions = CameraSourceOptions { builder in
             builder.enablePreview = true
         }
 

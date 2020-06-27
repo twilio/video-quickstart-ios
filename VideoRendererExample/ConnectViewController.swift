@@ -19,7 +19,7 @@ class ConnectViewController: UIViewController {
     // Configure remote URL to fetch token from
     var tokenUrl = "http://localhost:8000/token.php"
 
-    // Maximum bitrate (in kbps) used to send video.
+    // Maximum bitrate (in Kbps) used to send video.
     static let kMaxVideoBitrate = UInt(1500)
 
     // MARK: UI Element Outlets and handles
@@ -45,7 +45,7 @@ class ConnectViewController: UIViewController {
          * Perfer to use the H.264 codec, which is decoded into IOSurface backed NV12 buffers suitable for display.
          */
         Settings.shared.videoCodec = H264Codec()
-        Settings.shared.maxVideoBitrate = 1024 * ConnectViewController.kMaxVideoBitrate
+        Settings.shared.maxVideoBitrate = ConnectViewController.kMaxVideoBitrate
 
         roomTextField?.becomeFirstResponder()
     }
