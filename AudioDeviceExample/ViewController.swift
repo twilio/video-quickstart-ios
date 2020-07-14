@@ -379,7 +379,11 @@ class ViewController: UIViewController {
         self.room = nil
         self.localAudioTrack = nil
         self.localVideoTrack = nil
-        self.camera?.previewView?.removeFromSuperview()
+
+        if let camera = self.camera {
+            camera.previewView?.removeFromSuperview()
+            camera.stopCapture()
+        }
         self.camera = nil;
     }
 
