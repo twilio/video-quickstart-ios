@@ -9,9 +9,6 @@
 import UIKit
 import TwilioVideo
 
-// Xcode 10.x will compile SceneDelegate even with the availability macro in place.
-#if !XCODE_1000
-
 @available(iOS 13.0, *)
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -55,5 +52,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
 }
-#endif
-
