@@ -2,6 +2,8 @@
 [ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
 [![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
 
+> To make sure your app is ready for iOS 14 please visit [this page](https://github.com/twilio/twilio-video-ios/issues/119).
+
 **NEW:** Please check out the newly open-sourced [video collaboration app](https://github.com/twilio/twilio-video-app-ios)
 built with iOS Video SDK.
 
