@@ -385,10 +385,10 @@ extension ViewController : RoomDelegate {
     func roomDidDisconnect(room: Room, error: Error?) {
         logMessage(messageText: "Disconnected from room \(room.name), error = \(String(describing: error))")
 
-        if !self.userInitiatedDisconnect, let uuid = room.uuid, let error = error {
+        if !self.userInitiatedDisconnect, let uuid = room.uuid, let error = error as? TwilioVideoSDK.Error {
             var reason = CXCallEndedReason.remoteEnded
 
-            if (error as NSError).code != TwilioVideoSDK.Error.roomRoomCompletedError.rawValue {
+            if error.code != .roomRoomCompletedError {
                 reason = .failed
             }
 
