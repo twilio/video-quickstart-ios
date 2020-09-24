@@ -395,6 +395,13 @@ class ViewController: UIViewController {
         // Connect to the Room using the options we provided.
         conferenceRoom = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
     }
+    
+    private func handleAppScreenSourceAvailabilityChange() {
+        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".        }
+        if (self.broadcastController == nil && screenTrack == nil) {
+            checkRecordingAvailability()
+        }
+    }
 }
 
 // MARK:- RPBroadcastActivityViewControllerDelegate
@@ -455,11 +462,11 @@ extension ViewController: AppScreenSourceDelegate {
     }
     
     func appScreenSourceDidBecomeAvailable(_ source: AppScreenSource) {
-        checkRecordingAvailability()
+        handleAppScreenSourceAvailabilityChange()
     }
     
     func appScreenSourceDidBecomeUnavailable(_ source: AppScreenSource) {
-        checkRecordingAvailability()
+        handleAppScreenSourceAvailabilityChange()
     }
 }
 
