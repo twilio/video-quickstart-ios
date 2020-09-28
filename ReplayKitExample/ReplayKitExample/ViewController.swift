@@ -283,7 +283,6 @@ class ViewController: UIViewController {
                 self.infoLabel?.text = userError.localizedDescription
             }
         }
-        
         if let room = conferenceRoom,
             room.state == .connected {
             room.disconnect()
@@ -397,7 +396,7 @@ class ViewController: UIViewController {
     }
     
     private func handleAppScreenSourceAvailabilityChange() {
-        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".        }
+        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
         if (self.broadcastController == nil && screenTrack == nil) {
             checkRecordingAvailability()
         }
