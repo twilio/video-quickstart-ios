@@ -17,7 +17,7 @@ extension ViewController : CXProviderDelegate {
         logMessage(messageText: "providerDidReset:")
 
         // AudioDevice is enabled by default
-        self.audioDevice.isEnabled = true
+        self.audioDevice.isEnabled = false
         
         room?.disconnect()
     }
@@ -34,6 +34,8 @@ extension ViewController : CXProviderDelegate {
 
     func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
         logMessage(messageText: "provider:didDeactivateAudioSession:")
+        
+        audioDevice.isEnabled = false
     }
 
     func provider(_ provider: CXProvider, timedOutPerforming action: CXAction) {
@@ -42,17 +44,6 @@ extension ViewController : CXProviderDelegate {
 
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         logMessage(messageText: "provider:performStartCallAction:")
-
-        /*
-         * Configure the audio session, but do not start call audio here, since it must be done once
-         * the audio session has been activated by the system after having its priority elevated.
-         */
-
-        // Stop the audio unit by setting isEnabled to `false`.
-        self.audioDevice.isEnabled = false;
-
-        // Configure the AVAudioSession by executign the audio device's `block`.
-        self.audioDevice.block()
 
         callKitProvider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: nil)
         
@@ -68,17 +59,6 @@ extension ViewController : CXProviderDelegate {
 
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         logMessage(messageText: "provider:performAnswerCallAction:")
-
-        /*
-         * Configure the audio session, but do not start call audio here, since it must be done once
-         * the audio session has been activated by the system after having its priority elevated.
-         */
-
-        // Stop the audio unit by setting isEnabled to `false`.
-        self.audioDevice.isEnabled = false;
-
-        // Configure the AVAudioSession by executign the audio device's `block`.
-        self.audioDevice.block()
 
         performRoomConnect(uuid: action.callUUID, roomName: self.roomTextField.text) { (success) in
             if (success) {
