@@ -341,6 +341,8 @@ class ViewController: UIViewController {
             case RPSampleBufferType.audioMic:
                 // We use `TVIDefaultAudioDevice` to capture and playback audio for conferencing.
                 break
+            @unknown default:
+                break
             }
 
         }) { (error) in
