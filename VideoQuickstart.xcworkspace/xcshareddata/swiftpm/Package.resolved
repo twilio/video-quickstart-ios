@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "TwilioVideo",
+        "repositoryURL": "git@github.com:twilio/twilio-video-ios.git",
+        "state": {
+          "branch": null,
+          "revision": "40ddc007fa9364850b9593e892ffce00e45f5c84",
+          "version": "4.0.0-beta1"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
