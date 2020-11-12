@@ -1,6 +1,6 @@
 
 [ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/4.0.0-beta2/index.html)
 
 > To make sure your app is ready for iOS 14 please visit [this page](https://github.com/twilio/twilio-video-ios/issues/119).
 
@@ -9,9 +9,10 @@ built with iOS Video SDK.
 
 # Twilio Video Quickstart for iOS
 
-> NOTE: These sample applications use the Twilio Video 3.x APIs. For examples using our 2.x APIs, please see the [2.x](https://github.com/twilio/video-quickstart-ios/tree/2.x) branch. For examples using our 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-ios/tree/1.x) branch.
-> 
-> Please see our [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md) for the latest information on iOS 13 and iPadOS 13.
+> NOTE: These sample applications use the Twilio Video 4.x APIs. For examples using previous releases please see the following repositories:
+>  - For 3.x APIs, please see the [3.x](https://github.com/twilio/video-quickstart-ios/tree/master) branch.
+>  - For 2.x APIs, please see the [2.x](https://github.com/twilio/video-quickstart-ios/tree/2.x) branch.
+>  - For 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-ios/tree/1.x) branch.
 
 Get started with Video on iOS:
 
@@ -29,19 +30,6 @@ This repository contains example code written in both Objective-C and Swift. The
 
 If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 
-### CocoaPods
-
-1. Install [CocoaPods 1.7.5 or newer](https://guides.cocoapods.org/using/getting-started.html).
-
-2. Run `pod install` from the root directory of this project. CocoaPods will install `TwilioVideo.framework` and then set up an `xcworkspace`.
-
-3. Open `VideoQuickStart.xcworkspace`.
-
-Note: You may need to update the CocoaPods [Master Spec Repo](https://github.com/CocoaPods/Specs) by running `pod repo update master` in order to fetch the latest specs for TwilioVideo.
-
-### Manual Integration
-
-You can integrate `TwilioVideo.framework` manually by following these [install instructions](https://www.twilio.com/docs/video/ios-v3-getting-started#manual).
 
 ## Quickstart
 
@@ -156,8 +144,8 @@ For this Quickstart, the Application transport security settings are set to allo
 
 You can find more documentation on getting started as well as our latest Docs below:
 
-* [Getting Started](https://www.twilio.com/docs/video/ios-v3-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest/index.html)
+* [Getting Started](https://www.twilio.com/docs/video/ios-v4-getting-started)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest_4.x/index.html)
 * [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md)
 
 ## Issues and Support

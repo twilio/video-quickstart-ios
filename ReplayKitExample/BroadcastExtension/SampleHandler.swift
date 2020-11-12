@@ -139,6 +139,8 @@ class SampleHandler: RPBroadcastSampleHandler {
                 ExampleCoreAudioDeviceCapturerCallback(audioDevice, sampleBuffer)
             }
             break
+        @unknown default:
+            break
         }
     }
 }

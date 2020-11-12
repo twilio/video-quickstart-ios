@@ -49,7 +49,7 @@ See the master [README](https://github.com/twilio/video-quickstart-ios/blob/mast
 
 You will need to provide a hardcoded token, or token server URL in [ViewController.swift](ReplayKitExample/ViewController.swift) for conferencing and in [SampleHandler.swift](BroadcastExtension/SampleHandler.swift) for the broadcast extension.
 
-This example requires Xcode 11.0 and the iOS 12.0 SDK, as well as a device running iOS 11.0 or above. While the app launches on an iPhone Simulator, ReplayKit is non-functional.
+This example requires Xcode 12.0 and the iOS 12.0 SDK, as well as a device running iOS 12.0 or above. While the app launches on an iPhone Simulator, ReplayKit is non-functional.
 
 ### Running
 

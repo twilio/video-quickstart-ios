@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2438448D252B96800088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 2438448C252B96800088B407 /* TwilioVideo */; };
 		24A82E5A22B18A0A001EFC32 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 24A82E5922B18A0A001EFC32 /* README.md */; };
 		8A0A1F191ECD1FFC0008C1AF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A0A1F181ECD1FFC0008C1AF /* main.m */; };
 		8A0A1F1C1ECD1FFC0008C1AF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A0A1F1B1ECD1FFC0008C1AF /* AppDelegate.m */; };
@@ -17,6 +18,19 @@
 		8A85E4951ECE97F6004719C8 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A85E4941ECE97F6004719C8 /* Utils.m */; };
 		8A85E4981ECEA82D004719C8 /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A85E4971ECEA82D004719C8 /* AVPlayerView.m */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		24748EE6252B742200EEBFDD /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		24A82E5922B18A0A001EFC32 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = AVPlayerExample/README.md; sourceTree = "<group>"; };
@@ -41,6 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2438448D252B96800088B407 /* TwilioVideo in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,12 +117,17 @@
 				8A0A1F101ECD1FFC0008C1AF /* Sources */,
 				8A0A1F111ECD1FFC0008C1AF /* Frameworks */,
 				8A0A1F121ECD1FFC0008C1AF /* Resources */,
+				24748EE6252B742200EEBFDD /* Embed Frameworks */,
+				24748EF0252B90EF00EEBFDD /* Sign Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = AVPlayerExample;
+			packageProductDependencies = (
+				2438448C252B96800088B407 /* TwilioVideo */,
+			);
 			productName = AVPlayerExample;
 			productReference = 8A0A1F141ECD1FFC0008C1AF /* AVPlayerExample.app */;
 			productType = "com.apple.product-type.application";
@@ -118,7 +138,7 @@
 		8A0A1F0C1ECD1FFC0008C1AF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = "Twilio Inc.";
 				TargetAttributes = {
 					8A0A1F131ECD1FFC0008C1AF = {
@@ -137,6 +157,9 @@
 				Base,
 			);
 			mainGroup = 8A0A1F0B1ECD1FFC0008C1AF;
+			packageReferences = (
+				2438448B252B96800088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */,
+			);
 			productRefGroup = 8A0A1F151ECD1FFC0008C1AF /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -159,6 +182,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		24748EF0252B90EF00EEBFDD /* Sign Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Sign Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "find \"${CODESIGNING_FOLDER_PATH}\" -name '*.framework' -print0 | while read -d $'\\0' framework \ndo \n    codesign --force --deep --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --preserve-metadata=identifier,entitlements --timestamp=none \"${framework}\" \ndone\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8A0A1F101ECD1FFC0008C1AF /* Sources */ = {
@@ -221,6 +265,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -246,7 +291,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -280,6 +325,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -299,7 +345,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -311,9 +357,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = AVPlayerExample/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AVPlayerExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -323,9 +373,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				DEVELOPMENT_TEAM = SX5J6BN2KX;
 				INFOPLIST_FILE = AVPlayerExample/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.AVPlayerExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -353,6 +407,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2438448B252B96800088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twilio/twilio-video-ios";
+			requirement = {
+				kind = exactVersion;
+				version = "4.0.0-beta2";
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2438448C252B96800088B407 /* TwilioVideo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2438448B252B96800088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */;
+			productName = TwilioVideo;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8A0A1F0C1ECD1FFC0008C1AF /* Project object */;
 }

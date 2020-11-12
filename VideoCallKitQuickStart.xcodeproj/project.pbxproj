@@ -3,20 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		24166E171DD3AE910004C634 /* ViewController+SimulateIncomingCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24166E161DD3AE910004C634 /* ViewController+SimulateIncomingCall.swift */; };
 		24166E191DD3B0970004C634 /* ViewController+CallKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24166E181DD3B0970004C634 /* ViewController+CallKit.swift */; };
-		304A80C11C23350000CB8C03 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C01C23350000CB8C03 /* libc++.tbd */; };
-		304A80C31C23350500CB8C03 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C21C23350500CB8C03 /* AudioToolbox.framework */; };
-		304A80C51C23350A00CB8C03 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C41C23350A00CB8C03 /* VideoToolbox.framework */; };
-		304A80C71C23351000CB8C03 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C61C23351000CB8C03 /* AVFoundation.framework */; };
-		304A80C91C23351600CB8C03 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80C81C23351600CB8C03 /* CoreTelephony.framework */; };
-		304A80CB1C23351B00CB8C03 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80CA1C23351B00CB8C03 /* GLKit.framework */; };
-		304A80CD1C23352100CB8C03 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80CC1C23352100CB8C03 /* CoreMedia.framework */; };
-		304A80CF1C23352700CB8C03 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A80CE1C23352700CB8C03 /* SystemConfiguration.framework */; };
+		24384481252B95EE0088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 24384480252B95EE0088B407 /* TwilioVideo */; };
 		4B469DD91F75A3AE00190112 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B469DD61F75A1C900190112 /* Settings.swift */; };
 		4B469DDA1F75A3B100190112 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B469DD71F75A1C900190112 /* SettingsTableViewController.swift */; };
 		4B469DDB1F75A3B300190112 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B469DD81F75A1C900190112 /* Utils.swift */; };
@@ -68,14 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				304A80CF1C23352700CB8C03 /* SystemConfiguration.framework in Frameworks */,
-				304A80CD1C23352100CB8C03 /* CoreMedia.framework in Frameworks */,
-				304A80CB1C23351B00CB8C03 /* GLKit.framework in Frameworks */,
-				304A80C91C23351600CB8C03 /* CoreTelephony.framework in Frameworks */,
-				304A80C71C23351000CB8C03 /* AVFoundation.framework in Frameworks */,
-				304A80C51C23350A00CB8C03 /* VideoToolbox.framework in Frameworks */,
-				304A80C31C23350500CB8C03 /* AudioToolbox.framework in Frameworks */,
-				304A80C11C23350000CB8C03 /* libc++.tbd in Frameworks */,
+				24384481252B95EE0088B407 /* TwilioVideo in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,12 +161,16 @@
 				8B79D4631C2252A100489AA5 /* Frameworks */,
 				8B79D4641C2252A100489AA5 /* Resources */,
 				4BAA74E91D8A152A00239F19 /* Embed Frameworks */,
+				24748ED9252B729F00EEBFDD /* Sign Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = VideoCallKitQuickStart;
+			packageProductDependencies = (
+				24384480252B95EE0088B407 /* TwilioVideo */,
+			);
 			productName = VideoCallKitQuickStart;
 			productReference = 8B79D4661C2252A100489AA5 /* VideoCallKitQuickStart.app */;
 			productType = "com.apple.product-type.application";
@@ -192,13 +182,13 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0720;
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = "Twilio, Inc.";
 				TargetAttributes = {
 					8B79D4651C2252A100489AA5 = {
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = SX5J6BN2KX;
-						LastSwiftMigration = 1000;
+						LastSwiftMigration = 1200;
 					};
 				};
 			};
@@ -211,6 +201,9 @@
 				Base,
 			);
 			mainGroup = 8B79D45D1C2252A100489AA5;
+			packageReferences = (
+				2438447F252B95EE0088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */,
+			);
 			productRefGroup = 8B79D4671C2252A100489AA5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -232,6 +225,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		24748ED9252B729F00EEBFDD /* Sign Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Sign Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "find \"${CODESIGNING_FOLDER_PATH}\" -name '*.framework' -print0 | while read -d $'\\0' framework \ndo \n    codesign --force --deep --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --preserve-metadata=identifier,entitlements --timestamp=none \"${framework}\" \ndone\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8B79D4621C2252A100489AA5 /* Sources */ = {
@@ -293,6 +307,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -318,7 +333,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
@@ -352,6 +367,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -371,11 +387,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -392,11 +409,14 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = VideoCallKitQuickStart/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoCallKitQuickStart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -410,11 +430,14 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = VideoCallKitQuickStart/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VideoCallKitQuickStart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -440,6 +463,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2438447F252B95EE0088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:twilio/twilio-video-ios.git";
+			requirement = {
+				kind = exactVersion;
+				version = "4.0.0-beta2";
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		24384480252B95EE0088B407 /* TwilioVideo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2438447F252B95EE0088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */;
+			productName = TwilioVideo;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8B79D45E1C2252A100489AA5 /* Project object */;
 }

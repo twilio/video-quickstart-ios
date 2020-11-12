@@ -313,7 +313,7 @@ class ViewController: UIViewController {
                                       enabled: true,
                                       name: "Screen")
 
-        appScreenSource?.startCapture { _, error in
+        appScreenSource?.startCapture { error in
             if error != nil {
                 print("Screen capture error: ", error as Any)
             } else {

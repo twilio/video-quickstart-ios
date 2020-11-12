@@ -130,7 +130,7 @@ class ViewController : UIViewController {
 // MARK: WKNavigationDelegate
 extension ViewController : WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("WebView:", webView, "finished navigation:", navigation)
+        print("WebView:", webView, "finished navigation:", navigation!)
 
         self.navigationItem.title = webView.title
     }
