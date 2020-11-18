@@ -4,9 +4,11 @@ The project demonstrates how to integrate Twilio's Programmable Video SDK with `
 
 **Conferencing (In-App)**
 
-Use an `RPScreenRecorder` to capture the screen and play/record audio using `TVIDefaultAudioDevice`. After joining a Room you will be able to hear other Participants, and they will be able to hear you, and see the contents of your screen.
+Use a `TVIAppScreenSource` to capture the screen and play/record audio using `TVIDefaultAudioDevice`. After joining a Room you will be able to hear other Participants, and they will be able to hear you, and see the contents of your screen.
 
-When using the in-process `RPScreenRecorder` APIs, you may only capture content from your own application. Screen capture is suspended upon entering the backround. Once you being capturing, your application is locked to its current interface orientation.
+When using the in-process `TVIAppScreenSource` APIs, you may only capture content from your own application. Screen capture is suspended upon entering the backround. Once you begin capturing, your application is locked to its current interface orientation.
+
+`TVIAppScreenSource` uses `RPScreenRecorder` internally.
 
 **Broadcast (Extension)**
 
@@ -31,10 +33,10 @@ The source offers several capabilities to optimize for different use cases:
 
 For performance reasons, `ReplayKit.framework` produces variable frame rate input. Importantly, this content has different properties depending on how screen capturing is being performed:
 
-| ReplayKit API | Device | Max Frame Rate | Rotation Tags |
+| API | Device | Max Frame Rate | Rotation Tags |
 |-------------|----------------------|-----|-------|
-| RPScreenRecorder | iPhone, iPad | 60 | No |
-| RPScreenRecorder | iPad Pro | 120 | No |
+| TVIAppScreenSource | iPhone, iPad | 60 | No |
+| TVIAppScreenSource | iPad Pro | 120 | No |
 | RPBroadcastSampleHandler | All | 30 | Yes |
 
 **ExampleReplayKitAudioCapturer**
@@ -105,9 +107,9 @@ There is a memory leak in iOS 13.0 when broadcasting the screen with the microph
 
 Testing with iOS 13.1-beta2 shows that the resource leak has been fixed in the upcoming release. If you use `RPSampleBufferType.audioMic` in an extension, then urge your customers to wait for iOS 13.1 instead.
 
-**5. RPScreenRecorder Debugging**
+**5. TVIAppScreenSource Debugging**
 
-It is possible to get ReplayKit into an inconsistent state when setting breakpoints in `RPScreenRecorder` callbacks. If you notice that capture is starting but no audio/video samples are being produced, then you should reset Media Services on your device.
+It is possible to get ReplayKit into an inconsistent state when setting breakpoints in `TVIAppScreenSource` callbacks. If you notice that capture is starting but no audio/video samples are being produced, then you should reset Media Services on your device.
 
 First, end your debugging session and then navigate to: 
 
@@ -141,7 +143,7 @@ This problem is solved in iOS 13.0, which supports low-delay mono and stereo app
 | Application | 1 or 2ch, 44,100 Hz, Big Endian    | 1,024               | 23.2                 |
 | Microphone  | 1ch, 44,100 Hz, Little Endian | 1,024                | 23.2                  |
 
-**8. RPScreenRecorder Content Sizing Error (iOS 12)**
+**8. TVIAppScreenSource Content Sizing Error (iOS 12)**
 
 You might experience spurious failures while presenting the permissions dialog for `RSPScreenRecorder`  on iOS 12 devices.
 
