@@ -1,6 +1,6 @@
 
 [ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/4.0.0-beta2/index.html)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/4.0.0-beta3/index.html)
 
 > To make sure your app is ready for iOS 14 please visit [this page](https://github.com/twilio/twilio-video-ios/issues/119).
 
@@ -29,6 +29,8 @@ Get started with Video on iOS:
 This repository contains example code written in both Objective-C and Swift. The Swift examples use Apple's Swift 4.2 programming language for iOS.
 
 If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
+
+These Quickstarts expect that you have "Client-side Room Creation" enabled in your Twilio account. You can check this setting on the [Default Room Settings](https://www.twilio.com/console/video/configure) page in the [Twilio Console](https://www.twilio.com/console).
 
 
 ## Quickstart
@@ -145,7 +147,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/video/ios-v4-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest_4.x/index.html)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/4.0.0-beta3/index.html)
 * [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md)
 
 ## Issues and Support
