@@ -147,7 +147,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/video/ios-v4-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest_4.x/index.html)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/4.0.0-beta3/index.html)
 * [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md)
 
 ## Issues and Support
