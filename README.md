@@ -29,6 +29,8 @@ This repository contains example code written in both Objective-C and Swift. The
 
 If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 
+These Quickstarts expect that you have "Client-side Room Creation" enabled in your Twilio account. You can check this setting on the [Default Room Settings](https://www.twilio.com/console/video/configure) page in the [Twilio Console](https://www.twilio.com/console).
+
 ### CocoaPods
 
 1. Install [CocoaPods 1.7.5 or newer](https://guides.cocoapods.org/using/getting-started.html).
