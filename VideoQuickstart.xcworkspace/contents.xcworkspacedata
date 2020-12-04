@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:VideoQuickStart.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:VideoCallKitQuickStart.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:AudioDeviceExample.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:AudioSinkExample.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:ARKitExample.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:AVPlayerExample.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:DataTrackExample.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:ObjCVideoQuickstart.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:ReplayKitExample.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:ScreenCapturerExample.xcodeproj">
+   </FileRef>
+</Workspace>
