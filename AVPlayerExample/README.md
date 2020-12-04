@@ -4,7 +4,7 @@ This example demonstrates how to use `AVPlayer` to stream Audio & Video content 
 
 ### Setup
 
-See the master [README](https://github.com/twilio/video-quickstart-ios/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
+See the master [README](https://github.com/twilio/video-quickstart-ios/blob/3.x/README.md) for instructions on how to generate access tokens and connect to a Room.
 
 ## Usage
 
