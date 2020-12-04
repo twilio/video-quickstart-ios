@@ -4,7 +4,7 @@ The project demonstrates how to use Twilio's Programmable Video SDK to stream an
 
 ### Setup
 
-See the master [README](https://github.com/twilio/video-quickstart-ios/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
+See the master [README](https://github.com/twilio/video-quickstart-ios/blob/3.x/README.md) for instructions on how to generate access tokens and connect to a Room.
 
 This example requires Xcode 11.0, and the iOS 12.0 SDK. An iOS device with an A9 CPU or greater is needed for ARKit to function properly.
 

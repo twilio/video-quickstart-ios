@@ -1,7 +1,7 @@
 # Twilio Video Data Tracks Example
 
 
-The DataTrack API lets you create a DataTrack channel which can be used to send low latency messages to zero or more receivers subscribed to the data. For a detailed guide about DataTracks reference [our documentation](https://www.twilio.com/docs/api/video/using-the-datatrack-api). 
+The DataTrack API lets you create a DataTrack channel which can be used to send low latency messages to zero or more receivers subscribed to the data. For a detailed guide about DataTracks reference [our documentation](https://www.twilio.com/docs/video/ios-v3-using-the-datatrack-api). 
  
 This example illustrates how to use the DataTrack API to write a simple collaborative drawing app.
 
@@ -9,7 +9,7 @@ In this example, participants can join a Room and begin drawing on a UIView. The
 
 ### Setup
 
-See the master [README](https://github.com/twilio/video-quickstart-ios/blob/master/README.md) for instructions on how to generate access tokens and connect to a Room.
+See the master [README](https://github.com/twilio/video-quickstart-ios/blob/3.x/README.md) for instructions on how to generate access tokens and connect to a Room.
 
 ### <a name="bullet2"></a>Run the application 
 
