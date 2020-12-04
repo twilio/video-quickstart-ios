@@ -1,6 +1,6 @@
 
 [ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/4.0.0-beta3/index.html)
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest_4.x/index.html)
 
 > To make sure your app is ready for iOS 14 please visit [this page](https://github.com/twilio/twilio-video-ios/issues/119).
 
@@ -10,7 +10,7 @@ built with iOS Video SDK.
 # Twilio Video Quickstart for iOS
 
 > NOTE: These sample applications use the Twilio Video 4.x APIs. For examples using previous releases please see the following repositories:
->  - For 3.x APIs, please see the [3.x](https://github.com/twilio/video-quickstart-ios/tree/master) branch.
+>  - For 3.x APIs, please see the [3.x](https://github.com/twilio/video-quickstart-ios/tree/3.x) branch.
 >  - For 2.x APIs, please see the [2.x](https://github.com/twilio/video-quickstart-ios/tree/2.x) branch.
 >  - For 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-ios/tree/1.x) branch.
 
@@ -147,7 +147,7 @@ For this Quickstart, the Application transport security settings are set to allo
 You can find more documentation on getting started as well as our latest Docs below:
 
 * [Getting Started](https://www.twilio.com/docs/video/ios-v4-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/4.0.0-beta3/index.html)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest_4.x/index.html)
 * [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md)
 
 ## Issues and Support
