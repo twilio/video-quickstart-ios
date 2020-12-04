@@ -46,6 +46,7 @@ class ViewController: UIViewController {
 
     // An application has a much higher memory limit than an extension. You may choose to deliver full sized buffers instead.
     static let kDownscaleBuffers = false
+    private var appScreenSource: AppScreenSource?
 
     deinit {
         NotificationCenter.default.removeObserver(self)
@@ -65,8 +66,7 @@ class ViewController: UIViewController {
         self.navigationController?.navigationBar.tintColor = UIColor.white
         self.navigationController?.navigationBar.barStyle = UIBarStyle.black
 
-        // The setter fires an availability changed event, but we check rather than rely on this implementation detail.
-        RPScreenRecorder.shared().delegate = self
+        appScreenSource = AppScreenSource(delegate: self)
         checkRecordingAvailability()
 
         NotificationCenter.default.addObserver(forName: UIScreen.capturedDidChangeNotification, object: UIScreen.main, queue: OperationQueue.main) { (notification) in
@@ -233,7 +233,7 @@ class ViewController: UIViewController {
 
     // MARK:- Private
     private func checkRecordingAvailability() {
-        let isScreenRecordingAvailable = RPScreenRecorder.shared().isAvailable
+        let isScreenRecordingAvailable = appScreenSource?.isAvailable ?? false
         broadcastButton.isHidden = !isScreenRecordingAvailable
         conferenceButton?.isHidden = !isScreenRecordingAvailable
         infoLabel?.text = isScreenRecordingAvailable ? ViewController.kRecordingAvailableInfo : ViewController.kRecordingNotAvailableInfo
@@ -254,39 +254,35 @@ class ViewController: UIViewController {
     }
 
     private func stopConference(error: Error?) {
-        // Stop recording the screen.
-        let recorder = RPScreenRecorder.shared()
-        recorder.stopCapture { (captureError) in
-            if let error = captureError {
-                print("Screen capture stop error: ", error as Any)
+        appScreenSource?.stopCapture { captureError in
+            if let captureError = captureError {
+                print("Screen capture stop error: ", captureError as Any)
+                return
+            }
+            
+            print("Screen capture stopped.")
+            self.navigationItem.leftBarButtonItem = nil
+            self.conferenceButton?.isEnabled = true
+            self.infoLabel?.isHidden = false
+            if let picker = self.broadcastPickerView {
+                picker.isHidden = false
+                self.broadcastButton.isHidden = false
             } else {
-                print("Screen capture stopped.")
-                DispatchQueue.main.async {
-                    self.navigationItem.leftBarButtonItem = nil
-                    self.conferenceButton?.isEnabled = true
-                    self.infoLabel?.isHidden = false
-                    if let picker = self.broadcastPickerView {
-                        picker.isHidden = false
-                        self.broadcastButton.isHidden = false
-                    } else {
-                        self.broadcastButton.isEnabled = true
-                    }
-                    self.spinner.stopAnimating()
-                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
-                    self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
-                    self.navigationItem.rightBarButtonItem = self.settingsButton
-                    self.navigationItem.leftBarButtonItem = nil
+                self.broadcastButton.isEnabled = true
+            }
+            self.spinner.stopAnimating()
+            self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
+            self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
+            self.navigationItem.rightBarButtonItem = self.settingsButton
+            self.navigationItem.leftBarButtonItem = nil
 
-                    self.videoSource = nil
-                    self.screenTrack = nil
+            self.appScreenSource = nil
+            self.screenTrack = nil
 
-                    if let userError = error {
-                        self.infoLabel?.text = userError.localizedDescription
-                    }
-                }
+            if let userError = error {
+                self.infoLabel?.text = userError.localizedDescription
             }
         }
-
         if let room = conferenceRoom,
             room.state == .connected {
             room.disconnect()
@@ -307,71 +303,48 @@ class ViewController: UIViewController {
         self.infoLabel?.text = ""
 
         // Start recording the screen.
-        let recorder = RPScreenRecorder.shared()
-        recorder.isMicrophoneEnabled = false
-        recorder.isCameraEnabled = false
+        let options = AppScreenSourceOptions() { builder in
+            builder.screenContent = ViewController.kDownscaleBuffers ? .video : .default
+        }
+        
+        appScreenSource = AppScreenSource(options: options, delegate: self)
 
-        // The source produces either downscaled buffers with smoother motion, or an HD screen recording.
-        let options = ViewController.kDownscaleBuffers ? ReplayKitVideoSource.TelecineOptions.p60to24or25or30 : ReplayKitVideoSource.TelecineOptions.disabled
-        videoSource = ReplayKitVideoSource(isScreencast: !ViewController.kDownscaleBuffers,
-                                           telecineOptions: options)
-
-        screenTrack = LocalVideoTrack(source: videoSource!,
+        screenTrack = LocalVideoTrack(source: appScreenSource!,
                                       enabled: true,
                                       name: "Screen")
 
-        let videoCodec = Settings.shared.videoCodec ?? Vp8Codec()!
-        let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: videoCodec,
-                                                                                          isScreencast: !ViewController.kDownscaleBuffers,
-                                                                                       telecineOptions:options)
-        videoSource?.requestOutputFormat(outputFormat)
-
-        recorder.startCapture(handler: { (sampleBuffer, type, error) in
-            if error != nil {
-                print("Capture error: ", error as Any)
-                return
-            }
-
-            switch type {
-            case RPSampleBufferType.video:
-                self.videoSource?.processFrame(sampleBuffer: sampleBuffer)
-                break
-            case RPSampleBufferType.audioApp:
-                break
-            case RPSampleBufferType.audioMic:
-                // We use `TVIDefaultAudioDevice` to capture and playback audio for conferencing.
-                break
-            }
-
-        }) { (error) in
+        appScreenSource?.startCapture { error in
             if error != nil {
                 print("Screen capture error: ", error as Any)
             } else {
                 print("Screen capture started.")
             }
-            DispatchQueue.main.async {
-                self.conferenceButton?.isEnabled = true
-                if error != nil {
-                    self.broadcastButton.isEnabled = true
-                    self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
-                    self.broadcastPickerView?.isHidden = false
-                    self.broadcastButton.isHidden = false
-                    self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
-                    self.infoLabel?.isHidden = false
-                    self.infoLabel?.text = error!.localizedDescription
-                    self.videoSource = nil
-                    self.screenTrack = nil
-                } else {
-                    self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
-                    self.spinner.startAnimating()
-                    self.infoLabel?.isHidden = true
-                    self.connectToRoom(name: "conference", encodingParameters: encodingParams)
+            self.conferenceButton?.isEnabled = true
+            if error != nil {
+                self.broadcastButton.isEnabled = true
+                self.broadcastButton.setTitle(ViewController.kStartBroadcastButtonTitle, for: UIControl.State.normal)
+                self.broadcastPickerView?.isHidden = false
+                self.broadcastButton.isHidden = false
+                self.conferenceButton?.setTitle(ViewController.kStartConferenceButtonTitle, for:.normal)
+                self.infoLabel?.isHidden = false
+                self.infoLabel?.text = error!.localizedDescription
+                self.appScreenSource = nil
+                self.screenTrack = nil
+            } else {
+                self.conferenceButton?.setTitle(ViewController.kStopConferenceButtonTitle, for:.normal)
+                self.spinner.startAnimating()
+                self.infoLabel?.isHidden = true
+                let (encodingParams, _) = ReplayKitVideoSource.getParametersForUseCase(
+                    codec: Settings.shared.videoCodec ?? Vp8Codec()!,
+                    isScreencast: !ViewController.kDownscaleBuffers,
+                    telecineOptions: .disabled
+                )
+                self.connectToRoom(name: "conference", encodingParameters: encodingParams)
 
-                    let playVideo = UIBarButtonItem(title: "Play Video", style: .plain, target: self, action: #selector(self.pickDocument(_:)))
-                    let browseWeb = UIBarButtonItem(title: "Browse Web", style: .plain, target: self, action: #selector(self.browseWeb(_:)))
-                    self.navigationItem.leftBarButtonItem = playVideo
-                    self.navigationItem.rightBarButtonItem = browseWeb
-                }
+                let playVideo = UIBarButtonItem(title: "Play Video", style: .plain, target: self, action: #selector(self.pickDocument(_:)))
+                let browseWeb = UIBarButtonItem(title: "Browse Web", style: .plain, target: self, action: #selector(self.browseWeb(_:)))
+                self.navigationItem.leftBarButtonItem = playVideo
+                self.navigationItem.rightBarButtonItem = browseWeb
             }
         }
     }
@@ -420,6 +393,13 @@ class ViewController: UIViewController {
 
         // Connect to the Room using the options we provided.
         conferenceRoom = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
+    }
+    
+    private func handleAppScreenSourceAvailabilityChange() {
+        // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
+        if (self.broadcastController == nil && screenTrack == nil) {
+            checkRecordingAvailability()
+        }
     }
 }
 
@@ -474,19 +454,18 @@ extension ViewController: RPBroadcastControllerDelegate {
     }
 }
 
-// MARK:- RPScreenRecorderDelegate
-extension ViewController: RPScreenRecorderDelegate {
-    func screenRecorderDidChangeAvailability(_ screenRecorder: RPScreenRecorder) {
-        if Thread.isMainThread {
-            // Assume we will get an error raised if we are actively broadcasting / capturing and access is "stolen".
-            if (self.broadcastController == nil && screenTrack == nil) {
-                checkRecordingAvailability()
-            }
-        } else {
-            DispatchQueue.main.async {
-                self.screenRecorderDidChangeAvailability(screenRecorder)
-            }
-        }
+// MARK:- AppScreenSourceDelegate
+extension ViewController: AppScreenSourceDelegate {
+    func appScreenSource(_ source: AppScreenSource, didFailWithError error: Error) {
+        print("Capture error: ", error as Any)
+    }
+    
+    func appScreenSourceDidBecomeAvailable(_ source: AppScreenSource) {
+        handleAppScreenSourceAvailabilityChange()
+    }
+    
+    func appScreenSourceDidBecomeUnavailable(_ source: AppScreenSource) {
+        handleAppScreenSourceAvailabilityChange()
     }
 }
 
