@@ -7,7 +7,7 @@ This project demonstrates how to write your own `TVIVideoSource` to capture the 
 
 ### Setup
 
-This example does not connect to a Room, and thus does not require any access tokens or other configuration. Internet connectivity is required to load the contents of the `WKWebView`. Any device or simulator with iOS 12.0 or later may be used.
+This example does not connect to a Room, and thus does not require any access tokens or other configuration. Internet connectivity is required to load the contents of the `WKWebView`. Any device or simulator with iOS 11.0 or later may be used.
 
 ### FAQ
 
