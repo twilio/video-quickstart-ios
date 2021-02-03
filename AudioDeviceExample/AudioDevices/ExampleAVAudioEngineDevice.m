@@ -440,9 +440,10 @@ static size_t kMaximumFramesPerBuffer = 3072;
     });
 }
 
-- (void)stopContinuousMusic {
+- (void)tearDownAudio {
     [self teardownAudioUnit];
     [self teardownAudioEngine];
+    self.continuousMusic = NO;
 }
 
 - (void)attachMusicNodeToEngine:(AVAudioEngine *)engine {
@@ -690,6 +691,12 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
 - (BOOL)stopCapturing {
     @synchronized(self) {
+
+        // Continue playing music even after disconnected from a Room.
+        if (self.continuousMusic) {
+            return YES;
+        }
+
         // If the renderer is runnning, we will not stop the audio unit.
         if (!self.renderingContext->deviceContext) {
             [self stopAudioUnit];
