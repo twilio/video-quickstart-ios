@@ -12,4 +12,7 @@ NS_CLASS_AVAILABLE(NA, 11_0)
 
 - (void)playMusic;
 
+- (void)playContinuousMusic;
+- (void)stopContinuousMusic;
+
 @end
