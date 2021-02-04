@@ -445,8 +445,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
             TVIAudioDeviceContext *context = NULL;
             [self startRendering:context];
             [self startCapturing:context];
-            self.continuousMusic = continuous;
         }
+        self.continuousMusic = continuous;
     }
     dispatch_async(dispatch_get_main_queue(), ^{
         [self scheduleMusicOnPlayoutEngine];
