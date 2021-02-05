@@ -436,7 +436,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
 - (void)playMusic:(BOOL)continuous {
     @synchronized(self) {
-        if (![self deviceContext]) {
+        if (continuous) {
             if (!self.renderingFormat) {
                 self.renderingFormat = [self renderFormat];
             }
@@ -612,7 +612,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
         
         // Continue playing music even after disconnected from a Room.
         if (self.continuousMusic) {
-            self.renderingContext->deviceContext = NULL;
             return YES;
         }
         
@@ -721,7 +720,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
         // Continue playing music even after disconnected from a Room.
         if (self.continuousMusic) {
-            self.capturingContext->deviceContext = NULL;
             return YES;
         }
 
