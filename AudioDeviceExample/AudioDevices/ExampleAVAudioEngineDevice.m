@@ -91,6 +91,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
 @property (nonatomic, strong) AVAudioPCMBuffer *musicBuffer;
 
+@property (atomic, assign) BOOL continuousMusic;
+
 @end
 
 @implementation ExampleAVAudioEngineDevice
@@ -178,9 +180,17 @@ static size_t kMaximumFramesPerBuffer = 3072;
         AudioComponentInstanceDispose(audioUnit);
         return;
     }
-
+    
+    if (framesPerSlice < kMaximumFramesPerBuffer) {
+        framesPerSlice = (UInt32) kMaximumFramesPerBuffer;
+        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_MaximumFramesPerSlice,
+                                      kAudioUnitScope_Global, kOutputBus,
+                                      &framesPerSlice, sizeof(framesPerSlice));
+    } else {
+        kMaximumFramesPerBuffer = (size_t)framesPerSlice;
+    }
+    
     NSLog(@"This device uses a maximum slice size of %d frames.", (unsigned int)framesPerSlice);
-    kMaximumFramesPerBuffer = (size_t)framesPerSlice;
     AudioComponentInstanceDispose(audioUnit);
 }
 
@@ -351,7 +361,6 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
 - (void)teardownAudioEngine {
     [self teardownFilePlayers];
-
     [self teardownPlayoutAudioEngine];
     [self teardownRecordAudioEngine];
 }
@@ -386,6 +395,14 @@ static size_t kMaximumFramesPerBuffer = 3072;
                                   options:AVAudioPlayerNodeBufferInterrupts
                         completionHandler:^{
         NSLog(@"Downstream file player finished buffer playing");
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Completed playing file via AVAudioEngine.
+            // `nil` context indicates TwilioVideo SDK does not need core audio either.
+            if (![self deviceContext]) {
+                [self tearDownAudio];
+            }
+        });
     }];
     [self.recordFilePlayer play];
 
@@ -401,6 +418,13 @@ static size_t kMaximumFramesPerBuffer = 3072;
                                    options:AVAudioPlayerNodeBufferInterrupts
                          completionHandler:^{
         NSLog(@"Upstream file player finished buffer playing");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Completed playing file via AVAudioEngine.
+            // `nil` context indicates TwilioVideo SDK does not need core audio either.
+            if (![self deviceContext]) {
+                [self tearDownAudio];
+            }
+        });
     }];
     [self.playoutFilePlayer play];
     
@@ -410,9 +434,38 @@ static size_t kMaximumFramesPerBuffer = 3072;
      */
 }
 
-- (void)playMusic {
-    [self scheduleMusicOnPlayoutEngine];
-    [self scheduleMusicOnRecordEngine];
+- (void)playMusic:(BOOL)continuous {
+    @synchronized(self) {
+        if (continuous) {
+            if (!self.renderingFormat) {
+                self.renderingFormat = [self renderFormat];
+            }
+            if (!self.capturingFormat) {
+                self.capturingFormat = [self captureFormat];
+            }
+            // If device context is null, we will setup the audio unit by invoking the
+            // rendring and capturing.
+            [self initializeCapturer];
+            [self initializeRenderer];
+            
+            TVIAudioDeviceContext *context = NULL;
+            [self startRendering:context];
+            [self startCapturing:context];
+        }
+        self.continuousMusic = continuous;
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self scheduleMusicOnPlayoutEngine];
+        [self scheduleMusicOnRecordEngine];
+    });
+}
+
+- (void)tearDownAudio {
+    @synchronized(self) {
+        [self teardownAudioUnit];
+        [self teardownAudioEngine];
+        self.continuousMusic = NO;
+    }
 }
 
 - (void)attachMusicNodeToEngine:(AVAudioEngine *)engine {
@@ -517,28 +570,31 @@ static size_t kMaximumFramesPerBuffer = 3072;
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
-
-        // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-        dispatch_async(dispatch_get_main_queue(), ^{
-            AVAudioFormat *manualRenderingFormat  = self.playoutEngine.manualRenderingFormat;
-            TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:manualRenderingFormat.channelCount
-                                                                         sampleRate:manualRenderingFormat.sampleRate
-                                                                    framesPerBuffer:kMaximumFramesPerBuffer];
-            if ([engineFormat isEqual:[[self class] activeFormat]]) {
-                if (self.playoutEngine.isRunning) {
-                    [self.playoutEngine stop];
+        
+        // If music is being played then we have already setup the engine
+        if (!self.continuousMusic) {
+            // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
+            dispatch_async(dispatch_get_main_queue(), ^{
+                AVAudioFormat *manualRenderingFormat  = self.playoutEngine.manualRenderingFormat;
+                TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:manualRenderingFormat.channelCount
+                                                                             sampleRate:manualRenderingFormat.sampleRate
+                                                                        framesPerBuffer:kMaximumFramesPerBuffer];
+                if ([engineFormat isEqual:[[self class] activeFormat]]) {
+                    if (self.playoutEngine.isRunning) {
+                        [self.playoutEngine stop];
+                    }
+                    
+                    NSError *error = nil;
+                    if (![self.playoutEngine startAndReturnError:&error]) {
+                        NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+                    }
+                } else {
+                    [self teardownPlayoutFilePlayer];
+                    [self teardownPlayoutAudioEngine];
+                    [self setupPlayoutAudioEngine];
                 }
-                
-                NSError *error = nil;
-                if (![self.playoutEngine startAndReturnError:&error]) {
-                    NSLog(@"Failed to start AVAudioEngine, error = %@", error);
-                }
-            } else {
-                [self teardownPlayoutFilePlayer];
-                [self teardownPlayoutAudioEngine];
-                [self setupPlayoutAudioEngine];
-            }
-        });
+            });
+        }
 
         self.renderingContext->deviceContext = context;
 
@@ -553,6 +609,12 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
 - (BOOL)stopRendering {
     @synchronized(self) {
+        
+        // Continue playing music even after disconnected from a Room.
+        if (self.continuousMusic) {
+            return YES;
+        }
+        
         // If the capturer is runnning, we will not stop the audio unit.
         if (!self.capturingContext->deviceContext) {
             [self stopAudioUnit];
@@ -615,28 +677,31 @@ static size_t kMaximumFramesPerBuffer = 3072;
             [self stopAudioUnit];
             [self teardownAudioUnit];
         }
-
-        // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
-        dispatch_async(dispatch_get_main_queue(), ^{
-            AVAudioFormat *manualRenderingFormat  = self.recordEngine.manualRenderingFormat;
-            TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:manualRenderingFormat.channelCount
-                                                                         sampleRate:manualRenderingFormat.sampleRate
-                                                                    framesPerBuffer:kMaximumFramesPerBuffer];
-            if ([engineFormat isEqual:[[self class] activeFormat]]) {
-                if (self.recordEngine.isRunning) {
-                    [self.recordEngine stop];
+        
+        // If music is being played then we have already setup the engine
+        if (!self.continuousMusic) {
+            // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
+            dispatch_async(dispatch_get_main_queue(), ^{
+                AVAudioFormat *manualRenderingFormat  = self.recordEngine.manualRenderingFormat;
+                TVIAudioFormat *engineFormat = [[TVIAudioFormat alloc] initWithChannels:manualRenderingFormat.channelCount
+                                                                             sampleRate:manualRenderingFormat.sampleRate
+                                                                        framesPerBuffer:kMaximumFramesPerBuffer];
+                if ([engineFormat isEqual:[[self class] activeFormat]]) {
+                    if (self.recordEngine.isRunning) {
+                        [self.recordEngine stop];
+                    }
+                    
+                    NSError *error = nil;
+                    if (![self.recordEngine startAndReturnError:&error]) {
+                        NSLog(@"Failed to start AVAudioEngine, error = %@", error);
+                    }
+                } else {
+                    [self teardownRecordFilePlayer];
+                    [self teardownRecordAudioEngine];
+                    [self setupRecordAudioEngine];
                 }
-                
-                NSError *error = nil;
-                if (![self.recordEngine startAndReturnError:&error]) {
-                    NSLog(@"Failed to start AVAudioEngine, error = %@", error);
-                }
-            } else {
-                [self teardownRecordFilePlayer];
-                [self teardownRecordAudioEngine];
-                [self setupRecordAudioEngine];
-            }
-        });
+            });
+        }
 
         self.capturingContext->deviceContext = context;
 
@@ -652,6 +717,12 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
 - (BOOL)stopCapturing {
     @synchronized(self) {
+
+        // Continue playing music even after disconnected from a Room.
+        if (self.continuousMusic) {
+            return YES;
+        }
+
         // If the renderer is runnning, we will not stop the audio unit.
         if (!self.renderingContext->deviceContext) {
             [self stopAudioUnit];
@@ -727,10 +798,6 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     }
 
     AudioCapturerContext *context = (AudioCapturerContext *)refCon;
-
-    if (context->deviceContext == NULL) {
-        return noErr;
-    }
 
     AudioBufferList *audioBufferList = context->bufferList;
     audioBufferList->mBuffers[0].mDataByteSize = numFrames * sizeof(UInt16) * kPreferredNumberOfChannels;
