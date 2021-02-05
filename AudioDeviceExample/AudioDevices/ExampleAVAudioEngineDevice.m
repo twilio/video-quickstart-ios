@@ -437,6 +437,12 @@ static size_t kMaximumFramesPerBuffer = 3072;
 - (void)playMusic:(BOOL)continuous {
     @synchronized(self) {
         if (![self deviceContext]) {
+            if (!self.renderingFormat) {
+                self.renderingFormat = [self renderFormat];
+            }
+            if (!self.capturingFormat) {
+                self.capturingFormat = [self captureFormat];
+            }
             // If device context is null, we will setup the audio unit by invoking the
             // rendring and capturing.
             [self initializeCapturer];
