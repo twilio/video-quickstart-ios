@@ -459,8 +459,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "git@github.com:twilio/twilio-video-ios.git";
 			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 4.4.0;
+				kind = exactVersion;
+				version = "4.6.0-beta1";
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
