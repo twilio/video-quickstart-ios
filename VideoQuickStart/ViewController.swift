@@ -135,6 +135,17 @@ class ViewController: UIViewController {
                 logMessage(messageText: message)
                 return
             }
+            
+            do {
+                let data = accessToken.data(using: .utf8)!
+                guard let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] else { return }
+                let token = Token(json: json)
+                accessToken = token.token ?? ""
+            } catch {
+                let message = "Failed to extract token from json object"
+                logMessage(messageText: message)
+                return
+            }
         }
         
         // Prepare local media which we will share with Room Participants.
