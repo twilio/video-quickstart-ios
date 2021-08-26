@@ -213,7 +213,7 @@ class ViewController: UIViewController {
 
     @IBAction func playMusic(sender: UIButton) {
         if let audioDevice = self.audioDevice as? ExampleAVAudioEngineDevice {
-            audioDevice.playMusic()
+            audioDevice.playMusic(true)
         }
     }
 
