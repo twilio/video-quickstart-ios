@@ -18,7 +18,7 @@ class ViewController: UIViewController {
     var accessToken = "TWILIO_ACCESS_TOKEN"
   
     // Configure remote URL to fetch token from
-    var tokenUrl = "http://localhost:8000/token.php"
+    let tokenUrl = "http://localhost:8000/token.php"
     
     // Video SDK components
     var room: Room?
