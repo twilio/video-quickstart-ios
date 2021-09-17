@@ -122,21 +122,8 @@ class ViewController: UIViewController {
                                         constant: 0);
         self.view.addConstraint(height)
     }
-
-    // MARK:- IBActions
-    @IBAction func connect(sender: AnyObject) {
-        // Configure access token either from server or manually.
-        // If the default wasn't changed, try fetching from server.
-        if (accessToken == "TWILIO_ACCESS_TOKEN") {
-            do {
-                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
-            } catch {
-                let message = "Failed to fetch access token"
-                logMessage(messageText: message)
-                return
-            }
-        }
-        
+    
+    func connectToARoom() {
         // Prepare local media which we will share with Room Participants.
         self.prepareLocalMedia()
         
@@ -180,6 +167,29 @@ class ViewController: UIViewController {
         self.showRoomUI(inRoom: true)
         self.dismissKeyboard()
     }
+
+    // MARK:- IBActions
+    @IBAction func connect(sender: AnyObject) {
+        // Configure access token either from server or manually.
+        // If the default wasn't changed, try fetching from server.
+        if (accessToken == "TWILIO_ACCESS_TOKEN") {
+            TokenUtils.fetchToken(from: tokenUrl) { [weak self]
+                (token, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        let message = "Failed to fetch access token:" + error.localizedDescription
+                        self?.logMessage(messageText: message)
+                        return
+                    }
+                self?.accessToken = token;
+                self?.connectToARoom()
+                }
+            }
+        } else {
+            self.connectToARoom()
+        }
+    }
+    
     
     @IBAction func disconnect(sender: AnyObject) {
         self.room!.disconnect()

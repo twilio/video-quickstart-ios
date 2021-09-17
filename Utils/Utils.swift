@@ -17,19 +17,22 @@ struct PlatformUtils {
     }()
 }
 
-struct TokenUtils {
-    static func fetchToken(url : String) throws -> String {
-        var token: String = "TWILIO_ACCESS_TOKEN"
-        let requestURL: URL = URL(string: url)!
-        do {
-            let data = try Data(contentsOf: requestURL)
-            if let tokenReponse = String(data: data, encoding: String.Encoding.utf8) {
-                token = tokenReponse
-            }
-        } catch let error as NSError {
-            print ("Invalid token url, error = \(error)")
-            throw error
+struct TokenUtils {    
+    static func fetchToken(from url : String, completionHandler: @escaping (String, Error?) -> Void) {
+      var token: String = "TWILIO_ACCESS_TOKEN"
+      let requestURL: URL = URL(string: url)!
+      let task = URLSession.shared.dataTask(with: requestURL) {
+        (data, response, error) in
+        if let error = error {
+          completionHandler(token, error)
+          return
         }
-        return token
+            
+        if let data = data, let tokenReponse = String(data: data, encoding: .utf8) {
+            token = tokenReponse
+            completionHandler(token, nil)
+        }
+      }
+      task.resume()
     }
 }
