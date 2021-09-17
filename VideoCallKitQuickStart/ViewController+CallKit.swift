@@ -159,20 +159,8 @@ extension ViewController {
             NSLog("EndCallAction transaction request successful")
         }
     }
-
-    func performRoomConnect(uuid: UUID, roomName: String? , completionHandler: @escaping (Bool) -> Swift.Void) {
-        // Configure access token either from server or manually.
-        // If the default wasn't changed, try fetching from server.
-        if (accessToken == "TWILIO_ACCESS_TOKEN") {
-            do {
-                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
-            } catch {
-                let message = "Failed to fetch access token"
-                logMessage(messageText: message)
-                return
-            }
-        }
-
+    
+    func connectToARoom(uuid: UUID, roomName: String? , completionHandler: @escaping (Bool) -> Swift.Void) {
         // Prepare local media which we will share with Room Participants.
         self.prepareLocalMedia()
 
@@ -219,5 +207,26 @@ extension ViewController {
         self.showRoomUI(inRoom: true)
         
         self.callKitCompletionHandler = completionHandler
+    }
+
+    func performRoomConnect(uuid: UUID, roomName: String? , completionHandler: @escaping (Bool) -> Swift.Void) {
+        // Configure access token either from server or manually.
+        // If the default wasn't changed, try fetching from server.
+        if (accessToken == "TWILIO_ACCESS_TOKEN") {
+            TokenUtils.fetchToken(from: tokenUrl) { [weak self]
+                (token, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        let message = "Failed to fetch access token:" + error.localizedDescription
+                        self?.logMessage(messageText: message)
+                        return
+                    }
+                    self?.accessToken = token;
+                    self?.connectToARoom(uuid: uuid, roomName: roomName, completionHandler: completionHandler)
+                }
+            }
+        } else {
+            self.connectToARoom(uuid: uuid, roomName: roomName, completionHandler: completionHandler)
+        }
     }
 }
