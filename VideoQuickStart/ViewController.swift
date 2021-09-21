@@ -64,6 +64,8 @@ class ViewController: UIViewController {
             self.startPreview()
         }
         
+        self.connectButton.adjustsImageWhenDisabled = true;
+        
         // Disconnect and mic button will be displayed when the Client is connected to a Room.
         self.disconnectButton.isHidden = true
         self.micButton.isHidden = true
@@ -124,6 +126,8 @@ class ViewController: UIViewController {
     }
     
     func connectToARoom() {
+        
+        self.connectButton.isEnabled = true;
         // Prepare local media which we will share with Room Participants.
         self.prepareLocalMedia()
         
@@ -170,6 +174,7 @@ class ViewController: UIViewController {
 
     // MARK:- IBActions
     @IBAction func connect(sender: AnyObject) {
+        self.connectButton.isEnabled = false;
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN") {
@@ -179,6 +184,7 @@ class ViewController: UIViewController {
                     if let error = error {
                         let message = "Failed to fetch access token:" + error.localizedDescription
                         self?.logMessage(messageText: message)
+                        self?.connectButton.isEnabled = true;
                         return
                     }
                 self?.accessToken = token;

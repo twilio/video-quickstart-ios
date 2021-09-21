@@ -66,9 +66,12 @@ class ViewController: UIViewController {
         self.disconnectButton.isHidden = true
         self.roomTextField.autocapitalizationType = .none
         self.roomTextField.delegate = self
+        self.connectButton.adjustsImageWhenDisabled = true
     }
     
     func connectToARoom() {
+        self.connectButton.isEnabled = true
+        
         let dataTrackOptions = DataTrackOptions() { (builder) in
             builder.isOrdered = true
             builder.name = "Draw"
@@ -97,6 +100,7 @@ class ViewController: UIViewController {
 
     // MARK:- IBActions
     @IBAction func connect(sender: AnyObject) {
+        self.connectButton.isEnabled = false
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN") {
@@ -106,6 +110,7 @@ class ViewController: UIViewController {
                     if let error = error {
                         let message = "Failed to fetch access token:" + error.localizedDescription
                         self?.logMessage(messageText: message)
+                        self?.connectButton.isEnabled = true
                         return
                     }
                 self?.accessToken = token;

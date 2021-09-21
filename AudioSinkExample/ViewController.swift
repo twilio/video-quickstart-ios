@@ -84,6 +84,7 @@ class ViewController: UIViewController {
     }
     
     func connectToARoom() {
+        connectButton.isEnabled = true
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
@@ -128,6 +129,7 @@ class ViewController: UIViewController {
 
     // MARK:- IBActions
     @IBAction func connect(sender: AnyObject) {
+        connectButton.isEnabled = false
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN") {
@@ -137,6 +139,7 @@ class ViewController: UIViewController {
                     if let error = error {
                         let message = "Failed to fetch access token:" + error.localizedDescription
                         self?.logMessage(messageText: message)
+                        self?.connectButton.isEnabled = true
                         return
                     }
                 self?.accessToken = token;

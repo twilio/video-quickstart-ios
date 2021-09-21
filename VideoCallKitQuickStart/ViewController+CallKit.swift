@@ -161,6 +161,8 @@ extension ViewController {
     }
     
     func connectToARoom(uuid: UUID, roomName: String? , completionHandler: @escaping (Bool) -> Swift.Void) {
+        self.connectButton.isEnabled = true
+        self.simulateIncomingButton.isEnabled = true
         // Prepare local media which we will share with Room Participants.
         self.prepareLocalMedia()
 
@@ -210,6 +212,8 @@ extension ViewController {
     }
 
     func performRoomConnect(uuid: UUID, roomName: String? , completionHandler: @escaping (Bool) -> Swift.Void) {
+        self.connectButton.isEnabled = false
+        self.simulateIncomingButton.isEnabled = false
         // Configure access token either from server or manually.
         // If the default wasn't changed, try fetching from server.
         if (accessToken == "TWILIO_ACCESS_TOKEN") {
@@ -219,6 +223,8 @@ extension ViewController {
                     if let error = error {
                         let message = "Failed to fetch access token:" + error.localizedDescription
                         self?.logMessage(messageText: message)
+                        self?.connectButton.isEnabled = true
+                        self?.simulateIncomingButton.isEnabled = true
                         return
                     }
                     self?.accessToken = token;

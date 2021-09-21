@@ -19,7 +19,7 @@ class ViewController: UIViewController {
     var accessToken = "TWILIO_ACCESS_TOKEN"
 
     // Configure remote URL to fetch token from
-    var tokenUrl = "http://localhost:8000/token.php"
+    let tokenUrl = "http://localhost:8000/token.php"
     
     // Video SDK components
     var room: Room?
@@ -99,6 +99,8 @@ class ViewController: UIViewController {
             // Preview our local camera track in the local video preview view.
             self.startPreview()
         }
+        self.connectButton.adjustsImageWhenDisabled = true
+        self.simulateIncomingButton.adjustsImageWhenDisabled = true
         
         // Disconnect and mic button will be displayed when the Client is connected to a Room.
         self.disconnectButton.isHidden = true
