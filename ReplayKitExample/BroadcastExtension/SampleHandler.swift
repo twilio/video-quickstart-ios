@@ -86,7 +86,7 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
         TwilioVideoSDK.audioDevice = self.audioDevice
-
+        
         // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
             TokenUtils.fetchToken(from: tokenUrl) { [weak self]
@@ -97,8 +97,8 @@ class SampleHandler: RPBroadcastSampleHandler {
                         print(message)
                         return
                     }
-                self?.accessToken = token;
-                self?.connectAndStartBroadcast(withSetupInfo: setupInfo)
+                    self?.accessToken = token;
+                    self?.connectAndStartBroadcast(withSetupInfo: setupInfo)
                 }
             }
         } else {

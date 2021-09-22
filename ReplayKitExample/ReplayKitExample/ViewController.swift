@@ -397,8 +397,8 @@ class ViewController: UIViewController {
                         self?.stopConference(error: error)
                         return
                     }
-                self?.accessToken = token;
-                self?.connectToARoom(name: name, encodingParameters: encodingParameters)
+                    self?.accessToken = token;
+                    self?.connectToARoom(name: name, encodingParameters: encodingParameters)
                 }
             }
         } else {

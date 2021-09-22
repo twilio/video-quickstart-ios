@@ -113,8 +113,8 @@ class ViewController: UIViewController {
                         self?.connectButton.isEnabled = true
                         return
                     }
-                self?.accessToken = token;
-                self?.connectToARoom()
+                    self?.accessToken = token;
+                    self?.connectToARoom()
                 }
             }
         } else {
