@@ -82,21 +82,9 @@ class ViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-
-    // MARK:- IBActions
-    @IBAction func connect(sender: AnyObject) {
-        // Configure access token either from server or manually.
-        // If the default wasn't changed, try fetching from server.
-        if (accessToken == "TWILIO_ACCESS_TOKEN") {
-            do {
-                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
-            } catch {
-                let message = "Failed to fetch access token"
-                logMessage(messageText: message)
-                return
-            }
-        }
-
+    
+    func connectToARoom() {
+        connectButton.isEnabled = true
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
@@ -137,6 +125,30 @@ class ViewController: UIViewController {
 
         self.showRoomUI(inRoom: true)
         self.dismissKeyboard()
+    }
+
+    // MARK:- IBActions
+    @IBAction func connect(sender: AnyObject) {
+        connectButton.isEnabled = false
+        // Configure access token either from server or manually.
+        // If the default wasn't changed, try fetching from server.
+        if (accessToken == "TWILIO_ACCESS_TOKEN") {
+            TokenUtils.fetchToken(from: tokenUrl) { [weak self]
+                (token, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        let message = "Failed to fetch access token:" + error.localizedDescription
+                        self?.logMessage(messageText: message)
+                        self?.connectButton.isEnabled = true
+                        return
+                    }
+                    self?.accessToken = token;
+                    self?.connectToARoom()
+                }
+            }
+        } else {
+            self.connectToARoom()
+        }
     }
 
     @IBAction func disconnect(sender: UIButton) {

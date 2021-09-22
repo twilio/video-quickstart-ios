@@ -18,7 +18,7 @@ class ViewController: UIViewController {
     var accessToken = "TWILIO_ACCESS_TOKEN"
   
     // Configure remote URL to fetch token from
-    var tokenUrl = "http://localhost:8000/token.php"
+    let tokenUrl = "http://localhost:8000/token.php"
     
     // Video SDK components
     var room: Room?
@@ -63,6 +63,8 @@ class ViewController: UIViewController {
             // Preview our local camera track in the local video preview view.
             self.startPreview()
         }
+        
+        self.connectButton.adjustsImageWhenDisabled = true;
         
         // Disconnect and mic button will be displayed when the Client is connected to a Room.
         self.disconnectButton.isHidden = true
@@ -122,21 +124,10 @@ class ViewController: UIViewController {
                                         constant: 0);
         self.view.addConstraint(height)
     }
-
-    // MARK:- IBActions
-    @IBAction func connect(sender: AnyObject) {
-        // Configure access token either from server or manually.
-        // If the default wasn't changed, try fetching from server.
-        if (accessToken == "TWILIO_ACCESS_TOKEN") {
-            do {
-                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
-            } catch {
-                let message = "Failed to fetch access token"
-                logMessage(messageText: message)
-                return
-            }
-        }
+    
+    func connectToARoom() {
         
+        self.connectButton.isEnabled = true;
         // Prepare local media which we will share with Room Participants.
         self.prepareLocalMedia()
         
@@ -180,6 +171,31 @@ class ViewController: UIViewController {
         self.showRoomUI(inRoom: true)
         self.dismissKeyboard()
     }
+
+    // MARK:- IBActions
+    @IBAction func connect(sender: AnyObject) {
+        self.connectButton.isEnabled = false;
+        // Configure access token either from server or manually.
+        // If the default wasn't changed, try fetching from server.
+        if (accessToken == "TWILIO_ACCESS_TOKEN") {
+            TokenUtils.fetchToken(from: tokenUrl) { [weak self]
+                (token, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        let message = "Failed to fetch access token:" + error.localizedDescription
+                        self?.logMessage(messageText: message)
+                        self?.connectButton.isEnabled = true;
+                        return
+                    }
+                    self?.accessToken = token;
+                    self?.connectToARoom()
+                }
+            }
+        } else {
+            self.connectToARoom()
+        }
+    }
+    
     
     @IBAction func disconnect(sender: AnyObject) {
         self.room!.disconnect()

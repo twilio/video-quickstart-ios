@@ -30,21 +30,8 @@ class SampleHandler: RPBroadcastSampleHandler {
 
     // The video codec to use for the broadcast. The encoding parameters and format request are built dynamically based upon the codec.
     static let kVideoCodec = H264Codec()!
-
-    override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
-
-        TwilioVideoSDK.audioDevice = self.audioDevice
-
-        // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
-        if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
-            do {
-                accessToken = try TokenUtils.fetchToken(url: self.tokenUrl)
-            } catch {
-                let message = "Failed to fetch access token."
-                print(message)
-            }
-        }
-
+    
+    func connectAndStartBroadcast(withSetupInfo setupInfo: [String : NSObject]?) {
         // This source will attempt to produce smaller buffers with fluid motion.
         let options = ReplayKitVideoSource.TelecineOptions.p30to24or25
         let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: SampleHandler.kVideoCodec,
@@ -95,6 +82,28 @@ class SampleHandler: RPBroadcastSampleHandler {
 
         // The user has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
         print("broadcastStartedWithSetupInfo: ", setupInfo as Any)
+    }
+
+    override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
+        TwilioVideoSDK.audioDevice = self.audioDevice
+        
+        // User has requested to start the broadcast. Setup info from the UI extension can be supplied but is optional.
+        if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
+            TokenUtils.fetchToken(from: tokenUrl) { [weak self]
+                (token, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        let message = "Failed to fetch access token:" + error.localizedDescription
+                        print(message)
+                        return
+                    }
+                    self?.accessToken = token;
+                    self?.connectAndStartBroadcast(withSetupInfo: setupInfo)
+                }
+            }
+        } else {
+            self.connectAndStartBroadcast(withSetupInfo: setupInfo)
+        }
     }
 
     override func broadcastPaused() {

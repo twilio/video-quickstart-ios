@@ -339,7 +339,7 @@ class ViewController: UIViewController {
                     isScreencast: !ViewController.kDownscaleBuffers,
                     telecineOptions: .disabled
                 )
-                self.connectToRoom(name: "conference", encodingParameters: encodingParams)
+                self.fetchTokenAndConnect(name: "conference", encodingParameters: encodingParams)
 
                 let playVideo = UIBarButtonItem(title: "Play Video", style: .plain, target: self, action: #selector(self.pickDocument(_:)))
                 let browseWeb = UIBarButtonItem(title: "Browse Web", style: .plain, target: self, action: #selector(self.browseWeb(_:)))
@@ -348,19 +348,8 @@ class ViewController: UIViewController {
             }
         }
     }
-
-    private func connectToRoom(name: String, encodingParameters: EncodingParameters) {
-        // Configure access token either from server or manually.
-        // If the default wasn't changed, try fetching from server.
-        if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
-            do {
-                accessToken = try TokenUtils.fetchToken(url: tokenUrl)
-            } catch {
-                stopConference(error: error)
-                return
-            }
-        }
-
+    
+    private func connectToARoom(name: String, encodingParameters: EncodingParameters) {
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
 
@@ -393,6 +382,28 @@ class ViewController: UIViewController {
 
         // Connect to the Room using the options we provided.
         conferenceRoom = TwilioVideoSDK.connect(options: connectOptions, delegate: self)
+    }
+
+    private func fetchTokenAndConnect(name: String, encodingParameters: EncodingParameters) {
+        // Configure access token either from server or manually.
+        // If the default wasn't changed, try fetching from server.
+        if (accessToken == "TWILIO_ACCESS_TOKEN" || accessToken.isEmpty) {
+            TokenUtils.fetchToken(from: tokenUrl) { [weak self]
+                (token, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        let message = "Failed to fetch access token:" + error.localizedDescription
+                        print(message)
+                        self?.stopConference(error: error)
+                        return
+                    }
+                    self?.accessToken = token;
+                    self?.connectToARoom(name: name, encodingParameters: encodingParameters)
+                }
+            }
+        } else {
+            self.connectToARoom(name: name, encodingParameters: encodingParameters)
+        }
     }
     
     private func handleAppScreenSourceAvailabilityChange() {
