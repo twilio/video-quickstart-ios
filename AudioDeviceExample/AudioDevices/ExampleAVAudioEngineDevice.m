@@ -447,10 +447,9 @@ static size_t kMaximumFramesPerBuffer = 3072;
             // rendring and capturing.
             [self initializeCapturer];
             [self initializeRenderer];
-            
-            TVIAudioDeviceContext *context = NULL;
-            [self startRendering:context];
-            [self startCapturing:context];
+        
+            [self startRendering:self.renderingContext->deviceContext];
+            [self startCapturing:self.capturingContext->deviceContext];
         }
         self.continuousMusic = continuous;
     }
