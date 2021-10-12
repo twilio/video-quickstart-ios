@@ -797,6 +797,10 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     }
 
     AudioCapturerContext *context = (AudioCapturerContext *)refCon;
+    
+    if (context->deviceContext == NULL) {
+        return noErr;
+    }
 
     AudioBufferList *audioBufferList = context->bufferList;
     audioBufferList->mBuffers[0].mDataByteSize = numFrames * sizeof(UInt16) * kPreferredNumberOfChannels;
@@ -948,7 +952,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
         NSLog(@"Could not set stream format on output bus!");
         return NO;
     }
-
+    
     // Enable the microphone input
     UInt32 enableInput = 1;
     status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_EnableIO,
