@@ -952,7 +952,6 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
         NSLog(@"Could not set stream format on output bus!");
         return NO;
     }
-    
     // Enable the microphone input
     UInt32 enableInput = 1;
     status = AudioUnitSetProperty(_audioUnit, kAudioOutputUnitProperty_EnableIO,
