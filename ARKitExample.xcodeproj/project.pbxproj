@@ -410,7 +410,7 @@
 			repositoryURL = "https://github.com/twilio/twilio-video-ios";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 4.6.0;
+				minimumVersion = 4.6.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
