@@ -24,7 +24,7 @@ Get started with Video on iOS:
 
 ## Setup
 
-This repository contains example code written in both Objective-C and Swift. The Swift examples use Apple's Swift 4.2 programming language for iOS.
+This repository contains example code written in both Objective-C and Swift.
 
 If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 
