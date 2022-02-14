@@ -1,15 +1,14 @@
 
 [ ![Download](https://img.shields.io/badge/Download-iOS%20SDK-blue.svg) ](https://www.twilio.com/docs/video/ios#add-the-sdk)
-[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest_4.x/index.html)
-
-> To make sure your app is ready for iOS 14 please visit [this page](https://github.com/twilio/twilio-video-ios/issues/119).
+[![Docs](https://img.shields.io/badge/iOS%20Docs-OK-blue.svg)](https://twilio.github.io/twilio-video-ios/docs/latest_5.x/index.html)
 
 **NEW:** Please check out the newly open-sourced [video collaboration app](https://github.com/twilio/twilio-video-app-ios)
 built with iOS Video SDK.
 
 # Twilio Video Quickstart for iOS
 
-> NOTE: These sample applications use the Twilio Video 4.x APIs. For examples using previous releases please see the following repositories:
+> NOTE: These sample applications use the Twilio Video 5.x APIs. For examples using previous releases please see the following repositories:
+>  - For 4.x APIs, please see the [4.x](https://github.com/twilio/video-quickstart-ios/releases/tag/4.x) tag.
 >  - For 3.x APIs, please see the [3.x](https://github.com/twilio/video-quickstart-ios/tree/3.x) branch.
 >  - For 2.x APIs, please see the [2.x](https://github.com/twilio/video-quickstart-ios/tree/2.x) branch.
 >  - For 1.x APIs, please see the [1.x](https://github.com/twilio/video-quickstart-ios/tree/1.x) branch.
@@ -26,7 +25,7 @@ Get started with Video on iOS:
 
 ## Setup
 
-This repository contains example code written in both Objective-C and Swift. The Swift examples use Apple's Swift 4.2 programming language for iOS.
+This repository contains example code written in both Objective-C and Swift.
 
 If you haven't used Twilio before, welcome! You'll need to [Sign up for a Twilio account](https://www.twilio.com/try-twilio) first. It's free!
 
@@ -101,15 +100,15 @@ Note: If you have an iOS device, you can now run apps from Xcode on your device 
 
 You will also find additional examples that provide more advanced use cases of the Video SDK. The currently included examples are as follows:
 
-- [AudioDevice](AudioDeviceExample) - Provide your own means to playback and record audio using a custom `TVIAudioDevice` and [CoreAudio](https://developer.apple.com/documentation/coreaudio).
+- [AudioDevice](AudioDeviceExample) - Provide your own means to playback and record audio using a custom `AudioDevice` and [CoreAudio](https://developer.apple.com/documentation/coreaudio).
 - [AudioSink](AudioSinkExample) - Access raw audio samples and record them to disk using [AVFoundation](https://developer.apple.com/documentation/avfoundation). Perform live voice recognition using Apple's [Speech](https://developer.apple.com/documentation/speech) framework.
-- [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `TVIRoom` via a custom `TVIVideoSource` source. This app requires Xcode 12 & iOS 11.
-- [AVPlayer](AVPlayerExample) - Shows how to use `AVPlayer` to stream Audio & Video content while connected to a `TVIRoom`.
+- [ARKit](ARKitExample) - Captures augmented reality content with `ARKit` and uses `SceneKit` to place objects in the virtual scene. The resulting rendering is previewed locally, and shared in a `Room` via a custom `VideoSource` source.
+- [AVPlayer](AVPlayerExample) - Shows how to use `AVPlayer` to stream Audio & Video content while connected to a `Room`.
 - [CallKit](VideoCallKitQuickStart) - Shows how to use Twilio Video with the [CallKit](https://developer.apple.com/reference/callkit) framework.
 - [DataTrack](DataTrackExample) - Shows how to use the Data Track APIs for interactive drawing.
 - [Collaboration App](https://github.com/twilio/twilio-video-app-ios) - A collaboration app that demonstrates how to use the Room API for multiparty conferencing.
-- [ReplayKit](ReplayKitExample) - Shows how to use ReplayKit to share the screen, and microphone via `TVIVideoSource` and `TVIAudioDevice`.
-- [Screen Capturer](ScreenCapturerExample) - Use a custom `TVIVideoSource` to capture the contents of a `WKWebView`.
+- [ReplayKit](ReplayKitExample) - Shows how to use ReplayKit to share the screen, and microphone via `VideoSource` and `AudioDevice`.
+- [Screen Capturer](ScreenCapturerExample) - Use a custom `VideoSource` to capture the contents of a `WKWebView`.
 
 ## Setup an Access Token Server
 
@@ -146,9 +145,8 @@ For this Quickstart, the Application transport security settings are set to allo
 
 You can find more documentation on getting started as well as our latest Docs below:
 
-* [Getting Started](https://www.twilio.com/docs/video/ios-v4-getting-started)
-* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest_4.x/index.html)
-* [iOS 13 Migration Guide](https://github.com/twilio/twilio-video-ios/blob/Releases/iOS-13-Migration-Guide.md)
+* [Getting Started](https://www.twilio.com/docs/video/ios-getting-started)
+* [Docs](https://twilio.github.io/twilio-video-ios/docs/latest_5.x/index.html)
 
 ## Issues and Support
 
