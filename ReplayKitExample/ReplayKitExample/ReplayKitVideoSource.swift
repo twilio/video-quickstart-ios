@@ -155,18 +155,28 @@ class ReplayKitVideoSource: NSObject, VideoSource {
     ///   - isScreencast: If the content is a screencast or not.
     ///   - telecineOptions: The options used to process the input frames.
     /// - Returns: The EncodingParameters and VideoFormat that are appropriate for the use case.
-    static public func getParametersForUseCase(codec: VideoCodec, isScreencast: Bool, telecineOptions: TelecineOptions) -> (EncodingParameters, VideoFormat) {
+    static public func getParametersForUseCase(videoCodec: VideoCodec, isScreencast: Bool, telecineOptions: TelecineOptions) -> (EncodingParameters, VideoFormat) {
         let audioBitrate = UInt(0)
         var videoBitrate = kMaxVideoBitrate
         var maxWidthOrHeight = isScreencast ? UInt(0) : kDownScaledMaxWidthOrHeight
         // TODO: IVTC in broadcast
         let maxFrameRate = isScreencast ? kMaxVideoFrameRate : UInt(30)
 
-        if let vp8Codec = codec as? Vp8Codec {
-            videoBitrate = vp8Codec.isSimulcast ? kMaxVideoBitrateSimulcast : kMaxVideoBitrate
+        switch videoCodec {
+        case .auto:
+            videoBitrate = 0
+        case .VP8:
+            videoBitrate = kMaxVideoBitrate
             if (!isScreencast) {
-                maxWidthOrHeight = vp8Codec.isSimulcast ? kDownScaledMaxWidthOrHeightSimulcast : kDownScaledMaxWidthOrHeight
+                maxWidthOrHeight = kDownScaledMaxWidthOrHeight
             }
+        case .VP8Simulcast:
+            videoBitrate = kMaxVideoBitrateSimulcast
+            if (!isScreencast) {
+                maxWidthOrHeight = kDownScaledMaxWidthOrHeightSimulcast
+            }
+        default:
+            break
         }
 
         return (EncodingParameters(audioBitrate: audioBitrate, videoBitrate: videoBitrate),

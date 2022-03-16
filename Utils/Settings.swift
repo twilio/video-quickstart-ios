@@ -7,6 +7,36 @@
 
 import TwilioVideo
 
+enum VideoCodec: CaseIterable {
+    case auto, VP8, VP8Simulcast, H264, VP9
+
+    var codec: TwilioVideo.VideoCodec? {
+        switch self {
+        case .auto:
+            return nil
+        case .VP8:
+            return Vp8Codec()
+        case .VP8Simulcast:
+            return Vp8Codec(simulcast: true)
+        case .H264:
+            return H264Codec()
+        case .VP9:
+            return Vp9Codec()
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .auto:
+            return "Auto"
+        case .VP8, .H264, .VP9:
+            return codec?.name ?? ""
+        case .VP8Simulcast:
+            return "\(VideoCodec.VP8.name) Simulcast"
+        }
+    }
+}
+
 class Settings: NSObject {
 
     // ISDK-2644: Resolving a conflict with AudioToolbox in iOS 13
@@ -15,11 +45,6 @@ class Settings: NSObject {
                                                           PcmaCodec(),
                                                           PcmuCodec(),
                                                           G722Codec()]
-    
-    let supportedVideoCodecs: [VideoCodec] = [Vp8Codec(),
-                                              Vp8Codec(simulcast: true),
-                                              H264Codec(),
-                                              Vp9Codec()]
 
     // Valid signaling Regions are listed here:
     // https://www.twilio.com/docs/video/ip-address-whitelisting#signaling-communication
@@ -47,16 +72,20 @@ class Settings: NSObject {
                                                                     "us2": "US West Coast (Oregon)"]
     
     var audioCodec: TwilioVideo.AudioCodec?
-    var videoCodec: VideoCodec?
+    var videoCodec: VideoCodec = .auto
 
     var maxAudioBitrate = UInt()
     var maxVideoBitrate = UInt()
 
     var signalingRegion: String?
 
+    // The videoEncodingMode API is mutually exclusive with existing codec management APIs EncodingParameters.maxVideoBitrate and preferredVideoCodecs, therefore when .auto is used, set maxVideoBitrate to 0 (Zero indicates the WebRTC default value, which is 2000 Kbps)
     func getEncodingParameters() -> EncodingParameters?  {
         if maxAudioBitrate == 0 && maxVideoBitrate == 0 {
             return nil;
+        } else if videoCodec == .auto {
+            return EncodingParameters(audioBitrate: maxAudioBitrate,
+                                      videoBitrate: 0)
         } else {
             return EncodingParameters(audioBitrate: maxAudioBitrate,
                                       videoBitrate: maxVideoBitrate)

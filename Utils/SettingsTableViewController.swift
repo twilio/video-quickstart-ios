@@ -84,9 +84,7 @@ class SettingsTableViewController: UITableViewController {
                     detailText = codec.name
                 }
             case SettingsTableViewController.videoCodecLabel:
-                if let codec = settings.videoCodec {
-                    detailText = self.getDisplayStrForVideoCodec(codec: codec)
-                }
+                detailText = settings.videoCodec.name
             case SettingsTableViewController.maxAudioBitrateLabel:
                 detailText = String(settings.maxAudioBitrate)
             case SettingsTableViewController.maxVideoBitrateLabel:
@@ -234,34 +232,22 @@ class SettingsTableViewController: UITableViewController {
     func didSelectVideoCodecRow(indexPath: IndexPath) {
         var selectedButton : UIAlertAction!
         
-        let defaultButton = UIAlertAction(title: "Default", style: .default, handler: { (action) -> Void in
-            self.settings.videoCodec = nil
-            self.reloadSelectedRowOrTableView()
-        })
-        
         let alertController = UIAlertController(title: self.labels[indexPath.section][indexPath.row], message: nil, preferredStyle: .actionSheet)
-        let selectionArray = settings.supportedVideoCodecs
         
-        for codec in selectionArray {
-            let selectionButton = UIAlertAction(title: self.getDisplayStrForVideoCodec(codec: codec),
+        for videoCodec in VideoCodec.allCases {
+            let selectionButton = UIAlertAction(title: videoCodec.name,
                                                 style: .default,
                                                 handler: { (action) -> Void in
-                self.settings.videoCodec = codec
+                self.settings.videoCodec = videoCodec
                 self.reloadSelectedRowOrTableView()
             })
             
-            if (settings.videoCodec == codec) {
+            if (settings.videoCodec == videoCodec) {
                 selectedButton = selectionButton;
             }
             
             alertController.addAction(selectionButton)
         }
-        
-        if selectedButton == nil {
-            selectedButton = defaultButton;
-        }
-        
-        alertController.addAction(defaultButton)
         
         if UIDevice.current.userInterfaceIdiom == .pad {
             alertController.popoverPresentationController?.sourceView = tableView.cellForRow(at: indexPath)
@@ -336,14 +322,5 @@ class SettingsTableViewController: UITableViewController {
             alertController.popoverPresentationController?.sourceRect = (tableView.cellForRow(at: indexPath)?.bounds)!
         }
         self.navigationController!.present(alertController, animated: true, completion: nil)
-    }
-
-    func getDisplayStrForVideoCodec(codec: VideoCodec) -> String {
-        var str = codec.name
-
-        if let vp8Codec = codec as? Vp8Codec {
-            str += vp8Codec.isSimulcast ? " Simulcast" : ""
-        }
-        return str;
     }
 }
