@@ -95,12 +95,17 @@ class ViewController: UIViewController {
                 builder.videoTracks = [videoTrack]
             }
 
-            // Use the preferred codecs
+            // Use the preferred audio codec
             if let preferredAudioCodec = Settings.shared.audioCodec {
                 builder.preferredAudioCodecs = [preferredAudioCodec]
             }
-            if let preferredVideoCodec = Settings.shared.videoCodec {
-                builder.preferredVideoCodecs = [preferredVideoCodec]
+
+            // Use Adpative Simulcast by setting builer.videoEncodingMode to .auto if preferredVideoCodec is .auto (default). The videoEncodingMode API is mutually exclusive with existing codec management APIs EncodingParameters.maxVideoBitrate and preferredVideoCodecs
+            let preferredVideoCodec = Settings.shared.videoCodec
+            if preferredVideoCodec == .auto {
+                builder.videoEncodingMode = .auto
+            } else if let codec = preferredVideoCodec.codec {
+                builder.preferredVideoCodecs = [codec]
             }
 
             // Use the preferred encoding parameters

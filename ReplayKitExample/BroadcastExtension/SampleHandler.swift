@@ -29,12 +29,13 @@ class SampleHandler: RPBroadcastSampleHandler {
     static let kAudioSampleType = RPSampleBufferType.audioMic
 
     // The video codec to use for the broadcast. The encoding parameters and format request are built dynamically based upon the codec.
-    static let kVideoCodec = H264Codec()!
+    // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
+    static let kVideoCodec: VideoCodec = .H264
     
     func connectAndStartBroadcast(withSetupInfo setupInfo: [String : NSObject]?) {
         // This source will attempt to produce smaller buffers with fluid motion.
         let options = ReplayKitVideoSource.TelecineOptions.p30to24or25
-        let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(codec: SampleHandler.kVideoCodec,
+        let (encodingParams, outputFormat) = ReplayKitVideoSource.getParametersForUseCase(videoCodec: SampleHandler.kVideoCodec,
                                                                                           isScreencast: false,
                                                                                     telecineOptions: options)
 
@@ -52,8 +53,13 @@ class SampleHandler: RPBroadcastSampleHandler {
             builder.audioTracks = [self.audioTrack!]
             builder.videoTracks = [self.screenTrack!]
 
-            // We have observed that downscaling the input and using H.264 results in the lowest memory usage.
-            builder.preferredVideoCodecs = [SampleHandler.kVideoCodec]
+            // Use Adpative Simulcast by setting builer.videoEncodingMode to .auto if preferredVideoCodec is .auto (default). The videoEncodingMode API is mutually exclusive with existing codec management APIs EncodingParameters.maxVideoBitrate and preferredVideoCodecs
+            let preferredVideoCodec = SampleHandler.kVideoCodec
+            if preferredVideoCodec == .auto {
+                builder.videoEncodingMode = .auto
+            } else if let codec = preferredVideoCodec.codec {
+                builder.preferredVideoCodecs = [codec]
+            }
 
             /*
              * Constrain the bitrate to improve QoS for subscribers when simulcast is not used, and to reduce overall
