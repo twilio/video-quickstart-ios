@@ -132,7 +132,7 @@ OSStatus ExampleCoreAudioDeviceCapturerCallback(ExampleReplayKitAudioCapturer *c
                                                                    sampleRate:asbd->mSampleRate
                                                               framesPerBuffer:format.framesPerBuffer];
         context->streamDescription = *asbd;
-        TVIAudioDeviceFormatChanged(context->deviceContext);
+        TVIAudioDeviceReinitialize(context->deviceContext);
         return noErr;
     }
 

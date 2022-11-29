@@ -443,7 +443,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
         @synchronized(self) {
             if (self.renderingContext) {
-                TVIAudioDeviceFormatChanged(self.renderingContext->deviceContext);
+                TVIAudioDeviceReinitialize(self.renderingContext->deviceContext);
             }
         }
     }
