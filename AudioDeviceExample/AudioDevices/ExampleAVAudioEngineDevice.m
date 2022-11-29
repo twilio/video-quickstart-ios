@@ -1168,7 +1168,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
         @synchronized(self) {
             TVIAudioDeviceContext context = [self deviceContext];
             if (context) {
-                TVIAudioDeviceFormatChanged(context);
+                TVIAudioDeviceReinitialize(context);
             }
         }
     }
