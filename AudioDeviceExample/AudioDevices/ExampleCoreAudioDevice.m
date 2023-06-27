@@ -8,12 +8,30 @@
 #import "ExampleCoreAudioDevice.h"
 
 // We want to get as close to 10 msec buffers as possible because this is what the media engine prefers.
-static double const kPreferredIOBufferDuration = 0.01;
+static double const kPreferredIOBufferDurationSec = 0.01;
 // We will use stereo playback where available. Some audio routes may be restricted to mono only.
 static size_t const kPreferredNumberOfChannels = 2;
 // An audio sample is a signed 16-bit integer.
 static size_t const kAudioSampleSize = 2;
 static uint32_t const kPreferredSampleRate = 48000;
+
+/*
+ * Calls to AudioUnitInitialize() can fail if called back-to-back after a format change or adding and removing tracks.
+ * A fall-back solution is to allow multiple sequential calls with a small delay between each. This factor sets the max
+ * number of allowed initialization attempts.
+ */
+static const int kMaxNumberOfAudioUnitInitializeAttempts = 5;
+/*
+ * Calls to AudioOutputUnitStart() can fail if called during CallKit performSetHeldAction (as a workaround for Apple's own bugs when the remote caller ends a call that interrupted our own)
+ * Repeated attempts to call this function will allow time for the call to actually be unheld by CallKit thereby allowing us to start our AudioUnit
+ */
+static const int kMaxNumberOfAudioUnitStartAttempts = 5;
+
+/*
+ * Calls to setupAVAudioSession can fail if called during CallKit performSetHeldAction (as a workaround for Apple's own bugs when the remote caller ends a call that interrupted our own)
+ * Repeated attempts to call this function will allow time for the call to actually be unheld by CallKit thereby allowing us to activate the AVAudioSession
+ */
+static const int kMaxNumberOfSetupAVAudioSessionAttempts = 5;
 
 typedef struct ExampleCoreAudioContext {
     TVIAudioDeviceContext deviceContext;
@@ -43,13 +61,19 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 - (id)init {
     self = [super init];
+
     if (self) {
+        [self setupAVAudioSession];
+        [self registerAVAudioSessionObservers];
     }
     return self;
 }
 
 - (void)dealloc {
     [self unregisterAVAudioSessionObservers];
+
+    free(self.renderingContext);
+    self.renderingContext = NULL;
 }
 
 + (NSString *)description {
@@ -81,8 +105,16 @@ static size_t kMaximumFramesPerBuffer = 1156;
         return;
     }
 
+    if (framesPerSlice < kMaximumFramesPerBuffer) {
+        framesPerSlice = (UInt32) kMaximumFramesPerBuffer;
+        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_MaximumFramesPerSlice,
+                                      kAudioUnitScope_Global, kOutputBus,
+                                      &framesPerSlice, sizeof(framesPerSlice));
+    } else {
+        kMaximumFramesPerBuffer = (size_t)framesPerSlice;
+    }
+
     NSLog(@"This device uses a maximum slice size of %d frames.", (unsigned int)framesPerSlice);
-    kMaximumFramesPerBuffer = (size_t)framesPerSlice;
     AudioComponentInstanceDispose(audioUnit);
 }
 
@@ -90,9 +122,6 @@ static size_t kMaximumFramesPerBuffer = 1156;
 
 - (nullable TVIAudioFormat *)renderFormat {
     if (!_renderingFormat) {
-        // Setup the AVAudioSession early. You could also defer to `startRendering:` and `stopRendering:`.
-        [self setupAVAudioSession];
-
         _renderingFormat = [[self class] activeRenderingFormat];
     }
 
@@ -112,6 +141,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
         NSAssert(self.renderingContext == NULL, @"Should not have any rendering context.");
 
         self.renderingContext = malloc(sizeof(ExampleCoreAudioContext));
+        memset(self.renderingContext, 0, sizeof(ExampleCoreAudioContext));
         self.renderingContext->deviceContext = context;
         self.renderingContext->maxFramesPerBuffer = _renderingFormat.framesPerBuffer;
 
@@ -121,7 +151,7 @@ static size_t kMaximumFramesPerBuffer = 1156;
         self.renderingContext->expectedFramesPerBuffer = sessionFramesPerBuffer;
 
         NSAssert(self.audioUnit == NULL, @"The audio unit should not be created yet.");
-        if (![self setupAudioUnit:self.renderingContext]) {
+        if (![self setupAndStartAudioUnit]) {
             free(self.renderingContext);
             self.renderingContext = NULL;
             return NO;
@@ -133,14 +163,11 @@ static size_t kMaximumFramesPerBuffer = 1156;
 }
 
 - (BOOL)stopRendering {
-    [self stopAudioUnit];
-
     @synchronized(self) {
         NSAssert(self.renderingContext != NULL, @"Should have a rendering context.");
-        [self teardownAudioUnit];
+        [self stopAndTeardownAudioUnit];
 
-        free(self.renderingContext);
-        self.renderingContext = NULL;
+        self.renderingContext->deviceContext = NULL;
     }
 
     return YES;
@@ -184,6 +211,13 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     int8_t *audioBuffer = (int8_t *)bufferList->mBuffers[0].mData;
     UInt32 audioBufferSizeInBytes = bufferList->mBuffers[0].mDataByteSize;
 
+    // Render silence if rendering was stopped, or never started in the first place
+    if (context->deviceContext == NULL) {
+        *actionFlags |= kAudioUnitRenderAction_OutputIsSilence;
+        memset(audioBuffer, 0, audioBufferSizeInBytes);
+        return noErr;
+    }
+
     // Render silence if there are temporary mismatches between CoreAudio and our rendering format.
     if (numFrames > context->maxFramesPerBuffer) {
         NSLog(@"Can handle a max of %u frames but got %u.", (unsigned int)context->maxFramesPerBuffer, (unsigned int)numFrames);
@@ -226,35 +260,66 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
     return audioUnitDescription;
 }
 
-- (void)setupAVAudioSession {
+- (BOOL)setupAVAudioSession {
+    BOOL result = YES;
     AVAudioSession *session = [AVAudioSession sharedInstance];
     NSError *error = nil;
 
     if (![session setPreferredSampleRate:kPreferredSampleRate error:&error]) {
         NSLog(@"Error setting sample rate: %@", error);
+        result = NO;
     }
 
     NSInteger preferredOutputChannels = session.outputNumberOfChannels >= kPreferredNumberOfChannels ? kPreferredNumberOfChannels : session.outputNumberOfChannels;
     if (![session setPreferredOutputNumberOfChannels:preferredOutputChannels error:&error]) {
         NSLog(@"Error setting number of output channels: %@", error);
+        result = NO;
     }
 
     /*
      * We want to be as close as possible to the 10 millisecond buffer size that the media engine needs. If there is
      * a mismatch then TwilioVideo will ensure that appropriately sized audio buffers are delivered.
      */
-    if (![session setPreferredIOBufferDuration:kPreferredIOBufferDuration error:&error]) {
+    if (![session setPreferredIOBufferDuration:kPreferredIOBufferDurationSec error:&error]) {
         NSLog(@"Error setting IOBuffer duration: %@", error);
+        result = NO;
     }
 
     if (![session setCategory:AVAudioSessionCategoryPlayback error:&error]) {
         NSLog(@"Error setting session category: %@", error);
+        result = NO;
     }
-
-    [self registerAVAudioSessionObservers];
 
     if (![session setActive:YES error:&error]) {
         NSLog(@"Error activating AVAudioSession: %@", error);
+        result = NO;
+    }
+
+    return result;
+}
+
+- (BOOL)setupAndStartAudioUnit {
+    BOOL setupSuccessful = [self setupAudioUnit:self.renderingContext];
+    if (!setupSuccessful) {
+        NSLog(@"ExampleCoreAudioDevice failed to setup audio unit");
+        return NO;
+    }
+
+    BOOL startSuccessful = [self startAudioUnit];
+    if (!startSuccessful) {
+        NSLog(@"ExampleCoreAudioDevice failed to start audio unit");
+        [self stopAndTeardownAudioUnit];
+        return NO;
+    }
+    return YES;
+}
+
+- (void)stopAndTeardownAudioUnit {
+    @synchronized(self) {
+        if (self.audioUnit) {
+            [self stopAudioUnit];
+            [self teardownAudioUnit];
+        }
     }
 }
 
@@ -290,7 +355,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
                                   kAudioUnitScope_Input, kOutputBus,
                                   &streamDescription, sizeof(streamDescription));
     if (status != 0) {
-        NSLog(@"Could not enable output bus!");
+        NSLog(@"Could not set stream format on output bus!");
         AudioComponentInstanceDispose(_audioUnit);
         _audioUnit = NULL;
         return NO;
@@ -323,8 +388,19 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
         return NO;
     }
 
+    NSInteger failedInitializeAttempts = 0;
+    while (status != noErr) {
+        NSLog(@"Failed to initialize the RemoteIO unit. Error= %ld.", (long)status);
+        ++failedInitializeAttempts;
+        if (failedInitializeAttempts == kMaxNumberOfAudioUnitInitializeAttempts) {
+            break;
+        }
+        NSLog(@"Pause 100ms and try audio unit initialization again.");
+        [NSThread sleepForTimeInterval:0.1f];
+        status = AudioUnitInitialize(_audioUnit);
+    }
+
     // Finally, initialize and start the RemoteIO audio unit.
-    status = AudioUnitInitialize(_audioUnit);
     if (status != 0) {
         NSLog(@"Could not initialize the audio unit!");
         AudioComponentInstanceDispose(_audioUnit);
@@ -336,10 +412,19 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 }
 
 - (BOOL)startAudioUnit {
-    OSStatus status = AudioOutputUnitStart(_audioUnit);
-    if (status != 0) {
-        NSLog(@"Could not start the audio unit!");
-        return NO;
+    NSInteger startAttempts = 0;
+    OSStatus status = -1;
+    while (status != 0){
+        if (startAttempts == kMaxNumberOfAudioUnitStartAttempts) {
+            NSLog(@"Could not start the audio unit!");
+            return NO;
+        } else if (startAttempts > 0) {
+            NSLog(@"Pause 100ms and try starting audio unit again.");
+            [NSThread sleepForTimeInterval:0.1f];
+        }
+
+        status = AudioOutputUnitStart(_audioUnit);
+        ++startAttempts;
     }
     return YES;
 }
@@ -363,11 +448,24 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
 #pragma mark - NSNotification Observers
 
+- (TVIAudioDeviceContext)deviceContext {
+    return self.renderingContext ? self.renderingContext->deviceContext : NULL;
+}
+
 - (void)registerAVAudioSessionObservers {
     // An audio device that interacts with AVAudioSession should handle events like interruptions and route changes.
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
     [center addObserver:self selector:@selector(handleAudioInterruption:) name:AVAudioSessionInterruptionNotification object:nil];
+    /*
+     * Interruption handling is different on iOS 9.x. If your application becomes interrupted while it is in the
+     * background then you will not get a corresponding notification when the interruption ends. We workaround this
+     * by handling UIApplicationDidBecomeActiveNotification and treating it as an interruption end.
+     */
+    if (![[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 0, 0}]) {
+        [center addObserver:self selector:@selector(handleApplicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+    }
+
     [center addObserver:self selector:@selector(handleRouteChange:) name:AVAudioSessionRouteChangeNotification object:nil];
     [center addObserver:self selector:@selector(handleMediaServiceLost:) name:AVAudioSessionMediaServicesWereLostNotification object:nil];
     [center addObserver:self selector:@selector(handleMediaServiceRestored:) name:AVAudioSessionMediaServicesWereResetNotification object:nil];
@@ -378,15 +476,31 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
     @synchronized(self) {
         // If the worker block is executed, then context is guaranteed to be valid.
-        TVIAudioDeviceContext context = self.renderingContext ? self.renderingContext->deviceContext : NULL;
+        TVIAudioDeviceContext context = [self deviceContext];
         if (context) {
             TVIAudioDeviceExecuteWorkerBlock(context, ^{
                 if (type == AVAudioSessionInterruptionTypeBegan) {
                     NSLog(@"Interruption began.");
                     self.interrupted = YES;
-                    [self stopAudioUnit];
+                    [self stopAndTeardownAudioUnit];
                 } else {
                     NSLog(@"Interruption ended.");
+                    self.interrupted = NO;
+                    [self reinitialize];
+                }
+            });
+        }
+    }
+}
+
+- (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
+    @synchronized(self) {
+        // If the worker block is executed, then context is guaranteed to be valid.
+        TVIAudioDeviceContext context = [self deviceContext];
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
+                if (self.isInterrupted) {
+                    NSLog(@"Synthesizing an interruption ended event for iOS 9.x devices.");
                     self.interrupted = NO;
                     [self startAudioUnit];
                 }
@@ -413,8 +527,10 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
             // With CallKit, AVAudioSession may change the sample rate during a configuration change.
             // If a valid route change occurs we may want to update our audio graph to reflect the new output device.
             @synchronized(self) {
-                if (self.renderingContext) {
-                    TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
+                // If the worker block is executed, then context is guaranteed to be valid.
+                TVIAudioDeviceContext context = [self deviceContext];
+                if (context) {
+                    TVIAudioDeviceExecuteWorkerBlock(context, ^{
                         [self handleValidRouteChange];
                     });
                 }
@@ -433,27 +549,59 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 
     NSLog(@"A route change ocurred while the AudioUnit was started. Checking the active audio format.");
 
-    // Determine if the format actually changed. We only care about sample rate and number of channels.
+    if ([self didFormatChange]) {
+        [self reinitialize];
+    }
+}
+
+- (BOOL)didFormatChange {
+    BOOL formatDidChange = NO;
     TVIAudioFormat *activeFormat = [[self class] activeRenderingFormat];
 
+    // Determine if the format actually changed. We only care about sample rate and number of channels.
     if (![activeFormat isEqual:_renderingFormat]) {
+        formatDidChange = YES;
         NSLog(@"The rendering format changed. Restarting with %@", activeFormat);
-        // Signal a change by clearing our cached format, and allowing TVIAudioDevice to drive the process.
-        _renderingFormat = nil;
+    }
 
-        @synchronized(self) {
-            if (self.renderingContext) {
-                TVIAudioDeviceFormatChanged(self.renderingContext->deviceContext);
+    return formatDidChange;
+}
+
+-(void)reinitialize {
+    // Signal a change by clearing our cached format, and allowing TVIAudioDevice to drive the process.
+    _renderingFormat = nil;
+
+    @synchronized(self) {
+        TVIAudioDeviceContext context = [self deviceContext];
+        if (context) {
+            // Setup AVAudioSession preferences
+            BOOL setupSession = [self setupAVAudioSession];
+            NSInteger setupAttempts = 1;
+            while (!setupSession) {
+                if (setupAttempts == kMaxNumberOfSetupAVAudioSessionAttempts) {
+                    NSLog(@"Failed to setup AVAudioSession after multiple attempts");
+                    break;
+                }
+
+                NSLog(@"Pause for 100ms and try setting up AVAudioSession again");
+                [NSThread sleepForTimeInterval:0.1f];
+                setupSession = [self setupAVAudioSession];
+                ++setupAttempts;
             }
+
+            // Update FineAudioBuffer and stop+init+start AudioUnit
+            TVIAudioDeviceReinitialize(context);
         }
     }
 }
 
 - (void)handleMediaServiceLost:(NSNotification *)notification {
     @synchronized(self) {
-        if (self.renderingContext) {
-            TVIAudioDeviceExecuteWorkerBlock(self.renderingContext->deviceContext, ^{
-                [self stopAudioUnit];
+        // If the worker block is executed, then context is guaranteed to be valid.
+        TVIAudioDeviceContext context = [self deviceContext];
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
+                [self teardownAudioUnit];
             });
         }
     }
@@ -462,7 +610,7 @@ static OSStatus ExampleCoreAudioDevicePlayoutCallback(void *refCon,
 - (void)handleMediaServiceRestored:(NSNotification *)notification {
     @synchronized(self) {
         // If the worker block is executed, then context is guaranteed to be valid.
-        TVIAudioDeviceContext context = self.renderingContext ? self.renderingContext->deviceContext : NULL;
+        TVIAudioDeviceContext context = [self deviceContext];
         if (context) {
             TVIAudioDeviceExecuteWorkerBlock(context, ^{
                 [self startAudioUnit];
