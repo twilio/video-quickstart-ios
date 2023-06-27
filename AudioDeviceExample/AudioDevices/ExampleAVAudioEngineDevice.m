@@ -8,7 +8,7 @@
 #import "ExampleAVAudioEngineDevice.h"
 
 // We want to get as close to 10 msec buffers as possible because this is what the media engine prefers.
-static double const kPreferredIOBufferDuration = 0.01;
+static double const kPreferredIOBufferDurationSec = 0.01;
 
 // We will use mono playback and recording where available.
 static size_t const kPreferredNumberOfChannels = 1;
@@ -23,6 +23,17 @@ static uint32_t const kPreferredSampleRate = 48000;
  * number of allowed initialization attempts.
  */
 static const int kMaxNumberOfAudioUnitInitializeAttempts = 5;
+/*
+ * Calls to AudioOutputUnitStart() can fail if called during CallKit performSetHeldAction (as a workaround for Apple's own bugs when the remote caller ends a call that interrupted our own)
+ * Repeated attempts to call this function will allow time for the call to actually be unheld by CallKit thereby allowing us to start our AudioUnit
+ */
+static const int kMaxNumberOfAudioUnitStartAttempts = 5;
+
+/*
+ * Calls to setupAVAudioSession can fail if called during CallKit performSetHeldAction (as a workaround for Apple's own bugs when the remote caller ends a call that interrupted our own)
+ * Repeated attempts to call this function will allow time for the call to actually be unheld by CallKit thereby allowing us to activate the AVAudioSession
+ */
+static const int kMaxNumberOfSetupAVAudioSessionAttempts = 5;
 
 // Audio renderer contexts used in core audio's playout callback to retrieve the sdk's audio device context.
 typedef struct AudioRendererContext {
@@ -108,6 +119,8 @@ static size_t kMaximumFramesPerBuffer = 3072;
          * startCapturing gets called.
          */
 
+        _enabled = true;
+
         // Initialize the rendering context
         self.renderingContext = malloc(sizeof(AudioRendererContext));
         memset(self.renderingContext, 0, sizeof(AudioRendererContext));
@@ -121,13 +134,14 @@ static size_t kMaximumFramesPerBuffer = 3072;
         self.capturingContext = malloc(sizeof(AudioCapturerContext));
         memset(self.capturingContext, 0, sizeof(AudioCapturerContext));
         self.capturingContext->bufferList = &_captureBufferList;
-        
+
         // Setup the AVAudioEngine along with the rendering context
         if (![self setupRecordAudioEngine]) {
             NSLog(@"Failed to setup AVAudioEngine");
         }
-        
+
         [self setupAVAudioSession];
+        [self registerAVAudioSessionObservers];
     }
 
     return self;
@@ -180,7 +194,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
         AudioComponentInstanceDispose(audioUnit);
         return;
     }
-    
+
     if (framesPerSlice < kMaximumFramesPerBuffer) {
         framesPerSlice = (UInt32) kMaximumFramesPerBuffer;
         status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_MaximumFramesPerSlice,
@@ -189,9 +203,40 @@ static size_t kMaximumFramesPerBuffer = 3072;
     } else {
         kMaximumFramesPerBuffer = (size_t)framesPerSlice;
     }
-    
+
     NSLog(@"This device uses a maximum slice size of %d frames.", (unsigned int)framesPerSlice);
     AudioComponentInstanceDispose(audioUnit);
+}
+
+#pragma mark - Public
+
+- (void)setEnabled:(BOOL)enabled {
+    @synchronized(self) {
+        TVIAudioDeviceContext context = [self deviceContext];
+        if (context) {
+            TVIAudioDeviceExecuteWorkerBlock(context, ^{
+                @synchronized(self) {
+                    // Disabling audio
+                    if (!enabled && self.enabled) {
+                        NSLog(@"ExampleAVAudioEngineDevice disabling");
+                        [self stopAndTeardownAudioUnit];
+                    }
+
+                    // Enabling audio
+                    if (enabled && !self.enabled) {
+                        NSLog(@"ExampleAVAudioEngineDevice reenabling");
+                        [self reinitialize];
+                    }
+
+                    self->_enabled = enabled;
+                }
+            });
+        }
+        else {
+            NSLog(@"ExampleAVAudioEngineDevice has no device context. Setting enabled to %@", enabled ? @"YES" : @"NO");
+            _enabled = enabled;
+        }
+    }
 }
 
 #pragma mark - Private (AVAudioEngine)
@@ -395,7 +440,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
                                   options:AVAudioPlayerNodeBufferInterrupts
                         completionHandler:^{
         NSLog(@"Downstream file player finished buffer playing");
-        
+
         dispatch_async(dispatch_get_main_queue(), ^{
             // Completed playing file via AVAudioEngine.
             // `nil` context indicates TwilioVideo SDK does not need core audio either.
@@ -427,7 +472,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
         });
     }];
     [self.playoutFilePlayer play];
-    
+
     /*
      * TODO: The upstream AVAudioPlayerNode and downstream AVAudioPlayerNode schedule playout of the buffer
      * "now". In order to ensure full synchronization, choose a time in the near future when scheduling playback.
@@ -447,7 +492,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
             // rendring and capturing.
             [self initializeCapturer];
             [self initializeRenderer];
-        
+
             [self startRendering:self.renderingContext->deviceContext];
             [self startCapturing:self.capturingContext->deviceContext];
         }
@@ -565,11 +610,10 @@ static size_t kMaximumFramesPerBuffer = 3072;
          * call backs. We will restart the audio unit if a remote participant adds an audio track after the audio graph is
          * established. Also we will re-establish the audio graph in case the format changes.
          */
-        if (_audioUnit) {
-            [self stopAudioUnit];
-            [self teardownAudioUnit];
+        if (_enabled) {
+            [self stopAndTeardownAudioUnit];
         }
-        
+
         // If music is being played then we have already setup the engine
         if (!self.continuousMusic) {
             // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
@@ -582,7 +626,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
                     if (self.playoutEngine.isRunning) {
                         [self.playoutEngine stop];
                     }
-                    
+
                     NSError *error = nil;
                     if (![self.playoutEngine startAndReturnError:&error]) {
                         NSLog(@"Failed to start AVAudioEngine, error = %@", error);
@@ -597,30 +641,29 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
         self.renderingContext->deviceContext = context;
 
-        if (![self setupAudioUnitWithRenderContext:self.renderingContext
-                                    captureContext:self.capturingContext]) {
-            return NO;
+        if (_enabled) {
+            [self setupAndStartAudioUnit];
+        } else {
+            NSLog(@"ExampleAVAudioEngineDevice will NOT setup/start AudioUnit because it is currently disabled");
         }
-        BOOL success = [self startAudioUnit];
-        return success;
+        return YES;
     }
 }
 
 - (BOOL)stopRendering {
     @synchronized(self) {
-        
+
         // Continue playing music even after disconnected from a Room.
         if (self.continuousMusic) {
             return YES;
         }
-        
+
         // If the capturer is runnning, we will not stop the audio unit.
-        if (!self.capturingContext->deviceContext) {
-            [self stopAudioUnit];
-            [self teardownAudioUnit];
+        if (!self.capturingContext->deviceContext && _enabled) {
+            [self stopAndTeardownAudioUnit];
         }
         self.renderingContext->deviceContext = NULL;
-        
+
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
         dispatch_async(dispatch_get_main_queue(), ^{
             if (self.playoutFilePlayer.isPlaying) {
@@ -671,12 +714,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
 - (BOOL)startCapturing:(nonnull TVIAudioDeviceContext)context {
     @synchronized (self) {
 
-        // Restart the audio unit if the audio graph is alreay setup and if we publish an audio track.
-        if (_audioUnit) {
-            [self stopAudioUnit];
-            [self teardownAudioUnit];
+        // Restart the audio unit if the audio graph is already set up and if we publish an audio track.
+        if (_enabled) {
+            [self stopAndTeardownAudioUnit];
         }
-        
+
         // If music is being played then we have already setup the engine
         if (!self.continuousMusic) {
             // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
@@ -689,7 +731,7 @@ static size_t kMaximumFramesPerBuffer = 3072;
                     if (self.recordEngine.isRunning) {
                         [self.recordEngine stop];
                     }
-                    
+
                     NSError *error = nil;
                     if (![self.recordEngine startAndReturnError:&error]) {
                         NSLog(@"Failed to start AVAudioEngine, error = %@", error);
@@ -704,13 +746,12 @@ static size_t kMaximumFramesPerBuffer = 3072;
 
         self.capturingContext->deviceContext = context;
 
-        if (![self setupAudioUnitWithRenderContext:self.renderingContext
-                                    captureContext:self.capturingContext]) {
-            return NO;
+        if (_enabled) {
+            [self setupAndStartAudioUnit];
+        } else {
+            NSLog(@"ExampleAVAudioEngineDevice will NOT setup/start AudioUnit because it is currently disabled");
         }
-
-        BOOL success = [self startAudioUnit];
-        return success;
+        return YES;
     }
 }
 
@@ -723,12 +764,11 @@ static size_t kMaximumFramesPerBuffer = 3072;
         }
 
         // If the renderer is runnning, we will not stop the audio unit.
-        if (!self.renderingContext->deviceContext) {
-            [self stopAudioUnit];
-            [self teardownAudioUnit];
+        if (!self.renderingContext->deviceContext && _enabled) {
+            [self stopAndTeardownAudioUnit];
         }
         self.capturingContext->deviceContext = NULL;
-        
+
         // We will make sure AVAudioEngine and AVAudioPlayerNode is accessed on the main queue.
         dispatch_async(dispatch_get_main_queue(), ^{
             if (self.recordFilePlayer.isPlaying) {
@@ -797,7 +837,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     }
 
     AudioCapturerContext *context = (AudioCapturerContext *)refCon;
-    
+
     if (context->deviceContext == NULL) {
         return noErr;
     }
@@ -866,43 +906,77 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
     return audioUnitDescription;
 }
 
-- (void)setupAVAudioSession {
+- (BOOL)setupAVAudioSession {
+    BOOL result = YES;
     AVAudioSession *session = [AVAudioSession sharedInstance];
     NSError *error = nil;
 
     if (![session setPreferredSampleRate:kPreferredSampleRate error:&error]) {
         NSLog(@"Error setting sample rate: %@", error);
+        result = NO;
     }
 
     if (![session setPreferredOutputNumberOfChannels:kPreferredNumberOfChannels error:&error]) {
         NSLog(@"Error setting number of output channels: %@", error);
+        result = NO;
     }
 
     /*
      * We want to be as close as possible to the 10 millisecond buffer size that the media engine needs. If there is
      * a mismatch then TwilioVideo will ensure that appropriately sized audio buffers are delivered.
      */
-    if (![session setPreferredIOBufferDuration:kPreferredIOBufferDuration error:&error]) {
+    if (![session setPreferredIOBufferDuration:kPreferredIOBufferDurationSec error:&error]) {
         NSLog(@"Error setting IOBuffer duration: %@", error);
+        result = NO;
     }
 
     if (![session setCategory:AVAudioSessionCategoryPlayAndRecord error:&error]) {
         NSLog(@"Error setting session category: %@", error);
+        result = NO;
     }
 
     if (![session setMode:AVAudioSessionModeVideoChat error:&error]) {
         NSLog(@"Error setting session category: %@", error);
+        result = NO;
     }
-
-    [self registerAVAudioSessionObservers];
 
     if (![session setActive:YES error:&error]) {
         NSLog(@"Error activating AVAudioSession: %@", error);
+        result = NO;
     }
 
     if (session.maximumInputNumberOfChannels > 0) {
         if (![session setPreferredInputNumberOfChannels:TVIAudioChannelsMono error:&error]) {
             NSLog(@"Error setting number of input channels: %@", error);
+            result = NO;
+        }
+    }
+
+    return result;
+}
+
+- (BOOL)setupAndStartAudioUnit {
+    BOOL setupSuccessful = [self setupAudioUnitWithRenderContext:self.renderingContext
+                                                  captureContext:self.capturingContext];
+    if (!setupSuccessful) {
+        NSLog(@"ExampleAVAudioEngineDevice failed to setup audio unit");
+        return NO;
+    }
+
+    BOOL startSuccessful = [self startAudioUnit];
+    if (!startSuccessful) {
+        NSLog(@"ExampleAVAudioEngineDevice failed to start audio unit");
+        [self stopAndTeardownAudioUnit];
+        return NO;
+    }
+    return YES;
+}
+
+- (void)stopAndTeardownAudioUnit {
+    @synchronized(self) {
+        if (self.audioUnit) {
+            [self stopAudioUnit];
+            [self teardownAudioUnit];
         }
     }
 }
@@ -931,7 +1005,7 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                                   kAudioUnitScope_Output, kOutputBus,
                                   &enableOutput, sizeof(enableOutput));
     if (status != 0) {
-        NSLog(@"Could not enable out bus!");
+        NSLog(@"Could not enable output bus!");
         AudioComponentInstanceDispose(_audioUnit);
         _audioUnit = NULL;
         return NO;
@@ -942,6 +1016,8 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                                   &streamDescription, sizeof(streamDescription));
     if (status != 0) {
         NSLog(@"Could not set stream format on input bus!");
+        AudioComponentInstanceDispose(_audioUnit);
+        _audioUnit = NULL;
         return NO;
     }
 
@@ -950,6 +1026,8 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                                   &streamDescription, sizeof(streamDescription));
     if (status != 0) {
         NSLog(@"Could not set stream format on output bus!");
+        AudioComponentInstanceDispose(_audioUnit);
+        _audioUnit = NULL;
         return NO;
     }
     // Enable the microphone input
@@ -1019,10 +1097,18 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 }
 
 - (BOOL)startAudioUnit {
-    OSStatus status = AudioOutputUnitStart(_audioUnit);
-    if (status != 0) {
-        NSLog(@"Could not start the audio unit!");
-        return NO;
+    NSInteger startAttempts = 0;
+    OSStatus status = -1;
+    while (status != 0){
+        if (startAttempts == kMaxNumberOfAudioUnitStartAttempts) {
+            return NO;
+        } else if (startAttempts > 0) {
+            NSLog(@"Pause 100ms and try starting audio unit again.");
+            [NSThread sleepForTimeInterval:0.1f];
+        }
+
+        status = AudioOutputUnitStart(_audioUnit);
+        ++startAttempts;
     }
     return YES;
 }
@@ -1085,11 +1171,13 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
                 if (type == AVAudioSessionInterruptionTypeBegan) {
                     NSLog(@"Interruption began.");
                     self.interrupted = YES;
-                    [self stopAudioUnit];
+                    if (self.enabled) {
+                        [self stopAndTeardownAudioUnit];
+                    }
                 } else {
                     NSLog(@"Interruption ended.");
                     self.interrupted = NO;
-                    [self startAudioUnit];
+                    [self reinitialize];
                 }
             });
         }
@@ -1152,24 +1240,50 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 
     NSLog(@"A route change ocurred while the AudioUnit was started. Checking the active audio format.");
 
-    // Determine if the format actually changed. We only care about sample rate and number of channels.
+    if ([self didFormatChange]) {
+        [self reinitialize];
+    }
+}
+
+- (BOOL)didFormatChange {
+    BOOL formatDidChange = NO;
     TVIAudioFormat *activeFormat = [[self class] activeFormat];
 
-    // Notify Video SDK about the format change
+    // Determine if the format actually changed. We only care about sample rate and number of channels.
     if (![activeFormat isEqual:_renderingFormat] ||
         ![activeFormat isEqual:_capturingFormat]) {
+        formatDidChange = YES;
+        NSLog(@"Format changed: %@", activeFormat);
+    }
 
-        NSLog(@"Format changed, restarting with %@", activeFormat);
+    return formatDidChange;
+}
 
-        // Signal a change by clearing our cached format, and allowing TVIAudioDevice to drive the process.
-        _renderingFormat = nil;
-        _capturingFormat = nil;
+-(void)reinitialize {
+    // Signal a change by clearing our cached format, and allowing TVIAudioDevice to drive the process.
+    _renderingFormat = nil;
+    _capturingFormat = nil;
 
-        @synchronized(self) {
-            TVIAudioDeviceContext context = [self deviceContext];
-            if (context) {
-                TVIAudioDeviceFormatChanged(context);
+    @synchronized(self) {
+        TVIAudioDeviceContext context = [self deviceContext];
+        if (context) {
+            // Setup AVAudioSession preferences
+            BOOL setupSession = [self setupAVAudioSession];
+            NSInteger setupAttempts = 1;
+            while (!setupSession) {
+                if (setupAttempts == kMaxNumberOfSetupAVAudioSessionAttempts) {
+                    NSLog(@"Failed to setup AVAudioSession after multiple attempts");
+                    break;
+                }
+
+                NSLog(@"Pause for 100ms and try setting up AVAudioSession again");
+                [NSThread sleepForTimeInterval:0.1f];
+                setupSession = [self setupAVAudioSession];
+                ++setupAttempts;
             }
+
+            // Update FineAudioBuffer and stop+init+start AudioUnit
+            TVIAudioDeviceReinitialize(context);
         }
     }
 }
@@ -1207,4 +1321,3 @@ static OSStatus ExampleAVAudioEngineDeviceRecordCallback(void *refCon,
 }
 
 @end
-

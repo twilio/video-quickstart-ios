@@ -23,4 +23,12 @@ NS_CLASS_AVAILABLE(NA, 11_0)
  */
 - (void)playMusic:(BOOL)continuous;
 
+/**
+ *  @brief Enable audio device
+ *
+ *  @discussion By default, the SDK initializes this property to YES. Setting it to NO entirely disables the audio device. When the device is disabled, both audio capture and playback halt. This toggle should be used in CallKit delegate (CXProviderDelegate) methods (ex: didReset, didActivate, didDeactivate) to negotiate call holding and other events taking place from the iOS dialer
+ */
+
+@property (nonatomic, assign, getter=isEnabled) BOOL enabled;
+
 @end
