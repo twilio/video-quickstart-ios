@@ -220,7 +220,7 @@ class ViewController: UIViewController {
         if (frontCamera != nil || backCamera != nil) {
             // Preview our local camera track in the local video preview view.
             camera = CameraSource(delegate: self)
-            localVideoTrack = LocalVideoTrack(source: camera!, enabled: true, name: "Camera")
+            localVideoTrack = LocalVideoTrack(source: camera!, enabled: true, name: "camera")
 
             // Add renderer to video track for local preview
             localVideoTrack!.addRenderer(self.previewView)
