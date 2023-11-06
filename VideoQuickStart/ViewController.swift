@@ -238,7 +238,7 @@ class ViewController: UIViewController {
             }
             // Preview our local camera track in the local video preview view.
             camera = CameraSource(options: options, delegate: self)
-            localVideoTrack = LocalVideoTrack(source: camera!, enabled: true, name: "Camera")
+            localVideoTrack = LocalVideoTrack(source: camera!, enabled: true, name: "camera")
 
             // Add renderer to video track for local preview
             localVideoTrack!.addRenderer(self.previewView)
