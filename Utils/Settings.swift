@@ -40,8 +40,7 @@ enum VideoCodec: CaseIterable {
 class Settings: NSObject {
 
     // ISDK-2644: Resolving a conflict with AudioToolbox in iOS 13
-    let supportedAudioCodecs: [TwilioVideo.AudioCodec] = [IsacCodec(),
-                                                          OpusCodec(),
+    let supportedAudioCodecs: [TwilioVideo.AudioCodec] = [OpusCodec(),
                                                           PcmaCodec(),
                                                           PcmuCodec(),
                                                           G722Codec()]
