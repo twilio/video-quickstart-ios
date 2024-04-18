@@ -37,6 +37,7 @@
 		8ADE7A72215DE2D70092D17F /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFC215DDC6100297C7A /* Settings.swift */; };
 		8ADE7A74215DE3070092D17F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
 		8ADE7A75215DE3220092D17F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A50FEFD215DDC6100297C7A /* Utils.swift */; };
+		FB8AB08A2BD1697F0048DC49 /* twilio_clound_com.mov in Resources */ = {isa = PBXBuildFile; fileRef = FB8AB0892BD1697F0048DC49 /* twilio_clound_com.mov */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,6 +132,7 @@
 		8A992CEC2320C26C00D549F6 /* ReplayKitExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ReplayKitExample-Bridging-Header.h"; sourceTree = "<group>"; };
 		8A992CED2320C2A300D549F6 /* ExampleReplayKitAudioCapturerDispatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleReplayKitAudioCapturerDispatch.h; sourceTree = "<group>"; };
 		8AD6D6E522FFE7CD00EBF279 /* Telecine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Telecine.swift; sourceTree = "<group>"; };
+		FB8AB0892BD1697F0048DC49 /* twilio_clound_com.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; name = twilio_clound_com.mov; path = Resources/twilio_clound_com.mov; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -179,6 +181,7 @@
 		4B20FFD620E9CB8500FE9F2C = {
 			isa = PBXGroup;
 			children = (
+				FB8AB0892BD1697F0048DC49 /* twilio_clound_com.mov */,
 				8A50FEFA215DDC6100297C7A /* Utils */,
 				4B20FFE120E9CB8500FE9F2C /* ReplayKitExample */,
 				4B20FFFC20E9CB9C00FE9F2C /* BroadcastExtension */,
@@ -384,6 +387,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB8AB08A2BD1697F0048DC49 /* twilio_clound_com.mov in Resources */,
 				4BEA5E0820E9DB5900643AF1 /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
