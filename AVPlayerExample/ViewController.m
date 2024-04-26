@@ -257,7 +257,7 @@ NSString *const kStatusKey   = @"status";
         return;
     }
 
-    NSURL *contentUrl = [[NSBundle mainBundle] URLForResource:@"twilio_clound_com" withExtension:@"mov"];
+    NSURL *contentUrl = [[NSBundle mainBundle] URLForResource:@"twilio_cloud_com" withExtension:@"mov"];
     AVPlayer *player = [AVPlayer playerWithURL:contentUrl];
     [player addObserver:self forKeyPath:kStatusKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
     [player play];

@@ -17,7 +17,7 @@
 		8A0A1F271ECD1FFC0008C1AF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A0A1F251ECD1FFC0008C1AF /* LaunchScreen.storyboard */; };
 		8A85E4951ECE97F6004719C8 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A85E4941ECE97F6004719C8 /* Utils.m */; };
 		8A85E4981ECEA82D004719C8 /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A85E4971ECEA82D004719C8 /* AVPlayerView.m */; };
-		FB8AB08C2BD169920048DC49 /* twilio_clound_com.mov in Resources */ = {isa = PBXBuildFile; fileRef = FB8AB08B2BD169920048DC49 /* twilio_clound_com.mov */; };
+		FBD8253D2BDC22A000364D02 /* twilio_cloud_com.mov in Resources */ = {isa = PBXBuildFile; fileRef = FBD8253C2BDC22A000364D02 /* twilio_cloud_com.mov */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -49,7 +49,7 @@
 		8A85E4941ECE97F6004719C8 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
 		8A85E4961ECEA82D004719C8 /* AVPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerView.h; sourceTree = "<group>"; };
 		8A85E4971ECEA82D004719C8 /* AVPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerView.m; sourceTree = "<group>"; };
-		FB8AB08B2BD169920048DC49 /* twilio_clound_com.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; name = twilio_clound_com.mov; path = Resources/twilio_clound_com.mov; sourceTree = "<group>"; };
+		FBD8253C2BDC22A000364D02 /* twilio_cloud_com.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; name = twilio_cloud_com.mov; path = Resources/twilio_cloud_com.mov; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,7 +67,7 @@
 		8A0A1F0B1ECD1FFC0008C1AF = {
 			isa = PBXGroup;
 			children = (
-				FB8AB08B2BD169920048DC49 /* twilio_clound_com.mov */,
+				FBD8253C2BDC22A000364D02 /* twilio_cloud_com.mov */,
 				8A0A1F161ECD1FFC0008C1AF /* AVPlayerExample */,
 				8A0A1F151ECD1FFC0008C1AF /* Products */,
 				24A82E5922B18A0A001EFC32 /* README.md */,
@@ -177,7 +177,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB8AB08C2BD169920048DC49 /* twilio_clound_com.mov in Resources */,
+				FBD8253D2BDC22A000364D02 /* twilio_cloud_com.mov in Resources */,
 				8A0A1F271ECD1FFC0008C1AF /* LaunchScreen.storyboard in Resources */,
 				8A0A1F241ECD1FFC0008C1AF /* Assets.xcassets in Resources */,
 				24A82E5A22B18A0A001EFC32 /* README.md in Resources */,
