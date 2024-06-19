@@ -28,7 +28,7 @@ typedef NS_ENUM(NSUInteger, ViewControllerState) {
     ViewControllerStateRoom
 };
 
-NSString *const kVideoMovURL = @"https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov";
+NSString *const kVideoMovURL = @"https://url-to-you-video-resource.mov";
 NSString *const kStatusKey   = @"status";
 
 @interface ViewController () <UITextFieldDelegate, TVIRemoteParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraSourceDelegate>
