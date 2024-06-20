@@ -19,7 +19,7 @@ class BroadcastSetupViewController: UIViewController {
     // Call this method when the user has finished interacting with the view controller and a broadcast stream can start
     func userDidFinishSetup() {
         // URL of the resource where broadcast can be viewed that will be returned to the application
-        let broadcastURL = URL(string:"https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov")
+        let broadcastURL = Bundle.main.url(forResource: "twilio_cloud_com", withExtension: "mov")
         // Dictionary with setup information that will be provided to broadcast extension when broadcast is started
 
         let setupInfo: [String : NSCoding & NSObjectProtocol] = ["roomName": roomTextField.text! as NSCoding & NSObjectProtocol]

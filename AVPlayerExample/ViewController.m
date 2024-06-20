@@ -28,7 +28,6 @@ typedef NS_ENUM(NSUInteger, ViewControllerState) {
     ViewControllerStateRoom
 };
 
-NSString *const kVideoMovURL = @"https://s3-us-west-1.amazonaws.com/avplayervideo/What+Is+Cloud+Communications.mov";
 NSString *const kStatusKey   = @"status";
 
 @interface ViewController () <UITextFieldDelegate, TVIRemoteParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraSourceDelegate>
@@ -258,7 +257,7 @@ NSString *const kStatusKey   = @"status";
         return;
     }
 
-    NSURL *contentUrl = [NSURL URLWithString:kVideoMovURL];
+    NSURL *contentUrl = [[NSBundle mainBundle] URLForResource:@"twilio_cloud_com" withExtension:@"mov"];
     AVPlayer *player = [AVPlayer playerWithURL:contentUrl];
     [player addObserver:self forKeyPath:kStatusKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
     [player play];
