@@ -42,11 +42,11 @@ To get started with the Swift Quickstart application follow these steps:
 
 <img width="700px" src="images/quickstart/xcode-video-quickstart.png"/>
 
-2. Type in an identity and click on "Generate Access Token" from the [Testing Tools page](https://www.twilio.com/console/video/runtime/testing-tools).
+2. Generate an Access Token
 
-<img width="700px" src="images/quickstart/generate_access_tokens.png"/>
+View instructions here for how to [generate an Access Token using the Twilio CLI](https://www.twilio.com/docs/video/tutorials/user-identity-access-tokens#generate-cli). Generating Access Tokens with the Twilio CLI is a quick way to get an Access Token for testing and development purposes.
 
-Note: If you enter the Room Name, then you can restrict this user's access to the specified Room only. Ideally, you want to implement and deploy an Access Token server to generate tokens. You can read more about setting up your own Access Token Server in this [section](#setup-an-access-token-server). Read this [tutorial](https://www.twilio.com/docs/api/video/user-identity-access-tokens) to learn more about Access Tokens.
+Note: If you enter the Room Name when generating an Access Token, then you can restrict this user's access to the specified Room only. Ideally, you want to implement and deploy an Access Token server to generate tokens, rather than using the Twilio CLI. You can read more about setting up your own Access Token Server in this [section](#setup-an-access-token-server). Read this [tutorial](https://www.twilio.com/docs/video/tutorials/user-identity-access-tokens) to learn more about Access Tokens.
 
 3. Paste the token you generated in the earlier step in the `ViewController.swift`.
 
