@@ -8,7 +8,74 @@
 #import "ViewController.h"
 #import "Utils.h"
 
+@import VisionKit;
+@import Vision;
+
 #import <TwilioVideo/TwilioVideo.h>
+
+API_AVAILABLE(ios(17.0))
+@interface VirtualBackgroundProcessor : NSObject
+
+- (void)processForegroundMask:(CMSampleBufferRef)buffer completion:(void(^)(NSError *error))completion;
+
+@end
+
+@interface VirtualBackgroundProcessor ()
+
+@property (nonatomic, strong) UIImage *backgroundImage;
+@property (nonatomic, strong) VNGeneratePersonInstanceMaskRequest *maskRequest;
+
+@end
+
+@implementation VirtualBackgroundProcessor
+
+- (instancetype)initWithBackgroundImage:(UIImage *)backgroundImage {
+    if (self = [super init]) {
+        _backgroundImage = backgroundImage;
+        _maskRequest = [VNGeneratePersonInstanceMaskRequest new];
+    }
+    return self;
+}
+
+- (void)processForegroundMask:(CMSampleBufferRef)buffer completion:(void(^)(NSError *error))completion {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        VNImageRequestHandler *handler = [[VNImageRequestHandler alloc] initWithCMSampleBuffer:buffer options:@{}];
+        @try {
+            NSError *requestError;
+            [handler performRequests:@[self.maskRequest] error:&requestError];
+            if (requestError) {
+                NSLog(@"debug checkpoint image request error: %@", requestError);
+                completion(requestError);
+            } else {
+                if ([self.maskRequest.results count] > 0) {
+                    VNInstanceMaskObservation *observation = self.maskRequest.results[0];
+                    NSIndexSet *allInstances = observation.allInstances;
+                    
+                    NSError *imageError;
+                    CVPixelBufferRef maskedImageBuffer = [observation generateMaskedImageOfInstances:allInstances fromRequestHandler:handler croppedToInstancesExtent:NO error:&imageError];
+                    UIImage *maskedUIImage = [UIImage imageWithCIImage:[CIImage imageWithCVPixelBuffer:maskedImageBuffer]];
+                    CGSize size = CGSizeMake((CGFloat)(CVPixelBufferGetWidth(maskedImageBuffer)), (CGFloat)(CVPixelBufferGetHeight(maskedImageBuffer)));
+                    
+                    // rotate background image?
+                    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+                    [self.backgroundImage drawInRect:CGRectMake(0, 0, size.width, size.height)];
+                    [maskedUIImage drawInRect:CGRectMake(0, 0, size.width, size.height)];
+// bobie: set a breakpoint here to take a peek at the composedImage or the maskedUIImage
+                    UIImage *composedImage = UIGraphicsGetImageFromCurrentImageContext();
+                    UIGraphicsEndImageContext();
+                }
+            }
+        } @catch (NSException *exception) {
+            NSError *error = [NSError errorWithDomain:@"com.objcquickstart.virtualbackground" code:0 userInfo:exception.userInfo];
+            completion(error);
+        }
+    });
+}
+
+@end
+
+int64_t const fpsInterval = 1000000000 / 15;
+
 
 @interface ViewController () <UITextFieldDelegate, TVIRemoteParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraSourceDelegate>
 
@@ -37,6 +104,9 @@
 @property (nonatomic, weak) IBOutlet UIButton *micButton;
 @property (nonatomic, weak) IBOutlet UILabel *roomLabel;
 @property (nonatomic, weak) IBOutlet UILabel *roomLine;
+
+@property (nonatomic, strong) VirtualBackgroundProcessor *virtualBackgroundProcessor;
+@property (nonatomic, assign) int64_t lastProcessedTimestamp;
 
 @end
 
@@ -76,6 +146,10 @@
 
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
     [self.view addGestureRecognizer:tap];
+    
+    NSLog(@"debug checkpoint: %@", TwilioVideoSDK.sdkVersion);
+   
+    self.virtualBackgroundProcessor = [[VirtualBackgroundProcessor alloc] initWithBackgroundImage:[UIImage imageNamed:@"tbbt-living-room.jpg"]];
 }
 
 #pragma mark - Public
@@ -513,6 +587,22 @@
 
 - (void)cameraSource:(TVICameraSource *)source didFailWithError:(NSError *)error {
     [self logMessage:[NSString stringWithFormat:@"Capture failed with error.\ncode = %lu error = %@", error.code, error.localizedDescription]];
+}
+
+- (void)cameraSource:(TVICameraSource *)source didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+    // NSLog(@"debug checkpoint: cameraSource:didOutputSampleBuffer:");
+    CMTime presentationTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+    
+    CMTime currentTimestamp = presentationTimestamp;
+    int64_t elapsedTimeSinceLastProcessedFrame = currentTimestamp.value - self.lastProcessedTimestamp;
+    
+    if (elapsedTimeSinceLastProcessedFrame < fpsInterval ) {
+        return;
+    }
+    
+    [self.virtualBackgroundProcessor processForegroundMask:sampleBuffer completion:^(NSError *error) {
+        
+    }];
 }
 
 @end

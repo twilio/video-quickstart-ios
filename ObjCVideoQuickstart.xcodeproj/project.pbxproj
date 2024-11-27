@@ -3,11 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		24384493252B96A90088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 24384492252B96A90088B407 /* TwilioVideo */; };
 		283214941CD1307900F1AD80 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214931CD1307900F1AD80 /* main.m */; };
 		283214971CD1307900F1AD80 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214961CD1307900F1AD80 /* AppDelegate.m */; };
 		2832149F1CD1307900F1AD80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2832149E1CD1307900F1AD80 /* Assets.xcassets */; };
@@ -15,6 +14,9 @@
 		283214AB1CD1312F00F1AD80 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214AA1CD1312F00F1AD80 /* ViewController.m */; };
 		4BF377BC1D99C8F200AC0BA3 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BF377BB1D99C8F200AC0BA3 /* Utils.m */; };
 		4BF377C11D99F0D700AC0BA3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BF377BF1D99F0D700AC0BA3 /* Main.storyboard */; };
+		8F5EB4FC2CF54A2B0003A188 /* TwilioVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F5EB4FA2CF547000003A188 /* TwilioVideo.framework */; };
+		8F5EB4FD2CF54A2B0003A188 /* TwilioVideo.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8F5EB4FA2CF547000003A188 /* TwilioVideo.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8FA3B2852CF7A03A0034E3F8 /* tbbt-living-room.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 8FA3B2842CF7A03A0034E3F8 /* tbbt-living-room.jpg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,6 +26,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				8F5EB4FD2CF54A2B0003A188 /* TwilioVideo.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -51,6 +54,8 @@
 		4BF377BA1D99C8F200AC0BA3 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		4BF377BB1D99C8F200AC0BA3 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
 		4BF377C01D99F0D700AC0BA3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		8F5EB4FA2CF547000003A188 /* TwilioVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TwilioVideo.framework; path = ObjCVideoQuickstart/TwilioVideo.framework; sourceTree = "<group>"; };
+		8FA3B2842CF7A03A0034E3F8 /* tbbt-living-room.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "tbbt-living-room.jpg"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,7 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				24384493252B96A90088B407 /* TwilioVideo in Frameworks */,
+				8F5EB4FC2CF54A2B0003A188 /* TwilioVideo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +88,8 @@
 		283214861CD1307900F1AD80 = {
 			isa = PBXGroup;
 			children = (
+				8FA3B2842CF7A03A0034E3F8 /* tbbt-living-room.jpg */,
+				8F5EB4FA2CF547000003A188 /* TwilioVideo.framework */,
 				283214911CD1307900F1AD80 /* ObjCVideoQuickstart */,
 				283214901CD1307900F1AD80 /* Products */,
 				24A82E6B22B18B26001EFC32 /* Frameworks */,
@@ -142,7 +149,6 @@
 			);
 			name = ObjCVideoQuickstart;
 			packageProductDependencies = (
-				24384492252B96A90088B407 /* TwilioVideo */,
 			);
 			productName = ObjCVideoQuickstart;
 			productReference = 2832148F1CD1307900F1AD80 /* ObjCVideoQuickstart.app */;
@@ -173,7 +179,6 @@
 			);
 			mainGroup = 283214861CD1307900F1AD80;
 			packageReferences = (
-				24384491252B96A90088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */,
 			);
 			productRefGroup = 283214901CD1307900F1AD80 /* Products */;
 			projectDirPath = "";
@@ -189,6 +194,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8FA3B2852CF7A03A0034E3F8 /* tbbt-living-room.jpg in Resources */,
 				283214A21CD1307900F1AD80 /* LaunchScreen.storyboard in Resources */,
 				2832149F1CD1307900F1AD80 /* Assets.xcassets in Resources */,
 				4BF377C11D99F0D700AC0BA3 /* Main.storyboard in Resources */,
@@ -369,13 +375,12 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ObjCVideoQuickstart",
 				);
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				INFOPLIST_FILE = ObjCVideoQuickstart/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ObjCVideoQuickstart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -390,13 +395,12 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ObjCVideoQuickstart",
 				);
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				INFOPLIST_FILE = ObjCVideoQuickstart/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.ObjCVideoQuickstart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -424,25 +428,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		24384491252B96A90088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/twilio/twilio-video-ios";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.8.2;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		24384492252B96A90088B407 /* TwilioVideo */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 24384491252B96A90088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */;
-			productName = TwilioVideo;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 283214871CD1307900F1AD80 /* Project object */;
 }
