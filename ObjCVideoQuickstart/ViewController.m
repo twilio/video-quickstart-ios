@@ -10,13 +10,14 @@
 
 @import VisionKit;
 @import Vision;
+@import CoreVideo;
 
-#import <TwilioVideo/TwilioVideo.h>
+@import TwilioVideo;
 
 API_AVAILABLE(ios(17.0))
 @interface VirtualBackgroundProcessor : NSObject
 
-- (void)processForegroundMask:(CMSampleBufferRef)buffer completion:(void(^)(NSError *error))completion;
+- (void)processForegroundMask:(CMSampleBufferRef)buffer completion:(void(^)(NSError *error, UIImage *processedImage))completion;
 
 @end
 
@@ -37,44 +38,49 @@ API_AVAILABLE(ios(17.0))
     return self;
 }
 
-- (void)processForegroundMask:(CMSampleBufferRef)buffer completion:(void(^)(NSError *error))completion {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        VNImageRequestHandler *handler = [[VNImageRequestHandler alloc] initWithCMSampleBuffer:buffer options:@{}];
-        @try {
-            NSError *requestError;
-            [handler performRequests:@[self.maskRequest] error:&requestError];
-            if (requestError) {
-                NSLog(@"debug checkpoint image request error: %@", requestError);
-                completion(requestError);
-            } else {
-                if ([self.maskRequest.results count] > 0) {
-                    VNInstanceMaskObservation *observation = self.maskRequest.results[0];
-                    NSIndexSet *allInstances = observation.allInstances;
-                    
-                    NSError *imageError;
-                    CVPixelBufferRef maskedImageBuffer = [observation generateMaskedImageOfInstances:allInstances fromRequestHandler:handler croppedToInstancesExtent:NO error:&imageError];
-                    UIImage *maskedUIImage = [UIImage imageWithCIImage:[CIImage imageWithCVPixelBuffer:maskedImageBuffer]];
-                    CGSize size = CGSizeMake((CGFloat)(CVPixelBufferGetWidth(maskedImageBuffer)), (CGFloat)(CVPixelBufferGetHeight(maskedImageBuffer)));
-                    
-                    // rotate background image?
-                    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+- (void)processForegroundMask:(CMSampleBufferRef)buffer completion:(void(^)(NSError *error, UIImage *processedImage))completion {
+    VNImageRequestHandler *handler = [[VNImageRequestHandler alloc] initWithCMSampleBuffer:buffer orientation:kCGImagePropertyOrientationRight options:@{}];
+    
+    @try {
+        NSError *requestError;
+        CFTimeInterval frameProcessStartTime = CACurrentMediaTime();
+        [handler performRequests:@[self.maskRequest] error:&requestError];
+        CFTimeInterval frameProcessEndTime = CACurrentMediaTime();
+        CFTimeInterval frameProcessElapsedTime = frameProcessEndTime - frameProcessStartTime;
+        NSLog(@"debug checkpoint - frame processed. elapsed time: %f", frameProcessElapsedTime);
+        if (requestError) {
+            NSLog(@"debug checkpoint image request error: %@", requestError);
+            completion(requestError, nil);
+        } else {
+            if ([self.maskRequest.results count] > 0) {
+                VNInstanceMaskObservation *observation = self.maskRequest.results[0];
+                NSIndexSet *allInstances = observation.allInstances;
+                
+                NSError *imageError;
+                CVPixelBufferRef maskedImageBuffer = [observation generateMaskedImageOfInstances:allInstances fromRequestHandler:handler croppedToInstancesExtent:NO error:&imageError];
+                UIImage *maskedUIImage = [UIImage imageWithCIImage:[CIImage imageWithCVPixelBuffer:maskedImageBuffer]];
+                CGSize size = CGSizeMake((CGFloat)(CVPixelBufferGetWidth(maskedImageBuffer)), (CGFloat)(CVPixelBufferGetHeight(maskedImageBuffer)));
+                CVPixelBufferRelease(maskedImageBuffer);
+                
+                UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size];
+                UIImage *composedImage;
+                composedImage = [renderer imageWithActions:^(UIGraphicsImageRendererContext *rendererContext) {
                     [self.backgroundImage drawInRect:CGRectMake(0, 0, size.width, size.height)];
                     [maskedUIImage drawInRect:CGRectMake(0, 0, size.width, size.height)];
-// bobie: set a breakpoint here to take a peek at the composedImage or the maskedUIImage
-                    UIImage *composedImage = UIGraphicsGetImageFromCurrentImageContext();
-                    UIGraphicsEndImageContext();
-                }
+                }];
+                
+                completion(nil, composedImage);
             }
-        } @catch (NSException *exception) {
-            NSError *error = [NSError errorWithDomain:@"com.objcquickstart.virtualbackground" code:0 userInfo:exception.userInfo];
-            completion(error);
         }
-    });
+    } @catch (NSException *exception) {
+        NSError *error = [NSError errorWithDomain:@"com.objcquickstart.virtualbackground" code:0 userInfo:exception.userInfo];
+        completion(error, nil);
+    }
 }
 
 @end
 
-int64_t const fpsInterval = 1000000000 / 15;
+int64_t const fpsInterval = 1000000000 / 20;
 
 
 @interface ViewController () <UITextFieldDelegate, TVIRemoteParticipantDelegate, TVIRoomDelegate, TVIVideoViewDelegate, TVICameraSourceDelegate>
@@ -146,8 +152,6 @@ int64_t const fpsInterval = 1000000000 / 15;
 
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
     [self.view addGestureRecognizer:tap];
-    
-    NSLog(@"debug checkpoint: %@", TwilioVideoSDK.sdkVersion);
    
     self.virtualBackgroundProcessor = [[VirtualBackgroundProcessor alloc] initWithBackgroundImage:[UIImage imageNamed:@"tbbt-living-room.jpg"]];
 }
@@ -589,8 +593,7 @@ int64_t const fpsInterval = 1000000000 / 15;
     [self logMessage:[NSString stringWithFormat:@"Capture failed with error.\ncode = %lu error = %@", error.code, error.localizedDescription]];
 }
 
-- (void)cameraSource:(TVICameraSource *)source didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer {
-    // NSLog(@"debug checkpoint: cameraSource:didOutputSampleBuffer:");
+- (void)cameraSource:(TVICameraSource *)source didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer videoSink:(id<TVIVideoSink>)videoSink {
     CMTime presentationTimestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     
     CMTime currentTimestamp = presentationTimestamp;
@@ -600,9 +603,66 @@ int64_t const fpsInterval = 1000000000 / 15;
         return;
     }
     
-    [self.virtualBackgroundProcessor processForegroundMask:sampleBuffer completion:^(NSError *error) {
+    [self.virtualBackgroundProcessor processForegroundMask:sampleBuffer completion:^(NSError *error, UIImage *processedImage) {
+        if (!error && processedImage) {
+            self.lastProcessedTimestamp = currentTimestamp.value;
+
+            // convert the image back to buffer and feed to the sink
+            CMSampleBufferRef buffer = [self imageToBuffer:processedImage];
+            
+            TVIVideoFrame *frame = [[TVIVideoFrame alloc] initWithTimestamp:CMSampleBufferGetPresentationTimeStamp( buffer )
+                                                                     buffer:CMSampleBufferGetImageBuffer( buffer )
+                                                                orientation:TVIVideoOrientationUp];
+            [videoSink onVideoFrame:frame];
+            
+            CMSampleBufferInvalidate(buffer);
+            CFRelease(buffer);
+            buffer = NULL;
+        }
         
+        CMSampleBufferInvalidate(sampleBuffer);
     }];
+}
+
+- (CMSampleBufferRef)imageToBuffer:(UIImage *)image {
+    CGSize size = image.size;
+    CGImageRef imageRef = [image CGImage];
+    
+    NSDictionary *options = @{(NSString *)kCVPixelBufferCGImageCompatibilityKey: @(YES),
+                              (NSString *)kCVPixelBufferCGBitmapContextCompatibilityKey: @(YES)};
+        
+    CVPixelBufferRef pxbuffer = NULL;
+    CVReturn status = CVPixelBufferCreate(kCFAllocatorDefault, size.width, size.height,
+                                          kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef) options, &pxbuffer);
+    NSParameterAssert(status == kCVReturnSuccess && pxbuffer != NULL);
+
+    CVPixelBufferLockBaseAddress(pxbuffer, 0);
+    void *pxdata = CVPixelBufferGetBaseAddress(pxbuffer);
+    NSParameterAssert(pxdata != NULL);
+    
+    CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(pxdata, size.width, size.height, 8, 4*size.width, rgbColorSpace, kCGImageAlphaPremultipliedFirst);
+    NSParameterAssert(context);
+    
+    CGContextDrawImage(context, CGRectMake(0, 0, size.width, size.height), imageRef);
+    
+    CGColorSpaceRelease(rgbColorSpace);
+    CGContextRelease(context);
+    
+    CVPixelBufferUnlockBaseAddress(pxbuffer, 0);
+    
+    CMSampleBufferRef cmBuffer;
+    CMSampleTimingInfo timingInfo;
+    CMFormatDescriptionRef formatDescription;
+    
+    CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, pxbuffer, &formatDescription);
+    CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault,
+                                             pxbuffer,
+                                             formatDescription,
+                                             &timingInfo,
+                                             &cmBuffer);
+    CVPixelBufferRelease(pxbuffer);
+    return cmBuffer;
 }
 
 @end
