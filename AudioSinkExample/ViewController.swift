@@ -194,9 +194,16 @@ class ViewController: UIViewController {
         if let previewView = self.camera?.previewView {
             let dimensions = previewView.videoDimensions
             var previewBounds = CGRect(origin: CGPoint.zero, size: CGSize(width: 160, height: 160))
-            previewBounds = AVMakeRect(aspectRatio: CGSize(width: CGFloat(dimensions.width),
-                                                           height: CGFloat(dimensions.height)),
-                                       insideRect: previewBounds)
+            
+            if dimensions.width == 0 && dimensions.height == 0 {
+                previewBounds = AVMakeRect(aspectRatio: CGSize(width: CGFloat(160),
+                                                               height: CGFloat(120)),
+                                           insideRect: previewBounds)
+            } else {
+                previewBounds = AVMakeRect(aspectRatio: CGSize(width: CGFloat(dimensions.width),
+                                                               height: CGFloat(dimensions.height)),
+                                           insideRect: previewBounds)
+            }
 
             previewBounds = previewBounds.integral
             previewView.bounds = previewBounds
