@@ -1,0 +1,15 @@
+{
+  "originHash" : "4edf9ec3862c895d0873c25cd49b123d266d69afef4ced627441c33f82f4e146",
+  "pins" : [
+    {
+      "identity" : "twilio-video-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:twilio/twilio-video-ios.git",
+      "state" : {
+        "revision" : "a896521ecf73844731f00ed62f7d5afa487e0b3a",
+        "version" : "5.9.0"
+      }
+    }
+  ],
+  "version" : 3
+}
