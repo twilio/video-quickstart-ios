@@ -31,4 +31,7 @@
    <FileRef
       location = "group:ScreenCapturerExample.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:VirtualBackgroundExample.xcodeproj">
+   </FileRef>
 </Workspace>
