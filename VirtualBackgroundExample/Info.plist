@@ -31,6 +31,8 @@
 	<string>${PRODUCT_NAME} uses your camera to capture video which is shared with other room participants.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>${PRODUCT_NAME} uses your microphone to capture audio which is shared with other room participants.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>${PRODUCT_NAME} would like to access the photo library</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

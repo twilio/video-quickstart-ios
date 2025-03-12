@@ -38,6 +38,9 @@ enum VideoCodec: CaseIterable {
 }
 
 class Settings: NSObject {
+    
+    var backgroundImage: UIImage?
+    var backgroundBlurRadius: NSNumber?
 
     // ISDK-2644: Resolving a conflict with AudioToolbox in iOS 13
     let supportedAudioCodecs: [TwilioVideo.AudioCodec] = [OpusCodec(),

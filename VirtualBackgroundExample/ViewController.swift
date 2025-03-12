@@ -8,6 +8,7 @@
 import UIKit
 
 import TwilioVideo
+import TwilioVirtualBackgroundProcessors
 
 class ViewController: UIViewController {
 
@@ -27,6 +28,9 @@ class ViewController: UIViewController {
     var localAudioTrack: LocalAudioTrack?
     var remoteParticipant: RemoteParticipant?
     var remoteView: VideoView?
+    
+    var backgroundProcessor: DefaultBackgroundProcessor?
+    var backgroundImage: UIImage? = Settings.shared.backgroundImage
     
     // MARK:- UI Element Outlets and handles
     
@@ -75,6 +79,11 @@ class ViewController: UIViewController {
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
         self.view.addGestureRecognizer(tap)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.startPreview()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -128,8 +137,6 @@ class ViewController: UIViewController {
     func connectToARoom() {
         
         self.connectButton.isEnabled = true;
-        // Prepare local media which we will share with Room Participants.
-        self.prepareLocalMedia()
         
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
@@ -237,7 +244,16 @@ class ViewController: UIViewController {
                 }
             }
             // Preview our local camera track in the local video preview view.
-            camera = CameraSource(options: options, delegate: self)
+            if let blurRadius = Settings.shared.backgroundBlurRadius, blurRadius.floatValue > 0 {
+                backgroundProcessor = DefaultBackgroundProcessor(blurRadius: blurRadius)
+                camera = CameraSource(options: options, delegate: self, backgroundProcessorDelegate: backgroundProcessor!)
+            } else if let image = Settings.shared.backgroundImage {
+                backgroundProcessor = DefaultBackgroundProcessor(backgroundImage: image)
+                camera = CameraSource(options: options, delegate: self, backgroundProcessorDelegate: backgroundProcessor!)
+            } else {
+                camera = CameraSource(options: options, delegate: self)
+            }
+
             localVideoTrack = LocalVideoTrack(source: camera!, enabled: true, name: "camera")
 
             // Add renderer to video track for local preview
