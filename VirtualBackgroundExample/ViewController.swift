@@ -63,12 +63,7 @@ class ViewController: UIViewController {
 
         if PlatformUtils.isSimulator {
             self.previewView.removeFromSuperview()
-        } else {
-            // Preview our local camera track in the local video preview view.
-            self.startPreview()
         }
-        
-        self.connectButton.adjustsImageWhenDisabled = true;
         
         // Disconnect and mic button will be displayed when the Client is connected to a Room.
         self.disconnectButton.isHidden = true
@@ -240,7 +235,7 @@ class ViewController: UIViewController {
                 if #available(iOS 13.0, *) {
                     // Track UIWindowScene events for the key window's scene.
                     // The example app disables multi-window support in the .plist (see UIApplicationSceneManifestKey).
-                    builder.orientationTracker = UserInterfaceTracker(scene: UIApplication.shared.keyWindow!.windowScene!)
+                    builder.orientationTracker = UserInterfaceTracker(scene: (UIApplication.shared.connectedScenes.first as? UIWindowScene)!)
                 }
             }
             // Preview our local camera track in the local video preview view.
