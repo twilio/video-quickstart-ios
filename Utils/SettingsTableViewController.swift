@@ -6,26 +6,34 @@
 //
 
 import UIKit
+import Photos
+import PhotosUI
 import TwilioVideo
 
 class SettingsTableViewController: UITableViewController {
     
+    static let backgroundImage = "Background Image"
+    static let backgroundBlurRadius = "Background Blur Radius"
     static let signalingRegionLabel = "Region"
     static let audioCodecLabel = "Audio Codec"
     static let videoCodecLabel = "Video Codec"
     static let maxAudioBitrateLabel = "Max Audio Bitrate (Kbps)"
     static let maxVideoBitrateLabel = "Max Video Bitrate (Kbps)"
     static let defaultStr = "Default"
+    static let virtualBackgroundDisclaimerText = "Set your background image or the radius of the Gaussian blur filter. This will be applied to the local camera view."
     static let signalingRegionDisclaimerText = "Set your preferred region. Global Low Latency (gll) is the default value."
     static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported in Group Rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported. VP8 Simulcast should only be enabled in a Group Room."
     static let encodingParamsDisclaimerText = "Set sender bandwidth constraints. Zero represents the WebRTC default which varies by codec."
     
-    let disclaimers = [signalingRegionDisclaimerText, codecDisclaimerText, encodingParamsDisclaimerText]
+    let disclaimers = [virtualBackgroundDisclaimerText, signalingRegionDisclaimerText, codecDisclaimerText, encodingParamsDisclaimerText]
     let settings = Settings.shared
     let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.footnote)
-    var labels: [[String]] = [[signalingRegionLabel],
+    var labels: [[String]] = [[backgroundImage, backgroundBlurRadius],
+                              [signalingRegionLabel],
                               [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
                               [SettingsTableViewController.maxAudioBitrateLabel, SettingsTableViewController.maxVideoBitrateLabel]]
+    
+    var backgroundImageName: String? = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -75,6 +83,18 @@ class SettingsTableViewController: UITableViewController {
         var detailText = SettingsTableViewController.defaultStr
         
         switch (label) {
+            case SettingsTableViewController.backgroundImage:
+                if let imageName = backgroundImageName, imageName.count > 0 {
+                    detailText = imageName
+                } else {
+                    detailText = ""
+                }
+            case SettingsTableViewController.backgroundBlurRadius:
+                if let backgroundBlurRadius = settings.backgroundBlurRadius {
+                    detailText = backgroundBlurRadius.stringValue
+                } else {
+                    detailText = ""
+                }
             case SettingsTableViewController.signalingRegionLabel:
                 if let signalingRegion = settings.signalingRegion {
                     detailText = settings.supportedSignalingRegionDisplayString[signalingRegion]!
@@ -100,6 +120,10 @@ class SettingsTableViewController: UITableViewController {
         let tappedLabel = self.labels[indexPath.section][indexPath.row]
         
         switch (tappedLabel) {
+            case SettingsTableViewController.backgroundImage:
+                didSelectBackgroundImageRow()
+            case SettingsTableViewController.backgroundBlurRadius:
+                didSelectBackgroundBlurRadiusRow()
             case SettingsTableViewController.signalingRegionLabel:
                 didSelectSignalingRegionRow(indexPath: indexPath)
             case SettingsTableViewController.audioCodecLabel:
@@ -133,6 +157,99 @@ class SettingsTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return getDisclaimerSizeForString(string: disclaimers[section]).height + 10
+    }
+    
+    func didSelectBackgroundImageRow() {
+        let alertController = UIAlertController(title: "Background Image", message: nil, preferredStyle: .actionSheet)
+        
+        let selectImageButton = UIAlertAction(title: "Select from library", style: .default, handler: { (action) -> Void in
+            let status = PHPhotoLibrary.authorizationStatus()
+            switch status {
+                case .notDetermined:
+                    PHPhotoLibrary.requestAuthorization(for: .readWrite) { [unowned self] (authStatus) in
+                        DispatchQueue.main.async { [unowned self] in
+                            showPhotoLibraryUI(for: authStatus)
+                        }
+                    }
+                    break
+                case .authorized:
+                    DispatchQueue.main.async { [unowned self] in
+                        showPhotoLibraryUI(for: status)
+                    }
+                case .limited:
+                    NSLog("Photo library access restricted")
+                    DispatchQueue.main.async { [unowned self] in
+                        showPhotoLibraryUI(for: status)
+                    }
+                case .restricted:
+                    NSLog("Photo library access restricted")
+                    break
+                case .denied:
+                    NSLog("Photo library access denied")
+                    break
+                default:
+                    NSLog("Default case")
+            }
+            
+            self.reloadSelectedRowOrTableView()
+        })
+        alertController.addAction(selectImageButton)
+        
+        let clearButton = UIAlertAction(title: "Clear", style: .default, handler: { (action) -> Void in
+            self.settings.backgroundImage = nil
+            self.reloadSelectedRowOrTableView()
+        })
+        alertController.addAction(clearButton)
+        
+        let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+            self.deselectSelectedRow()
+        })
+        alertController.addAction(cancelButton)
+        
+        self.navigationController!.present(alertController, animated: true, completion: nil)
+    }
+    
+    func showPhotoLibraryUI(for status: PHAuthorizationStatus) {
+        switch status {
+        case .authorized:
+            var config = PHPickerConfiguration()
+            config.filter = .images
+            config.selectionLimit = 1
+            let viewController = PHPickerViewController(configuration: config)
+            viewController.delegate = self
+            self.navigationController!.present(viewController, animated: true, completion: nil)
+        case .limited:
+            PHPhotoLibrary.shared().presentLimitedLibraryPicker(from: self)
+        default:
+            NSLog("Default auth status.")
+        }
+        
+    }
+    
+    func didSelectBackgroundBlurRadiusRow() {
+        let alertController = UIAlertController(title: "Blur Radius", message: nil, preferredStyle: .alert)
+        
+        alertController.addTextField { (textField : UITextField!) -> Void in
+            textField.text = self.settings.backgroundBlurRadius == nil ? "" : self.settings.backgroundBlurRadius?.stringValue
+            textField.placeholder = "Blur radius"
+            textField.keyboardType = .numberPad
+        }
+        
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: { alert -> Void in
+            let blurRadius = alertController.textFields![0] as UITextField
+            if let value = blurRadius.text, value != "" {
+                self.settings.backgroundBlurRadius = NSNumber(value: Float(value)!)
+                self.reloadSelectedRowOrTableView()
+            }
+        })
+        alertController.addAction(okAction)
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+            self.deselectSelectedRow()
+        })
+        alertController.addAction(cancelAction)
+        
+        self.navigationController!.present(alertController, animated: true, completion: nil)
     }
 
     func didSelectSignalingRegionRow(indexPath: IndexPath) {
@@ -324,3 +441,32 @@ class SettingsTableViewController: UITableViewController {
         self.navigationController!.present(alertController, animated: true, completion: nil)
     }
 }
+
+extension SettingsTableViewController: PHPickerViewControllerDelegate {
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        
+        for item in results {
+            item.itemProvider.loadObject(ofClass: UIImage.self) { pickerImage, error in
+                if let image = pickerImage as? UIImage {
+                    self.settings.backgroundImage = image
+                } else {
+                    NSLog("Unable to convert picked image as UIImage")
+                }
+            }
+            
+            item.itemProvider.loadFileRepresentation(forTypeIdentifier: "public.item") { url, error in
+                if error != nil {
+                    NSLog("Unable to get the image filename")
+                } else {
+                    self.backgroundImageName = url?.lastPathComponent
+                }
+            }
+        }
+        
+        DispatchQueue.main.async { [unowned self] in
+            self.reloadSelectedRowOrTableView()
+        }
+    }
+}
+    
