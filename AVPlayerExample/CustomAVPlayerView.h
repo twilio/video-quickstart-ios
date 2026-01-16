@@ -1,5 +1,5 @@
 //
-//  AVPlayerView.h
+//  CustomAVPlayerView.h
 //  AVPlayerExample
 //
 //  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
@@ -9,7 +9,7 @@
 
 @class AVPlayer;
 
-@interface AVPlayerView : UIView
+@interface CustomAVPlayerView : UIView
 
 - (instancetype)initWithPlayer:(AVPlayer *)player;
 
