@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:twilio/twilio-video-ios.git",
       "state" : {
-        "revision" : "da0344078cfa6cfbcb4a7531142f29b5e1679c4f",
-        "version" : "5.11.0"
+        "revision" : "b2c7eb4b43e48d96500d6ae14fa67ac069431acd",
+        "version" : "5.11.1"
       }
     },
     {
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:twilio/twilio-virtual-background-processors-ios.git",
       "state" : {
-        "revision" : "90a0882e127a680b2db1d7656e0dc6e7fda438d4",
-        "version" : "5.11.0"
+        "revision" : "4e8a61e6af278347f947c2c465fae2debaa57eea",
+        "version" : "5.11.1"
       }
     }
   ],
