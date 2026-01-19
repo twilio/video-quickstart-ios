@@ -102,9 +102,7 @@ class ViewController: UIViewController {
         let config = SFSafariViewController.Configuration()
         config.barCollapsingEnabled = false
         let safariVC = SFSafariViewController(url: url, configuration: config)
-        safariVC.delegate = self
-        self.navigationController?.pushViewController(safariVC, animated: true)
-        self.navigationController?.setNavigationBarHidden(true, animated: true)
+        self.navigationController?.present(safariVC, animated: true)
     }
 
     @available(iOS 12.0, *)
@@ -516,14 +514,6 @@ extension ViewController: RoomDelegate {
 
     func roomDidReconnect(room: Room) {
         print("Reconnected to room \(room.name)")
-    }
-}
-
-// MARK:- SFSafariViewControllerDelegate
-extension ViewController : SFSafariViewControllerDelegate {
-    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
-        self.navigationController?.popViewController(animated: true)
-        self.navigationController?.setNavigationBarHidden(false, animated: true)
     }
 }
 
