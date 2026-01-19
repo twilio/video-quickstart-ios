@@ -98,6 +98,14 @@ extension ViewController : CXProviderDelegate {
 
         if call.isOnHold {
             holdCall(onHold: false)
+
+            /*
+             * Explicitly enable the audio device.
+             * This is a workaround for an iOS issue where the `provider:didActivateAudioSession:` method is not called
+             * when the call is being unheld after an interrupting call was ended by the remote side.
+             * Apple Developer Forums thread: https://developer.apple.com/forums/thread/694836
+             */
+            audioDevice.isEnabled = true
         } else {
             holdCall(onHold: true)
         }
