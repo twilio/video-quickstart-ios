@@ -59,13 +59,6 @@ class ViewController: UIViewController {
         broadcastButton.layer.cornerRadius = 4
         conferenceButton?.layer.cornerRadius = 4
 
-        self.navigationController?.navigationBar.barTintColor = UIColor(red: 226.0/255.0,
-                                                                        green: 29.0/255.0,
-                                                                        blue: 37.0/255.0,
-                                                                        alpha: 1.0)
-        self.navigationController?.navigationBar.tintColor = UIColor.white
-        self.navigationController?.navigationBar.barStyle = UIBarStyle.black
-
         appScreenSource = AppScreenSource(delegate: self)
         checkRecordingAvailability()
 
