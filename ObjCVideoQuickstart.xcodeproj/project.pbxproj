@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2032ECD22F1EAA65006C8B91 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 2032ECCF2F1EA989006C8B91 /* Utils.m */; };
 		24384493252B96A90088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 24384492252B96A90088B407 /* TwilioVideo */; };
 		283214941CD1307900F1AD80 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214931CD1307900F1AD80 /* main.m */; };
 		283214971CD1307900F1AD80 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214961CD1307900F1AD80 /* AppDelegate.m */; };
 		2832149F1CD1307900F1AD80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2832149E1CD1307900F1AD80 /* Assets.xcassets */; };
 		283214A21CD1307900F1AD80 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 283214A01CD1307900F1AD80 /* LaunchScreen.storyboard */; };
 		283214AB1CD1312F00F1AD80 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 283214AA1CD1312F00F1AD80 /* ViewController.m */; };
-		4BF377BC1D99C8F200AC0BA3 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BF377BB1D99C8F200AC0BA3 /* Utils.m */; };
 		4BF377C11D99F0D700AC0BA3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4BF377BF1D99F0D700AC0BA3 /* Main.storyboard */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +31,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2032ECCE2F1EA989006C8B91 /* Utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Utils.h; path = Utils/Utils.h; sourceTree = SOURCE_ROOT; };
+		2032ECCF2F1EA989006C8B91 /* Utils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Utils.m; path = Utils/Utils.m; sourceTree = SOURCE_ROOT; };
 		24A82E6C22B18B34001EFC32 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		24B657A622B18B6B0057EBE6 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		24B657A722B18B6B0057EBE6 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
@@ -48,8 +50,6 @@
 		283214A31CD1307900F1AD80 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		283214A91CD1312F00F1AD80 /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		283214AA1CD1312F00F1AD80 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		4BF377BA1D99C8F200AC0BA3 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
-		4BF377BB1D99C8F200AC0BA3 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
 		4BF377C01D99F0D700AC0BA3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -100,10 +100,10 @@
 		283214911CD1307900F1AD80 /* ObjCVideoQuickstart */ = {
 			isa = PBXGroup;
 			children = (
+				2032ECCE2F1EA989006C8B91 /* Utils.h */,
+				2032ECCF2F1EA989006C8B91 /* Utils.m */,
 				283214A91CD1312F00F1AD80 /* ViewController.h */,
 				283214AA1CD1312F00F1AD80 /* ViewController.m */,
-				4BF377BA1D99C8F200AC0BA3 /* Utils.h */,
-				4BF377BB1D99C8F200AC0BA3 /* Utils.m */,
 				283214951CD1307900F1AD80 /* AppDelegate.h */,
 				283214961CD1307900F1AD80 /* AppDelegate.m */,
 				4BF377BF1D99F0D700AC0BA3 /* Main.storyboard */,
@@ -226,7 +226,7 @@
 				283214AB1CD1312F00F1AD80 /* ViewController.m in Sources */,
 				283214971CD1307900F1AD80 /* AppDelegate.m in Sources */,
 				283214941CD1307900F1AD80 /* main.m in Sources */,
-				4BF377BC1D99C8F200AC0BA3 /* Utils.m in Sources */,
+				2032ECD22F1EAA65006C8B91 /* Utils.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

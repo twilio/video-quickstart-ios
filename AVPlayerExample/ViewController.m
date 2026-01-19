@@ -11,7 +11,7 @@
 @import TwilioVideo;
 
 #import "CustomAVPlayerView.h"
-#import "Utils.h"
+#import "../Utils/Utils.h"
 
 typedef NS_ENUM(NSUInteger, ViewControllerState) {
     /**
