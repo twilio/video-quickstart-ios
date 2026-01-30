@@ -6,7 +6,7 @@
 //
 
 #import "ViewController.h"
-#import "Utils.h"
+#import "../Utils/Utils.h"
 
 #import <TwilioVideo/TwilioVideo.h>
 

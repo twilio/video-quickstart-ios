@@ -1,15 +1,15 @@
 //
-//  AVPlayerView.m
+//  CustomAVPlayerView.m
 //  AVPlayerExample
 //
 //  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
 //
 
-#import "AVPlayerView.h"
+#import "CustomAVPlayerView.h"
 
 #import <AVFoundation/AVFoundation.h>
 
-@implementation AVPlayerView
+@implementation CustomAVPlayerView
 
 - (instancetype)initWithPlayer:(AVPlayer *)player {
     self = [super initWithFrame:CGRectZero];

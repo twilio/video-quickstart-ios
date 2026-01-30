@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2032ECD32F1EABF3006C8B91 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 2032ECD12F1EA9B8006C8B91 /* Utils.m */; };
 		2438448D252B96800088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 2438448C252B96800088B407 /* TwilioVideo */; };
 		24A82E5A22B18A0A001EFC32 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 24A82E5922B18A0A001EFC32 /* README.md */; };
 		8A0A1F191ECD1FFC0008C1AF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A0A1F181ECD1FFC0008C1AF /* main.m */; };
@@ -15,8 +16,7 @@
 		8A0A1F221ECD1FFC0008C1AF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A0A1F201ECD1FFC0008C1AF /* Main.storyboard */; };
 		8A0A1F241ECD1FFC0008C1AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A0A1F231ECD1FFC0008C1AF /* Assets.xcassets */; };
 		8A0A1F271ECD1FFC0008C1AF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8A0A1F251ECD1FFC0008C1AF /* LaunchScreen.storyboard */; };
-		8A85E4951ECE97F6004719C8 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A85E4941ECE97F6004719C8 /* Utils.m */; };
-		8A85E4981ECEA82D004719C8 /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A85E4971ECEA82D004719C8 /* AVPlayerView.m */; };
+		8A85E4981ECEA82D004719C8 /* CustomAVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A85E4971ECEA82D004719C8 /* CustomAVPlayerView.m */; };
 		FBD8253D2BDC22A000364D02 /* twilio_cloud_com.mov in Resources */ = {isa = PBXBuildFile; fileRef = FBD8253C2BDC22A000364D02 /* twilio_cloud_com.mov */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +34,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2032ECD02F1EA9B8006C8B91 /* Utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Utils.h; path = Utils/Utils.h; sourceTree = SOURCE_ROOT; };
+		2032ECD12F1EA9B8006C8B91 /* Utils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Utils.m; path = Utils/Utils.m; sourceTree = SOURCE_ROOT; };
 		24A82E5922B18A0A001EFC32 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = AVPlayerExample/README.md; sourceTree = "<group>"; };
 		8A0A1F141ECD1FFC0008C1AF /* AVPlayerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVPlayerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A0A1F181ECD1FFC0008C1AF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -45,10 +47,8 @@
 		8A0A1F231ECD1FFC0008C1AF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8A0A1F261ECD1FFC0008C1AF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8A0A1F281ECD1FFC0008C1AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8A85E4931ECE97F6004719C8 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
-		8A85E4941ECE97F6004719C8 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
-		8A85E4961ECEA82D004719C8 /* AVPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerView.h; sourceTree = "<group>"; };
-		8A85E4971ECEA82D004719C8 /* AVPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerView.m; sourceTree = "<group>"; };
+		8A85E4961ECEA82D004719C8 /* CustomAVPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomAVPlayerView.h; sourceTree = "<group>"; };
+		8A85E4971ECEA82D004719C8 /* CustomAVPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomAVPlayerView.m; sourceTree = "<group>"; };
 		FBD8253C2BDC22A000364D02 /* twilio_cloud_com.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; name = twilio_cloud_com.mov; path = Resources/twilio_cloud_com.mov; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -85,12 +85,12 @@
 		8A0A1F161ECD1FFC0008C1AF /* AVPlayerExample */ = {
 			isa = PBXGroup;
 			children = (
+				2032ECD02F1EA9B8006C8B91 /* Utils.h */,
+				2032ECD12F1EA9B8006C8B91 /* Utils.m */,
 				8A0A1F1A1ECD1FFC0008C1AF /* AppDelegate.h */,
 				8A0A1F1B1ECD1FFC0008C1AF /* AppDelegate.m */,
-				8A85E4961ECEA82D004719C8 /* AVPlayerView.h */,
-				8A85E4971ECEA82D004719C8 /* AVPlayerView.m */,
-				8A85E4931ECE97F6004719C8 /* Utils.h */,
-				8A85E4941ECE97F6004719C8 /* Utils.m */,
+				8A85E4961ECEA82D004719C8 /* CustomAVPlayerView.h */,
+				8A85E4971ECEA82D004719C8 /* CustomAVPlayerView.m */,
 				8A0A1F1D1ECD1FFC0008C1AF /* ViewController.h */,
 				8A0A1F1E1ECD1FFC0008C1AF /* ViewController.m */,
 				8A0A1F201ECD1FFC0008C1AF /* Main.storyboard */,
@@ -216,8 +216,8 @@
 				8A0A1F1F1ECD1FFC0008C1AF /* ViewController.m in Sources */,
 				8A0A1F1C1ECD1FFC0008C1AF /* AppDelegate.m in Sources */,
 				8A0A1F191ECD1FFC0008C1AF /* main.m in Sources */,
-				8A85E4951ECE97F6004719C8 /* Utils.m in Sources */,
-				8A85E4981ECEA82D004719C8 /* AVPlayerView.m in Sources */,
+				2032ECD32F1EABF3006C8B91 /* Utils.m in Sources */,
+				8A85E4981ECEA82D004719C8 /* CustomAVPlayerView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -418,7 +418,7 @@
 			repositoryURL = "https://github.com/twilio/twilio-video-ios";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.10.2;
+				minimumVersion = 5.11.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

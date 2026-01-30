@@ -1,6 +1,5 @@
 //
 //  Utils.m
-//  AVPlayerExample
 //
 //  Copyright © 2016-2017 Twilio, Inc. All rights reserved.
 //

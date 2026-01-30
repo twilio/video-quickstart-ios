@@ -59,13 +59,6 @@ class ViewController: UIViewController {
         broadcastButton.layer.cornerRadius = 4
         conferenceButton?.layer.cornerRadius = 4
 
-        self.navigationController?.navigationBar.barTintColor = UIColor(red: 226.0/255.0,
-                                                                        green: 29.0/255.0,
-                                                                        blue: 37.0/255.0,
-                                                                        alpha: 1.0)
-        self.navigationController?.navigationBar.tintColor = UIColor.white
-        self.navigationController?.navigationBar.barStyle = UIBarStyle.black
-
         appScreenSource = AppScreenSource(delegate: self)
         checkRecordingAvailability()
 
@@ -102,9 +95,7 @@ class ViewController: UIViewController {
         let config = SFSafariViewController.Configuration()
         config.barCollapsingEnabled = false
         let safariVC = SFSafariViewController(url: url, configuration: config)
-        safariVC.delegate = self
-        self.navigationController?.pushViewController(safariVC, animated: true)
-        self.navigationController?.setNavigationBarHidden(true, animated: true)
+        self.navigationController?.present(safariVC, animated: true)
     }
 
     @available(iOS 12.0, *)
@@ -516,14 +507,6 @@ extension ViewController: RoomDelegate {
 
     func roomDidReconnect(room: Room) {
         print("Reconnected to room \(room.name)")
-    }
-}
-
-// MARK:- SFSafariViewControllerDelegate
-extension ViewController : SFSafariViewControllerDelegate {
-    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
-        self.navigationController?.popViewController(animated: true)
-        self.navigationController?.setNavigationBarHidden(false, animated: true)
     }
 }
 

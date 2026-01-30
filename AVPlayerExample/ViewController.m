@@ -10,8 +10,8 @@
 @import AVFoundation;
 @import TwilioVideo;
 
-#import "AVPlayerView.h"
-#import "Utils.h"
+#import "CustomAVPlayerView.h"
+#import "../Utils/Utils.h"
 
 typedef NS_ENUM(NSUInteger, ViewControllerState) {
     /**
@@ -49,7 +49,7 @@ NSString *const kStatusKey   = @"status";
 #pragma mark AVPlayer
 
 @property (nonatomic, strong) AVPlayer *videoPlayer;
-@property (nonatomic, weak) AVPlayerView *videoPlayerView;
+@property (nonatomic, weak) CustomAVPlayerView *videoPlayerView;
 
 #pragma mark UI Element Outlets and handles
 
@@ -265,7 +265,7 @@ NSString *const kStatusKey   = @"status";
     self.videoPlayer = player;
 
     // Add Video UI on screen.
-    AVPlayerView *playerView = [[AVPlayerView alloc] initWithPlayer:player];
+    CustomAVPlayerView *playerView = [[CustomAVPlayerView alloc] initWithPlayer:player];
     [self.view insertSubview:playerView atIndex:0];
     self.videoPlayerView = playerView;
 
