@@ -414,7 +414,7 @@
 					"@executable_path/Frameworks",
 				);
 				OTHER_LDFLAGS = "$(inherited)";
-				OTHER_SWIFT_FLAGS = "-DXCODE_$(XCODE_VERSION_MAJOR)";
+				OTHER_SWIFT_FLAGS = "-DXCODE_$(XCODE_VERSION_MAJOR) -DDISPLAY_VIRTUAL_BACKGROUND_OPTIONS";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VirtualBackgroundExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -433,7 +433,7 @@
 					"@executable_path/Frameworks",
 				);
 				OTHER_LDFLAGS = "$(inherited)";
-				OTHER_SWIFT_FLAGS = "-DXCODE_$(XCODE_VERSION_MAJOR)";
+				OTHER_SWIFT_FLAGS = "-DXCODE_$(XCODE_VERSION_MAJOR) -DDISPLAY_VIRTUAL_BACKGROUND_OPTIONS";
 				PRODUCT_BUNDLE_IDENTIFIER = com.twilio.VirtualBackgroundExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

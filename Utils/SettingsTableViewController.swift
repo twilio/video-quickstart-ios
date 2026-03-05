@@ -25,15 +25,21 @@ class SettingsTableViewController: UITableViewController {
     static let codecDisclaimerText = "Set your preferred audio and video codec. Not all codecs are supported in Group Rooms. The media server will fallback to OPUS or VP8 if a preferred codec is not supported. VP8 Simulcast should only be enabled in a Group Room."
     static let encodingParamsDisclaimerText = "Set sender bandwidth constraints. Zero represents the WebRTC default which varies by codec."
     
+#if DISPLAY_VIRTUAL_BACKGROUND_OPTIONS
     let disclaimers = [virtualBackgroundDisclaimerText, signalingRegionDisclaimerText, codecDisclaimerText, encodingParamsDisclaimerText]
-    let settings = Settings.shared
-    let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.footnote)
     var labels: [[String]] = [[backgroundImage, backgroundBlurRadius],
                               [signalingRegionLabel],
                               [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
                               [SettingsTableViewController.maxAudioBitrateLabel, SettingsTableViewController.maxVideoBitrateLabel]]
-    
     var backgroundImageName: String? = ""
+#else
+    let disclaimers = [signalingRegionDisclaimerText, codecDisclaimerText, encodingParamsDisclaimerText]
+    var labels: [[String]] = [[signalingRegionLabel],
+                              [SettingsTableViewController.audioCodecLabel, SettingsTableViewController.videoCodecLabel],
+                              [SettingsTableViewController.maxAudioBitrateLabel, SettingsTableViewController.maxVideoBitrateLabel]]
+#endif
+    let settings = Settings.shared
+    let disclaimerFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.footnote)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,6 +89,7 @@ class SettingsTableViewController: UITableViewController {
         var detailText = SettingsTableViewController.defaultStr
         
         switch (label) {
+#if DISPLAY_VIRTUAL_BACKGROUND_OPTIONS
             case SettingsTableViewController.backgroundImage:
                 if let imageName = backgroundImageName, imageName.count > 0 {
                     detailText = imageName
@@ -95,6 +102,7 @@ class SettingsTableViewController: UITableViewController {
                 } else {
                     detailText = ""
                 }
+#endif
             case SettingsTableViewController.signalingRegionLabel:
                 if let signalingRegion = settings.signalingRegion {
                     detailText = settings.supportedSignalingRegionDisplayString[signalingRegion]!
@@ -120,10 +128,12 @@ class SettingsTableViewController: UITableViewController {
         let tappedLabel = self.labels[indexPath.section][indexPath.row]
         
         switch (tappedLabel) {
+#if DISPLAY_VIRTUAL_BACKGROUND_OPTIONS
             case SettingsTableViewController.backgroundImage:
                 didSelectBackgroundImageRow()
             case SettingsTableViewController.backgroundBlurRadius:
                 didSelectBackgroundBlurRadiusRow()
+#endif
             case SettingsTableViewController.signalingRegionLabel:
                 didSelectSignalingRegionRow(indexPath: indexPath)
             case SettingsTableViewController.audioCodecLabel:
@@ -158,7 +168,8 @@ class SettingsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return getDisclaimerSizeForString(string: disclaimers[section]).height + 10
     }
-    
+
+#if DISPLAY_VIRTUAL_BACKGROUND_OPTIONS
     func didSelectBackgroundImageRow() {
         let alertController = UIAlertController(title: "Background Image", message: nil, preferredStyle: .actionSheet)
         
@@ -251,7 +262,8 @@ class SettingsTableViewController: UITableViewController {
         
         self.navigationController!.present(alertController, animated: true, completion: nil)
     }
-
+#endif
+    
     func didSelectSignalingRegionRow(indexPath: IndexPath) {
         var selectedButton : UIAlertAction!
         var defaultButton: UIAlertAction!
@@ -442,6 +454,7 @@ class SettingsTableViewController: UITableViewController {
     }
 }
 
+#if DISPLAY_VIRTUAL_BACKGROUND_OPTIONS
 extension SettingsTableViewController: PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true)
@@ -469,4 +482,4 @@ extension SettingsTableViewController: PHPickerViewControllerDelegate {
         }
     }
 }
-    
+#endif

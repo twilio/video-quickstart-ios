@@ -132,6 +132,8 @@ class ViewController: UIViewController {
     func connectToARoom() {
         
         self.connectButton.isEnabled = true;
+        // Prepare local media which we will share with Room Participants.
+        self.prepareLocalMedia()
         
         // Preparing the connect options with the access token that we fetched (or hardcoded).
         let connectOptions = ConnectOptions(token: accessToken) { (builder) in
@@ -238,32 +240,11 @@ class ViewController: UIViewController {
                     builder.orientationTracker = UserInterfaceTracker(scene: (UIApplication.shared.connectedScenes.first as? UIWindowScene)!)
                 }
             }
+
+            // Preview our local camera track in the local video preview view.
             if let blurFilterRadius = Settings.shared.backgroundBlurRadius, blurFilterRadius.floatValue > 0 {
                 backgroundProcessor = DefaultBackgroundProcessor(blurFilterRadius: blurFilterRadius)
                 camera = CameraSource(options: options, delegate: self, backgroundProcessorDelegate: backgroundProcessor!)
-                
-                // Example of changing background processor property on the flight
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    if let image = Settings.shared.backgroundImage {
-                        self.backgroundProcessor?.backgroundImage = image
-                    }
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
-                    self.backgroundProcessor?.pauseProcessing = true
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 9) {
-                    self.backgroundProcessor?.pauseProcessing = false
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 12) {
-                    self.backgroundProcessor?.blurFilterRadius = blurFilterRadius
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 12) {
-                    self.backgroundProcessor?.blurFilterRadius = 0.0
-                }
             } else if let image = Settings.shared.backgroundImage {
                 backgroundProcessor = DefaultBackgroundProcessor(backgroundImage: image)
                 camera = CameraSource(options: options, delegate: self, backgroundProcessorDelegate: backgroundProcessor!)
