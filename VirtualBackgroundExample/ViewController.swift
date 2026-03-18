@@ -227,6 +227,11 @@ class ViewController: UIViewController {
         if PlatformUtils.isSimulator {
             return
         }
+        
+        if let camera = self.camera {
+            camera.stopCapture()
+            self.camera = nil
+        }
 
         let frontCamera = CameraSource.captureDevice(position: .front)
         let backCamera = CameraSource.captureDevice(position: .back)
