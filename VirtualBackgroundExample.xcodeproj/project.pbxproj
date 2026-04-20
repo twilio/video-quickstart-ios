@@ -466,18 +466,18 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		2438447C252B93FF0088B407 /* XCRemoteSwiftPackageReference "twilio-video-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:twilio/twilio-video-ios.git";
+			repositoryURL = "https://github.com/twilio/twilio-video-ios";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.11.1;
+				minimumVersion = 5.11.3;
 			};
 		};
 		8FF2A3682EE8D9CB00347063 /* XCRemoteSwiftPackageReference "twilio-virtual-background-processors-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:twilio/twilio-virtual-background-processors-ios.git";
+			repositoryURL = "https://github.com/twilio/twilio-virtual-background-processors-ios";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.11.1;
+				minimumVersion = 5.11.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

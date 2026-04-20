@@ -1,22 +1,22 @@
 {
-  "originHash" : "8a037947cd2e60d45668e0768381a02ad3df9c35656480d1ed190a621b36ff1c",
+  "originHash" : "a6316b55e4c26fd1838815a018355b2cd660f644fb7a382101ab80cb29d1bce9",
   "pins" : [
     {
       "identity" : "twilio-video-ios",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:twilio/twilio-video-ios.git",
+      "location" : "https://github.com/twilio/twilio-video-ios",
       "state" : {
-        "revision" : "b2c7eb4b43e48d96500d6ae14fa67ac069431acd",
-        "version" : "5.11.1"
+        "revision" : "9cd840e09cfa6a051974e422f139efae5087a536",
+        "version" : "5.11.3"
       }
     },
     {
       "identity" : "twilio-virtual-background-processors-ios",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:twilio/twilio-virtual-background-processors-ios.git",
+      "location" : "https://github.com/twilio/twilio-virtual-background-processors-ios",
       "state" : {
-        "revision" : "4e8a61e6af278347f947c2c465fae2debaa57eea",
-        "version" : "5.11.1"
+        "revision" : "e0aeaba9557c433d8d77a3906d7c38dcdebea498",
+        "version" : "5.11.3"
       }
     }
   ],
