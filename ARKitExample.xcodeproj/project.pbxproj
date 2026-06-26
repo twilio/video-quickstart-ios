@@ -13,6 +13,7 @@
 		1C0964A21F3CF21B008F2C19 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1C0964A01F3CF21B008F2C19 /* Main.storyboard */; };
 		1C0964A41F3CF21B008F2C19 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C0964A31F3CF21B008F2C19 /* Assets.xcassets */; };
 		1C0964A71F3CF21B008F2C19 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1C0964A51F3CF21B008F2C19 /* LaunchScreen.storyboard */; };
+		20866F8D2FEDF62200F781A1 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20866F8C2FEDF62200F781A1 /* SceneDelegate.swift */; };
 		2438448A252B965F0088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 24384489252B965F0088B407 /* TwilioVideo */; };
 /* End PBXBuildFile section */
 
@@ -38,6 +39,7 @@
 		1C0964A31F3CF21B008F2C19 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1C0964A61F3CF21B008F2C19 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1C0964A81F3CF21B008F2C19 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		20866F8C2FEDF62200F781A1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		24A82E5822B189F9001EFC32 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ARKitExample/README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -74,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				1C09649A1F3CF21B008F2C19 /* AppDelegate.swift */,
+				20866F8C2FEDF62200F781A1 /* SceneDelegate.swift */,
 				1C09649C1F3CF21B008F2C19 /* art.scnassets */,
 				1C09649E1F3CF21B008F2C19 /* ViewController.swift */,
 				1C0964A01F3CF21B008F2C19 /* Main.storyboard */,
@@ -188,6 +191,7 @@
 			files = (
 				1C09649F1F3CF21B008F2C19 /* ViewController.swift in Sources */,
 				1C09649B1F3CF21B008F2C19 /* AppDelegate.swift in Sources */,
+				20866F8D2FEDF62200F781A1 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

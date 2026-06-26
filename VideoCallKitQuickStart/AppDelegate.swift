@@ -15,28 +15,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
-
         return true
     }
 
+    // iOS 12 fallback — on iOS 13+ with scenes, this is not called.
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        guard let viewController = window?.rootViewController as? ViewController, let interaction = userActivity.interaction else {
+        guard let viewController = window?.rootViewController as? ViewController,
+              let roomName = userActivity.roomNameFromCallIntent else {
             return false
         }
+        viewController.performStartCallAction(uuid: UUID(), roomName: roomName)
+        return true
+    }
+}
+
+extension NSUserActivity {
+    var roomNameFromCallIntent: String? {
+        guard let interaction = interaction else { return nil }
 
         var personHandle: INPersonHandle?
-
-        if let startVideoCallIntent = interaction.intent as? INStartVideoCallIntent {
-            personHandle = startVideoCallIntent.contacts?[0].personHandle
-        } else if let startAudioCallIntent = interaction.intent as? INStartAudioCallIntent {
-            personHandle = startAudioCallIntent.contacts?[0].personHandle
+        if let intent = interaction.intent as? INStartVideoCallIntent {
+            personHandle = intent.contacts?[0].personHandle
+        } else if let intent = interaction.intent as? INStartAudioCallIntent {
+            personHandle = intent.contacts?[0].personHandle
         }
-
-        if let personHandle = personHandle {
-            viewController.performStartCallAction(uuid: UUID(), roomName: personHandle.value)
-        }
-
-        return true
+        return personHandle?.value
     }
 }

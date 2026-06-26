@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		20866FB82FEDFD6000F781A1 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20866FB72FEDFD6000F781A1 /* SceneDelegate.swift */; };
 		24384490252B96970088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 2438448F252B96970088B407 /* TwilioVideo */; };
 		4B0F4B341FAC4DCF006784F1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B0F4B301FAC4DCF006784F1 /* LaunchScreen.storyboard */; };
 		4B0F4B351FAC4DCF006784F1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4B0F4B321FAC4DCF006784F1 /* Main.storyboard */; };
@@ -30,6 +31,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		20866FB72FEDFD6000F781A1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		24B657B822B1F8600057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = DataTrackExample/README.md; sourceTree = "<group>"; };
 		4B0F4B311FAC4DCF006784F1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4B0F4B331FAC4DCF006784F1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 			isa = PBXGroup;
 			children = (
 				4BA53D7F1FAC42340050BDF7 /* AppDelegate.swift */,
+				20866FB72FEDFD6000F781A1 /* SceneDelegate.swift */,
 				4BA53D841FAC42340050BDF7 /* ViewController.swift */,
 				4B0F4B321FAC4DCF006784F1 /* Main.storyboard */,
 				4BA53D801FAC42340050BDF7 /* Assets.xcassets */,
@@ -225,6 +228,7 @@
 				4B0F4B3C1FAC4EEC006784F1 /* Utils.swift in Sources */,
 				4BA53D891FAC42340050BDF7 /* ViewController.swift in Sources */,
 				4BA53D851FAC42340050BDF7 /* AppDelegate.swift in Sources */,
+				20866FB82FEDFD6000F781A1 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

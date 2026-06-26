@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		20866FC02FEDFF7D00F781A1 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20866FBF2FEDFF7D00F781A1 /* SceneDelegate.swift */; };
 		24384496252B96BB0088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 24384495252B96BB0088B407 /* TwilioVideo */; };
 		4B20000520E9CB9C00FE9F2C /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B20FFFA20E9CB9C00FE9F2C /* ReplayKit.framework */; };
 		4B20000720E9CB9C00FE9F2C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B20000620E9CB9C00FE9F2C /* UIKit.framework */; };
@@ -103,6 +104,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		20866FBF2FEDFF7D00F781A1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		24B657BA22B1F8980057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ReplayKitExample/README.md; sourceTree = "<group>"; };
 		4B20000420E9CB9C00FE9F2C /* BroadcastExtensionSetupUI.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BroadcastExtensionSetupUI.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B20000620E9CB9C00FE9F2C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -206,6 +208,7 @@
 			isa = PBXGroup;
 			children = (
 				4B20FFE220E9CB8500FE9F2C /* AppDelegate.swift */,
+				20866FBF2FEDFF7D00F781A1 /* SceneDelegate.swift */,
 				8A390D922161D4430013D6E5 /* ReplayKitVideoSource.swift */,
 				8A992CEC2320C26C00D549F6 /* ReplayKitExample-Bridging-Header.h */,
 				4B20FFE420E9CB8500FE9F2C /* ViewController.swift */,
@@ -484,6 +487,7 @@
 			files = (
 				8A390D932161D4430013D6E5 /* ReplayKitVideoSource.swift in Sources */,
 				8A57F4A32319C2A1001561EA /* Telecine.swift in Sources */,
+				20866FC02FEDFF7D00F781A1 /* SceneDelegate.swift in Sources */,
 				8ADE7A75215DE3220092D17F /* Utils.swift in Sources */,
 				8A992CEB2320C1DC00D549F6 /* ExampleReplayKitAudioCapturer.m in Sources */,
 				4B20FFE520E9CB8500FE9F2C /* ViewController.swift in Sources */,

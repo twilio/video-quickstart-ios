@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		20866F892FEDF48100F781A1 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20866F882FEDF48100F781A1 /* SceneDelegate.swift */; };
 		24384484252B96290088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 24384483252B96290088B407 /* TwilioVideo */; };
 		4B7AD1F82049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B7AD1F72049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m */; };
 		4B7AD1FA204A0510002DDBA6 /* mixLoop.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4B7AD1F9204A0510002DDBA6 /* mixLoop.caf */; };
@@ -35,6 +36,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		20866F882FEDF48100F781A1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		24B657B622B1F8400057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ARKitExample/README.md; sourceTree = "<group>"; };
 		4B7AD1F62049CC81002DDBA6 /* ExampleAVAudioEngineDevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExampleAVAudioEngineDevice.h; sourceTree = "<group>"; };
 		4B7AD1F72049CC81002DDBA6 /* ExampleAVAudioEngineDevice.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExampleAVAudioEngineDevice.m; sourceTree = "<group>"; };
@@ -88,6 +90,7 @@
 			isa = PBXGroup;
 			children = (
 				8A713C7D202A585C009E776A /* AppDelegate.swift */,
+				20866F882FEDF48100F781A1 /* SceneDelegate.swift */,
 				8A713C7F202A585C009E776A /* ViewController.swift */,
 				8A713C8F202A5C96009E776A /* AudioDevices */,
 				8A713C81202A585C009E776A /* Main.storyboard */,
@@ -231,6 +234,7 @@
 				8A713C97202A7087009E776A /* Settings.swift in Sources */,
 				8A713C7E202A585C009E776A /* AppDelegate.swift in Sources */,
 				8A713C99202A7087009E776A /* Utils.swift in Sources */,
+				20866F892FEDF48100F781A1 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

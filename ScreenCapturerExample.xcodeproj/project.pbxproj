@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		20866FC22FEDFFE900F781A1 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20866FC12FEDFFE900F781A1 /* SceneDelegate.swift */; };
 		24384499252B96CC0088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 24384498252B96CC0088B407 /* TwilioVideo */; };
 		8AB81D9B1DED183B0021868E /* ExampleWebViewSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AB81D9A1DED183B0021868E /* ExampleWebViewSource.swift */; };
 		8AC2285F1DECF14D00AF58EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC2285D1DECF14D00AF58EA /* AppDelegate.swift */; };
@@ -30,6 +31,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		20866FC12FEDFFE900F781A1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		24B657BB22B1F8AE0057EBE6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ScreenCapturerExample/README.md; sourceTree = "<group>"; };
 		8AB81D9A1DED183B0021868E /* ExampleWebViewSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExampleWebViewSource.swift; sourceTree = "<group>"; };
 		8AC2285D1DECF14D00AF58EA /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ScreenCapturerExample/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
@@ -84,6 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				8AC2285D1DECF14D00AF58EA /* AppDelegate.swift */,
+				20866FC12FEDFFE900F781A1 /* SceneDelegate.swift */,
 				8AB81D9A1DED183B0021868E /* ExampleWebViewSource.swift */,
 				8AC2285E1DECF14D00AF58EA /* ViewController.swift */,
 			);
@@ -214,6 +217,7 @@
 				8AC228601DECF14D00AF58EA /* ViewController.swift in Sources */,
 				8AC2285F1DECF14D00AF58EA /* AppDelegate.swift in Sources */,
 				8AB81D9B1DED183B0021868E /* ExampleWebViewSource.swift in Sources */,
+				20866FC22FEDFFE900F781A1 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

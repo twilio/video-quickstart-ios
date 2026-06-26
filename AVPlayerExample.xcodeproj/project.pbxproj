@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2032ECD32F1EABF3006C8B91 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 2032ECD12F1EA9B8006C8B91 /* Utils.m */; };
+		20866FB62FEDF79900F781A1 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 20866FB52FEDF79900F781A1 /* SceneDelegate.m */; };
 		2438448D252B96800088B407 /* TwilioVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 2438448C252B96800088B407 /* TwilioVideo */; };
 		24A82E5A22B18A0A001EFC32 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 24A82E5922B18A0A001EFC32 /* README.md */; };
 		8A0A1F191ECD1FFC0008C1AF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A0A1F181ECD1FFC0008C1AF /* main.m */; };
@@ -36,6 +37,8 @@
 /* Begin PBXFileReference section */
 		2032ECD02F1EA9B8006C8B91 /* Utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Utils.h; path = Utils/Utils.h; sourceTree = SOURCE_ROOT; };
 		2032ECD12F1EA9B8006C8B91 /* Utils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Utils.m; path = Utils/Utils.m; sourceTree = SOURCE_ROOT; };
+		20866FB42FEDF75800F781A1 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		20866FB52FEDF79900F781A1 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		24A82E5922B18A0A001EFC32 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = AVPlayerExample/README.md; sourceTree = "<group>"; };
 		8A0A1F141ECD1FFC0008C1AF /* AVPlayerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVPlayerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A0A1F181ECD1FFC0008C1AF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -89,6 +92,8 @@
 				2032ECD12F1EA9B8006C8B91 /* Utils.m */,
 				8A0A1F1A1ECD1FFC0008C1AF /* AppDelegate.h */,
 				8A0A1F1B1ECD1FFC0008C1AF /* AppDelegate.m */,
+				20866FB42FEDF75800F781A1 /* SceneDelegate.h */,
+				20866FB52FEDF79900F781A1 /* SceneDelegate.m */,
 				8A85E4961ECEA82D004719C8 /* CustomAVPlayerView.h */,
 				8A85E4971ECEA82D004719C8 /* CustomAVPlayerView.m */,
 				8A0A1F1D1ECD1FFC0008C1AF /* ViewController.h */,
@@ -214,6 +219,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8A0A1F1F1ECD1FFC0008C1AF /* ViewController.m in Sources */,
+				20866FB62FEDF79900F781A1 /* SceneDelegate.m in Sources */,
 				8A0A1F1C1ECD1FFC0008C1AF /* AppDelegate.m in Sources */,
 				8A0A1F191ECD1FFC0008C1AF /* main.m in Sources */,
 				2032ECD32F1EABF3006C8B91 /* Utils.m in Sources */,
