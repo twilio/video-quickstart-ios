@@ -20,7 +20,7 @@ Get started with Video on iOS:
 - [Examples](#examples) - Run the sample applications
 - [Setup an Access Token Server](#setup-an-access-token-server) - Setup an access token server
 - [More Documentation](#more-documentation) - More documentation related to the iOS Video SDK
-- [Issues & Support](#issues-and-support) - Filing issues and general support
+- [Community Contributions and Support](#community-contributions-and-support) - Bug reports, feature feedback, and support options
 - [License](#license)
 
 ## Setup
@@ -148,14 +148,25 @@ You can find more documentation on getting started as well as our latest Docs be
 * [Getting Started](https://www.twilio.com/docs/video/ios-getting-started)
 * [Docs](https://twilio.github.io/twilio-video-ios/docs/latest_5.x/index.html)
 
-## Issues and Support
+<a id="issues-and-support"></a>
 
-Please file any issues you find here on Github.
-Please ensure that you are not sharing any
-[Personally Identifiable Information(PII)](https://www.twilio.com/docs/glossary/what-is-personally-identifiable-information-pii)
-or sensitive account information (API keys, credentials, etc.) when reporting an issue.
+## Community Contributions and Support
 
-For general inquiries related to the Video SDK you can file a [support ticket](https://support.twilio.com/hc/en-us/requests/new).
+This repository is publicly available and maintained by Twilio under a limited external contribution model.
+
+Due to limited maintenance capacity, external pull requests are not currently accepted.
+
+GitHub Issues may be used to report reproducible bugs or provide feature feedback about these samples. Issues are reviewed on a best-effort basis, with no SLA or guaranteed response.
+
+For reproducible bugs or feature feedback about the Video iOS SDK itself, use the [SDK issue tracker](https://github.com/twilio/twilio-video-ios/issues).
+
+GitHub Issues are not an official Twilio support channel. For production issues, general usage questions, or account-specific assistance, please contact [Twilio Support](https://help.twilio.com/). If you have a Twilio account manager, you may also escalate through them.
+
+Do not share [Personally Identifiable Information (PII)](https://www.twilio.com/docs/glossary/what-is-personally-identifiable-information-pii) or sensitive account information, including access tokens, API keys, and credentials, in issues, logs, or screenshots.
+
+Report security vulnerabilities privately through [Twilio's Vulnerability Disclosure Program](https://www.twilio.com/en-us/security/vulnerability-disclosure-program), rather than public GitHub Issues.
+
+See [CONTRIBUTING.md](https://github.com/twilio/video-quickstart-ios/blob/master/CONTRIBUTING.md) for reporting guidance.
 
 ## License
 
